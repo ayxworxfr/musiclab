@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
@@ -12,6 +14,9 @@ class PianoController extends GetxController {
   /// 结束 MIDI 编号
   final endMidi = 72.obs;    // C5
 
+  /// 显示的八度数（1-4）
+  final octaveCount = 2.obs;
+
   /// 是否显示标签
   final showLabels = true.obs;
 
@@ -21,8 +26,17 @@ class PianoController extends GetxController {
   /// 是否正在录制
   final isRecording = false.obs;
 
+  /// 是否正在播放
+  final isPlaying = false.obs;
+
   /// 录制的音符列表
   final recordedNotes = <Map<String, dynamic>>[].obs;
+
+  /// 播放定时器
+  Timer? _playbackTimer;
+  
+  /// 当前播放索引
+  int _playbackIndex = 0;
 
   /// 播放音符
   void playNote(int midi) {
@@ -68,8 +82,35 @@ class PianoController extends GetxController {
     }
   }
 
+  /// 设置显示的八度数
+  void setOctaveCount(int count) {
+    if (count < 1 || count > 4) return;
+    
+    octaveCount.value = count;
+    final newKeyCount = count * 12;
+    
+    // 保持中心点不变，调整起始和结束
+    final center = (startMidi.value + endMidi.value) ~/ 2;
+    var newStart = center - newKeyCount ~/ 2;
+    var newEnd = newStart + newKeyCount;
+    
+    // 确保在合法范围内（21-108）
+    if (newStart < 21) {
+      newStart = 21;
+      newEnd = newStart + newKeyCount;
+    }
+    if (newEnd > 108) {
+      newEnd = 108;
+      newStart = newEnd - newKeyCount;
+    }
+    
+    startMidi.value = newStart;
+    endMidi.value = newEnd;
+  }
+
   /// 开始录制
   void startRecording() {
+    stopPlayback();
     recordedNotes.clear();
     isRecording.value = true;
   }
@@ -81,8 +122,66 @@ class PianoController extends GetxController {
 
   /// 清空录制
   void clearRecording() {
+    stopPlayback();
     recordedNotes.clear();
     isRecording.value = false;
+  }
+
+  /// 播放录制的内容
+  void playRecording() {
+    if (recordedNotes.isEmpty) {
+      Get.snackbar('提示', '没有录制的内容', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    
+    if (isPlaying.value) {
+      stopPlayback();
+      return;
+    }
+    
+    isPlaying.value = true;
+    _playbackIndex = 0;
+    _playNextNote();
+  }
+
+  /// 播放下一个音符
+  void _playNextNote() {
+    if (_playbackIndex >= recordedNotes.length) {
+      stopPlayback();
+      return;
+    }
+    
+    final note = recordedNotes[_playbackIndex];
+    final midi = note['midi'] as int;
+    _audioService.playPianoNote(midi);
+    
+    _playbackIndex++;
+    
+    if (_playbackIndex < recordedNotes.length) {
+      // 计算与下一个音符的间隔
+      final currentTime = note['timestamp'] as int;
+      final nextTime = recordedNotes[_playbackIndex]['timestamp'] as int;
+      final delay = nextTime - currentTime;
+      
+      _playbackTimer = Timer(Duration(milliseconds: delay.clamp(50, 5000)), _playNextNote);
+    } else {
+      // 播放完成
+      Future.delayed(const Duration(milliseconds: 500), stopPlayback);
+    }
+  }
+
+  /// 停止播放
+  void stopPlayback() {
+    _playbackTimer?.cancel();
+    _playbackTimer = null;
+    isPlaying.value = false;
+    _playbackIndex = 0;
+  }
+
+  @override
+  void onClose() {
+    stopPlayback();
+    super.onClose();
   }
 }
 

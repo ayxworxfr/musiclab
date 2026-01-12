@@ -95,11 +95,13 @@ class SheetEditorController extends GetxController {
   /// 最大撤销步数
   static const int _maxUndoSteps = 50;
 
-  /// 是否可以撤销
-  bool get canUndo => _undoStack.isNotEmpty;
+  /// 是否可以撤销（响应式）
+  final _canUndo = false.obs;
+  bool get canUndo => _canUndo.value;
 
-  /// 是否可以重做
-  bool get canRedo => _redoStack.isNotEmpty;
+  /// 是否可以重做（响应式）
+  final _canRedo = false.obs;
+  bool get canRedo => _canRedo.value;
 
   /// 创建新乐谱
   void createNewSheet({
@@ -483,6 +485,7 @@ class SheetEditorController extends GetxController {
     _redoStack.add(action);
 
     hasUnsavedChanges.value = _undoStack.isNotEmpty;
+    _updateUndoRedoState();
   }
 
   /// 重做
@@ -494,6 +497,7 @@ class SheetEditorController extends GetxController {
     _undoStack.add(action);
 
     hasUnsavedChanges.value = true;
+    _updateUndoRedoState();
   }
 
   /// 记录操作
@@ -505,12 +509,21 @@ class SheetEditorController extends GetxController {
     while (_undoStack.length > _maxUndoSteps) {
       _undoStack.removeAt(0);
     }
+
+    _updateUndoRedoState();
   }
 
   /// 清空历史
   void _clearHistory() {
     _undoStack.clear();
     _redoStack.clear();
+    _updateUndoRedoState();
+  }
+
+  /// 更新撤销/重做状态
+  void _updateUndoRedoState() {
+    _canUndo.value = _undoStack.isNotEmpty;
+    _canRedo.value = _redoStack.isNotEmpty;
   }
 
   /// 应用撤销

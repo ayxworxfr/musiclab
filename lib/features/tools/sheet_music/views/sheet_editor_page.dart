@@ -11,10 +11,7 @@ import '../widgets/jianpu_editor_widget.dart';
 
 /// 乐谱编辑页面
 class SheetEditorPage extends StatefulWidget {
-  /// 要编辑的乐谱（null 表示新建）
-  final SheetModel? sheet;
-
-  const SheetEditorPage({super.key, this.sheet});
+  const SheetEditorPage({super.key});
 
   @override
   State<SheetEditorPage> createState() => _SheetEditorPageState();
@@ -30,8 +27,10 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     _editorController = Get.put(SheetEditorController());
     _playerController = Get.put(SheetPlayerController());
 
-    if (widget.sheet != null) {
-      _editorController.loadSheet(widget.sheet!);
+    // 检查是否有传入的乐谱参数
+    final sheet = Get.arguments as SheetModel?;
+    if (sheet != null) {
+      _editorController.loadSheet(sheet);
     } else {
       _editorController.createNewSheet();
     }

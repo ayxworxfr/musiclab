@@ -25,6 +25,38 @@ class SheetMusicPage extends GetView<SheetMusicController> {
             icon: const Icon(Icons.search),
             onPressed: () => _showSearchDialog(context),
           ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.add),
+            tooltip: '添加乐谱',
+            onSelected: (value) {
+              switch (value) {
+                case 'new':
+                  Get.toNamed(AppRoutes.sheetEditor);
+                  break;
+                case 'import':
+                  Get.toNamed(AppRoutes.sheetImport);
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'new',
+                child: ListTile(
+                  leading: Icon(Icons.edit),
+                  title: Text('新建乐谱'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'import',
+                child: ListTile(
+                  leading: Icon(Icons.file_download),
+                  title: Text('导入乐谱'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: Column(
@@ -35,11 +67,14 @@ class SheetMusicPage extends GetView<SheetMusicController> {
           // 乐谱列表
           Expanded(
             child: Obx(() {
-              if (controller.isLoading.value) {
+              // 确保访问响应式变量
+              final isLoading = controller.isLoading.value;
+              final sheets = controller.filteredSheets.toList();
+              
+              if (isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final sheets = controller.filteredSheets;
               if (sheets.isEmpty) {
                 return Center(
                   child: Column(
@@ -84,42 +119,47 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     return Container(
       height: 50,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Obx(() => ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = controller.currentCategory.value == category;
+      child: Obx(() {
+        // 确保访问响应式变量
+        final currentCategory = controller.currentCategory.value;
+        
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            final isSelected = currentCategory == category;
 
-          return GestureDetector(
-            onTap: () => controller.setCategory(category),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected ? AppColors.primary : Colors.grey.shade400,
+            return GestureDetector(
+              onTap: () => controller.setCategory(category),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? AppColors.primary : Colors.grey.shade400,
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  category == null ? '全部' : '${category.emoji} ${category.label}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected
-                        ? Colors.white
-                        : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
+                child: Center(
+                  child: Text(
+                    category == null ? '全部' : '${category.emoji} ${category.label}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected
+                          ? Colors.white
+                          : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
-      )),
+            );
+          },
+        );
+      }),
     );
   }
 

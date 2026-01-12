@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../controllers/sheet_music_controller.dart';
 import '../controllers/sheet_player_controller.dart';
 import '../models/sheet_model.dart';
+import '../services/sheet_import_service.dart';
 import '../widgets/jianpu_notation_widget.dart';
 
 /// 乐谱详情页面
@@ -60,10 +62,45 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
               onPressed: () => _sheetController.toggleFavorite(sheet),
             );
           }),
-          // 设置按钮
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => _showSettingsSheet(context),
+          // 导出/分享
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) => _handleMenuAction(value),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'export_text',
+                child: ListTile(
+                  leading: Icon(Icons.text_snippet),
+                  title: Text('导出简谱文本'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'export_json',
+                child: ListTile(
+                  leading: Icon(Icons.code),
+                  title: Text('导出 JSON'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuDivider(),
+              const PopupMenuItem(
+                value: 'edit',
+                child: ListTile(
+                  leading: Icon(Icons.edit),
+                  title: Text('编辑乐谱'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'settings',
+                child: ListTile(
+                  leading: Icon(Icons.settings),
+                  title: Text('显示设置'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -358,9 +395,171 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
+  /// 菜单操作
+  void _handleMenuAction(String action) {
+    switch (action) {
+      case 'export_text':
+        _exportAsText();
+        break;
+      case 'export_json':
+        _exportAsJson();
+        break;
+      case 'edit':
+        _editSheet();
+        break;
+      case 'settings':
+        _showSettingsSheet(context);
+        break;
+    }
+  }
+
+  /// 导出为简谱文本
+  void _exportAsText() {
+    final sheet = _sheetController.selectedSheet.value;
+    if (sheet == null) return;
+
+    final text = _convertToJianpuText(sheet);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('导出简谱文本'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: SelectableText(
+              text,
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('关闭'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: text));
+              Get.snackbar('已复制', '简谱文本已复制到剪贴板',
+                  snackPosition: SnackPosition.BOTTOM);
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.copy, size: 18),
+            label: const Text('复制'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 转换为简谱文本
+  String _convertToJianpuText(SheetModel sheet) {
+    final buffer = StringBuffer();
+
+    buffer.writeln('标题：${sheet.title}');
+    if (sheet.metadata.composer != null) {
+      buffer.writeln('作曲：${sheet.metadata.composer}');
+    }
+    buffer.writeln('调号：${sheet.metadata.key}');
+    buffer.writeln('拍号：${sheet.metadata.timeSignature}');
+    buffer.writeln('速度：${sheet.metadata.tempo}');
+    buffer.writeln();
+
+    for (final measure in sheet.measures) {
+      final noteStrs = <String>[];
+      final lyrics = <String>[];
+
+      for (final note in measure.notes) {
+        noteStrs.add(_noteToJianpuString(note));
+        lyrics.add(note.lyric ?? '');
+      }
+
+      buffer.writeln('${noteStrs.join(' ')} |');
+      if (lyrics.any((l) => l.isNotEmpty)) {
+        buffer.writeln('${lyrics.join(' ')} |');
+      }
+    }
+
+    return buffer.toString();
+  }
+
+  String _noteToJianpuString(SheetNote note) {
+    if (note.isRest) return '0';
+
+    final buffer = StringBuffer();
+
+    if (note.accidental == Accidental.sharp) buffer.write('#');
+    if (note.accidental == Accidental.flat) buffer.write('b');
+
+    buffer.write(note.degree);
+
+    if (note.octave > 0) buffer.write("'" * note.octave);
+    if (note.octave < 0) buffer.write(',' * (-note.octave));
+
+    if (note.duration == NoteDuration.eighth) buffer.write('_');
+    if (note.duration == NoteDuration.sixteenth) buffer.write('__');
+    if (note.duration == NoteDuration.half) buffer.write(' -');
+    if (note.duration == NoteDuration.whole) buffer.write(' - - -');
+
+    if (note.isDotted) buffer.write('.');
+
+    return buffer.toString();
+  }
+
+  /// 导出为 JSON
+  void _exportAsJson() {
+    final sheet = _sheetController.selectedSheet.value;
+    if (sheet == null) return;
+
+    final exporter = JsonSheetExporter();
+    final json = exporter.export(sheet);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('导出 JSON'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: SelectableText(
+              json,
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('关闭'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: json));
+              Get.snackbar('已复制', 'JSON 已复制到剪贴板',
+                  snackPosition: SnackPosition.BOTTOM);
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.copy, size: 18),
+            label: const Text('复制'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 编辑乐谱
+  void _editSheet() {
+    final sheet = _sheetController.selectedSheet.value;
+    if (sheet == null) return;
+
+    Get.toNamed('/tools/sheet-editor', arguments: sheet);
+  }
+
   /// 显示速度选择器
   void _showSpeedPicker(BuildContext context) {
     final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+    final currentSpeed = _playerController.playbackState.value.playbackSpeed;
 
     showModalBottomSheet(
       context: context,
@@ -377,14 +576,12 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
                 ),
               ),
               ...speeds.map((speed) {
+                final isSelected = currentSpeed == speed;
                 return ListTile(
                   title: Text('${speed}x'),
-                  trailing: Obx(() {
-                    final current = _playerController.playbackState.value.playbackSpeed;
-                    return current == speed
-                        ? const Icon(Icons.check, color: AppColors.primary) as Widget
-                        : const SizedBox.shrink();
-                  }),
+                  trailing: isSelected
+                      ? const Icon(Icons.check, color: AppColors.primary)
+                      : null,
                   onTap: () {
                     _playerController.setPlaybackSpeed(speed);
                     Navigator.pop(context);

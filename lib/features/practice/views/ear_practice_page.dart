@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/music_utils.dart';
+import '../../../core/widgets/music/jianpu_note_text.dart';
 import '../../../shared/enums/practice_type.dart';
 import '../controllers/practice_controller.dart';
 
@@ -343,13 +344,11 @@ class EarPracticePage extends GetView<PracticeController> {
                 ],
               ),
               child: Center(
-                child: Text(
+                child: JianpuNoteText.fromString(
                   option,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
                 ),
               ),
             ),

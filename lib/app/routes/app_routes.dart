@@ -62,6 +62,12 @@ abstract class AppRoutes {
   /// 乐谱详情
   static const String sheetDetail = '/tools/sheet-detail';
 
+  /// 乐谱编辑器
+  static const String sheetEditor = '/tools/sheet-editor';
+
+  /// 乐谱导入
+  static const String sheetImport = '/tools/sheet-import';
+
   /// 对照表
   static const String referenceTable = '/tools/reference';
 

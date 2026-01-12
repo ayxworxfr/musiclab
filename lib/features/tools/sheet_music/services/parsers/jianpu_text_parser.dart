@@ -167,7 +167,7 @@ class JianpuTextParser implements SheetParser {
     // 不包含音符相关字符，主要是汉字或空格
     if (line.isEmpty) return false;
     // 如果包含音符数字和小节线的比例很低，认为是歌词
-    final noteChars = RegExp(r'[0-7\-|_\'`,#b.]').allMatches(line).length;
+    final noteChars = RegExp(r"[0-7\-|_'`,#b.]").allMatches(line).length;
     return noteChars < line.length * 0.3;
   }
 
@@ -260,7 +260,7 @@ class JianpuTextParser implements SheetParser {
   List<String> _tokenize(String str) {
     final tokens = <String>[];
     final pattern = RegExp(
-      r'([#b]?[0-7][_\.\'`,]*|-+)',
+      r"([#b]?[0-7][_\.'`,]*|-+)",
       caseSensitive: false,
     );
 

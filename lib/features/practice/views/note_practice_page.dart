@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/music/jianpu_note_text.dart';
 import '../../../core/widgets/music/piano_keyboard.dart';
 import '../../../core/widgets/music/staff_widget.dart';
 import '../../../shared/enums/practice_type.dart';
@@ -404,13 +405,11 @@ class NotePracticePage extends GetView<PracticeController> {
                 ],
               ),
               child: Center(
-                child: Text(
+                child: JianpuNoteText.fromString(
                   option,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
                 ),
               ),
             ),

@@ -21,6 +21,8 @@ import '../../features/tools/metronome/views/metronome_page.dart';
 import '../../features/tools/metronome/controllers/metronome_controller.dart';
 import '../../features/tools/sheet_music/views/sheet_music_page.dart';
 import '../../features/tools/sheet_music/views/sheet_detail_page.dart';
+import '../../features/tools/sheet_music/views/sheet_editor_page.dart';
+import '../../features/tools/sheet_music/views/sheet_import_page.dart';
 import '../../features/tools/sheet_music/controllers/sheet_music_controller.dart';
 import '../../features/tools/reference/views/reference_table_page.dart';
 import '../../features/profile/views/learning_stats_page.dart';
@@ -145,6 +147,20 @@ class AppPages {
     GetPage(
       name: AppRoutes.sheetDetail,
       page: () => const SheetDetailPage(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 乐谱编辑器
+    GetPage(
+      name: AppRoutes.sheetEditor,
+      page: () => const SheetEditorPage(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 乐谱导入
+    GetPage(
+      name: AppRoutes.sheetImport,
+      page: () => const SheetImportPage(),
       transition: Transition.rightToLeft,
     ),
 

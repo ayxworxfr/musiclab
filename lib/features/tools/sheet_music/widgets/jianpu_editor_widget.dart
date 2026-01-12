@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/music/jianpu_note_text.dart';
 import '../controllers/sheet_editor_controller.dart';
 import '../models/sheet_model.dart';
 
@@ -55,16 +56,22 @@ class JianpuEditorWidget extends StatelessWidget {
       child: Row(
         children: [
           // 撤销/重做
-          Obx(() => IconButton(
-            onPressed: controller.canUndo ? controller.undo : null,
-            icon: const Icon(Icons.undo),
-            tooltip: '撤销',
-          )),
-          Obx(() => IconButton(
-            onPressed: controller.canRedo ? controller.redo : null,
-            icon: const Icon(Icons.redo),
-            tooltip: '重做',
-          )),
+          Obx(() {
+            final canUndo = controller.canUndo;
+            return IconButton(
+              onPressed: canUndo ? controller.undo : null,
+              icon: const Icon(Icons.undo),
+              tooltip: '撤销',
+            );
+          }),
+          Obx(() {
+            final canRedo = controller.canRedo;
+            return IconButton(
+              onPressed: canRedo ? controller.redo : null,
+              icon: const Icon(Icons.redo),
+              tooltip: '重做',
+            );
+          }),
 
           const VerticalDivider(width: 16),
 
@@ -584,33 +591,37 @@ class JianpuEditorWidget extends StatelessWidget {
 
   /// 音符键盘
   Widget _buildNoteKeyboard(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        // 休止符
-        _buildNoteKey(context, 0, '0', '休止'),
+    return Obx(() {
+      final octave = controller.selectedOctave.value;
+      
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          // 休止符
+          _buildNoteKey(context, 0, '0', '休止', 0),
 
-        // 1-7
-        for (var i = 1; i <= 7; i++)
-          _buildNoteKey(context, i, '$i', _getNoteName(i)),
+          // 1-7
+          for (var i = 1; i <= 7; i++)
+            _buildNoteKey(context, i, '$i', _getNoteName(i), octave),
 
-        // 删除键
-        _buildActionKey(
-          context,
-          icon: Icons.backspace,
-          label: '删除',
-          onTap: controller.deleteSelectedNote,
-        ),
-      ],
-    );
+          // 删除键
+          _buildActionKey(
+            context,
+            icon: Icons.backspace,
+            label: '删除',
+            onTap: controller.deleteSelectedNote,
+          ),
+        ],
+      );
+    });
   }
 
-  Widget _buildNoteKey(BuildContext context, int degree, String label, String subLabel) {
+  Widget _buildNoteKey(BuildContext context, int degree, String label, String subLabel, int octave) {
     return GestureDetector(
       onTap: () => controller.addNote(degree),
       child: Container(
-        width: 44,
-        height: 56,
+        width: 48,
+        height: 70,
         decoration: BoxDecoration(
           color: degree == 0 ? Colors.grey.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
@@ -619,14 +630,27 @@ class JianpuEditorWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+            // 使用 JianpuNoteText 显示带八度点的音符
+            if (degree == 0)
+              const Text(
+                '0',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              )
+            else
+              SizedBox(
+                height: 40,
+                child: JianpuNoteText(
+                  number: label,
+                  octaveOffset: octave,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
-            ),
             Text(
               subLabel,
               style: TextStyle(

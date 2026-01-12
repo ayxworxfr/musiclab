@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/music_utils.dart';
+import '../../../../core/widgets/music/jianpu_note_text.dart';
 
 /// 音符对照表页面
 class ReferenceTablePage extends StatefulWidget {
@@ -146,21 +147,47 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                     SizedBox(height: 6),
                     Row(
                       children: [
-                        SizedBox(width: 60, child: Text('1̇', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange))),
+                        SizedBox(
+                          width: 60,
+                          height: 40,
+                          child: JianpuNoteText(
+                            number: '1',
+                            octaveOffset: 1,
+                            fontSize: 18,
+                            color: Colors.orange,
+                          ),
+                        ),
                         Expanded(child: Text('高音 - 上加点', style: TextStyle(fontSize: 13))),
                       ],
                     ),
                     SizedBox(height: 4),
                     Row(
                       children: [
-                        SizedBox(width: 60, child: Text('1', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+                        SizedBox(
+                          width: 60,
+                          height: 40,
+                          child: JianpuNoteText(
+                            number: '1',
+                            octaveOffset: 0,
+                            fontSize: 18,
+                          ),
+                        ),
                         Expanded(child: Text('中音 - 无标记', style: TextStyle(fontSize: 13))),
                       ],
                     ),
                     SizedBox(height: 4),
                     Row(
                       children: [
-                        SizedBox(width: 60, child: Text('1̣', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue))),
+                        SizedBox(
+                          width: 60,
+                          height: 40,
+                          child: JianpuNoteText(
+                            number: '1',
+                            octaveOffset: -1,
+                            fontSize: 18,
+                            color: Colors.blue,
+                          ),
+                        ),
                         Expanded(child: Text('低音 - 下加点', style: TextStyle(fontSize: 13))),
                       ],
                     ),
@@ -209,10 +236,21 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
               // 数据行
               ...notes.map((note) {
                 final midi = note['midi'] as int;
-                final jianpu = MusicUtils.midiToJianpu(midi);
-                final isSharp = jianpu.contains('#');
+                final noteIndex = midi % 12;
+                const numbers = ['1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'];
+                final number = numbers[noteIndex];
+                final isSharp = number.contains('#');
                 final isLowOctave = midi < 60;
                 final isHighOctave = midi >= 72;
+                final octaveOffset = ((midi ~/ 12) - 1) - 4; // 相对于 C4
+                
+                Color noteColor = isSharp 
+                    ? AppColors.primary 
+                    : isLowOctave
+                        ? Colors.blue.shade700
+                        : isHighOctave
+                            ? Colors.orange.shade700
+                            : Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
                 
                 return Container(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -231,20 +269,17 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          jianpu,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: isSharp 
-                                ? AppColors.primary 
-                                : isLowOctave
-                                    ? Colors.blue.shade700
-                                    : isHighOctave
-                                        ? Colors.orange.shade700
-                                        : Theme.of(context).textTheme.bodyLarge?.color,
+                        child: Center(
+                          child: SizedBox(
+                            height: 50,
+                            child: JianpuNoteText(
+                              number: number,
+                              octaveOffset: octaveOffset,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: noteColor,
+                            ),
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
                       Expanded(

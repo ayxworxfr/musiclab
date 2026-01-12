@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../audio/audio_service.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/music_utils.dart';
+import 'jianpu_note_text.dart';
 
 /// 钢琴键盘组件
 /// 
@@ -162,15 +163,8 @@ class _PianoKeyboardState extends State<PianoKeyboard> {
             ? Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    _getLabel(midi),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: isHighlighted ? AppColors.success : Colors.grey.shade600,
-                    ),
-                  ),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _buildLabel(midi, isHighlighted, false),
                 ),
               )
             : null,
@@ -229,15 +223,8 @@ class _PianoKeyboardState extends State<PianoKeyboard> {
               ? Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      _getLabel(midi),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white70,
-                      ),
-                    ),
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: _buildLabel(midi, false, true),
                   ),
                 )
               : null,
@@ -246,11 +233,38 @@ class _PianoKeyboardState extends State<PianoKeyboard> {
     );
   }
   
-  /// 获取标签文本
-  String _getLabel(int midi) {
-    return widget.labelType == 'jianpu'
-        ? MusicUtils.midiToJianpu(midi)
-        : MusicUtils.midiToNoteName(midi);
+  /// 构建标签
+  Widget _buildLabel(int midi, bool isHighlighted, bool isBlackKey) {
+    if (widget.labelType == 'jianpu') {
+      // 使用 JianpuNoteText 正确显示高低音点
+      final octave = (midi ~/ 12) - 1;
+      final noteIndex = midi % 12;
+      const numbers = ['1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'];
+      final number = numbers[noteIndex];
+      final octaveOffset = octave - 4; // 相对于中央 C (C4)
+      
+      return JianpuNoteText(
+        number: number,
+        octaveOffset: octaveOffset,
+        fontSize: isBlackKey ? 10 : 14,
+        fontWeight: FontWeight.w500,
+        color: isBlackKey 
+            ? Colors.white70 
+            : (isHighlighted ? AppColors.success : Colors.grey.shade600),
+      );
+    } else {
+      // 音名标签使用 Text
+      return Text(
+        MusicUtils.midiToNoteName(midi),
+        style: TextStyle(
+          fontSize: isBlackKey ? 10 : 14,
+          fontWeight: FontWeight.w500,
+          color: isBlackKey 
+              ? Colors.white70 
+              : (isHighlighted ? AppColors.success : Colors.grey.shade600),
+        ),
+      );
+    }
   }
   
   /// 按键按下

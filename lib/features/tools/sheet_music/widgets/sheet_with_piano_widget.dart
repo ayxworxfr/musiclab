@@ -429,6 +429,7 @@ class _SheetPlayerPageState extends State<SheetPlayerPage> {
   }
 
   void _showSpeedPicker() {
+    final currentSpeed = _controller.playbackState.value.playbackSpeed;
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -442,14 +443,12 @@ class _SheetPlayerPageState extends State<SheetPlayerPage> {
                 child: Text('播放速度', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
               ...speeds.map((speed) {
+                final isSelected = currentSpeed == speed;
                 return ListTile(
                   title: Text('${speed}x'),
-                  trailing: Obx(() {
-                    final current = _controller.playbackState.value.playbackSpeed;
-                    return current == speed
-                        ? const Icon(Icons.check, color: Colors.blue)
-                        : null;
-                  }),
+                  trailing: isSelected
+                      ? const Icon(Icons.check, color: Colors.blue)
+                      : null,
                   onTap: () {
                     _controller.setPlaybackSpeed(speed);
                     Navigator.pop(context);
