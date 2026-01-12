@@ -30,7 +30,7 @@ class App extends StatelessWidget {
 
           // 国际化配置
           translations: AppTranslations(),
-          locale: AppTranslations.locale,
+          locale: AppTranslations.fallbackLocale,
           fallbackLocale: AppTranslations.fallbackLocale,
 
           // 主题配置

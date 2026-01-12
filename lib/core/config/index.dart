@@ -2,7 +2,7 @@
 ///
 /// 使用方式：
 /// ```dart
-/// import 'package:flutter_boost/core/config/index.dart';
+/// import 'package:musiclag/core/config/index.dart';
 ///
 /// // 访问环境配置
 /// EnvConfig.apiBaseUrl

@@ -10,6 +10,16 @@ abstract class AppRoutes {
   /// 主页（底部导航框架）
   static const String main = '/main';
 
+  /// 首页（同 main，别名）
+  static const String home = main;
+
+  // ========== 认证模块 ==========
+  /// 登录页
+  static const String login = '/auth/login';
+
+  /// 注册页
+  static const String register = '/auth/register';
+
   // ========== 课程模块 ==========
   /// 课程列表
   static const String courseList = '/course/list';

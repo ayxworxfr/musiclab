@@ -3,7 +3,7 @@
 ## 一、项目概述
 
 ### 1.1 项目名称
-**flutter_boost** - 个人 Flutter 跨平台应用开发脚手架
+**musiclag** - 个人 Flutter 跨平台应用开发脚手架
 
 ### 1.2 目标平台
 - ✅ Android
@@ -90,7 +90,7 @@ dev_dependencies:
 ## 三、项目结构
 
 ```
-flutter_boost/
+musiclag/
 ├── lib/
 │   ├── main.dart                    # 应用入口
 │   │
@@ -527,7 +527,7 @@ class XxxController extends GetxController {
 import 'dart:xxx';                    // Dart 内置
 import 'package:flutter/xxx';         // Flutter SDK
 import 'package:get/get.dart';        // 第三方包
-import 'package:flutter_boost/xxx';    // 项目内部
+import 'package:musiclag/xxx';    // 项目内部
 
 // 2. 类内部顺序
 class MyClass {

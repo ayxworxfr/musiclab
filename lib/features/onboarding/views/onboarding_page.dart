@@ -56,13 +56,13 @@ class OnboardingPage extends GetView<OnboardingController> {
               child: Column(
                 children: [
                   // 页面指示器
-                  Obx(() => Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       controller.pages.length,
                       (index) => _buildDot(index),
                     ),
-                  )),
+                  ),
                   const SizedBox(height: 32),
 
                   // 下一步按钮

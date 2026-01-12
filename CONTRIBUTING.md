@@ -452,8 +452,8 @@ make test
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-org/flutter_boost.git
-cd flutter_boost
+git clone https://github.com/your-org/musiclag.git
+cd musiclag
 
 # 安装依赖
 make install

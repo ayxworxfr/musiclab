@@ -1,4 +1,4 @@
-package com.graycen.flutter_boost
+package com.graycen.musiclag
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -2,7 +2,7 @@
 ///
 /// 使用方式：
 /// ```dart
-/// import 'package:flutter_boost/core/utils/index.dart';
+/// import 'package:musiclag/core/utils/index.dart';
 /// ```
 library;
 
