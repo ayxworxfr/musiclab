@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/music/jianpu_note_text.dart';
 import '../../../core/widgets/music/piano_keyboard.dart';
 import '../../../shared/enums/practice_type.dart';
 import '../controllers/practice_controller.dart';
@@ -260,9 +261,12 @@ class PianoPracticePage extends GetView<PracticeController> {
 
   /// 简谱显示
   Widget _buildJianpuDisplay(BuildContext context, String jianpu, bool isDark) {
+    // 解析简谱字符串，分割成单个音符
+    final notes = _parseJianpuString(jianpu);
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
@@ -270,17 +274,99 @@ class PianoPracticePage extends GetView<PracticeController> {
           color: AppColors.primary.withValues(alpha: 0.3),
         ),
       ),
-      child: Text(
-        jianpu,
-        style: const TextStyle(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: AppColors.primary,
-          letterSpacing: 8,
-        ),
-        textAlign: TextAlign.center,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: notes.map((note) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: JianpuNoteText.fromString(
+              note,
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+            ),
+          );
+        }).toList(),
       ),
     );
+  }
+  
+  /// 解析简谱字符串为单个音符列表
+  List<String> _parseJianpuString(String jianpu) {
+    final notes = <String>[];
+    
+    // 按空格分割，如果输入已经是空格分隔的
+    final parts = jianpu.trim().split(RegExp(r'\s+'));
+    
+    for (final part in parts) {
+      if (part.isEmpty) continue;
+      
+      // 每个 part 应该是一个完整的音符（可能包含升降号和八度标记）
+      // 使用正则表达式匹配音符模式
+      final noteRegex = RegExp(r"([#b]?)([0-7])([',\u0307\u0323]*)");
+      final matches = noteRegex.allMatches(part);
+      
+      for (final match in matches) {
+        final accidental = match.group(1) ?? '';
+        final number = match.group(2) ?? '';
+        final octaveMarkers = match.group(3) ?? '';
+        
+        if (number.isNotEmpty) {
+          notes.add('$accidental$number$octaveMarkers');
+        }
+      }
+    }
+    
+    // 如果没有通过空格分割得到结果，尝试字符解析
+    if (notes.isEmpty && jianpu.isNotEmpty) {
+      final cleaned = jianpu.replaceAll(' ', '');
+      final runes = cleaned.runes.toList();
+      
+      int i = 0;
+      while (i < runes.length) {
+        String note = '';
+        
+        // 检查升降号前缀
+        if (i < runes.length) {
+          final char = String.fromCharCode(runes[i]);
+          if (char == '#' || char == 'b') {
+            note += char;
+            i++;
+          }
+        }
+        
+        // 获取数字
+        if (i < runes.length) {
+          final char = String.fromCharCode(runes[i]);
+          if (RegExp(r'[0-7]').hasMatch(char)) {
+            note += char;
+            i++;
+            
+            // 检查高低音后缀（Unicode 组合字符）
+            while (i < runes.length) {
+              final nextChar = String.fromCharCode(runes[i]);
+              if (nextChar == "'" || nextChar == ',' || 
+                  runes[i] == 0x0307 || runes[i] == 0x0323) {
+                note += nextChar;
+                i++;
+              } else {
+                break;
+              }
+            }
+            
+            if (note.isNotEmpty && note.contains(RegExp(r'[0-7]'))) {
+              notes.add(note);
+            }
+          } else {
+            i++;
+          }
+        }
+      }
+    }
+    
+    return notes;
   }
 
   /// 用户输入显示
@@ -309,18 +395,29 @@ class PianoPracticePage extends GetView<PracticeController> {
               ),
             ),
             Expanded(
-              child: Text(
-                userNotes.isEmpty 
-                    ? '...' 
-                    : userNotes.map((n) => _midiToSimpleJianpu(n)).join(' '),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                  letterSpacing: 4,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              child: userNotes.isEmpty 
+                  ? Text(
+                      '...',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                      textAlign: TextAlign.center,
+                    )
+                  : Wrap(
+                      spacing: 12,
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: userNotes.map((midi) {
+                        return JianpuNoteText.fromString(
+                          _midiToSimpleJianpu(midi),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        );
+                      }).toList(),
+                    ),
             ),
             Text(
               '${userNotes.length}/${targetNotes.length}',

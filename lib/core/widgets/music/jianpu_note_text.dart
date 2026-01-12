@@ -114,54 +114,69 @@ class JianpuNoteText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = color ?? Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
-    final dotSize = fontSize * 0.2;
-    final dotSpacing = fontSize * 0.08;
+    final dotSize = fontSize * 0.18;
+    final dotSpacing = fontSize * 0.15;
     
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // 高音点（上方）
-        if (octaveOffset > 0)
-          _buildDots(octaveOffset, dotSize, dotSpacing, highDotColor ?? textColor),
-        
-        // 数字
-        Text(
-          number,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: fontWeight,
-            color: textColor,
-            height: 1.0,
+    // 计算点区域的高度（用于预留空间）
+    final dotsHeight = octaveOffset.abs() * (dotSize + dotSpacing * 0.5);
+    
+    // 使用 Stack 确保数字对齐，点叠加在上方或下方
+    return SizedBox(
+      width: fontSize * (number.length > 1 ? 1.2 : 0.8),
+      height: fontSize + dotsHeight * 2, // 预留上下点的空间
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          // 数字（居中）
+          Text(
+            number,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: fontWeight,
+              color: textColor,
+              height: 1.0,
+            ),
           ),
-        ),
-        
-        // 低音点（下方）
-        if (octaveOffset < 0)
-          _buildDots(-octaveOffset, dotSize, dotSpacing, lowDotColor ?? textColor),
-      ],
+          
+          // 高音点（上方）
+          if (octaveOffset > 0)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _buildDots(octaveOffset, dotSize, dotSpacing, highDotColor ?? textColor),
+            ),
+          
+          // 低音点（下方）
+          if (octaveOffset < 0)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _buildDots(-octaveOffset, dotSize, dotSpacing, lowDotColor ?? textColor),
+            ),
+        ],
+      ),
     );
   }
   
   /// 构建点标记
   Widget _buildDots(int count, double dotSize, double spacing, Color dotColor) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: spacing),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(count, (index) {
-          return Container(
-            width: dotSize,
-            height: dotSize,
-            margin: EdgeInsets.symmetric(horizontal: spacing / 2),
-            decoration: BoxDecoration(
-              color: dotColor,
-              shape: BoxShape.circle,
-            ),
-          );
-        }),
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        return Container(
+          width: dotSize,
+          height: dotSize,
+          margin: EdgeInsets.symmetric(horizontal: spacing / 4),
+          decoration: BoxDecoration(
+            color: dotColor,
+            shape: BoxShape.circle,
+          ),
+        );
+      }),
     );
   }
 }

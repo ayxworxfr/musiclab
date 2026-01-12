@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
@@ -53,6 +54,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   bool _canTap = false;
   bool _beatHit = false;
   Timer? _tapWindowTimer;
+  
+  // 键盘焦点
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -77,7 +81,22 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   void dispose() {
     _stopGame();
     _pulseController.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+  
+  /// 处理键盘事件
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    // 只处理按下事件，避免重复触发
+    if (event is KeyDownEvent) {
+      // 空格键或回车键触发敲击
+      if (event.logicalKey == LogicalKeyboardKey.space ||
+          event.logicalKey == LogicalKeyboardKey.enter) {
+        _onTap();
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
   }
 
   @override
@@ -85,23 +104,28 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('节奏练习'),
-        centerTitle: true,
-        elevation: 0,
-        actions: [
-          if (_isPlaying)
-            IconButton(
-              icon: const Icon(Icons.stop),
-              onPressed: _stopGame,
-              tooltip: '停止',
-            ),
-        ],
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: _handleKeyEvent,
+      autofocus: true,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('节奏练习'),
+          centerTitle: true,
+          elevation: 0,
+          actions: [
+            if (_isPlaying)
+              IconButton(
+                icon: const Icon(Icons.stop),
+                onPressed: _stopGame,
+                tooltip: '停止',
+              ),
+          ],
+        ),
+        body: _isPlaying || _isCountingDown
+            ? _buildGameView(context, isDark)
+            : _buildStartView(context, isDark),
       ),
-      body: _isPlaying || _isCountingDown
-          ? _buildGameView(context, isDark)
-          : _buildStartView(context, isDark),
     );
   }
 
@@ -439,39 +463,67 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   }
 
   Widget _buildTapArea(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _onTap(),
-      child: AnimatedBuilder(
-        animation: _pulseAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _pulseAnimation.value,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                color: _beatHit
-                    ? AppColors.success.withValues(alpha: 0.3)
-                    : _canTap
-                        ? AppColors.primary.withValues(alpha: 0.3)
-                        : AppColors.primary.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: _beatHit ? AppColors.success : AppColors.primary,
-                  width: 4,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTapDown: (_) => _onTap(),
+          child: AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _pulseAnimation.value,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: _beatHit
+                        ? AppColors.success.withValues(alpha: 0.3)
+                        : _canTap
+                            ? AppColors.primary.withValues(alpha: 0.3)
+                            : AppColors.primary.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _beatHit ? AppColors.success : AppColors.primary,
+                      width: 4,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      _beatHit ? Icons.check : Icons.touch_app,
+                      size: 80,
+                      color: _beatHit ? AppColors.success : AppColors.primary,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+        // 操作提示
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.grey.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.keyboard, size: 18, color: Colors.grey.shade600),
+              const SizedBox(width: 8),
+              Text(
+                '点击圆圈 或 按空格键',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
                 ),
               ),
-              child: Center(
-                child: Icon(
-                  _beatHit ? Icons.check : Icons.touch_app,
-                  size: 80,
-                  color: _beatHit ? AppColors.success : AppColors.primary,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -509,6 +561,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
       _canTap = false;
       _beatHit = false;
     });
+
+    // 请求键盘焦点，以便接收空格键输入
+    _focusNode.requestFocus();
 
     // 生成节奏模式
     _generateRhythmPattern();
