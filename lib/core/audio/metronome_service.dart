@@ -17,7 +17,7 @@ class MetronomeService extends GetxService {
   /// 拍号分母（音符时值）
   final beatUnit = 4.obs;
   
-  /// 当前拍数（0 开始）
+  /// 当前拍数（0 开始，用于 UI 显示）
   final currentBeat = 0.obs;
   
   /// 是否正在播放
@@ -30,6 +30,9 @@ class MetronomeService extends GetxService {
   
   /// 最小播放间隔（毫秒）
   static const int _minPlayInterval = 50;
+  
+  /// 下一拍的索引（内部使用）
+  int _nextBeatIndex = 0;
   
   /// 每拍间隔（毫秒）
   int get beatInterval => (60000 / bpm.value).round();
@@ -47,6 +50,13 @@ class MetronomeService extends GetxService {
   void setTimeSignature(int beats, int unit) {
     beatsPerMeasure.value = beats;
     beatUnit.value = unit;
+    
+    // 如果正在播放，重置拍数以避免索引越界
+    if (isPlaying.value) {
+      // 重置到第一拍
+      _nextBeatIndex = 0;
+      currentBeat.value = 0;
+    }
   }
   
   /// 开始播放
@@ -54,6 +64,7 @@ class MetronomeService extends GetxService {
     if (isPlaying.value) return;
     
     isPlaying.value = true;
+    _nextBeatIndex = 0;
     currentBeat.value = 0;
     _lastPlayTime = null;
     
@@ -85,6 +96,7 @@ class MetronomeService extends GetxService {
     _timer = null;
     isPlaying.value = false;
     currentBeat.value = 0;
+    _nextBeatIndex = 0;
     _lastPlayTime = null;
   }
   
@@ -109,11 +121,17 @@ class MetronomeService extends GetxService {
     }
     _lastPlayTime = now;
     
-    final isStrong = currentBeat.value == 0;
+    // 更新 UI 显示的当前拍（在播放之前更新，确保同步）
+    currentBeat.value = _nextBeatIndex;
+    
+    // 判断是否为强拍（第一拍）
+    final isStrong = _nextBeatIndex == 0;
+    
+    // 播放音频
     _audioService.playMetronomeClick(isStrong: isStrong);
     
-    // 更新当前拍数
-    currentBeat.value = (currentBeat.value + 1) % beatsPerMeasure.value;
+    // 准备下一拍的索引
+    _nextBeatIndex = (_nextBeatIndex + 1) % beatsPerMeasure.value;
   }
   
   @override
