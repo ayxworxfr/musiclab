@@ -545,9 +545,12 @@ class _StaffLinePainter extends CustomPainter {
     if (midi == null) return;
 
     // 计算音符在五线谱上的位置
+    // position = 0 是第一线（E4），每增加1向上移动半个 lineSpacing
     final position = MusicUtils.getStaffPosition(midi, isTrebleClef: clef == 'treble');
-    final baseY = startY + 4 * lineSpacing;
-    final y = baseY - position * (lineSpacing / 2);
+    // 第一线的 Y 坐标（五线谱最下面那条线）
+    final firstLineY = startY + 4 * lineSpacing;
+    // 向上移动 position 个半格（position 正数向上，Y 减小）
+    final y = firstLineY - position * (lineSpacing / 2);
 
     final color = isHighlighted ? style.highlightColor : style.noteColor;
     final noteRadius = lineSpacing * 0.45 * style.noteScale;
@@ -619,7 +622,7 @@ class _StaffLinePainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(
         canvas,
-        Offset(x - textPainter.width / 2, baseY + lineSpacing * 2),
+        Offset(x - textPainter.width / 2, firstLineY + lineSpacing * 2),
       );
     }
   }
@@ -638,13 +641,14 @@ class _StaffLinePainter extends CustomPainter {
       ..color = style.lineColor
       ..strokeWidth = 1.0;
 
-    final baseY = startY + 4 * lineSpacing;
+    final firstLineY = startY + 4 * lineSpacing;
 
-    // 下加线
-    if (position <= -2) {
-      final numLines = ((-position) ~/ 2);
-      for (int i = 0; i < numLines; i++) {
-        final lineY = baseY + (i + 1) * lineSpacing;
+    // 下加线（position < 0，在第一线下方）
+    // position = -2 是下加一线，-4 是下加二线
+    if (position < 0) {
+      // 从下加一线开始画，直到音符所在的线
+      for (int p = -2; p >= position; p -= 2) {
+        final lineY = firstLineY - p * (lineSpacing / 2);
         canvas.drawLine(
           Offset(x - noteRadius * 1.5, lineY),
           Offset(x + noteRadius * 1.5, lineY),
@@ -653,11 +657,12 @@ class _StaffLinePainter extends CustomPainter {
       }
     }
 
-    // 上加线
-    if (position >= 10) {
-      final numLines = ((position - 8) ~/ 2);
-      for (int i = 0; i < numLines; i++) {
-        final lineY = startY - (i + 1) * lineSpacing;
+    // 上加线（position > 8，在第五线上方）
+    // position = 10 是上加一线，12 是上加二线
+    if (position > 8) {
+      // 从上加一线开始画，直到音符所在的线
+      for (int p = 10; p <= position; p += 2) {
+        final lineY = firstLineY - p * (lineSpacing / 2);
         canvas.drawLine(
           Offset(x - noteRadius * 1.5, lineY),
           Offset(x + noteRadius * 1.5, lineY),

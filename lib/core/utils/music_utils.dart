@@ -181,23 +181,35 @@ class MusicUtils {
   
   /// 获取五线谱位置
   /// 
-  /// 返回相对于中央 C 的线/间位置
-  /// 正数表示上方，负数表示下方
-  /// 0 = 下加一线（中央 C）
+  /// 返回相对于第一线的线/间位置
+  /// - position = 0：第一线
+  /// - position = 2：第二线
+  /// - position = 4：第三线
+  /// - position = -2：下加一线（高音谱号的中央C）
+  /// 
+  /// 高音谱号：第一线 = E4 (MIDI 64)
+  /// 低音谱号：第一线 = G2 (MIDI 43)
   static int getStaffPosition(int midi, {bool isTrebleClef = true}) {
-    // C D E F G A B 对应的位置偏移（相对于 C）
-    const positionMap = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6];
+    // 音符在八度内相对于C的位置（C=0, D=1, E=2, F=3, G=4, A=5, B=6）
+    const noteToPosition = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6];
     
     final noteIndex = midi % 12;
     final octave = (midi ~/ 12) - 1;
-    final basePosition = positionMap[noteIndex];
+    final positionInOctave = noteToPosition[noteIndex];
+    
+    // 计算绝对位置（以 C0 = 0）
+    final absolutePosition = positionInOctave + octave * 7;
     
     if (isTrebleClef) {
-      // 高音谱号：中央 C (C4) 在下加一线，位置 0
-      return basePosition + (octave - 4) * 7;
+      // 高音谱号：E4 (MIDI 64) 在第一线，position = 0
+      // E4 的绝对位置 = 2 + 4 * 7 = 30
+      const e4Position = 30;
+      return absolutePosition - e4Position;
     } else {
-      // 低音谱号：中央 C (C4) 在上加一线，位置 12
-      return basePosition + (octave - 4) * 7 + 12;
+      // 低音谱号：G2 (MIDI 43) 在第一线，position = 0
+      // G2 的绝对位置 = 4 + 2 * 7 = 18
+      const g2Position = 18;
+      return absolutePosition - g2Position;
     }
   }
   
