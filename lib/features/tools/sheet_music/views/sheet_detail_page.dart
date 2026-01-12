@@ -20,6 +20,9 @@ class SheetDetailPage extends StatefulWidget {
 class _SheetDetailPageState extends State<SheetDetailPage> {
   late final SheetMusicController _sheetController;
   late final SheetPlayerController _playerController;
+  
+  /// 记录拖动进度条之前是否在播放
+  bool _wasPlayingBeforeDrag = false;
 
   @override
   void initState() {
@@ -276,7 +279,22 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
                     child: Slider(
                       value: progress.clamp(0.0, 1.0),
                       onChanged: (value) {
-                        // TODO: 实现拖动跳转
+                        // 拖动时跳转到对应位置
+                        _playerController.seekToProgress(value);
+                      },
+                      onChangeStart: (value) {
+                        // 拖动开始时，如果正在播放则暂停
+                        if (state.isPlaying) {
+                          _wasPlayingBeforeDrag = true;
+                          _playerController.pause();
+                        }
+                      },
+                      onChangeEnd: (value) {
+                        // 拖动结束时，如果之前在播放则继续播放
+                        if (_wasPlayingBeforeDrag) {
+                          _wasPlayingBeforeDrag = false;
+                          _playerController.play();
+                        }
                       },
                       activeColor: AppColors.primary,
                       inactiveColor: AppColors.primary.withValues(alpha: 0.2),

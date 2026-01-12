@@ -196,6 +196,29 @@ class SheetPlayerController extends GetxController {
     }
   }
 
+  /// 根据进度跳转（进度值 0.0-1.0）
+  void seekToProgress(double progress) {
+    if (_playableNotes.isEmpty) return;
+    
+    final targetTime = progress * playbackState.value.totalDuration;
+    
+    // 找到最接近目标时间的音符
+    int closestIndex = 0;
+    double minDiff = double.infinity;
+    
+    for (var i = 0; i < _playableNotes.length; i++) {
+      final diff = (targetTime - _playableNotes[i].startTime).abs();
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIndex = i;
+      }
+    }
+    
+    // 跳转到找到的音符
+    final playable = _playableNotes[closestIndex];
+    seekTo(playable.measureIndex, playable.noteIndex);
+  }
+
   /// 设置播放速度
   void setPlaybackSpeed(double speed) {
     playbackState.value = playbackState.value.copyWith(

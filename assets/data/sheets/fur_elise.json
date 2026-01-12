@@ -1,0 +1,107 @@
+{
+  "id": "sheet_008",
+  "title": "致爱丽丝",
+  "difficulty": 3,
+  "category": "classical",
+  "metadata": {
+    "composer": "贝多芬",
+    "key": "Am",
+    "timeSignature": "3/8",
+    "tempo": 72,
+    "description": "贝多芬最著名的钢琴小品之一"
+  },
+  "measures": [
+    {
+      "number": 1,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"},
+        {"degree": 3, "octave": 0, "duration": "sixteenth"},
+        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"}
+      ]
+    },
+    {
+      "number": 2,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "sixteenth"},
+        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"},
+        {"degree": 7, "octave": -1, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 3,
+      "notes": [
+        {"degree": 2, "octave": 0, "duration": "sixteenth"},
+        {"degree": 1, "octave": 0, "duration": "sixteenth"},
+        {"degree": 6, "octave": -1, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 4,
+      "notes": [
+        {"degree": 1, "octave": -1, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 5,
+      "notes": [
+        {"degree": 6, "octave": -1, "duration": "eighth"},
+        {"degree": 1, "octave": 0, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 6,
+      "notes": [
+        {"degree": 7, "octave": -1, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 7,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"}
+      ]
+    },
+    {
+      "number": 8,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "sixteenth"},
+        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"},
+        {"degree": 3, "octave": 0, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 9,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"},
+        {"degree": 7, "octave": -1, "duration": "sixteenth"},
+        {"degree": 2, "octave": 0, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 10,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "sixteenth"},
+        {"degree": 6, "octave": -1, "duration": "sixteenth"},
+        {"degree": 1, "octave": -1, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 11,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 6, "octave": -1, "duration": "sixteenth"}
+      ]
+    },
+    {
+      "number": 12,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 0, "octave": 0, "duration": "sixteenth"}
+      ]
+    }
+  ],
+  "isBuiltIn": true
+}
+
