@@ -10,6 +10,8 @@ import '../../features/main/bindings/main_binding.dart';
 import '../../features/course/views/course_detail_page.dart';
 import '../../features/course/views/lesson_page.dart';
 import '../../features/course/bindings/course_binding.dart';
+import '../../features/practice/views/note_practice_page.dart';
+import '../../features/practice/bindings/practice_binding.dart';
 import '../../features/tools/piano/views/piano_page.dart';
 import '../../features/tools/piano/controllers/piano_controller.dart';
 import '../../features/tools/metronome/views/metronome_page.dart';
@@ -62,6 +64,15 @@ class AppPages {
       name: AppRoutes.lesson,
       page: () => const LessonPage(),
       binding: CourseBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ========== 练习模块 ==========
+    // 识谱练习
+    GetPage(
+      name: AppRoutes.notePractice,
+      page: () => const NotePracticePage(),
+      binding: PracticeBinding(),
       transition: Transition.rightToLeft,
     ),
 

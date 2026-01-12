@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../../../app/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/enums/practice_type.dart';
 
@@ -63,9 +65,9 @@ class PracticeHomePage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem(context, '练习题数', '15', Icons.quiz, isDark),
-          _buildStatItem(context, '正确率', '87%', Icons.check_circle, isDark),
-          _buildStatItem(context, '练习时长', '12分钟', Icons.timer, isDark),
+          _buildStatItem(context, '练习题数', '0', Icons.quiz, isDark),
+          _buildStatItem(context, '正确率', '--%', Icons.check_circle, isDark),
+          _buildStatItem(context, '练习时长', '0分钟', Icons.timer, isDark),
         ],
       ),
     );
@@ -106,6 +108,7 @@ class PracticeHomePage extends StatelessWidget {
 
   Widget _buildPracticeCard(BuildContext context, PracticeType type, bool isDark) {
     final config = _getPracticeConfig(type);
+    final isAvailable = config['available'] as bool;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -123,9 +126,7 @@ class PracticeHomePage extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            // TODO: 跳转到练习页
-          },
+          onTap: isAvailable ? () => _navigateToPractice(type) : null,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -136,12 +137,14 @@ class PracticeHomePage extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: (config['color'] as Color).withValues(alpha: 0.1),
+                    color: isAvailable
+                        ? (config['color'] as Color).withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
                     config['icon'] as IconData,
-                    color: config['color'] as Color,
+                    color: isAvailable ? config['color'] as Color : Colors.grey,
                     size: 28,
                   ),
                 ),
@@ -151,20 +154,45 @@ class PracticeHomePage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        type.label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            type.label,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isAvailable
+                                  ? Theme.of(context).textTheme.bodyLarge?.color
+                                  : Colors.grey,
+                            ),
+                          ),
+                          if (!isAvailable) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                '即将开放',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         config['desc'] as String,
                         style: TextStyle(
                           fontSize: 13,
-                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                          color: isAvailable
+                              ? (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary)
+                              : Colors.grey.shade400,
                         ),
                       ),
                     ],
@@ -173,7 +201,9 @@ class PracticeHomePage extends StatelessWidget {
                 // 箭头
                 Icon(
                   Icons.chevron_right,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  color: isAvailable
+                      ? (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary)
+                      : Colors.grey.shade300,
                 ),
               ],
             ),
@@ -189,23 +219,35 @@ class PracticeHomePage extends StatelessWidget {
         'icon': Icons.music_note,
         'color': const Color(0xFF667eea),
         'desc': '识别简谱和五线谱音符',
+        'available': true,
+        'route': AppRoutes.notePractice,
       },
       PracticeType.rhythmTapping => {
         'icon': Icons.sports_esports,
         'color': const Color(0xFFf093fb),
         'desc': '跟着节拍敲击屏幕',
+        'available': false,
+        'route': AppRoutes.rhythmPractice,
       },
       PracticeType.earTraining => {
         'icon': Icons.hearing,
         'color': const Color(0xFF43e97b),
         'desc': '听音辨别音高',
+        'available': false,
+        'route': AppRoutes.earPractice,
       },
       PracticeType.pianoPlaying => {
         'icon': Icons.piano,
         'color': const Color(0xFF4facfe),
         'desc': '在虚拟钢琴上弹奏',
+        'available': false,
+        'route': AppRoutes.pianoPractice,
       },
     };
   }
-}
 
+  void _navigateToPractice(PracticeType type) {
+    final config = _getPracticeConfig(type);
+    Get.toNamed(config['route'] as String);
+  }
+}

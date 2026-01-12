@@ -65,7 +65,9 @@ class CourseModel {
       title: json['title'] as String,
       description: json['description'] as String,
       icon: json['icon'] as String,
-      gradientColors: List<String>.from(json['gradientColors'] ?? ['#667eea', '#764ba2']),
+      gradientColors: json['gradientColors'] != null 
+          ? List<String>.from(json['gradientColors'] as List)
+          : ['#667eea', '#764ba2'],
       lessons: (json['lessons'] as List<dynamic>?)
               ?.map((e) => LessonModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
