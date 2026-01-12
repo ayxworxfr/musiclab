@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
@@ -411,7 +412,7 @@ class LessonPage extends GetView<CourseController> {
   }
 }
 
-/// 简单的 Markdown 文本渲染
+/// Markdown 文本渲染（使用 flutter_markdown）
 class _MarkdownText extends StatelessWidget {
   final String content;
   final bool isDark;
@@ -420,133 +421,98 @@ class _MarkdownText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lines = content.split('\n');
-    final widgets = <Widget>[];
-
-    for (final line in lines) {
-      if (line.startsWith('# ')) {
-        // 一级标题
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Text(
-            line.substring(2),
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+    return MarkdownBody(
+      data: content,
+      selectable: true,
+      styleSheet: MarkdownStyleSheet(
+        h1: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+          height: 1.3,
+        ),
+        h2: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+          height: 1.3,
+        ),
+        h3: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+          height: 1.3,
+        ),
+        p: TextStyle(
+          fontSize: 16,
+          height: 1.6,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        listBullet: TextStyle(
+          fontSize: 16,
+          color: AppColors.primary,
+        ),
+        listIndent: 24,
+        blockquote: TextStyle(
+          fontSize: 16,
+          fontStyle: FontStyle.italic,
+          color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
+        ),
+        blockquoteDecoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(8),
+          border: Border(
+            left: BorderSide(color: AppColors.primary, width: 4),
+          ),
+        ),
+        blockquotePadding: const EdgeInsets.all(12),
+        code: TextStyle(
+          fontSize: 14,
+          fontFamily: 'monospace',
+          backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        codeblockDecoration: BoxDecoration(
+          color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        codeblockPadding: const EdgeInsets.all(12),
+        strong: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        em: const TextStyle(fontStyle: FontStyle.italic),
+        tableHead: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        tableBody: TextStyle(
+          fontSize: 14,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        tableBorder: TableBorder.all(
+          color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+          width: 1,
+        ),
+        tableCellsPadding: const EdgeInsets.all(8),
+        tableColumnWidth: const FlexColumnWidth(),
+        horizontalRuleDecoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+              width: 1,
             ),
           ),
-        ));
-      } else if (line.startsWith('## ')) {
-        // 二级标题
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 8),
-          child: Text(
-            line.substring(3),
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-        ));
-      } else if (line.startsWith('- ')) {
-        // 列表项
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(left: 8, bottom: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('• ', style: TextStyle(fontSize: 16)),
-              Expanded(
-                child: Text(
-                  _parseInlineStyles(line.substring(2)),
-                  style: TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ));
-      } else if (line.startsWith('> ')) {
-        // 引用
-        widgets.add(Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(8),
-            border: Border(
-              left: BorderSide(color: AppColors.primary, width: 4),
-            ),
-          ),
-          child: Text(
-            line.substring(2),
-            style: TextStyle(
-              fontSize: 16,
-              fontStyle: FontStyle.italic,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-        ));
-      } else if (line.startsWith('|')) {
-        // 简单表格处理（跳过分隔行）
-        if (!line.contains('---')) {
-          final cells = line.split('|').where((c) => c.trim().isNotEmpty).toList();
-          widgets.add(Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Row(
-              children: cells.map((cell) {
-                return Expanded(
-                  child: Text(
-                    cell.trim(),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: cells.first == cell ? FontWeight.bold : FontWeight.normal,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                );
-              }).toList(),
-            ),
-          ));
+        ),
+      ),
+      onTapLink: (text, href, title) {
+        // 处理链接点击（如果需要）
+        if (href != null) {
+          // 可以使用 url_launcher 打开链接
         }
-      } else if (line.startsWith('```')) {
-        // 代码块开始/结束（简单跳过）
-      } else if (line.trim().isEmpty) {
-        widgets.add(const SizedBox(height: 8));
-      } else {
-        // 普通文本
-        widgets.add(Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            _parseInlineStyles(line),
-            style: TextStyle(
-              fontSize: 16,
-              height: 1.6,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-        ));
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widgets,
+      },
     );
-  }
-
-  String _parseInlineStyles(String text) {
-    // 简单移除 Markdown 标记
-    return text
-        .replaceAll(RegExp(r'\*\*(.+?)\*\*'), r'$1')
-        .replaceAll(RegExp(r'\*(.+?)\*'), r'$1')
-        .replaceAll(RegExp(r'`(.+?)`'), r'$1');
   }
 }
 

@@ -382,8 +382,8 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
                   trailing: Obx(() {
                     final current = _playerController.playbackState.value.playbackSpeed;
                     return current == speed
-                        ? const Icon(Icons.check, color: AppColors.primary)
-                        : null;
+                        ? const Icon(Icons.check, color: AppColors.primary) as Widget
+                        : const SizedBox.shrink();
                   }),
                   onTap: () {
                     _playerController.setPlaybackSpeed(speed);

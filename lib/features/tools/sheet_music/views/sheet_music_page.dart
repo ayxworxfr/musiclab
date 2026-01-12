@@ -181,9 +181,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      if (sheet.composer != null)
+                      if (sheet.metadata.composer != null)
                         Text(
-                          sheet.composer!,
+                          sheet.metadata.composer!,
                           style: TextStyle(
                             fontSize: 13,
                             color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -203,7 +203,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              '${sheet.key}调',
+                              '${sheet.metadata.key}调',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -219,7 +219,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              '${sheet.bpm} BPM',
+                              '${sheet.metadata.tempo} BPM',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
