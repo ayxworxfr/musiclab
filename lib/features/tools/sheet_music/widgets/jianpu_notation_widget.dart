@@ -410,39 +410,80 @@ class JianpuNotationWidget extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 变音记号
                 if (note.accidental != Accidental.none)
-                  Text(
-                    note.accidental.displaySymbol,
-                    style: TextStyle(
-                      fontSize: style.noteFontSize * 0.6,
-                      color: noteColor,
-                    ),
-                  ),
-                // 音符数字（带附点）
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Text(
-                      note.isRest ? '0' : '${note.degree}',
+                  Padding(
+                    padding: const EdgeInsets.only(right: 2),
+                    child: Text(
+                      note.accidental.displaySymbol,
                       style: TextStyle(
-                        fontSize: style.noteFontSize,
-                        fontWeight: FontWeight.bold,
+                        fontSize: style.noteFontSize * 0.6,
                         color: noteColor,
                       ),
                     ),
-                    // 附点（在音符右上方）
-                    if (note.isDotted)
-                      Positioned(
-                        right: -6,
-                        top: 2,
-                        child: Container(
-                          width: 3,
-                          height: 3,
-                          decoration: BoxDecoration(
+                  ),
+                // 音符数字（带附点和低音点）
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Text(
+                          note.isRest ? '0' : '${note.degree}',
+                          style: TextStyle(
+                            fontSize: style.noteFontSize,
+                            fontWeight: FontWeight.bold,
                             color: noteColor,
-                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        // 附点（在音符右上方）
+                        if (note.isDotted)
+                          Positioned(
+                            right: -6,
+                            top: 2,
+                            child: Container(
+                              width: 3,
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color: noteColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    // 下划线（八分、十六分音符）
+                    if (note.duration.underlineCount > 0)
+                      ...List.generate(
+                        note.duration.underlineCount,
+                        (_) => Container(
+                          width: style.noteSpacing * 0.7,
+                          height: 2,
+                          margin: const EdgeInsets.only(top: 2),
+                          color: noteColor,
+                        ),
+                      ),
+                    // 低音点
+                    if (note.octave < 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
+                            -note.octave,
+                            (_) => Container(
+                              width: 4,
+                              height: 4,
+                              margin: const EdgeInsets.symmetric(horizontal: 1),
+                              decoration: BoxDecoration(
+                                color: noteColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -460,40 +501,6 @@ class JianpuNotationWidget extends StatelessWidget {
                 ),
               ],
             ),
-            // 下划线（八分、十六分音符）
-            if (note.duration.underlineCount > 0)
-              Column(
-                children: List.generate(
-                  note.duration.underlineCount,
-                  (_) => Container(
-                    width: style.noteSpacing * 0.7,
-                    height: 2,
-                    margin: const EdgeInsets.only(top: 2),
-                    color: noteColor,
-                  ),
-                ),
-              ),
-            // 低音点
-            if (note.octave < 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(
-                    -note.octave,
-                    (_) => Container(
-                      width: 4,
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 1),
-                      decoration: BoxDecoration(
-                        color: noteColor,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             // 歌词
             if (style.showLyrics && note.lyric != null)
               Padding(
