@@ -7,6 +7,9 @@ import '../../features/onboarding/views/onboarding_page.dart';
 import '../../features/onboarding/controllers/onboarding_controller.dart';
 import '../../features/main/views/main_page.dart';
 import '../../features/main/bindings/main_binding.dart';
+import '../../features/course/views/course_detail_page.dart';
+import '../../features/course/views/lesson_page.dart';
+import '../../features/course/bindings/course_binding.dart';
 import '../../features/tools/piano/views/piano_page.dart';
 import '../../features/tools/piano/controllers/piano_controller.dart';
 import '../../features/tools/metronome/views/metronome_page.dart';
@@ -43,6 +46,23 @@ class AppPages {
       page: () => const MainPage(),
       binding: MainBinding(),
       transition: Transition.fadeIn,
+    ),
+
+    // ========== 课程模块 ==========
+    // 课程详情
+    GetPage(
+      name: AppRoutes.courseDetail,
+      page: () => const CourseDetailPage(),
+      binding: CourseBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 课时学习
+    GetPage(
+      name: AppRoutes.lesson,
+      page: () => const LessonPage(),
+      binding: CourseBinding(),
+      transition: Transition.rightToLeft,
     ),
 
     // ========== 工具模块 ==========

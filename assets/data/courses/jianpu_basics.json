@@ -1,0 +1,347 @@
+{
+  "id": "jianpu_basics",
+  "category": "jianpu",
+  "title": "简谱入门",
+  "description": "从零开始学习简谱，掌握基础音符和节奏",
+  "icon": "🎵",
+  "gradientColors": ["#667eea", "#764ba2"],
+  "lessons": [
+    {
+      "id": "jianpu_01",
+      "courseId": "jianpu_basics",
+      "order": 1,
+      "title": "走进音乐世界",
+      "subtitle": "什么是音乐？声音的高低",
+      "type": "text",
+      "durationMinutes": 5,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 欢迎来到音乐世界！🎵\n\n音乐是由有规律的声音组成的艺术。在开始学习简谱之前，让我们先了解一些基础概念。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 声音的高低\n\n你有没有注意到，不同的声音有高有低？\n\n- **高音**：像小鸟叫声、口哨声\n- **低音**：像打雷声、大鼓声\n\n在音乐中，我们用**音高**来描述声音的高低。"
+          }
+        },
+        {
+          "type": "image",
+          "data": {
+            "url": "assets/images/illustrations/sound_wave.png",
+            "caption": "声波示意图：波浪越密集，声音越高"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 认识钢琴键盘\n\n钢琴是学习音乐的好帮手。键盘上：\n- **往右**的键，声音**越高**\n- **往左**的键，声音**越低**\n\n试着点击下面的钢琴键，感受声音的高低变化！"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 72,
+            "showLabels": true,
+            "labelType": "jianpu",
+            "instruction": "从左到右依次点击，感受音高变化"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 小结\n\n今天我们学习了：\n1. 音乐由有规律的声音组成\n2. 声音有高低之分，叫做音高\n3. 钢琴键盘：往右越高，往左越低\n\n恭喜你迈出了音乐学习的第一步！🎉"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "在钢琴键盘上，哪个方向的键声音更高？",
+            "options": ["往左", "往右", "都一样"],
+            "correctIndex": 1,
+            "explanation": "钢琴键盘上，越往右的键声音越高，越往左的键声音越低。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jianpu_02",
+      "courseId": "jianpu_basics",
+      "order": 2,
+      "title": "认识 Do Re Mi",
+      "subtitle": "1 2 3 三个音的认识",
+      "type": "text",
+      "durationMinutes": 8,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 认识 Do Re Mi 🎶\n\n在简谱中，我们用数字来表示音符。今天先学习最基础的三个音：\n\n| 数字 | 唱名 | 读音 |\n|------|------|------|\n| 1 | Do | 哆 |\n| 2 | Re | 来 |\n| 3 | Mi | 咪 |"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "notes": [60, 62, 64],
+            "labels": ["1 (Do)", "2 (Re)", "3 (Mi)"],
+            "instruction": "点击听一听每个音的声音"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 在键盘上找到它们\n\n在钢琴键盘上：\n- **1 (Do)** 是「中央 C」，是学琴的起点\n- **2 (Re)** 在 Do 的右边\n- **3 (Mi)** 在 Re 的右边\n\n它们都是白键，依次排列。"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 67,
+            "showLabels": true,
+            "labelType": "jianpu",
+            "highlightNotes": [60, 62, 64],
+            "instruction": "高亮的键就是 1、2、3，试着弹一弹"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 跟我唱\n\n让我们一起唱出这三个音：\n\n🎵 **Do - Re - Mi**\n\n🎵 **1 - 2 - 3**\n\n反复练习几遍，记住它们的音高！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 小练习\n\n试着在钢琴上弹出以下旋律：\n\n**1 2 3 2 1**\n\n（Do Re Mi Re Do）"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 67,
+            "showLabels": true,
+            "labelType": "jianpu",
+            "targetSequence": [60, 62, 64, 62, 60],
+            "instruction": "按顺序弹出 1 2 3 2 1"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "简谱中，数字「2」对应哪个唱名？",
+            "options": ["Do", "Re", "Mi"],
+            "correctIndex": 1,
+            "explanation": "数字 2 对应唱名 Re（来）。1=Do，2=Re，3=Mi。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jianpu_03",
+      "courseId": "jianpu_basics",
+      "order": 3,
+      "title": "七个音符朋友",
+      "subtitle": "完整的 1234567",
+      "type": "text",
+      "durationMinutes": 10,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 七个音符朋友 🌈\n\n上节课我们认识了 1、2、3，今天来认识完整的七个音符！\n\n| 数字 | 唱名 | 读音 |\n|------|------|------|\n| 1 | Do | 哆 |\n| 2 | Re | 来 |\n| 3 | Mi | 咪 |\n| 4 | Fa | 发 |\n| 5 | Sol | 索 |\n| 6 | La | 拉 |\n| 7 | Si | 西 |"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "notes": [60, 62, 64, 65, 67, 69, 71],
+            "labels": ["1", "2", "3", "4", "5", "6", "7"],
+            "instruction": "这就是一个完整的音阶，从低到高"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 记忆口诀\n\n七个音符，七种颜色：\n\n> **哆来咪发索拉西**\n>\n> **Do Re Mi Fa Sol La Si**\n>\n> **1 2 3 4 5 6 7**\n\n就像彩虹的七种颜色一样，音乐的基础就是这七个音！"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 72,
+            "showLabels": true,
+            "labelType": "jianpu",
+            "highlightNotes": [60, 62, 64, 65, 67, 69, 71],
+            "instruction": "从 1 弹到 7，这叫做「音阶」"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 音阶练习\n\n**上行音阶**（从低到高）：\n1 2 3 4 5 6 7\n\n**下行音阶**（从高到低）：\n7 6 5 4 3 2 1\n\n试着在钢琴上弹出来！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 有趣的发现\n\n你发现了吗？\n\n- **3 和 4** 之间距离较近\n- **7 和下一个 1** 之间距离也较近\n\n这就是音乐中的「半音」，以后会详细学习。"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "一个完整的音阶有几个音符？",
+            "options": ["5 个", "6 个", "7 个", "8 个"],
+            "correctIndex": 2,
+            "explanation": "一个完整的音阶有 7 个音符：Do Re Mi Fa Sol La Si（1234567）。"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "数字「5」对应哪个唱名？",
+            "options": ["Fa", "Sol", "La", "Si"],
+            "correctIndex": 1,
+            "explanation": "数字 5 对应唱名 Sol（索）。记住：1=Do, 2=Re, 3=Mi, 4=Fa, 5=Sol, 6=La, 7=Si。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jianpu_04",
+      "courseId": "jianpu_basics",
+      "order": 4,
+      "title": "音乐的心跳",
+      "subtitle": "节奏概念、拍子是什么",
+      "type": "text",
+      "durationMinutes": 8,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 音乐的心跳 💓\n\n如果说音高是音乐的「音调」，那么节奏就是音乐的「心跳」！\n\n节奏让音乐有了生命，有了律动。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 什么是拍子？\n\n想象你在走路：\n\n👟 左 - 右 - 左 - 右 - 左 - 右 ...\n\n这种有规律的重复，就是「拍子」。\n\n在音乐中，我们用**拍**来计算时间的单位。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 跟着节拍数\n\n试着数：**1 - 2 - 3 - 4 | 1 - 2 - 3 - 4 | ...**\n\n这就是最常见的「四四拍」：\n- 每小节 4 拍\n- 每拍时间相等\n\n用手拍一拍，感受节奏！"
+          }
+        },
+        {
+          "type": "metronome",
+          "data": {
+            "bpm": 80,
+            "beatsPerMeasure": 4,
+            "instruction": "跟着节拍器，用手拍出节奏"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 常见拍号\n\n| 拍号 | 含义 | 特点 |\n|------|------|------|\n| 4/4 | 每小节 4 拍 | 最常见，像走路 |\n| 3/4 | 每小节 3 拍 | 华尔兹舞曲 |\n| 2/4 | 每小节 2 拍 | 进行曲 |"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 强弱规律\n\n拍子有强有弱：\n\n**4/4 拍**：**强** - 弱 - 次强 - 弱\n\n**3/4 拍**：**强** - 弱 - 弱\n\n第一拍总是最强的，叫「强拍」。"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "4/4 拍表示什么？",
+            "options": ["每分钟 4 拍", "每小节 4 拍", "一共 4 拍", "4 个音符"],
+            "correctIndex": 1,
+            "explanation": "4/4 拍表示每小节有 4 拍。这是最常见的拍号。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jianpu_05",
+      "courseId": "jianpu_basics",
+      "order": 5,
+      "title": "长音和短音",
+      "subtitle": "全音符、二分、四分、八分音符",
+      "type": "text",
+      "durationMinutes": 10,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 长音和短音 ⏱️\n\n同样一个音，可以长，也可以短。\n\n音符的长短叫做「时值」或「音长」。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 四种基本音符\n\n以 4/4 拍为例：\n\n| 音符 | 简谱写法 | 时值 | 占几拍 |\n|------|----------|------|--------|\n| 全音符 | 1 - - - | 最长 | 4 拍 |\n| 二分音符 | 1 - | 较长 | 2 拍 |\n| 四分音符 | 1 | 标准 | 1 拍 |\n| 八分音符 | 1̲ (下划线) | 较短 | 半拍 |"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 简谱中的表示方法\n\n在简谱中：\n- **横线「-」**表示延长，每个横线延长一拍\n- **下划线「̲」**表示缩短，一条线缩短一半\n\n例子：\n- `1 - - -` = Do 唱 4 拍\n- `1 -` = Do 唱 2 拍\n- `1` = Do 唱 1 拍"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "samples": [
+              {"notes": [60], "duration": 4, "label": "全音符 (4拍)"},
+              {"notes": [60], "duration": 2, "label": "二分音符 (2拍)"},
+              {"notes": [60], "duration": 1, "label": "四分音符 (1拍)"},
+              {"notes": [60], "duration": 0.5, "label": "八分音符 (半拍)"}
+            ],
+            "instruction": "听听不同时值的区别"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 时值关系图\n\n```\n全音符    ●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n          ↓ ÷2\n二分音符  ●━━━━━━━━━━━━━━━  ●━━━━━━━━━━━━━━━\n          ↓ ÷2\n四分音符  ●━━━━━━━  ●━━━━━━━  ●━━━━━━━  ●━━━━━━━\n          ↓ ÷2\n八分音符  ●━━━ ●━━━ ●━━━ ●━━━ ●━━━ ●━━━ ●━━━ ●━━━\n```\n\n一个全音符 = 2 个二分音符 = 4 个四分音符 = 8 个八分音符"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习：小星星的节奏\n\n《小星星》开头的节奏：\n\n```\n1  1  |  5  5  |  6  6  |  5 -  |\n一 闪   一 闪   亮 晶   晶\n```\n\n每个数字是一拍，`5 -` 是两拍。"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "在简谱中，「1 - -」表示 Do 唱几拍？",
+            "options": ["1 拍", "2 拍", "3 拍", "4 拍"],
+            "correctIndex": 2,
+            "explanation": "「1 - -」中，1 本身是 1 拍，后面两个横线各延长 1 拍，共 3 拍。"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "一个全音符等于几个四分音符？",
+            "options": ["2 个", "4 个", "8 个", "16 个"],
+            "correctIndex": 1,
+            "explanation": "一个全音符 = 4 拍 = 4 个四分音符（每个四分音符 1 拍）。"
+          }
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../../../app/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/enums/practice_type.dart';
+import '../controllers/course_controller.dart';
+import '../models/course_model.dart';
 
 /// 课程列表页
-class CourseListPage extends StatelessWidget {
+class CourseListPage extends GetView<CourseController> {
   const CourseListPage({super.key});
 
   @override
@@ -18,29 +21,46 @@ class CourseListPage extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: CourseCategory.values.map((category) {
-            return _buildCourseCard(context, category, isDark);
-          }).toList(),
-        ),
-      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.courses.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.school_outlined, size: 64, color: Colors.grey.shade400),
+                const SizedBox(height: 16),
+                Text(
+                  '暂无课程',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: controller.courses.map((course) {
+              return _buildCourseCard(context, course, isDark);
+            }).toList(),
+          ),
+        );
+      }),
     );
   }
 
-  Widget _buildCourseCard(BuildContext context, CourseCategory category, bool isDark) {
-    final lessonCount = switch (category) {
-      CourseCategory.jianpu => 10,
-      CourseCategory.staff => 15,
-      CourseCategory.piano => 20,
-    };
-
-    final colors = switch (category) {
-      CourseCategory.jianpu => [const Color(0xFF667eea), const Color(0xFF764ba2)],
-      CourseCategory.staff => [const Color(0xFFf093fb), const Color(0xFFf5576c)],
-      CourseCategory.piano => [const Color(0xFF4facfe), const Color(0xFF00f2fe)],
-    };
+  Widget _buildCourseCard(BuildContext context, CourseModel course, bool isDark) {
+    final colors = course.gradientColors.map((c) {
+      return Color(int.parse(c.replaceFirst('#', '0xFF')));
+    }).toList();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -62,9 +82,7 @@ class CourseListPage extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            // TODO: 跳转到课程详情
-          },
+          onTap: () => _navigateToCourse(course),
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -80,7 +98,7 @@ class CourseListPage extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      category.icon,
+                      course.icon,
                       style: const TextStyle(fontSize: 32),
                     ),
                   ),
@@ -92,7 +110,7 @@ class CourseListPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        category.label,
+                        course.title,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -101,7 +119,7 @@ class CourseListPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$lessonCount 课时',
+                        '${course.lessons.length} 课时',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withValues(alpha: 0.8),
@@ -112,10 +130,18 @@ class CourseListPage extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
-                          value: category == CourseCategory.jianpu ? 0.3 : 0,
+                          value: course.progress,
                           backgroundColor: Colors.white.withValues(alpha: 0.3),
                           valueColor: const AlwaysStoppedAnimation(Colors.white),
                           minHeight: 6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${course.completedLessons}/${course.lessons.length} 已完成',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
@@ -143,5 +169,9 @@ class CourseListPage extends StatelessWidget {
       ),
     );
   }
-}
 
+  void _navigateToCourse(CourseModel course) {
+    controller.selectCourse(course.id);
+    Get.toNamed(AppRoutes.courseDetail);
+  }
+}

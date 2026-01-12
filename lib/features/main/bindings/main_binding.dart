@@ -1,12 +1,18 @@
 import 'package:get/get.dart';
 
 import '../controllers/main_controller.dart';
+import '../../course/repositories/course_repository.dart';
+import '../../course/controllers/course_controller.dart';
 
 /// 主页绑定
 class MainBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<MainController>(() => MainController());
+    
+    // 课程模块（全局可用）
+    Get.lazyPut<CourseRepository>(() => CourseRepositoryImpl());
+    Get.lazyPut<CourseController>(() => CourseController());
   }
 }
 

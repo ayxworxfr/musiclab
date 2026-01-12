@@ -39,6 +39,9 @@ abstract class StorageKeys {
   /// 课程进度
   static const String courseProgress = 'course_progress';
 
+  /// 学习进度（课程和课时的完成情况）
+  static const String learningProgress = 'learning_progress';
+
   /// 练习记录
   static const String practiceRecords = 'practice_records';
 
