@@ -19,14 +19,8 @@ class SheetMusicController extends GetxController {
   /// 当前选中的乐谱
   final selectedSheet = Rxn<SheetModel>();
 
-  /// 是否正在播放
-  final isPlaying = false.obs;
-
-  /// 当前播放位置（小节索引）
-  final currentMeasureIndex = 0.obs;
-
-  /// 当前播放位置（音符索引）
-  final currentNoteIndex = 0.obs;
+  /// 过滤后的乐谱列表
+  final filteredSheets = <SheetModel>[].obs;
 
   @override
   void onInit() {
@@ -37,32 +31,24 @@ class SheetMusicController extends GetxController {
   /// 加载乐谱数据
   Future<void> _loadSheets() async {
     isLoading.value = true;
-
-    // 使用内置的示例乐谱
     sheets.assignAll(_getSampleSheets());
     _updateFilteredSheets();
-
     isLoading.value = false;
   }
-
-  /// 过滤后的乐谱列表（响应式）
-  final filteredSheets = <SheetModel>[].obs;
 
   /// 更新过滤后的列表
   void _updateFilteredSheets() {
     var result = sheets.toList();
 
-    // 按分类过滤
     if (currentCategory.value != null) {
       result = result.where((s) => s.category == currentCategory.value).toList();
     }
 
-    // 按搜索关键词过滤
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
       result = result.where((s) {
         return s.title.toLowerCase().contains(query) ||
-            (s.composer?.toLowerCase().contains(query) ?? false);
+            (s.metadata.composer?.toLowerCase().contains(query) ?? false);
       }).toList();
     }
 
@@ -84,9 +70,6 @@ class SheetMusicController extends GetxController {
   /// 选择乐谱
   void selectSheet(SheetModel sheet) {
     selectedSheet.value = sheet;
-    currentMeasureIndex.value = 0;
-    currentNoteIndex.value = 0;
-    isPlaying.value = false;
   }
 
   /// 切换收藏
@@ -94,9 +77,10 @@ class SheetMusicController extends GetxController {
     final index = sheets.indexWhere((s) => s.id == sheet.id);
     if (index != -1) {
       sheets[index] = sheet.copyWith(isFavorite: !sheet.isFavorite);
-    }
-    if (selectedSheet.value?.id == sheet.id) {
-      selectedSheet.value = sheets[index];
+      if (selectedSheet.value?.id == sheet.id) {
+        selectedSheet.value = sheets[index];
+      }
+      _updateFilteredSheets();
     }
   }
 
@@ -106,103 +90,175 @@ class SheetMusicController extends GetxController {
       SheetModel(
         id: 'twinkle_star',
         title: '小星星',
-        composer: '莫扎特（改编）',
         difficulty: 1,
         category: SheetCategory.children,
-        key: 'C',
-        timeSignature: '4/4',
-        bpm: 100,
+        metadata: const SheetMetadata(
+          key: 'C',
+          timeSignature: '4/4',
+          tempo: 100,
+          composer: '莫扎特（改编）',
+        ),
         measures: [
           SheetMeasure(number: 1, notes: [
-            const SheetNote(pitch: '1', duration: 1, lyric: '一'),
-            const SheetNote(pitch: '1', duration: 1, lyric: '闪'),
-            const SheetNote(pitch: '5', duration: 1, lyric: '一'),
-            const SheetNote(pitch: '5', duration: 1, lyric: '闪'),
+            const SheetNote(degree: 1, lyric: '一'),
+            const SheetNote(degree: 1, lyric: '闪'),
+            const SheetNote(degree: 5, lyric: '一'),
+            const SheetNote(degree: 5, lyric: '闪'),
           ]),
           SheetMeasure(number: 2, notes: [
-            const SheetNote(pitch: '6', duration: 1, lyric: '亮'),
-            const SheetNote(pitch: '6', duration: 1, lyric: '晶'),
-            const SheetNote(pitch: '5', duration: 2, lyric: '晶'),
+            const SheetNote(degree: 6, lyric: '亮'),
+            const SheetNote(degree: 6, lyric: '晶'),
+            const SheetNote(degree: 5, duration: NoteDuration.half, lyric: '晶'),
           ]),
           SheetMeasure(number: 3, notes: [
-            const SheetNote(pitch: '4', duration: 1, lyric: '满'),
-            const SheetNote(pitch: '4', duration: 1, lyric: '天'),
-            const SheetNote(pitch: '3', duration: 1, lyric: '都'),
-            const SheetNote(pitch: '3', duration: 1, lyric: '是'),
+            const SheetNote(degree: 4, lyric: '满'),
+            const SheetNote(degree: 4, lyric: '天'),
+            const SheetNote(degree: 3, lyric: '都'),
+            const SheetNote(degree: 3, lyric: '是'),
           ]),
           SheetMeasure(number: 4, notes: [
-            const SheetNote(pitch: '2', duration: 1, lyric: '小'),
-            const SheetNote(pitch: '2', duration: 1, lyric: '星'),
-            const SheetNote(pitch: '1', duration: 2, lyric: '星'),
+            const SheetNote(degree: 2, lyric: '小'),
+            const SheetNote(degree: 2, lyric: '星'),
+            const SheetNote(degree: 1, duration: NoteDuration.half, lyric: '星'),
+          ]),
+          SheetMeasure(number: 5, notes: [
+            const SheetNote(degree: 5, lyric: '挂'),
+            const SheetNote(degree: 5, lyric: '在'),
+            const SheetNote(degree: 4, lyric: '天'),
+            const SheetNote(degree: 4, lyric: '空'),
+          ]),
+          SheetMeasure(number: 6, notes: [
+            const SheetNote(degree: 3, lyric: '放'),
+            const SheetNote(degree: 3, lyric: '光'),
+            const SheetNote(degree: 2, duration: NoteDuration.half, lyric: '明'),
+          ]),
+          SheetMeasure(number: 7, notes: [
+            const SheetNote(degree: 5, lyric: '好'),
+            const SheetNote(degree: 5, lyric: '像'),
+            const SheetNote(degree: 4, lyric: '许'),
+            const SheetNote(degree: 4, lyric: '多'),
+          ]),
+          SheetMeasure(number: 8, notes: [
+            const SheetNote(degree: 3, lyric: '小'),
+            const SheetNote(degree: 3, lyric: '眼'),
+            const SheetNote(degree: 2, duration: NoteDuration.half, lyric: '睛'),
           ]),
         ],
       ),
       SheetModel(
         id: 'ode_to_joy',
         title: '欢乐颂',
-        composer: '贝多芬',
         difficulty: 2,
         category: SheetCategory.classical,
-        key: 'C',
-        timeSignature: '4/4',
-        bpm: 120,
+        metadata: const SheetMetadata(
+          key: 'C',
+          timeSignature: '4/4',
+          tempo: 120,
+          composer: '贝多芬',
+        ),
         measures: [
-          SheetMeasure(number: 1, notes: [
-            const SheetNote(pitch: '3', duration: 1),
-            const SheetNote(pitch: '3', duration: 1),
-            const SheetNote(pitch: '4', duration: 1),
-            const SheetNote(pitch: '5', duration: 1),
+          SheetMeasure(number: 1, notes: const [
+            SheetNote(degree: 3),
+            SheetNote(degree: 3),
+            SheetNote(degree: 4),
+            SheetNote(degree: 5),
           ]),
-          SheetMeasure(number: 2, notes: [
-            const SheetNote(pitch: '5', duration: 1),
-            const SheetNote(pitch: '4', duration: 1),
-            const SheetNote(pitch: '3', duration: 1),
-            const SheetNote(pitch: '2', duration: 1),
+          SheetMeasure(number: 2, notes: const [
+            SheetNote(degree: 5),
+            SheetNote(degree: 4),
+            SheetNote(degree: 3),
+            SheetNote(degree: 2),
           ]),
-          SheetMeasure(number: 3, notes: [
-            const SheetNote(pitch: '1', duration: 1),
-            const SheetNote(pitch: '1', duration: 1),
-            const SheetNote(pitch: '2', duration: 1),
-            const SheetNote(pitch: '3', duration: 1),
+          SheetMeasure(number: 3, notes: const [
+            SheetNote(degree: 1),
+            SheetNote(degree: 1),
+            SheetNote(degree: 2),
+            SheetNote(degree: 3),
           ]),
-          SheetMeasure(number: 4, notes: [
-            const SheetNote(pitch: '3', duration: 1.5, isDotted: true),
-            const SheetNote(pitch: '2', duration: 0.5),
-            const SheetNote(pitch: '2', duration: 2),
+          SheetMeasure(number: 4, notes: const [
+            SheetNote(degree: 3, duration: NoteDuration.quarter, isDotted: true),
+            SheetNote(degree: 2, duration: NoteDuration.eighth),
+            SheetNote(degree: 2, duration: NoteDuration.half),
+          ]),
+          SheetMeasure(number: 5, notes: const [
+            SheetNote(degree: 3),
+            SheetNote(degree: 3),
+            SheetNote(degree: 4),
+            SheetNote(degree: 5),
+          ]),
+          SheetMeasure(number: 6, notes: const [
+            SheetNote(degree: 5),
+            SheetNote(degree: 4),
+            SheetNote(degree: 3),
+            SheetNote(degree: 2),
+          ]),
+          SheetMeasure(number: 7, notes: const [
+            SheetNote(degree: 1),
+            SheetNote(degree: 1),
+            SheetNote(degree: 2),
+            SheetNote(degree: 3),
+          ]),
+          SheetMeasure(number: 8, notes: const [
+            SheetNote(degree: 2, duration: NoteDuration.quarter, isDotted: true),
+            SheetNote(degree: 1, duration: NoteDuration.eighth),
+            SheetNote(degree: 1, duration: NoteDuration.half),
           ]),
         ],
       ),
       SheetModel(
         id: 'jasmine',
         title: '茉莉花',
-        composer: '中国民歌',
         difficulty: 2,
         category: SheetCategory.folk,
-        key: 'G',
-        timeSignature: '2/4',
-        bpm: 80,
+        metadata: const SheetMetadata(
+          key: 'G',
+          timeSignature: '2/4',
+          tempo: 80,
+          composer: '中国民歌',
+        ),
         measures: [
-          SheetMeasure(number: 1, notes: [
-            const SheetNote(pitch: '3', duration: 0.5, lyric: '好'),
-            const SheetNote(pitch: '5', duration: 0.5, lyric: '一'),
-            const SheetNote(pitch: '5', duration: 0.5, lyric: '朵'),
-            const SheetNote(pitch: '6', duration: 0.5, lyric: '美'),
+          SheetMeasure(number: 1, notes: const [
+            SheetNote(degree: 3, duration: NoteDuration.eighth, lyric: '好'),
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '一'),
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '朵'),
+            SheetNote(degree: 6, duration: NoteDuration.eighth, lyric: '美'),
           ]),
-          SheetMeasure(number: 2, notes: [
-            const SheetNote(pitch: '1\'', duration: 0.5, lyric: '丽'),
-            const SheetNote(pitch: '6', duration: 0.5, lyric: '的'),
-            const SheetNote(pitch: '5', duration: 1, lyric: '茉'),
+          SheetMeasure(number: 2, notes: const [
+            SheetNote(degree: 1, octave: 1, duration: NoteDuration.eighth, lyric: '丽'),
+            SheetNote(degree: 6, duration: NoteDuration.eighth, lyric: '的'),
+            SheetNote(degree: 5, lyric: '茉'),
           ]),
-          SheetMeasure(number: 3, notes: [
-            const SheetNote(pitch: '5', duration: 0.5, lyric: '莉'),
-            const SheetNote(pitch: '3', duration: 0.5, lyric: '花'),
-            const SheetNote(pitch: '5', duration: 0.5),
-            const SheetNote(pitch: '3', duration: 0.5),
+          SheetMeasure(number: 3, notes: const [
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '莉'),
+            SheetNote(degree: 3, duration: NoteDuration.eighth, lyric: '花'),
+            SheetNote(degree: 5, duration: NoteDuration.eighth),
+            SheetNote(degree: 3, duration: NoteDuration.eighth),
           ]),
-          SheetMeasure(number: 4, notes: [
-            const SheetNote(pitch: '2', duration: 0.5),
-            const SheetNote(pitch: '3', duration: 0.5),
-            const SheetNote(pitch: '1', duration: 1),
+          SheetMeasure(number: 4, notes: const [
+            SheetNote(degree: 2, duration: NoteDuration.eighth),
+            SheetNote(degree: 3, duration: NoteDuration.eighth),
+            SheetNote(degree: 1),
+          ]),
+          SheetMeasure(number: 5, notes: const [
+            SheetNote(degree: 3, duration: NoteDuration.eighth, lyric: '好'),
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '一'),
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '朵'),
+            SheetNote(degree: 6, duration: NoteDuration.eighth, lyric: '美'),
+          ]),
+          SheetMeasure(number: 6, notes: const [
+            SheetNote(degree: 1, octave: 1, duration: NoteDuration.eighth, lyric: '丽'),
+            SheetNote(degree: 6, duration: NoteDuration.eighth, lyric: '的'),
+            SheetNote(degree: 5, lyric: '茉'),
+          ]),
+          SheetMeasure(number: 7, notes: const [
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '莉'),
+            SheetNote(degree: 3, duration: NoteDuration.eighth, lyric: '花'),
+            SheetNote(degree: 2, duration: NoteDuration.eighth),
+            SheetNote(degree: 1, duration: NoteDuration.eighth),
+          ]),
+          SheetMeasure(number: 8, notes: const [
+            SheetNote(degree: 6, octave: -1),
+            SheetNote(degree: 1),
           ]),
         ],
       ),
@@ -211,33 +267,35 @@ class SheetMusicController extends GetxController {
         title: 'C大调音阶',
         difficulty: 1,
         category: SheetCategory.exercise,
-        key: 'C',
-        timeSignature: '4/4',
-        bpm: 80,
+        metadata: const SheetMetadata(
+          key: 'C',
+          timeSignature: '4/4',
+          tempo: 80,
+        ),
         measures: [
-          SheetMeasure(number: 1, notes: [
-            const SheetNote(pitch: '1', duration: 1),
-            const SheetNote(pitch: '2', duration: 1),
-            const SheetNote(pitch: '3', duration: 1),
-            const SheetNote(pitch: '4', duration: 1),
+          SheetMeasure(number: 1, notes: const [
+            SheetNote(degree: 1, fingering: 1),
+            SheetNote(degree: 2, fingering: 2),
+            SheetNote(degree: 3, fingering: 3),
+            SheetNote(degree: 4, fingering: 1),
           ]),
-          SheetMeasure(number: 2, notes: [
-            const SheetNote(pitch: '5', duration: 1),
-            const SheetNote(pitch: '6', duration: 1),
-            const SheetNote(pitch: '7', duration: 1),
-            const SheetNote(pitch: '1\'', duration: 1),
+          SheetMeasure(number: 2, notes: const [
+            SheetNote(degree: 5, fingering: 2),
+            SheetNote(degree: 6, fingering: 3),
+            SheetNote(degree: 7, fingering: 4),
+            SheetNote(degree: 1, octave: 1, fingering: 5),
           ]),
-          SheetMeasure(number: 3, notes: [
-            const SheetNote(pitch: '1\'', duration: 1),
-            const SheetNote(pitch: '7', duration: 1),
-            const SheetNote(pitch: '6', duration: 1),
-            const SheetNote(pitch: '5', duration: 1),
+          SheetMeasure(number: 3, notes: const [
+            SheetNote(degree: 1, octave: 1, fingering: 5),
+            SheetNote(degree: 7, fingering: 4),
+            SheetNote(degree: 6, fingering: 3),
+            SheetNote(degree: 5, fingering: 2),
           ]),
-          SheetMeasure(number: 4, notes: [
-            const SheetNote(pitch: '4', duration: 1),
-            const SheetNote(pitch: '3', duration: 1),
-            const SheetNote(pitch: '2', duration: 1),
-            const SheetNote(pitch: '1', duration: 1),
+          SheetMeasure(number: 4, notes: const [
+            SheetNote(degree: 4, fingering: 1),
+            SheetNote(degree: 3, fingering: 3),
+            SheetNote(degree: 2, fingering: 2),
+            SheetNote(degree: 1, fingering: 1),
           ]),
         ],
       ),
@@ -246,33 +304,55 @@ class SheetMusicController extends GetxController {
         title: '生日快乐',
         difficulty: 1,
         category: SheetCategory.pop,
-        key: 'C',
-        timeSignature: '3/4',
-        bpm: 120,
+        metadata: const SheetMetadata(
+          key: 'C',
+          timeSignature: '3/4',
+          tempo: 120,
+        ),
         measures: [
-          SheetMeasure(number: 1, notes: [
-            const SheetNote(pitch: '5', duration: 0.5, lyric: '祝'),
-            const SheetNote(pitch: '5', duration: 0.5),
-            const SheetNote(pitch: '6', duration: 1, lyric: '你'),
-            const SheetNote(pitch: '5', duration: 1, lyric: '生'),
+          SheetMeasure(number: 1, notes: const [
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '祝'),
+            SheetNote(degree: 5, duration: NoteDuration.eighth),
+            SheetNote(degree: 6, lyric: '你'),
+            SheetNote(degree: 5, lyric: '生'),
           ]),
-          SheetMeasure(number: 2, notes: [
-            const SheetNote(pitch: '1\'', duration: 1, lyric: '日'),
-            const SheetNote(pitch: '7', duration: 2, lyric: '快'),
+          SheetMeasure(number: 2, notes: const [
+            SheetNote(degree: 1, octave: 1, lyric: '日'),
+            SheetNote(degree: 7, duration: NoteDuration.half, lyric: '快'),
           ]),
-          SheetMeasure(number: 3, notes: [
-            const SheetNote(pitch: '5', duration: 0.5, lyric: '乐'),
-            const SheetNote(pitch: '5', duration: 0.5),
-            const SheetNote(pitch: '6', duration: 1, lyric: '祝'),
-            const SheetNote(pitch: '5', duration: 1, lyric: '你'),
+          SheetMeasure(number: 3, notes: const [
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '乐'),
+            SheetNote(degree: 5, duration: NoteDuration.eighth),
+            SheetNote(degree: 6, lyric: '祝'),
+            SheetNote(degree: 5, lyric: '你'),
           ]),
-          SheetMeasure(number: 4, notes: [
-            const SheetNote(pitch: '2\'', duration: 1, lyric: '生'),
-            const SheetNote(pitch: '1\'', duration: 2, lyric: '日'),
+          SheetMeasure(number: 4, notes: const [
+            SheetNote(degree: 2, octave: 1, lyric: '生'),
+            SheetNote(degree: 1, octave: 1, duration: NoteDuration.half, lyric: '日'),
+          ]),
+          SheetMeasure(number: 5, notes: const [
+            SheetNote(degree: 5, duration: NoteDuration.eighth, lyric: '快'),
+            SheetNote(degree: 5, duration: NoteDuration.eighth),
+            SheetNote(degree: 5, octave: 1, lyric: '乐'),
+            SheetNote(degree: 3, octave: 1, lyric: '祝'),
+          ]),
+          SheetMeasure(number: 6, notes: const [
+            SheetNote(degree: 1, octave: 1, lyric: '你'),
+            SheetNote(degree: 7, lyric: '幸'),
+            SheetNote(degree: 6, lyric: '福'),
+          ]),
+          SheetMeasure(number: 7, notes: const [
+            SheetNote(degree: 4, octave: 1, duration: NoteDuration.eighth, lyric: '祝'),
+            SheetNote(degree: 4, octave: 1, duration: NoteDuration.eighth),
+            SheetNote(degree: 3, octave: 1, lyric: '你'),
+            SheetNote(degree: 1, octave: 1, lyric: '生'),
+          ]),
+          SheetMeasure(number: 8, notes: const [
+            SheetNote(degree: 2, octave: 1, lyric: '日'),
+            SheetNote(degree: 1, octave: 1, duration: NoteDuration.half, lyric: '快乐'),
           ]),
         ],
       ),
     ];
   }
 }
-

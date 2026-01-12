@@ -56,9 +56,17 @@ class CourseRepositoryImpl implements CourseRepository {
         courses.add(jianpuCourse);
       }
 
-      // TODO: 加载更多课程
-      // final staffCourse = await _loadCourseFromAsset('assets/data/courses/staff_basics.json');
-      // final pianoCourse = await _loadCourseFromAsset('assets/data/courses/piano_basics.json');
+      // 加载五线谱入门课程
+      final staffCourse = await _loadCourseFromAsset('assets/data/courses/staff_basics.json');
+      if (staffCourse != null) {
+        courses.add(staffCourse);
+      }
+
+      // 加载钢琴入门课程
+      final pianoCourse = await _loadCourseFromAsset('assets/data/courses/piano_basics.json');
+      if (pianoCourse != null) {
+        courses.add(pianoCourse);
+      };
 
       // 加载进度数据并合并
       await _loadProgressData();

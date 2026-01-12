@@ -89,13 +89,40 @@ class MusicUtils {
     return number;
   }
   
-  /// 简谱转 MIDI 编号
+  /// 调号对应的 MIDI 偏移（相对于 C 大调）
+  static const keyOffsets = {
+    'C': 0, 'G': 7, 'D': 2, 'A': 9, 'E': 4, 'B': 11,
+    'F': 5, 'Bb': 10, 'Eb': 3, 'Ab': 8, 'Db': 1, 'Gb': 6,
+    'F#': 6, 'C#': 1,
+  };
+
+  /// 简谱音级转 MIDI 编号
+  /// 
+  /// [degree] 简谱音级 (1-7, 0为休止符)
+  /// [octave] 八度偏移 (0=中音, 正数=高音, 负数=低音)
+  /// [key] 调号 (C, G, D, A, E, B, F, Bb, Eb, Ab, Db, Gb)
+  /// [baseOctave] 基准八度（默认 4，即中央 C 所在八度）
+  static int? jianpuToMidi(int degree, int octave, String key, {int baseOctave = 4}) {
+    if (degree == 0) return null; // 休止符
+    if (degree < 1 || degree > 7) return null;
+
+    // 简谱音级对应的半音偏移（相对于 do）
+    const degreeToSemitone = [0, 0, 2, 4, 5, 7, 9, 11]; // index 0 unused
+    
+    final keyOffset = keyOffsets[key] ?? 0;
+    final semitone = degreeToSemitone[degree];
+    final midi = (baseOctave + 1 + octave) * 12 + keyOffset + semitone;
+    
+    return midi.clamp(21, 108); // 限制在标准钢琴范围内
+  }
+
+  /// 简谱字符串转 MIDI 编号
   /// 
   /// [jianpu] 简谱表示，支持两种格式：
   ///   - 专业格式：1̇（上加点）、1̣（下加点）
   ///   - 简单格式：1'、1,
   /// [baseOctave] 基准八度
-  static int jianpuToMidi(String jianpu, {int baseOctave = 4}) {
+  static int jianpuStringToMidi(String jianpu, {int baseOctave = 4}) {
     // 统计高低八度标记（支持两种格式）
     final highOctaves = "'".allMatches(jianpu).length + _highDot.allMatches(jianpu).length;
     final lowOctaves = ",".allMatches(jianpu).length + _lowDot.allMatches(jianpu).length;

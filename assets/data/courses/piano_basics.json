@@ -1,0 +1,1186 @@
+{
+  "id": "piano_basics",
+  "category": "piano",
+  "title": "钢琴入门",
+  "description": "零基础学钢琴，掌握基本演奏技巧",
+  "icon": "🎹",
+  "gradientColors": ["#f093fb", "#f5576c"],
+  "lessons": [
+    {
+      "id": "piano_01",
+      "courseId": "piano_basics",
+      "order": 1,
+      "title": "认识钢琴",
+      "subtitle": "钢琴的构造与历史",
+      "type": "text",
+      "durationMinutes": 5,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 欢迎学习钢琴！🎹\n\n钢琴被称为「乐器之王」，它音域宽广、表现力丰富，是学习音乐的最佳工具之一。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 钢琴的历史\n\n钢琴诞生于约 300 年前的意大利，发明者是 **巴托洛梅奥·克里斯托弗里**。\n\n钢琴的意大利名「Pianoforte」意思是「能弱能强」，因为它能演奏从极弱到极强的各种力度。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 钢琴的构造\n\n标准钢琴有 **88 个琴键**：\n- **52 个白键**\n- **36 个黑键**\n\n键盘是你与钢琴对话的「入口」，通过按下琴键，琴槌敲击琴弦，发出美妙的声音。"
+          }
+        },
+        {
+          "type": "image",
+          "data": {
+            "url": "assets/images/piano/piano_anatomy.png",
+            "caption": "钢琴结构示意图"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 电钢琴与原声钢琴\n\n| 类型 | 优点 | 适合 |\n|------|------|------|\n| 原声钢琴 | 音色真实，触感细腻 | 专业学习 |\n| 电钢琴 | 便携，可调音量，不扰民 | 入门练习 |\n\n无论用哪种，学习的方法是一样的！"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "标准钢琴有多少个琴键？",
+            "options": ["66 个", "76 个", "88 个", "100 个"],
+            "correctIndex": 2,
+            "explanation": "标准钢琴有 88 个琴键，包括 52 个白键和 36 个黑键。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_02",
+      "courseId": "piano_basics",
+      "order": 2,
+      "title": "正确的坐姿",
+      "subtitle": "弹琴的身体姿势",
+      "type": "text",
+      "durationMinutes": 5,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 正确的坐姿 🪑\n\n好的坐姿是弹好钢琴的第一步。错误的姿势不仅影响演奏，还可能造成身体损伤。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 琴凳位置\n\n1. **距离**：坐在琴凳前半部分，手臂自然伸展时，手指刚好落在琴键上\n2. **高度**：手肘与琴键平齐或略高\n3. **对准**：身体正对中央 C（键盘中央）"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 身体姿势\n\n- **背部**：挺直但不僵硬\n- **肩膀**：放松下沉，不耸肩\n- **手臂**：与地面平行或微微向下倾斜\n- **脚**：平放地面（个子小可用脚凳）"
+          }
+        },
+        {
+          "type": "image",
+          "data": {
+            "url": "assets/images/piano/sitting_posture.png",
+            "caption": "正确的钢琴坐姿"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 常见错误\n\n❌ 坐得太近或太远\n❌ 驼背或身体前倾\n❌ 耸肩或手臂紧张\n❌ 脚悬空或蜷缩\n\n✅ 保持放松、自然、舒适的状态"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "正确的坐姿中，手肘应该与琴键的位置关系是？",
+            "options": [
+              "手肘远高于琴键",
+              "手肘与琴键平齐或略高",
+              "手肘远低于琴键",
+              "没有要求"
+            ],
+            "correctIndex": 1,
+            "explanation": "手肘应与琴键平齐或略高，这样手臂能自然下垂到键盘上。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_03",
+      "courseId": "piano_basics",
+      "order": 3,
+      "title": "正确的手型",
+      "subtitle": "弹琴的手部姿势",
+      "type": "text",
+      "durationMinutes": 6,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 正确的手型 ✋\n\n手型是钢琴演奏的核心基础，好的手型让你弹得更轻松、更好听。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 基本手型要点\n\n想象你的手在握一个小球：\n\n1. **手指弯曲**：每个手指自然弯曲\n2. **指尖触键**：用指尖（靠近指甲的部分）按键\n3. **手腕平稳**：手腕与前臂成一条直线\n4. **手掌拱起**：手心像有一个气泡"
+          }
+        },
+        {
+          "type": "image",
+          "data": {
+            "url": "assets/images/piano/hand_shape.png",
+            "caption": "正确的钢琴手型：像握着一个网球"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 手指独立性\n\n每个手指都要能独立运动：\n\n- 按下一个键时，其他手指不要跟着动\n- 手指抬起和落下都要有控制\n- 不要「塌」关节（尤其是第一关节）"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 放松是关键\n\n- 紧张 = 速度慢 + 声音硬 + 容易累\n- 放松 = 速度快 + 声音美 + 持久力强\n\n经常检查自己：肩膀放松了吗？手腕僵硬了吗？"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "正确的手型应该像在握什么？",
+            "options": ["一张纸", "一个小球", "一根铅笔", "不握任何东西"],
+            "correctIndex": 1,
+            "explanation": "正确的手型应该像在握一个小球，手指弯曲、手心拱起。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_04",
+      "courseId": "piano_basics",
+      "order": 4,
+      "title": "认识键盘",
+      "subtitle": "黑白键的排列规律",
+      "type": "text",
+      "durationMinutes": 6,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 认识键盘 ⌨️\n\n钢琴键盘虽然有 88 个键，但它们的排列是有规律的，非常容易记忆！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 黑键的排列\n\n仔细观察黑键，你会发现它们分组排列：\n\n- **2 个一组**\n- **3 个一组**\n\n2-3-2-3-2-3... 不断重复，这就是键盘的「指纹」！"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 48,
+            "endMidi": 84,
+            "highlightNotes": [49, 51, 54, 56, 58, 61, 63, 66, 68, 70, 73, 75, 78, 80, 82],
+            "showLabels": false,
+            "instruction": "观察黑键的排列：2个一组和3个一组交替出现"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 找到 C（Do）\n\n在每组「2 个黑键」的左边，就是 **C**！\n\n这是找到任何音的关键：\n1. 先找 2 个黑键的那组\n2. 左边第一个白键就是 C"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 中央 C\n\n在钢琴正中央附近的 C，叫做「中央 C」（C4）。它是：\n\n- 学琴的起点\n- 五线谱的参照\n- 通常对着钢琴品牌标志"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 48,
+            "endMidi": 84,
+            "highlightNotes": [60],
+            "showLabels": true,
+            "labelType": "noteName",
+            "instruction": "高亮的白键就是中央 C，点击听听它的声音"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "怎么在键盘上快速找到 C (Do)？",
+            "options": [
+              "在 3 个黑键的右边",
+              "在 2 个黑键的左边",
+              "在 3 个黑键的左边",
+              "在 2 个黑键的右边"
+            ],
+            "correctIndex": 1,
+            "explanation": "C (Do) 位于每组 2 个黑键的左边第一个白键。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_05",
+      "courseId": "piano_basics",
+      "order": 5,
+      "title": "白键的名字",
+      "subtitle": "7 个音名的记忆",
+      "type": "text",
+      "durationMinutes": 7,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 白键的名字 🎵\n\n钢琴的 7 个白键有自己的名字，它们不断重复循环。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 7 个音名\n\n从 C 开始，依次是：\n\n```\nC → D → E → F → G → A → B → C（高八度）...\n```\n\n对应唱名：\n```\nDo Re Mi Fa Sol La Si Do...\n```"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 从黑键找白键\n\n利用黑键的排列记住白键：\n\n**2 个黑键旁边（从左到右）**：C D E\n\n**3 个黑键旁边（从左到右）**：F G A B"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 72,
+            "showLabels": true,
+            "labelType": "noteName",
+            "instruction": "依次点击 C D E F G A B，熟悉每个音的名字和声音"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 八度的概念\n\n从一个 C 到下一个 C，叫做一个「八度」（因为跨越了 8 个白键）。\n\n同名的音（如 C3 和 C4）听起来很相似，只是高低不同。"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "G 的下一个白键是什么音？",
+            "options": ["F", "A", "B", "C"],
+            "correctIndex": 1,
+            "explanation": "白键顺序是 C-D-E-F-G-A-B，所以 G 的下一个是 A。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_06",
+      "courseId": "piano_basics",
+      "order": 6,
+      "title": "手指编号",
+      "subtitle": "五个手指的称呼",
+      "type": "text",
+      "durationMinutes": 5,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 手指编号 🖐️\n\n在钢琴乐谱中，会用数字告诉你用哪个手指弹，这就是「指法」。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 五个手指的编号\n\n双手的编号是一样的：\n\n| 手指 | 编号 | 名称 |\n|------|------|------|\n| 大拇指 | 1 | 第一指 |\n| 食指 | 2 | 第二指 |\n| 中指 | 3 | 第三指 |\n| 无名指 | 4 | 第四指 |\n| 小指 | 5 | 第五指 |"
+          }
+        },
+        {
+          "type": "image",
+          "data": {
+            "url": "assets/images/piano/finger_numbers.png",
+            "caption": "手指编号：1-2-3-4-5"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 指法的作用\n\n正确的指法能让你：\n\n1. **弹得更顺**：手指不打架\n2. **弹得更快**：流畅过渡\n3. **弹得更准**：减少错音\n\n初学时要严格按照谱上标注的指法练习！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习：动动手指\n\n试着按顺序抬起每个手指：\n1 → 2 → 3 → 4 → 5\n\n然后反过来：\n5 → 4 → 3 → 2 → 1\n\n4 号（无名指）是不是最难控制的？这很正常！"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "中指的编号是多少？",
+            "options": ["1", "2", "3", "4"],
+            "correctIndex": 2,
+            "explanation": "中指是第三指，编号 3。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_07",
+      "courseId": "piano_basics",
+      "order": 7,
+      "title": "右手 Do Re Mi",
+      "subtitle": "第一个手位练习",
+      "type": "text",
+      "durationMinutes": 8,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 右手 Do Re Mi 🎶\n\n现在让我们用右手弹奏第一组音符！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 右手基本手位\n\n将右手放在中央 C 上：\n\n| 音 | 手指 | 键位 |\n|-----|------|------|\n| Do | 1 (大拇指) | C |\n| Re | 2 (食指) | D |\n| Mi | 3 (中指) | E |\n| Fa | 4 (无名指) | F |\n| Sol | 5 (小指) | G |\n\n这叫做「五指手位」。"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 72,
+            "highlightNotes": [60, 62, 64, 65, 67],
+            "showLabels": true,
+            "labelType": "jianpu",
+            "instruction": "高亮的五个键就是右手五指手位，从 1(Do) 开始练习"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习步骤\n\n1. 先单独弹每个音，确保手型正确\n2. 按顺序弹：1-2-3-4-5（上行）\n3. 反过来弹：5-4-3-2-1（下行）\n4. 每个音弹均匀，不要忽快忽慢"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 简单旋律练习\n\n试着弹这个简单旋律：\n\n```\n1 2 3 2 1 - - -\n```\n\n节奏均匀，每个音清晰。"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "notes": [60, 62, 64, 62, 60],
+            "labels": ["1", "2", "3", "2", "1"],
+            "instruction": "先听示范，然后跟着弹"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "右手五指手位中，大拇指（1指）应该放在哪个键？",
+            "options": ["D", "E", "C", "F"],
+            "correctIndex": 2,
+            "explanation": "右手五指手位从中央 C 开始，大拇指放在 C (Do) 上。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_08",
+      "courseId": "piano_basics",
+      "order": 8,
+      "title": "左手 Do Re Mi",
+      "subtitle": "左手的基本手位",
+      "type": "text",
+      "durationMinutes": 8,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 左手 Do Re Mi 🎵\n\n学会了右手，现在来练习左手吧！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 左手基本手位\n\n左手五指手位（从低音 C 开始）：\n\n| 音 | 手指 | 键位 |\n|-----|------|------|\n| Do | 5 (小指) | C3 |\n| Re | 4 (无名指) | D3 |\n| Mi | 3 (中指) | E3 |\n| Fa | 2 (食指) | F3 |\n| Sol | 1 (大拇指) | G3 |\n\n注意：左手的指法和右手是相反的！"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 48,
+            "endMidi": 60,
+            "highlightNotes": [48, 50, 52, 53, 55],
+            "showLabels": true,
+            "labelType": "jianpu",
+            "instruction": "左手五指手位，从低八度的 Do 开始"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 左手练习要点\n\n1. **控制力度**：左手通常弹伴奏，力度要稍轻\n2. **手型稳定**：不要因为是弱势手就塌陷\n3. **耐心练习**：左手灵活度不如右手是正常的"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 左手练习\n\n先练上行和下行：\n```\n5-4-3-2-1（上行：Do Re Mi Fa Sol）\n1-2-3-4-5（下行：Sol Fa Mi Re Do）\n```"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "notes": [48, 50, 52, 53, 55, 53, 52, 50, 48],
+            "labels": ["1̣", "2̣", "3̣", "4̣", "5̣", "4̣", "3̣", "2̣", "1̣"],
+            "instruction": "听左手练习示范"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "左手五指手位中，小指（5指）应该放在哪个键？",
+            "options": ["G (Sol)", "C (Do)", "E (Mi)", "F (Fa)"],
+            "correctIndex": 1,
+            "explanation": "左手五指手位中，小指（5指）放在低音的 C (Do) 上。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_09",
+      "courseId": "piano_basics",
+      "order": 9,
+      "title": "双手基础",
+      "subtitle": "双手同时弹奏入门",
+      "type": "text",
+      "durationMinutes": 10,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 双手协调 👐\n\n双手同时弹是钢琴学习的一个重要里程碑，需要循序渐进。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 为什么双手难？\n\n我们的大脑不习惯让两只手做不同的事：\n\n- 左右手分属不同的脑半球控制\n- 需要建立新的神经连接\n- 练习是唯一的途径！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 循序渐进的方法\n\n1. **先分手练**：左右手分别练熟\n2. **慢速合手**：用很慢的速度把两只手放在一起\n3. **逐渐加速**：熟练后再慢慢提速"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 第一个双手练习：同向移动\n\n双手同时弹相同的音：\n\n```\n右手：1 2 3 4 5\n左手：1 2 3 4 5（低八度）\n```\n\n两只手一起按下，一起抬起。"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 48,
+            "endMidi": 72,
+            "highlightNotes": [48, 60, 50, 62, 52, 64, 53, 65, 55, 67],
+            "showLabels": true,
+            "labelType": "jianpu",
+            "instruction": "试着左右手同时弹同样的音（相差一个八度）"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习建议\n\n- 一开始会手忙脚乱，这很正常\n- 放慢速度，宁慢勿错\n- 每天练习 10-15 分钟比一次练 2 小时效果好"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "学习双手弹奏的正确顺序是？",
+            "options": [
+              "直接双手合练",
+              "先练右手，再双手",
+              "先分手练熟，再慢速合手",
+              "只练右手就够了"
+            ],
+            "correctIndex": 2,
+            "explanation": "正确的方法是：先分手练熟 → 慢速合手 → 逐渐加速。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_10",
+      "courseId": "piano_basics",
+      "order": 10,
+      "title": "C 大调音阶",
+      "subtitle": "最基础的音阶",
+      "type": "text",
+      "durationMinutes": 8,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# C 大调音阶 🎼\n\n音阶是钢琴的「基本功」，C 大调音阶是最基础的一个。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 什么是 C 大调音阶？\n\nC 大调音阶就是从 C 到 C 的八个白键：\n\n```\nC - D - E - F - G - A - B - C\n```\n\n没有任何升降号，全部是白键！"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 84,
+            "highlightNotes": [60, 62, 64, 65, 67, 69, 71, 72],
+            "showLabels": true,
+            "labelType": "noteName",
+            "instruction": "从 C 开始，依次弹到高八度的 C"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 右手音阶指法\n\n一个八度的 C 大调音阶（右手）：\n\n| 音 | C | D | E | F | G | A | B | C |\n|------|---|---|---|---|---|---|---|---|\n| 指法 | 1 | 2 | 3 | 1 | 2 | 3 | 4 | 5 |\n\n注意：弹到 E 后，大拇指要「穿」到 F 下面！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 「穿指」技巧\n\n当手指不够用时，我们用「穿指」：\n\n1. 弹完 E（3指）后\n2. 大拇指从手掌下面穿过去\n3. 落在 F 上\n\n这样就能无限延续弹下去了！"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "notes": [60, 62, 64, 65, 67, 69, 71, 72],
+            "labels": ["C", "D", "E", "F", "G", "A", "B", "C"],
+            "instruction": "C 大调音阶示范"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "弹 C 大调音阶时，「穿指」发生在哪两个音之间？",
+            "options": ["C 和 D", "E 和 F", "G 和 A", "B 和 C"],
+            "correctIndex": 1,
+            "explanation": "右手弹 C 大调音阶时，从 E（3指）到 F（1指）需要「穿指」。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_11",
+      "courseId": "piano_basics",
+      "order": 11,
+      "title": "认识和弦",
+      "subtitle": "三个音同时响起",
+      "type": "text",
+      "durationMinutes": 7,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 认识和弦 🎶\n\n和弦是多个音同时发声，是音乐「立体」的秘密。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 什么是和弦？\n\n**和弦**（Chord）是 3 个或更多音同时演奏。\n\n最基本的和弦是「三和弦」，由 3 个音组成。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 和弦的构成\n\n三和弦由「根音 + 三度音 + 五度音」组成：\n\n以 C 和弦为例：\n- **根音**：C (Do)\n- **三度音**：E (Mi)，比根音高 3 度\n- **五度音**：G (Sol)，比根音高 5 度"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 72,
+            "highlightNotes": [60, 64, 67],
+            "showLabels": true,
+            "labelType": "noteName",
+            "instruction": "C 和弦：同时按下 C、E、G 三个键"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 和弦的指法\n\nC 和弦右手指法：\n- C：1（大拇指）\n- E：3（中指）\n- G：5（小指）\n\n三个手指同时按下，一起松开。"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "notes": [[60, 64, 67]],
+            "labels": ["C 和弦"],
+            "instruction": "听听 C 和弦的声音"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "C 大三和弦由哪三个音组成？",
+            "options": ["C-D-E", "C-E-G", "C-F-A", "C-G-B"],
+            "correctIndex": 1,
+            "explanation": "C 大三和弦由 C(根音)、E(三度音)、G(五度音) 组成。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_12",
+      "courseId": "piano_basics",
+      "order": 12,
+      "title": "C 大调三个主和弦",
+      "subtitle": "I-IV-V 和弦",
+      "type": "text",
+      "durationMinutes": 8,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# C 大调三个主和弦 🎵\n\n大部分简单歌曲只用 3 个和弦就能伴奏！"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 三个主和弦\n\n| 和弦 | 级数 | 组成音 | 简称 |\n|------|------|--------|------|\n| C | I级 | C-E-G | 主和弦 |\n| F | IV级 | F-A-C | 下属和弦 |\n| G | V级 | G-B-D | 属和弦 |\n\n这三个和弦被称为「主和弦」，是调式的骨架。"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 48,
+            "endMidi": 72,
+            "showLabels": true,
+            "labelType": "noteName",
+            "instruction": "依次弹奏 C 和弦(C-E-G)、F 和弦(F-A-C)、G 和弦(G-B-D)"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 和弦进行\n\n试试这个常见的和弦进行：\n\n```\nC → F → G → C\n```\n\n这是很多流行歌曲的基础！"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "notes": [[60, 64, 67], [53, 57, 60], [55, 59, 62], [60, 64, 67]],
+            "labels": ["C", "F", "G", "C"],
+            "instruction": "听听 C-F-G-C 的和弦进行"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习建议\n\n1. 先单独练好每个和弦\n2. 练习和弦之间的「转换」\n3. 用节拍器，保持稳定的节奏\n4. 唱着歌名试试配和弦"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "F 和弦由哪三个音组成？",
+            "options": ["F-G-A", "F-A-C", "F-B-D", "F-A-B"],
+            "correctIndex": 1,
+            "explanation": "F 大三和弦由 F(根音)、A(三度音)、C(五度音) 组成。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_13",
+      "courseId": "piano_basics",
+      "order": 13,
+      "title": "节奏练习",
+      "subtitle": "培养稳定的节拍感",
+      "type": "text",
+      "durationMinutes": 7,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 节奏练习 🥁\n\n音乐的灵魂是节奏。没有稳定的节奏，再好的音符也会显得杂乱无章。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 节拍器的重要性\n\n**节拍器**（Metronome）是你的节奏教练：\n\n- 帮助你建立内在的节奏感\n- 暴露你弹快或弹慢的问题\n- 逐步提高演奏速度"
+          }
+        },
+        {
+          "type": "metronome",
+          "data": {
+            "defaultBpm": 60,
+            "defaultBeats": 4,
+            "instruction": "打开节拍器，跟着拍子弹简单的音阶"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 基础节奏型\n\n**4/4 拍的基础练习**：\n\n```\n| 1  2  3  4 | 1  2  3  4 |\n| C  -  -  - | D  -  -  - |   ← 全音符\n| C  -  D  - | E  -  F  - |   ← 二分音符\n| C  D  E  F | G  A  B  C |   ← 四分音符\n```"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习要点\n\n1. **从慢开始**：60 BPM 是好的起点\n2. **跟着数拍**：心里默数「1-2-3-4」\n3. **保持稳定**：不要忽快忽慢\n4. **循序渐进**：熟练后再提高 5-10 BPM"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "使用节拍器练习时，应该从多少 BPM 开始？",
+            "options": ["120 BPM", "100 BPM", "60 BPM", "越快越好"],
+            "correctIndex": 2,
+            "explanation": "60 BPM 是一个很好的起点，等熟练后再逐步提高速度。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_14",
+      "courseId": "piano_basics",
+      "order": 14,
+      "title": "力度控制",
+      "subtitle": "弹出强弱变化",
+      "type": "text",
+      "durationMinutes": 7,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 力度控制 💪\n\n同一个音符，用不同的力度弹，给人的感觉完全不同。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 力度的层次\n\n从弱到强：\n\n```\npp (很弱) → p (弱) → mp (中弱) → mf (中强) → f (强) → ff (很强)\n```\n\n好的演奏者能弹出丰富的力度层次。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 如何控制力度？\n\n力度来自：\n\n1. **手指下键的速度**：快 = 强，慢 = 弱\n2. **手臂的重量**：用或不用手臂的重量\n3. **手指的准备高度**：高 = 强，低 = 弱\n\n**不是**用力按下去！那样会让手紧张。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 力度练习\n\n在 C 音上练习力度变化：\n\n1. 弹一个很轻的 C（pp）\n2. 弹一个中等的 C（mf）\n3. 弹一个响亮的 C（f）\n\n比较它们的区别。"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 72,
+            "highlightNotes": [60],
+            "showLabels": true,
+            "labelType": "noteName",
+            "instruction": "在 C 音上练习不同的力度"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 渐强与渐弱\n\n- **渐强（crescendo）**：声音从弱到强\n- **渐弱（diminuendo）**：声音从强到弱\n\n试试在一组音阶上做渐强或渐弱。"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "弹出「强音」的关键是什么？",
+            "options": [
+              "用力按住琴键",
+              "快速下键",
+              "按键时间更长",
+              "手臂紧绷"
+            ],
+            "correctIndex": 1,
+            "explanation": "力度来自下键的速度，而不是用力程度。快速下键产生强音，慢速下键产生弱音。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_15",
+      "courseId": "piano_basics",
+      "order": 15,
+      "title": "连奏与断奏",
+      "subtitle": "两种基本奏法",
+      "type": "text",
+      "durationMinutes": 7,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 连奏与断奏 🎵\n\n音符之间的「连」与「断」，是音乐表达的重要手段。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 连奏（Legato）\n\n连奏要求音与音之间 **无缝衔接**：\n\n- 前一个音松开的瞬间，后一个音按下\n- 就像「交接棒」一样\n- 谱上用 **连线** 表示\n\n效果：流畅、歌唱性强"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 断奏（Staccato）\n\n断奏要求音与音之间 **有空隙**：\n\n- 手指快速「弹」起来\n- 音的时值缩短一半\n- 谱上用音符上方的 **小点** 表示\n\n效果：活泼、有弹性"
+          }
+        },
+        {
+          "type": "image",
+          "data": {
+            "url": "assets/images/piano/legato_staccato.png",
+            "caption": "连奏（上）与断奏（下）的记号和效果"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习对比\n\n用 C-D-E-F-G 练习：\n\n1. **连奏版**：音符之间紧密连接，像唱歌一样\n2. **断奏版**：每个音短促有力，像小鸟啄食\n\n感受两种奏法的不同效果！"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 72,
+            "highlightNotes": [60, 62, 64, 65, 67],
+            "showLabels": true,
+            "labelType": "noteName",
+            "instruction": "分别用连奏和断奏弹 C-D-E-F-G"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "断奏（Staccato）在乐谱上用什么符号表示？",
+            "options": ["连线", "音符上方的小点", "延音线", "重音记号"],
+            "correctIndex": 1,
+            "explanation": "断奏在乐谱上用音符上方或下方的小点表示。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_16",
+      "courseId": "piano_basics",
+      "order": 16,
+      "title": "踏板入门",
+      "subtitle": "延音踏板的使用",
+      "type": "text",
+      "durationMinutes": 7,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 踏板入门 🦶\n\n踏板是钢琴的「灵魂」，能让声音更加丰富多彩。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 钢琴的三个踏板\n\n从右到左：\n\n| 踏板 | 名称 | 作用 |\n|------|------|------|\n| 右踏板 | 延音踏板 | 让所有音持续响 |\n| 中踏板 | 持音踏板 | 只延长特定的音 |\n| 左踏板 | 柔音踏板 | 让声音更柔和 |\n\n最常用的是 **右踏板（延音踏板）**。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 延音踏板的原理\n\n踩下延音踏板时：\n\n1. 所有制音器都抬起\n2. 琴弦可以自由振动\n3. 弹过的音会持续响\n4. 产生丰富的共鸣"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 踏板的基本用法\n\n**「切换」踏板技巧**：\n\n1. 弹下第一个音/和弦\n2. 踩下踏板\n3. 弹下一个音/和弦的同时，快速「抬-踩」踏板\n4. 重复步骤 3\n\n这样可以避免不同和弦的声音混在一起。"
+          }
+        },
+        {
+          "type": "image",
+          "data": {
+            "url": "assets/images/piano/pedal_technique.png",
+            "caption": "踏板切换的时机：弹新音时换踏板"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 注意事项\n\n❌ 一直踩着不放 = 声音会糊成一团\n❌ 踩得太重 = 会有杂音\n✅ 轻踩、快换 = 声音干净又丰满"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "最常用的踏板是哪个？",
+            "options": ["左踏板（柔音踏板）", "中踏板（持音踏板）", "右踏板（延音踏板）", "三个都一样常用"],
+            "correctIndex": 2,
+            "explanation": "右踏板（延音踏板）是最常用的踏板，几乎每首曲子都会用到。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_17",
+      "courseId": "piano_basics",
+      "order": 17,
+      "title": "乐句表达",
+      "subtitle": "让音乐有「呼吸」",
+      "type": "text",
+      "durationMinutes": 6,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 乐句表达 🎭\n\n音乐不是一堆音符的堆砌，而是有「呼吸」的语言。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 什么是乐句？\n\n**乐句**（Phrase）就像说话时的一个句子：\n\n- 有开始、发展、结束\n- 有高潮、有放松\n- 有「吸气」的地方\n\n好的演奏让听众感受到音乐的「呼吸」。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 乐句的弹法\n\n1. **起始**：轻轻开始\n2. **发展**：渐渐增强\n3. **高点**：最强的地方\n4. **收尾**：渐渐减弱，像说完一句话"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 乐句的「呼吸」\n\n在乐句与乐句之间，留一点空间：\n\n- 就像说话要换气\n- 手腕可以轻轻抬起\n- 给音乐一点「空白」"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习：唱出来\n\n学习乐句表达的好方法：\n\n1. 先用嘴巴「唱」这段旋律\n2. 感受在哪里换气最自然\n3. 把这种感觉转移到手指上"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "乐句的「高点」通常应该怎么弹？",
+            "options": ["最轻", "最强", "最快", "最慢"],
+            "correctIndex": 1,
+            "explanation": "乐句的高点通常是最强的地方，然后再渐渐收尾减弱。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_18",
+      "courseId": "piano_basics",
+      "order": 18,
+      "title": "练琴方法",
+      "subtitle": "高效练习的秘诀",
+      "type": "text",
+      "durationMinutes": 6,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 练琴方法 📚\n\n练琴不是简单地重复，而是有方法、有目标地进步。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 科学练琴原则\n\n1. **短时多次** > 长时少次\n   - 每天 30 分钟比一周一次 3 小时好\n\n2. **慢练为王**\n   - 慢练时错误无处躲藏\n   - 速度是慢练的自然结果"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 分段练习法\n\n不要从头弹到尾：\n\n1. 找出**困难段落**\n2. **单独**把这段练好\n3. 再和前后段落**连接**\n4. 最后**完整**演奏"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 手指练习\n\n每天的练习可以这样安排：\n\n| 内容 | 时间 | 目的 |\n|------|------|------|\n| 音阶/琶音 | 10 分钟 | 手指热身 |\n| 练习曲 | 10 分钟 | 技巧训练 |\n| 乐曲 | 15 分钟 | 音乐表达 |\n| 视奏/复习 | 5 分钟 | 综合能力 |"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 保持专注\n\n- 关掉手机通知\n- 设定明确的目标（今天要解决哪个问题）\n- 累了就休息，疲劳练习没效果"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "以下哪种练琴方式更有效？",
+            "options": [
+              "每周末练 3 小时",
+              "每天练 30 分钟",
+              "有空的时候练",
+              "一次练到手累"
+            ],
+            "correctIndex": 1,
+            "explanation": "「短时多次」比「长时少次」更有效，每天 30 分钟是很好的练习习惯。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_19",
+      "courseId": "piano_basics",
+      "order": 19,
+      "title": "第一首曲子：小星星",
+      "subtitle": "完整演奏一首歌",
+      "type": "text",
+      "durationMinutes": 10,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 小星星 ⭐\n\n恭喜你！现在我们来学习第一首完整的曲子——《小星星》（Twinkle Twinkle Little Star）。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 旋律（右手）\n\n```\n| 1 1 5 5 | 6 6 5 - | 4 4 3 3 | 2 2 1 - |\n| 5 5 4 4 | 3 3 2 - | 5 5 4 4 | 3 3 2 - |\n| 1 1 5 5 | 6 6 5 - | 4 4 3 3 | 2 2 1 - |\n```\n\n一共三行，第一行和第三行是一样的！"
+          }
+        },
+        {
+          "type": "audio",
+          "data": {
+            "notes": [60, 60, 67, 67, 69, 69, 67, 65, 65, 64, 64, 62, 62, 60],
+            "labels": ["1", "1", "5", "5", "6", "6", "5", "4", "4", "3", "3", "2", "2", "1"],
+            "instruction": "先听一遍旋律"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 指法参考\n\n| 小节 | 音符 | 指法 |\n|------|------|------|\n| 1-2 | 1 1 5 5 6 6 5 | 1 1 5 5 5 5 5 |\n| 3-4 | 4 4 3 3 2 2 1 | 4 4 3 3 2 2 1 |"
+          }
+        },
+        {
+          "type": "piano",
+          "data": {
+            "startMidi": 60,
+            "endMidi": 72,
+            "highlightNotes": [60, 62, 64, 65, 67, 69],
+            "showLabels": true,
+            "labelType": "jianpu",
+            "instruction": "这首歌只用到这 6 个音，跟着练习吧"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 练习步骤\n\n1. 先慢慢弹熟第一行\n2. 再练第二行（中间部分）\n3. 连起来完整弹一遍\n4. 用节拍器保持稳定的节奏"
+          }
+        },
+        {
+          "type": "metronome",
+          "data": {
+            "defaultBpm": 60,
+            "defaultBeats": 4,
+            "instruction": "打开节拍器，保持稳定的节奏弹奏"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "《小星星》的第一个音是什么？",
+            "options": ["Do (1)", "Re (2)", "Mi (3)", "Sol (5)"],
+            "correctIndex": 0,
+            "explanation": "《小星星》以 Do (1) 开头：1 1 5 5 6 6 5..."
+          }
+        }
+      ]
+    },
+    {
+      "id": "piano_20",
+      "courseId": "piano_basics",
+      "order": 20,
+      "title": "课程总结与进阶",
+      "subtitle": "回顾与展望",
+      "type": "text",
+      "durationMinutes": 5,
+      "contentBlocks": [
+        {
+          "type": "text",
+          "data": {
+            "content": "# 课程总结 🎉\n\n恭喜你完成了钢琴入门课程的全部内容！让我们回顾一下你学到了什么。"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 你已经掌握的技能\n\n✅ 正确的坐姿和手型\n✅ 认识键盘和手指编号\n✅ 右手和左手的五指手位\n✅ C 大调音阶\n✅ C、F、G 三个基本和弦\n✅ 节奏感和力度控制\n✅ 连奏与断奏\n✅ 踏板的基本使用\n✅ 第一首曲子《小星星》"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 下一步学什么？\n\n继续进阶学习：\n\n1. **更多调式**：学习 G 大调、D 大调等\n2. **更复杂的节奏**：切分音、三连音\n3. **更多和弦**：小和弦、七和弦\n4. **双手独立**：两只手弹不同的节奏\n5. **更长的曲目**：挑战更有难度的乐曲"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 保持练习的建议\n\n🎯 **设定目标**：每周学一首新曲子\n📅 **坚持练习**：每天 30 分钟比周末 3 小时更有效\n🎵 **多听音乐**：听你想弹的曲子，培养乐感\n👨‍🏫 **寻求指导**：如果可能，找一位老师纠正问题\n🎹 **享受过程**：音乐是一辈子的伴侣，不要着急"
+          }
+        },
+        {
+          "type": "text",
+          "data": {
+            "content": "## 推荐下一步曲目\n\n入门后可以尝试：\n\n1. 《欢乐颂》- 贝多芬\n2. 《献给爱丽丝》片段 - 贝多芬\n3. 《小步舞曲》- 巴赫\n4. 《梦中的婚礼》简化版\n5. 流行歌曲简易钢琴谱\n\n祝你在钢琴学习的道路上越走越远！🎹✨"
+          }
+        },
+        {
+          "type": "quiz",
+          "data": {
+            "question": "学习钢琴最重要的是什么？",
+            "options": ["天赋", "昂贵的钢琴", "坚持练习", "只弹难曲子"],
+            "correctIndex": 2,
+            "explanation": "坚持练习是学好钢琴最重要的因素。每天短时间的练习比偶尔长时间练习更有效。"
+          }
+        }
+      ]
+    }
+  ]
+}
