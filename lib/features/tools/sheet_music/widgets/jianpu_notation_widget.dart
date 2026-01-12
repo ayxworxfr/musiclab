@@ -220,23 +220,38 @@ class JianpuNotationWidget extends StatelessWidget {
 
   /// 计算小节宽度
   double _calculateMeasureWidth(SheetMeasure measure) {
-    var width = 20.0; // 小节线宽度
+    var width = 12.0; // 小节线宽度 + 边距
     for (final note in measure.notes) {
-      // 基础宽度
-      width += style.noteSpacing;
-      // 延长线额外宽度
-      width += note.duration.dashCount * style.noteSpacing * 0.6;
+      // 基础宽度 + 延长线额外宽度
+      width += style.noteSpacing + note.duration.dashCount * style.noteSpacing * 0.5;
     }
     return width;
   }
 
   /// 构建一行乐谱
   Widget _buildLine(BuildContext context, List<int> measureIndices) {
+    if (measureIndices.isEmpty) return const SizedBox.shrink();
+    
+    final firstMeasureNumber = sheet.measures[measureIndices.first].number;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // 行首小节号
+          if (style.showMeasureNumbers)
+            SizedBox(
+              width: 24,
+              child: Text(
+                '$firstMeasureNumber',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          // 小节内容
           ...measureIndices.map((i) => _buildMeasure(context, i)),
         ],
       ),
@@ -249,22 +264,9 @@ class JianpuNotationWidget extends StatelessWidget {
     final isHighlighted = measureIndex == highlightMeasureIndex;
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 小节号
-        if (style.showMeasureNumbers && measure.number == 1 ||
-            measureIndex == 0)
-          SizedBox(
-            width: 20,
-            child: Text(
-              '${measure.number}',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey,
-              ),
-            ),
-          ),
         // 反复开始记号
         if (measure.hasRepeatStart)
           _buildRepeatSign(isStart: true),
@@ -365,151 +367,172 @@ class JianpuNotationWidget extends StatelessWidget {
     bool isHighlighted,
   ) {
     final noteColor = isHighlighted ? style.highlightColor : style.noteColor;
+    final dashCount = note.duration.dashCount;
+    final totalWidth = style.noteSpacing + dashCount * style.noteSpacing * 0.5;
 
     return GestureDetector(
       onTap: () => onNoteTap?.call(measureIndex, noteIndex),
-      child: Container(
-        width: style.noteSpacing + note.duration.dashCount * style.noteSpacing * 0.6,
+      child: SizedBox(
+        width: totalWidth,
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 指法
+            // 指法（在数字区域上方居中）
             if (style.showFingering && note.fingering != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  '${note.fingering}',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            // 高音点
-            if (note.octave > 0)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(
-                    note.octave,
-                    (_) => Container(
-                      width: 4,
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 1),
-                      decoration: BoxDecoration(
-                        color: noteColor,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            // 音符主体
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 变音记号
-                if (note.accidental != Accidental.none)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 2),
+              SizedBox(
+                width: style.noteSpacing,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
                     child: Text(
-                      note.accidental.displaySymbol,
-                      style: TextStyle(
-                        fontSize: style.noteFontSize * 0.6,
-                        color: noteColor,
+                      '${note.fingering}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey,
                       ),
                     ),
                   ),
-                // 音符数字（带附点和低音点）
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Text(
-                          note.isRest ? '0' : '${note.degree}',
-                          style: TextStyle(
-                            fontSize: style.noteFontSize,
-                            fontWeight: FontWeight.bold,
+                ),
+              ),
+            // 音符主体行（数字 + 延音线）
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 数字区域（固定宽度，高音点/低音点在此区域内居中）
+                SizedBox(
+                  width: style.noteSpacing,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 高音点（在数字上方）
+                      if (note.octave > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: List.generate(
+                              note.octave,
+                              (_) => Container(
+                                width: 4,
+                                height: 4,
+                                margin: const EdgeInsets.symmetric(horizontal: 1),
+                                decoration: BoxDecoration(
+                                  color: noteColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      // 音符数字（带变音记号和附点）
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 变音记号
+                          if (note.accidental != Accidental.none)
+                            Text(
+                              note.accidental.displaySymbol,
+                              style: TextStyle(
+                                fontSize: style.noteFontSize * 0.6,
+                                color: noteColor,
+                              ),
+                            ),
+                          // 数字和附点
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Text(
+                                note.isRest ? '0' : '${note.degree}',
+                                style: TextStyle(
+                                  fontSize: style.noteFontSize,
+                                  fontWeight: FontWeight.bold,
+                                  color: noteColor,
+                                ),
+                              ),
+                              // 附点（在音符右上方）
+                              if (note.isDotted)
+                                Positioned(
+                                  right: -6,
+                                  top: 2,
+                                  child: Container(
+                                    width: 4,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: noteColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      // 下划线（八分、十六分音符）
+                      if (note.duration.underlineCount > 0)
+                        ...List.generate(
+                          note.duration.underlineCount,
+                          (_) => Container(
+                            width: style.noteSpacing * 0.6,
+                            height: 2,
+                            margin: const EdgeInsets.only(top: 2),
                             color: noteColor,
                           ),
                         ),
-                        // 附点（在音符右上方）
-                        if (note.isDotted)
-                          Positioned(
-                            right: -6,
-                            top: 2,
-                            child: Container(
-                              width: 3,
-                              height: 3,
-                              decoration: BoxDecoration(
-                                color: noteColor,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    // 下划线（八分、十六分音符）
-                    if (note.duration.underlineCount > 0)
-                      ...List.generate(
-                        note.duration.underlineCount,
-                        (_) => Container(
-                          width: style.noteSpacing * 0.7,
-                          height: 2,
-                          margin: const EdgeInsets.only(top: 2),
-                          color: noteColor,
-                        ),
-                      ),
-                    // 低音点
-                    if (note.octave < 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(
-                            -note.octave,
-                            (_) => Container(
-                              width: 4,
-                              height: 4,
-                              margin: const EdgeInsets.symmetric(horizontal: 1),
-                              decoration: BoxDecoration(
-                                color: noteColor,
-                                shape: BoxShape.circle,
+                      // 低音点（在下划线下方）
+                      if (note.octave < 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: List.generate(
+                              -note.octave,
+                              (_) => Container(
+                                width: 4,
+                                height: 4,
+                                margin: const EdgeInsets.symmetric(horizontal: 1),
+                                decoration: BoxDecoration(
+                                  color: noteColor,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-                // 延长线（二分、全音符）
-                ...List.generate(
-                  note.duration.dashCount,
-                  (_) => Container(
-                    width: style.noteSpacing * 0.5,
-                    height: 2,
-                    margin: const EdgeInsets.only(left: 4),
-                    color: noteColor,
+                    ],
                   ),
                 ),
+                // 延音线（在数字右侧，与数字垂直居中对齐）
+                if (dashCount > 0)
+                  ...List.generate(
+                    dashCount,
+                    (i) => Container(
+                      width: style.noteSpacing * 0.4,
+                      height: 2,
+                      margin: EdgeInsets.only(left: i == 0 ? 2 : 4),
+                      color: noteColor,
+                    ),
+                  ),
               ],
             ),
-            // 歌词
+            // 歌词（在数字区域下方居中）
             if (style.showLyrics && note.lyric != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  note.lyric!,
-                  style: TextStyle(
-                    fontSize: style.lyricFontSize,
-                    color: style.lyricColor,
+              SizedBox(
+                width: style.noteSpacing,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      note.lyric!,
+                      style: TextStyle(
+                        fontSize: style.lyricFontSize,
+                        color: style.lyricColor,
+                      ),
+                    ),
                   ),
                 ),
               ),

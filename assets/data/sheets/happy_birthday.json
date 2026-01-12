@@ -14,94 +14,89 @@
     {
       "number": 1,
       "notes": [
-        {"degree": 5, "octave": 0, "duration": "eighth"},
         {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "祝"},
-        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "你"}
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "你"}
       ]
     },
     {
       "number": 2,
       "notes": [
-        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "生"},
-        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "日"},
-        {"degree": 7, "octave": 0, "duration": "quarter", "lyric": "快"}
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "生"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "日"},
+        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "快"}
       ]
     },
     {
       "number": 3,
       "notes": [
-        {"degree": 6, "octave": 0, "duration": "half", "lyric": "乐"}
+        {"degree": 7, "octave": 0, "duration": "half", "isDotted": true, "lyric": "乐"}
       ]
     },
     {
       "number": 4,
       "notes": [
-        {"degree": 5, "octave": 0, "duration": "eighth"},
         {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "祝"},
-        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "你"}
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "你"}
       ]
     },
     {
       "number": 5,
       "notes": [
-        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "生"},
-        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "日"},
-        {"degree": 7, "octave": 0, "duration": "quarter", "lyric": "快"}
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "生"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "日"},
+        {"degree": 2, "octave": 1, "duration": "quarter", "lyric": "快"}
       ]
     },
     {
       "number": 6,
       "notes": [
-        {"degree": 6, "octave": 0, "duration": "half", "lyric": "乐"}
+        {"degree": 1, "octave": 1, "duration": "half", "isDotted": true, "lyric": "乐"}
       ]
     },
     {
       "number": 7,
       "notes": [
-        {"degree": 5, "octave": 0, "duration": "eighth"},
         {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "祝"},
-        {"degree": 5, "octave": 1, "duration": "quarter", "lyric": "你"}
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "你"}
       ]
     },
     {
       "number": 8,
       "notes": [
-        {"degree": 3, "octave": 1, "duration": "quarter", "lyric": "生"},
-        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "日"},
-        {"degree": 7, "octave": 0, "duration": "quarter", "lyric": "快"}
+        {"degree": 5, "octave": 1, "duration": "quarter", "lyric": "生"},
+        {"degree": 3, "octave": 1, "duration": "quarter", "lyric": "日"},
+        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "快"}
       ]
     },
     {
       "number": 9,
       "notes": [
-        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "乐"},
-        {"degree": 6, "octave": 0, "duration": "quarter"},
-        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "祝"}
+        {"degree": 7, "octave": 0, "duration": "quarter", "lyric": "乐"},
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "祝"},
+        {"degree": 4, "octave": 1, "duration": "quarter", "lyric": "你"}
       ]
     },
     {
       "number": 10,
       "notes": [
-        {"degree": 3, "octave": 1, "duration": "quarter", "lyric": "你"},
-        {"degree": 3, "octave": 1, "duration": "quarter"},
-        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "生"}
+        {"degree": 4, "octave": 1, "duration": "eighth", "lyric": "生"},
+        {"degree": 4, "octave": 1, "duration": "eighth", "lyric": "日"}
       ]
     },
     {
       "number": 11,
       "notes": [
-        {"degree": 2, "octave": 1, "duration": "quarter", "lyric": "日"},
-        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "快"},
-        {"degree": 7, "octave": 0, "duration": "quarter", "lyric": "乐"}
+        {"degree": 3, "octave": 1, "duration": "quarter", "lyric": "快"},
+        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "乐"},
+        {"degree": 2, "octave": 1, "duration": "quarter"}
       ]
     },
     {
       "number": 12,
       "notes": [
-        {"degree": 6, "octave": 0, "duration": "half"}
+        {"degree": 1, "octave": 1, "duration": "half", "isDotted": true}
       ]
     }
   ],
   "isBuiltIn": true
 }
-
