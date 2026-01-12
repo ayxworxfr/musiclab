@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 
 import '../../../app/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../controllers/profile_controller.dart';
+import '../models/achievement_model.dart';
 
 /// 个人中心页
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends GetView<ProfileController> {
   const ProfilePage({super.key});
 
   @override
@@ -25,27 +27,41 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // 用户信息卡片
-            _buildUserCard(context, isDark),
-            const SizedBox(height: 24),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-            // 学习统计
-            _buildStatisticsCard(context, isDark),
-            const SizedBox(height: 24),
+        return RefreshIndicator(
+          onRefresh: controller.refresh,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // 用户信息卡片
+                _buildUserCard(context, isDark),
+                const SizedBox(height: 24),
 
-            // 功能菜单
-            _buildMenuSection(context, isDark),
-          ],
-        ),
-      ),
+                // 学习统计
+                _buildStatisticsCard(context, isDark),
+                const SizedBox(height: 24),
+
+                // 功能菜单
+                _buildMenuSection(context, isDark),
+              ],
+            ),
+          ),
+        );
+      }),
     );
   }
 
   Widget _buildUserCard(BuildContext context, bool isDark) {
+    final stats = controller.stats.value;
+    final streakDays = stats?.streakDays ?? 0;
+    final totalDays = stats?.totalDays ?? 0;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -95,7 +111,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '已学习 3 天',
+                  totalDays > 0 ? '已学习 $totalDays 天' : '开始你的音乐之旅',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white.withValues(alpha: 0.8),
@@ -105,9 +121,13 @@ class ProfilePage extends StatelessWidget {
                 // 成就徽章
                 Row(
                   children: [
-                    _buildBadge('🌟', '初学者'),
-                    const SizedBox(width: 8),
-                    _buildBadge('🔥', '3天连续'),
+                    if (streakDays > 0)
+                      _buildBadge('🔥', '$streakDays天连续'),
+                    if (streakDays > 0) const SizedBox(width: 8),
+                    _buildBadge(
+                      '🏆',
+                      '${controller.unlockedCount}个成就',
+                    ),
                   ],
                 ),
               ],
@@ -143,41 +163,75 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildStatisticsCard(BuildContext context, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '学习统计',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+    final stats = controller.stats.value;
+
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.learningStats),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem(context, '总学习时长', '45分钟', isDark),
-              _buildStatItem(context, '完成课时', '3课', isDark),
-              _buildStatItem(context, '练习题数', '56题', isDark),
-              _buildStatItem(context, '正确率', '82%', isDark),
-            ],
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '学习统计',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatItem(
+                  context,
+                  '总学习时长',
+                  _formatDuration(stats?.totalDurationSeconds ?? 0),
+                  isDark,
+                ),
+                _buildStatItem(
+                  context,
+                  '完成课时',
+                  '${stats?.totalCompletedLessons ?? 0}课',
+                  isDark,
+                ),
+                _buildStatItem(
+                  context,
+                  '练习题数',
+                  '${stats?.totalPracticeCount ?? 0}题',
+                  isDark,
+                ),
+                _buildStatItem(
+                  context,
+                  '正确率',
+                  '${((stats?.totalAccuracy ?? 0) * 100).toStringAsFixed(0)}%',
+                  isDark,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -187,7 +241,7 @@ class ProfilePage extends StatelessWidget {
       children: [
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: AppColors.primary,
@@ -207,10 +261,31 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildMenuSection(BuildContext context, bool isDark) {
     final menuItems = [
-      {'icon': Icons.bar_chart, 'title': '学习统计', 'color': const Color(0xFF667eea)},
-      {'icon': Icons.emoji_events, 'title': '成就徽章', 'color': const Color(0xFFffa726)},
-      {'icon': Icons.favorite, 'title': '我的收藏', 'color': const Color(0xFFef5350)},
-      {'icon': Icons.history, 'title': '学习记录', 'color': const Color(0xFF26a69a)},
+      {
+        'icon': Icons.bar_chart,
+        'title': '学习统计',
+        'color': const Color(0xFF667eea),
+        'route': AppRoutes.learningStats,
+      },
+      {
+        'icon': Icons.emoji_events,
+        'title': '成就徽章',
+        'color': const Color(0xFFffa726),
+        'route': AppRoutes.achievements,
+        'badge': controller.unlockedCount,
+      },
+      {
+        'icon': Icons.history,
+        'title': '学习记录',
+        'color': const Color(0xFF26a69a),
+        'route': null,
+      },
+      {
+        'icon': Icons.settings,
+        'title': '设置',
+        'color': const Color(0xFF78909c),
+        'route': AppRoutes.settings,
+      },
     ];
 
     return Container(
@@ -255,12 +330,44 @@ class ProfilePage extends StatelessWidget {
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
-                trailing: Icon(
-                  Icons.chevron_right,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (item['badge'] != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${item['badge']}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.chevron_right,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                    ),
+                  ],
                 ),
                 onTap: () {
-                  // TODO: 跳转到对应页面
+                  final route = item['route'] as String?;
+                  if (route != null) {
+                    Get.toNamed(route);
+                  } else {
+                    Get.snackbar(
+                      '提示',
+                      '该功能正在开发中',
+                      snackPosition: SnackPosition.BOTTOM,
+                      margin: const EdgeInsets.all(20),
+                    );
+                  }
                 },
               ),
               if (!isLast) const Divider(height: 1, indent: 72),
@@ -270,5 +377,19 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
-}
 
+  String _formatDuration(int seconds) {
+    if (seconds < 60) {
+      return '${seconds}秒';
+    } else if (seconds < 3600) {
+      return '${seconds ~/ 60}分钟';
+    } else {
+      final hours = seconds ~/ 3600;
+      final minutes = (seconds % 3600) ~/ 60;
+      if (minutes > 0) {
+        return '$hours小时$minutes分';
+      }
+      return '$hours小时';
+    }
+  }
+}

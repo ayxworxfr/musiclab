@@ -4,11 +4,13 @@ import '../../../core/audio/audio_service.dart';
 import '../../../core/utils/logger_util.dart';
 import '../../../shared/enums/practice_type.dart';
 import '../models/practice_model.dart';
+import '../repositories/practice_repository.dart';
 import '../services/question_generator.dart';
 
 /// 练习控制器
 class PracticeController extends GetxController {
   final AudioService _audioService = Get.find<AudioService>();
+  final PracticeRepository _repository = Get.find<PracticeRepository>();
   final QuestionGenerator _questionGenerator = QuestionGenerator();
 
   /// 当前练习类型
@@ -38,6 +40,9 @@ class PracticeController extends GetxController {
 
   /// 练习是否完成
   final isCompleted = false.obs;
+
+  /// 用户弹奏的音符（用于弹奏练习）
+  final userPlayedNotes = <int>[].obs;
 
   /// 练习开始时间
   DateTime? _startTime;
@@ -75,6 +80,7 @@ class PracticeController extends GetxController {
     hasAnswered.value = false;
     isCurrentCorrect.value = false;
     isCompleted.value = false;
+    userPlayedNotes.clear();
 
     // 记录开始时间
     _startTime = DateTime.now();
@@ -171,6 +177,7 @@ class PracticeController extends GetxController {
       currentIndex.value++;
       hasAnswered.value = false;
       isCurrentCorrect.value = false;
+      userPlayedNotes.clear();
       _questionStartTime = DateTime.now();
     } else {
       // 练习完成
@@ -178,12 +185,26 @@ class PracticeController extends GetxController {
     }
   }
 
+  /// 添加弹奏的音符（用于弹奏练习）
+  void addPlayedNote(int midi) {
+    userPlayedNotes.add(midi);
+  }
+
+  /// 清除已弹奏的音符
+  void clearPlayedNotes() {
+    userPlayedNotes.clear();
+  }
+
   /// 完成练习
-  void _completePractice() {
+  void _completePractice() async {
     isCompleted.value = true;
     totalSeconds.value = DateTime.now().difference(_startTime!).inSeconds;
 
     _audioService.playComplete();
+
+    // 保存练习记录
+    final record = getPracticeRecord();
+    await _repository.savePracticeRecord(record);
 
     LoggerUtil.info(
       '练习完成: 正确 $correctCount/${questions.length}, '

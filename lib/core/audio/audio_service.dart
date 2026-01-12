@@ -10,8 +10,17 @@ class AudioService extends GetxService {
   /// 钢琴音频播放器池（支持同时播放多个音符/和弦）
   final Map<int, AudioPlayer> _pianoPlayers = {};
   
-  /// 节拍器播放器
-  late AudioPlayer _metronomePlayer;
+  /// 已加载的钢琴音符
+  final Set<int> _loadedPianoNotes = {};
+  
+  /// 节拍器播放器（强拍）
+  late AudioPlayer _metronomeStrongPlayer;
+  
+  /// 节拍器播放器（弱拍）
+  late AudioPlayer _metronomeWeakPlayer;
+  
+  /// 节拍器音频是否已加载
+  bool _metronomeLoaded = false;
   
   /// 效果音播放器
   late AudioPlayer _effectPlayer;
@@ -24,14 +33,18 @@ class AudioService extends GetxService {
     if (_isInitialized) return this;
     
     try {
-      // 初始化节拍器播放器
-      _metronomePlayer = AudioPlayer();
+      // 初始化节拍器播放器（两个，分别用于强拍和弱拍）
+      _metronomeStrongPlayer = AudioPlayer();
+      _metronomeWeakPlayer = AudioPlayer();
       
       // 初始化效果音播放器
       _effectPlayer = AudioPlayer();
       
-      // 预加载常用音域的钢琴音（C3-C6，MIDI 48-84）
+      // 预加载常用音域的钢琴音播放器（C4-C6，MIDI 60-84）
       await _preloadPianoSounds();
+      
+      // 预加载节拍器音频
+      await _preloadMetronomeSounds();
       
       _isInitialized = true;
       LoggerUtil.info('音频服务初始化完成');
@@ -42,13 +55,25 @@ class AudioService extends GetxService {
     return this;
   }
   
-  /// 预加载钢琴音色
+  /// 预加载钢琴音色播放器
   Future<void> _preloadPianoSounds() async {
     // 预加载中央 C 附近两个八度的音（C4-C6）
     for (int midi = 60; midi <= 84; midi++) {
       _pianoPlayers[midi] = AudioPlayer();
     }
-    LoggerUtil.info('钢琴音色预加载完成 (${_pianoPlayers.length} 个音符)');
+    LoggerUtil.info('钢琴播放器预加载完成 (${_pianoPlayers.length} 个)');
+  }
+  
+  /// 预加载节拍器音频
+  Future<void> _preloadMetronomeSounds() async {
+    try {
+      await _metronomeStrongPlayer.setAsset('assets/audio/metronome/click_strong.mp3');
+      await _metronomeWeakPlayer.setAsset('assets/audio/metronome/click_weak.mp3');
+      _metronomeLoaded = true;
+      LoggerUtil.info('节拍器音频预加载完成');
+    } catch (e) {
+      LoggerUtil.warning('节拍器音频预加载失败: $e');
+    }
   }
   
   /// 播放钢琴音符
@@ -64,9 +89,19 @@ class AudioService extends GetxService {
         _pianoPlayers[midiNumber] = player;
       }
       
-      // 加载并播放音频
-      final assetPath = 'assets/audio/piano/note_$midiNumber.mp3';
-      await player.setAsset(assetPath);
+      // 检查是否需要加载音频（首次播放该音符时加载）
+      if (!_loadedPianoNotes.contains(midiNumber)) {
+        final assetPath = 'assets/audio/piano/note_$midiNumber.mp3';
+        await player.setAsset(assetPath);
+        _loadedPianoNotes.add(midiNumber);
+      }
+      
+      // 如果正在播放，先停止
+      if (player.playing) {
+        await player.stop();
+      }
+      
+      // 回到开头并播放
       await player.seek(Duration.zero);
       await player.play();
     } catch (e) {
@@ -93,12 +128,20 @@ class AudioService extends GetxService {
   /// [isStrong] 是否是强拍
   Future<void> playMetronomeClick({bool isStrong = false}) async {
     try {
-      final assetPath = isStrong 
-          ? 'assets/audio/metronome/click_strong.mp3'
-          : 'assets/audio/metronome/click_weak.mp3';
-      await _metronomePlayer.setAsset(assetPath);
-      await _metronomePlayer.seek(Duration.zero);
-      await _metronomePlayer.play();
+      final player = isStrong ? _metronomeStrongPlayer : _metronomeWeakPlayer;
+      
+      // 如果未加载，尝试加载
+      if (!_metronomeLoaded) {
+        await _preloadMetronomeSounds();
+      }
+      
+      // 如果正在播放，先停止
+      if (player.playing) {
+        await player.stop();
+      }
+      
+      await player.seek(Duration.zero);
+      await player.play();
     } catch (e) {
       LoggerUtil.warning('播放节拍器音效失败');
     }
@@ -135,9 +178,13 @@ class AudioService extends GetxService {
       player.dispose();
     }
     _pianoPlayers.clear();
+    _loadedPianoNotes.clear();
     
-    // 释放其他播放器
-    _metronomePlayer.dispose();
+    // 释放节拍器播放器
+    _metronomeStrongPlayer.dispose();
+    _metronomeWeakPlayer.dispose();
+    
+    // 释放效果音播放器
     _effectPlayer.dispose();
     
     super.onClose();

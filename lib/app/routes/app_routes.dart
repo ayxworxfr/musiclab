@@ -70,7 +70,7 @@ abstract class AppRoutes {
   static const String profile = '/profile';
 
   /// 学习统计
-  static const String statistics = '/profile/statistics';
+  static const String learningStats = '/profile/stats';
 
   /// 成就徽章
   static const String achievements = '/profile/achievements';

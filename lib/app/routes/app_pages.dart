@@ -11,11 +11,22 @@ import '../../features/course/views/course_detail_page.dart';
 import '../../features/course/views/lesson_page.dart';
 import '../../features/course/bindings/course_binding.dart';
 import '../../features/practice/views/note_practice_page.dart';
+import '../../features/practice/views/ear_practice_page.dart';
+import '../../features/practice/views/piano_practice_page.dart';
+import '../../features/practice/views/rhythm_practice_page.dart';
 import '../../features/practice/bindings/practice_binding.dart';
 import '../../features/tools/piano/views/piano_page.dart';
 import '../../features/tools/piano/controllers/piano_controller.dart';
 import '../../features/tools/metronome/views/metronome_page.dart';
 import '../../features/tools/metronome/controllers/metronome_controller.dart';
+import '../../features/tools/sheet_music/views/sheet_music_page.dart';
+import '../../features/tools/sheet_music/views/sheet_detail_page.dart';
+import '../../features/tools/sheet_music/controllers/sheet_music_controller.dart';
+import '../../features/tools/reference/views/reference_table_page.dart';
+import '../../features/profile/views/learning_stats_page.dart';
+import '../../features/profile/views/achievements_page.dart';
+import '../../features/profile/views/settings_page.dart';
+import '../../features/profile/bindings/profile_binding.dart';
 
 /// 路由页面配置
 class AppPages {
@@ -76,6 +87,29 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
 
+    // 听音练习
+    GetPage(
+      name: AppRoutes.earPractice,
+      page: () => const EarPracticePage(),
+      binding: PracticeBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 弹奏练习
+    GetPage(
+      name: AppRoutes.pianoPractice,
+      page: () => const PianoPracticePage(),
+      binding: PracticeBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 节奏练习
+    GetPage(
+      name: AppRoutes.rhythmPractice,
+      page: () => const RhythmPracticePage(),
+      transition: Transition.rightToLeft,
+    ),
+
     // ========== 工具模块 ==========
     // 虚拟钢琴
     GetPage(
@@ -97,6 +131,53 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
 
-    // TODO: 添加更多路由
+    // 乐谱库
+    GetPage(
+      name: AppRoutes.sheetMusic,
+      page: () => const SheetMusicPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut(() => SheetMusicController());
+      }),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 乐谱详情
+    GetPage(
+      name: AppRoutes.sheetDetail,
+      page: () => const SheetDetailPage(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 音符对照表
+    GetPage(
+      name: AppRoutes.referenceTable,
+      page: () => const ReferenceTablePage(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // ========== 个人中心模块 ==========
+    // 学习统计
+    GetPage(
+      name: AppRoutes.learningStats,
+      page: () => const LearningStatsPage(),
+      binding: ProfileBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 成就徽章
+    GetPage(
+      name: AppRoutes.achievements,
+      page: () => const AchievementsPage(),
+      binding: ProfileBinding(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // 设置
+    GetPage(
+      name: AppRoutes.settings,
+      page: () => const SettingsPage(),
+      binding: ProfileBinding(),
+      transition: Transition.rightToLeft,
+    ),
   ];
 }

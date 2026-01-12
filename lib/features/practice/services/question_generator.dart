@@ -243,27 +243,27 @@ class QuestionGenerator {
       return [
         {
           'notes': [60, 62, 64],
-          'jianpu': '1 2 3',
+          'jianpu': _notesToJianpuString([60, 62, 64]),
           'hint': 'Do Re Mi',
         },
         {
           'notes': [64, 62, 60],
-          'jianpu': '3 2 1',
+          'jianpu': _notesToJianpuString([64, 62, 60]),
           'hint': 'Mi Re Do',
         },
         {
           'notes': [60, 64, 67],
-          'jianpu': '1 3 5',
+          'jianpu': _notesToJianpuString([60, 64, 67]),
           'hint': 'Do Mi Sol',
         },
         {
           'notes': [60, 60, 67, 67],
-          'jianpu': '1 1 5 5',
+          'jianpu': _notesToJianpuString([60, 60, 67, 67]),
           'hint': '小星星开头',
         },
         {
           'notes': [67, 65, 64, 62],
-          'jianpu': '5 4 3 2',
+          'jianpu': _notesToJianpuString([67, 65, 64, 62]),
           'hint': '下行音阶',
         },
       ];
@@ -271,26 +271,36 @@ class QuestionGenerator {
       return [
         {
           'notes': [60, 62, 64, 65, 67],
-          'jianpu': '1 2 3 4 5',
+          'jianpu': _notesToJianpuString([60, 62, 64, 65, 67]),
           'hint': '上行五音',
         },
         {
           'notes': [60, 60, 67, 67, 69, 69, 67],
-          'jianpu': '1 1 5 5 6 6 5',
+          'jianpu': _notesToJianpuString([60, 60, 67, 67, 69, 69, 67]),
           'hint': '小星星第一句',
         },
         {
           'notes': [64, 64, 65, 67, 67, 65, 64, 62],
-          'jianpu': '3 3 4 5 5 4 3 2',
+          'jianpu': _notesToJianpuString([64, 64, 65, 67, 67, 65, 64, 62]),
           'hint': '欢乐颂第一句',
         },
         {
           'notes': [67, 69, 71, 72],
-          'jianpu': '5 6 7 1\'',
+          'jianpu': _notesToJianpuString([67, 69, 71, 72]),
           'hint': '上行到高音',
+        },
+        {
+          'notes': [48, 50, 52, 53, 55],
+          'jianpu': _notesToJianpuString([48, 50, 52, 53, 55]),
+          'hint': '低音上行',
         },
       ];
     }
+  }
+  
+  /// 将 MIDI 音符列表转换为简谱字符串（专业格式）
+  String _notesToJianpuString(List<int> notes) {
+    return notes.map((n) => MusicUtils.midiToJianpu(n)).join(' ');
   }
 }
 

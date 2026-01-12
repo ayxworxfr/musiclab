@@ -25,6 +25,12 @@ class MetronomeService extends GetxService {
   
   Timer? _timer;
   
+  /// 防止重复播放的时间戳
+  DateTime? _lastPlayTime;
+  
+  /// 最小播放间隔（毫秒）
+  static const int _minPlayInterval = 50;
+  
   /// 每拍间隔（毫秒）
   int get beatInterval => (60000 / bpm.value).round();
   
@@ -33,8 +39,7 @@ class MetronomeService extends GetxService {
     bpm.value = value.clamp(20, 240);
     if (isPlaying.value) {
       // 重新启动以应用新的 BPM
-      stop();
-      start();
+      _restartTimer();
     }
   }
   
@@ -50,15 +55,28 @@ class MetronomeService extends GetxService {
     
     isPlaying.value = true;
     currentBeat.value = 0;
+    _lastPlayTime = null;
     
     // 立即播放第一拍
     _playBeat();
     
-    // 设置定时器
+    // 设置定时器（使用精确的时间间隔）
+    _startTimer();
+  }
+  
+  /// 启动定时器
+  void _startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(
       Duration(milliseconds: beatInterval),
       (_) => _playBeat(),
     );
+  }
+  
+  /// 重启定时器（保持节拍连续）
+  void _restartTimer() {
+    _timer?.cancel();
+    _startTimer();
   }
   
   /// 停止播放
@@ -67,6 +85,7 @@ class MetronomeService extends GetxService {
     _timer = null;
     isPlaying.value = false;
     currentBeat.value = 0;
+    _lastPlayTime = null;
   }
   
   /// 切换播放状态
@@ -80,6 +99,16 @@ class MetronomeService extends GetxService {
   
   /// 播放一拍
   void _playBeat() {
+    // 防抖：避免短时间内重复播放
+    final now = DateTime.now();
+    if (_lastPlayTime != null) {
+      final elapsed = now.difference(_lastPlayTime!).inMilliseconds;
+      if (elapsed < _minPlayInterval) {
+        return; // 太快了，跳过这次
+      }
+    }
+    _lastPlayTime = now;
+    
     final isStrong = currentBeat.value == 0;
     _audioService.playMetronomeClick(isStrong: isStrong);
     

@@ -45,6 +45,9 @@ abstract class StorageKeys {
   /// 练习记录
   static const String practiceRecords = 'practice_records';
 
+  /// 练习统计
+  static const String practiceStats = 'practice_stats';
+
   /// 连续学习天数
   static const String consecutiveDays = 'consecutive_days';
 

@@ -1,4 +1,4 @@
-.PHONY: help install run build clean analyze test format stop
+.PHONY: help install run build clean analyze test format stop audio audio-clean
 
 # 默认目标
 .DEFAULT_GOAL := help
@@ -150,4 +150,24 @@ generate: ## 运行代码生成器（如 Hive）
 watch: ## 监听文件变化并自动生成代码
 	@echo "$(GREEN)正在监听文件变化...$(NC)"
 	flutter pub run build_runner watch --delete-conflicting-outputs
+
+##@ 音频资源
+
+audio: ## 生成/重新生成所有音频文件（钢琴、节拍器、效果音）
+	@echo "$(GREEN)正在生成音频文件...$(NC)"
+	@python3 scripts/generate_audio.py
+
+audio-clean: ## 清理所有音频文件
+	@echo "$(GREEN)正在清理音频文件...$(NC)"
+	@rm -f assets/audio/piano/*.mp3 assets/audio/piano/*.wav
+	@rm -f assets/audio/metronome/*.mp3 assets/audio/metronome/*.wav
+	@rm -f assets/audio/effects/*.mp3 assets/audio/effects/*.wav
+	@echo "$(GREEN)音频文件已清理$(NC)"
+
+audio-install-deps: ## 安装音频生成脚本的Python依赖
+	@echo "$(GREEN)正在安装Python依赖...$(NC)"
+	pip3 install numpy scipy
+	@echo "$(GREEN)依赖安装完成$(NC)"
+	@echo "$(YELLOW)提示：还需要安装 ffmpeg 来生成 MP3 格式$(NC)"
+	@echo "  macOS: brew install ffmpeg"
 

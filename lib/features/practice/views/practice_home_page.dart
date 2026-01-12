@@ -4,10 +4,45 @@ import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/enums/practice_type.dart';
+import '../models/practice_model.dart';
+import '../repositories/practice_repository.dart';
 
 /// 练习首页
-class PracticeHomePage extends StatelessWidget {
+class PracticeHomePage extends StatefulWidget {
   const PracticeHomePage({super.key});
+
+  @override
+  State<PracticeHomePage> createState() => _PracticeHomePageState();
+}
+
+class _PracticeHomePageState extends State<PracticeHomePage> {
+  PracticeStats? _todayStats;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTodayStats();
+  }
+
+  Future<void> _loadTodayStats() async {
+    try {
+      final repository = Get.find<PracticeRepository>();
+      final stats = await repository.getTodayStats();
+      if (mounted) {
+        setState(() {
+          _todayStats = stats;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,35 +55,48 @@ class PracticeHomePage extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 今日统计
-            _buildTodayStats(context, isDark),
-            const SizedBox(height: 24),
+      body: RefreshIndicator(
+        onRefresh: _loadTodayStats,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 今日统计
+              _buildTodayStats(context, isDark),
+              const SizedBox(height: 24),
 
-            // 练习类型
-            Text(
-              '选择练习类型',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: theme.textTheme.bodyLarge?.color,
+              // 练习类型
+              Text(
+                '选择练习类型',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: theme.textTheme.bodyLarge?.color,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 练习卡片
-            ...PracticeType.values.map((type) => _buildPracticeCard(context, type, isDark)),
-          ],
+              // 练习卡片
+              ...PracticeType.values.map((type) => _buildPracticeCard(context, type, isDark)),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildTodayStats(BuildContext context, bool isDark) {
+    final stats = _todayStats;
+    final questionCount = stats?.totalQuestions ?? 0;
+    final accuracy = stats != null && stats.totalQuestions > 0
+        ? '${(stats.averageAccuracy * 100).toInt()}%'
+        : '--%';
+    final duration = stats != null
+        ? '${(stats.totalSeconds / 60).ceil()}分钟'
+        : '0分钟';
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -62,12 +110,32 @@ class PracticeHomePage extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildStatItem(context, '练习题数', '0', Icons.quiz, isDark),
-          _buildStatItem(context, '正确率', '--%', Icons.check_circle, isDark),
-          _buildStatItem(context, '练习时长', '0分钟', Icons.timer, isDark),
+          Row(
+            children: [
+              const Icon(Icons.today, size: 20, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                '今日练习',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem(context, '练习题数', '$questionCount', Icons.quiz, isDark),
+              _buildStatItem(context, '正确率', accuracy, Icons.check_circle, isDark),
+              _buildStatItem(context, '练习时长', duration, Icons.timer, isDark),
+            ],
+          ),
         ],
       ),
     );
@@ -226,21 +294,21 @@ class PracticeHomePage extends StatelessWidget {
         'icon': Icons.sports_esports,
         'color': const Color(0xFFf093fb),
         'desc': '跟着节拍敲击屏幕',
-        'available': false,
+        'available': true,
         'route': AppRoutes.rhythmPractice,
       },
       PracticeType.earTraining => {
         'icon': Icons.hearing,
         'color': const Color(0xFF43e97b),
         'desc': '听音辨别音高',
-        'available': false,
+        'available': true,
         'route': AppRoutes.earPractice,
       },
       PracticeType.pianoPlaying => {
         'icon': Icons.piano,
         'color': const Color(0xFF4facfe),
         'desc': '在虚拟钢琴上弹奏',
-        'available': false,
+        'available': true,
         'route': AppRoutes.pianoPractice,
       },
     };

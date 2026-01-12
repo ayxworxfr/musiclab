@@ -10,8 +10,17 @@ class MusicUtils {
   /// 简谱数字
   static const jianpuNumbers = ['1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'];
   
+  /// 简谱基础数字（不含升降号）
+  static const jianpuBaseNumbers = ['1', '1', '2', '2', '3', '4', '4', '5', '5', '6', '6', '7'];
+  
   /// 中央 C 的 MIDI 编号
   static const middleC = 60;
+  
+  /// 高音点（上加点）Unicode 组合字符
+  static const String _highDot = '\u0307'; // ̇ 组合上点
+  
+  /// 低音点（下加点）Unicode 组合字符  
+  static const String _lowDot = '\u0323'; // ̣ 组合下点
   
   /// MIDI 编号转音名
   /// 
@@ -37,13 +46,13 @@ class MusicUtils {
     return (octave + 1) * 12 + noteIndex;
   }
   
-  /// MIDI 编号转简谱
+  /// MIDI 编号转简谱（专业格式，带上下加点）
   /// 
   /// [midi] MIDI 编号
   /// [baseOctave] 基准八度（默认 4，即中央 C 所在八度）
   /// 
-  /// 返回格式：数字 + 高低八度标记
-  /// 例如：60 -> "1", 72 -> "1'", 48 -> "1,"
+  /// 返回格式：高音用上加点（1̇），低音用下加点（1̣）
+  /// 例如：60 -> "1", 72 -> "1̇", 48 -> "1̣"
   static String midiToJianpu(int midi, {int baseOctave = 4}) {
     final octave = (midi ~/ 12) - 1;
     final noteIndex = midi % 12;
@@ -52,10 +61,29 @@ class MusicUtils {
     final octaveDiff = octave - baseOctave;
     
     if (octaveDiff > 0) {
-      // 高八度，用 ' 标记
+      // 高八度，用上加点标记
+      return "$number${_highDot * octaveDiff}";
+    } else if (octaveDiff < 0) {
+      // 低八度，用下加点标记
+      return "$number${_lowDot * (-octaveDiff)}";
+    }
+    return number;
+  }
+  
+  /// MIDI 编号转简谱（简单格式，用于数据存储）
+  /// 
+  /// 返回格式：高音用 '，低音用 ,
+  /// 例如：60 -> "1", 72 -> "1'", 48 -> "1,"
+  static String midiToJianpuSimple(int midi, {int baseOctave = 4}) {
+    final octave = (midi ~/ 12) - 1;
+    final noteIndex = midi % 12;
+    final number = jianpuNumbers[noteIndex];
+    
+    final octaveDiff = octave - baseOctave;
+    
+    if (octaveDiff > 0) {
       return "$number${"'" * octaveDiff}";
     } else if (octaveDiff < 0) {
-      // 低八度，用 , 标记
       return "$number${"," * (-octaveDiff)}";
     }
     return number;
@@ -63,21 +91,65 @@ class MusicUtils {
   
   /// 简谱转 MIDI 编号
   /// 
-  /// [jianpu] 简谱表示（如 "1", "1'", "1,"）
+  /// [jianpu] 简谱表示，支持两种格式：
+  ///   - 专业格式：1̇（上加点）、1̣（下加点）
+  ///   - 简单格式：1'、1,
   /// [baseOctave] 基准八度
   static int jianpuToMidi(String jianpu, {int baseOctave = 4}) {
-    // 统计高低八度标记
-    final highOctaves = "'".allMatches(jianpu).length;
-    final lowOctaves = ",".allMatches(jianpu).length;
+    // 统计高低八度标记（支持两种格式）
+    final highOctaves = "'".allMatches(jianpu).length + _highDot.allMatches(jianpu).length;
+    final lowOctaves = ",".allMatches(jianpu).length + _lowDot.allMatches(jianpu).length;
     final octaveDiff = highOctaves - lowOctaves;
     
-    // 提取数字部分
-    final number = jianpu.replaceAll(RegExp(r"[',]"), "");
+    // 提取数字部分（移除所有八度标记）
+    final number = jianpu
+        .replaceAll(RegExp(r"[',]"), "")
+        .replaceAll(_highDot, "")
+        .replaceAll(_lowDot, "");
     final noteIndex = jianpuNumbers.indexOf(number);
     if (noteIndex == -1) return middleC;
     
     final octave = baseOctave + octaveDiff;
     return (octave + 1) * 12 + noteIndex;
+  }
+  
+  /// 格式化简谱显示（将简单格式转为专业格式）
+  /// 
+  /// 例如："1'" -> "1̇", "1," -> "1̣"
+  static String formatJianpuDisplay(String jianpu) {
+    String result = jianpu;
+    
+    // 替换高音标记
+    while (result.contains("'")) {
+      final index = result.indexOf("'");
+      if (index > 0) {
+        // 在数字后插入上加点
+        result = result.substring(0, index) + _highDot + result.substring(index + 1);
+      } else {
+        break;
+      }
+    }
+    
+    // 替换低音标记
+    while (result.contains(",")) {
+      final index = result.indexOf(",");
+      if (index > 0) {
+        // 在数字后插入下加点
+        result = result.substring(0, index) + _lowDot + result.substring(index + 1);
+      } else {
+        break;
+      }
+    }
+    
+    return result;
+  }
+  
+  /// 简谱简单格式转专业格式（用于显示）
+  /// 
+  /// [jianpu] 简单格式的简谱（如 "1'"）
+  /// 返回带上下加点的专业格式（如 "1̇"）
+  static String toDisplayFormat(String jianpu) {
+    return formatJianpuDisplay(jianpu);
   }
   
   /// 获取五线谱位置
