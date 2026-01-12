@@ -1,0 +1,177 @@
+{
+  "id": "sheet_007",
+  "title": "C大调卡农",
+  "difficulty": 3,
+  "category": "classical",
+  "metadata": {
+    "composer": "帕赫贝尔",
+    "key": "C",
+    "timeSignature": "4/4",
+    "tempo": 60,
+    "description": "巴洛克时期最著名的室内乐作品之一（C大调改编版）"
+  },
+  "measures": [
+    {
+      "number": 1,
+      "notes": [
+        {"degree": 1, "octave": -1, "duration": "half"},
+        {"degree": 5, "octave": -1, "duration": "half"}
+      ]
+    },
+    {
+      "number": 2,
+      "notes": [
+        {"degree": 6, "octave": -1, "duration": "half"},
+        {"degree": 3, "octave": -1, "duration": "half"}
+      ]
+    },
+    {
+      "number": 3,
+      "notes": [
+        {"degree": 4, "octave": -1, "duration": "half"},
+        {"degree": 1, "octave": -1, "duration": "half"}
+      ]
+    },
+    {
+      "number": 4,
+      "notes": [
+        {"degree": 4, "octave": -1, "duration": "half"},
+        {"degree": 5, "octave": -1, "duration": "half"}
+      ]
+    },
+    {
+      "number": 5,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "quarter"},
+        {"degree": 7, "octave": -1, "duration": "quarter"},
+        {"degree": 6, "octave": -1, "duration": "quarter"},
+        {"degree": 7, "octave": -1, "duration": "quarter"}
+      ]
+    },
+    {
+      "number": 6,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "quarter"},
+        {"degree": 5, "octave": 0, "duration": "quarter"},
+        {"degree": 3, "octave": 0, "duration": "quarter"},
+        {"degree": 5, "octave": 0, "duration": "quarter"}
+      ]
+    },
+    {
+      "number": 7,
+      "notes": [
+        {"degree": 6, "octave": 0, "duration": "quarter"},
+        {"degree": 3, "octave": 0, "duration": "quarter"},
+        {"degree": 4, "octave": 0, "duration": "quarter"},
+        {"degree": 3, "octave": 0, "duration": "quarter"}
+      ]
+    },
+    {
+      "number": 8,
+      "notes": [
+        {"degree": 4, "octave": 0, "duration": "quarter"},
+        {"degree": 3, "octave": 0, "duration": "quarter"},
+        {"degree": 4, "octave": 0, "duration": "quarter"},
+        {"degree": 5, "octave": 0, "duration": "quarter"}
+      ]
+    },
+    {
+      "number": 9,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 7, "octave": -1, "duration": "eighth"},
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 2, "octave": 0, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 2, "octave": 0, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 10,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 2, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 11,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 6, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 6, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 12,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 2, "octave": 0, "duration": "eighth"},
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 7, "octave": -1, "duration": "eighth"},
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 7, "octave": -1, "duration": "eighth"},
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 2, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 13,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 1, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 6, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 14,
+      "notes": [
+        {"degree": 7, "octave": 0, "duration": "eighth"},
+        {"degree": 6, "octave": 0, "duration": "eighth"},
+        {"degree": 7, "octave": 0, "duration": "eighth"},
+        {"degree": 1, "octave": 1, "duration": "eighth"},
+        {"degree": 7, "octave": 0, "duration": "eighth"},
+        {"degree": 6, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 15,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 6, "octave": 0, "duration": "eighth"},
+        {"degree": 5, "octave": 0, "duration": "eighth"},
+        {"degree": 4, "octave": 0, "duration": "eighth"},
+        {"degree": 3, "octave": 0, "duration": "eighth"},
+        {"degree": 2, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 16,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "whole"}
+      ]
+    }
+  ],
+  "isBuiltIn": true
+}

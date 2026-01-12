@@ -375,70 +375,120 @@ class JianpuNotationWidget extends StatelessWidget {
           children: [
             // 指法
             if (style.showFingering && note.fingering != null)
-              Text(
-                '${note.fingering}',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  '${note.fingering}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             // 高音点
-            SizedBox(
-              height: 12,
-              child: note.octave > 0
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        note.octave,
-                        (_) => Container(
-                          width: 4,
-                          height: 4,
-                          margin: const EdgeInsets.symmetric(horizontal: 1),
-                          decoration: BoxDecoration(
-                            color: noteColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    )
-                  : null,
-            ),
-            // 音符主体
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 变音记号
-                if (note.accidental != Accidental.none)
-                  Text(
-                    note.accidental.displaySymbol,
-                    style: TextStyle(
-                      fontSize: style.noteFontSize * 0.6,
-                      color: noteColor,
-                    ),
-                  ),
-                // 音符数字
-                Text(
-                  note.isRest ? '0' : '${note.degree}',
-                  style: TextStyle(
-                    fontSize: style.noteFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: noteColor,
-                  ),
-                ),
-                // 附点
-                if (note.isDotted)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 2, bottom: 4),
-                    child: Container(
+            if (note.octave > 0)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                    note.octave,
+                    (_) => Container(
                       width: 4,
                       height: 4,
+                      margin: const EdgeInsets.symmetric(horizontal: 1),
                       decoration: BoxDecoration(
                         color: noteColor,
                         shape: BoxShape.circle,
                       ),
                     ),
                   ),
+                ),
+              ),
+            // 音符主体
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 变音记号
+                if (note.accidental != Accidental.none)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 2),
+                    child: Text(
+                      note.accidental.displaySymbol,
+                      style: TextStyle(
+                        fontSize: style.noteFontSize * 0.6,
+                        color: noteColor,
+                      ),
+                    ),
+                  ),
+                // 音符数字（带附点和低音点）
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Text(
+                          note.isRest ? '0' : '${note.degree}',
+                          style: TextStyle(
+                            fontSize: style.noteFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: noteColor,
+                          ),
+                        ),
+                        // 附点（在音符右上方）
+                        if (note.isDotted)
+                          Positioned(
+                            right: -6,
+                            top: 2,
+                            child: Container(
+                              width: 3,
+                              height: 3,
+                              decoration: BoxDecoration(
+                                color: noteColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    // 下划线（八分、十六分音符）
+                    if (note.duration.underlineCount > 0)
+                      ...List.generate(
+                        note.duration.underlineCount,
+                        (_) => Container(
+                          width: style.noteSpacing * 0.7,
+                          height: 2,
+                          margin: const EdgeInsets.only(top: 2),
+                          color: noteColor,
+                        ),
+                      ),
+                    // 低音点
+                    if (note.octave < 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
+                            -note.octave,
+                            (_) => Container(
+                              width: 4,
+                              height: 4,
+                              margin: const EdgeInsets.symmetric(horizontal: 1),
+                              decoration: BoxDecoration(
+                                color: noteColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 // 延长线（二分、全音符）
                 ...List.generate(
                   note.duration.dashCount,
@@ -450,40 +500,6 @@ class JianpuNotationWidget extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-            // 下划线（八分、十六分音符）
-            if (note.duration.underlineCount > 0)
-              Column(
-                children: List.generate(
-                  note.duration.underlineCount,
-                  (_) => Container(
-                    width: style.noteSpacing * 0.7,
-                    height: 2,
-                    margin: const EdgeInsets.only(top: 2),
-                    color: noteColor,
-                  ),
-                ),
-              ),
-            // 低音点
-            SizedBox(
-              height: 12,
-              child: note.octave < 0
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        -note.octave,
-                        (_) => Container(
-                          width: 4,
-                          height: 4,
-                          margin: const EdgeInsets.symmetric(horizontal: 1),
-                          decoration: BoxDecoration(
-                            color: noteColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    )
-                  : null,
             ),
             // 歌词
             if (style.showLyrics && note.lyric != null)

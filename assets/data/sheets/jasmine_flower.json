@@ -1,0 +1,154 @@
+{
+  "id": "sheet_006",
+  "title": "茉莉花",
+  "difficulty": 2,
+  "category": "folk",
+  "metadata": {
+    "key": "C",
+    "timeSignature": "4/4",
+    "tempo": 80,
+    "description": "中国经典民歌，旋律优美动听"
+  },
+  "measures": [
+    {
+      "number": 1,
+      "notes": [
+        {"degree": 0, "octave": 0, "duration": "quarter"},
+        {"degree": 0, "octave": 0, "duration": "quarter"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "好"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "一"}
+      ]
+    },
+    {
+      "number": 2,
+      "notes": [
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "朵"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "美"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "丽"},
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "的"},
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "茉"}
+      ]
+    },
+    {
+      "number": 3,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "half", "lyric": "莉"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "花"},
+        {"degree": 5, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 4,
+      "notes": [
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "好"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "一"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "朵"},
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "美"},
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "丽"}
+      ]
+    },
+    {
+      "number": 5,
+      "notes": [
+        {"degree": 2, "octave": 0, "duration": "half", "lyric": "的"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "茉"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "莉"}
+      ]
+    },
+    {
+      "number": 6,
+      "notes": [
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "花"},
+        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "芬"},
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "芳"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "美"}
+      ]
+    },
+    {
+      "number": 7,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "丽"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "满"},
+        {"degree": 2, "octave": 0, "duration": "half", "lyric": "枝"}
+      ]
+    },
+    {
+      "number": 8,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "又"},
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "香"},
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "又"},
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "白"}
+      ]
+    },
+    {
+      "number": 9,
+      "notes": [
+        {"degree": 2, "octave": 0, "duration": "half", "lyric": "人"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "人"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "夸"}
+      ]
+    },
+    {
+      "number": 10,
+      "notes": [
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "让"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "我"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "来"},
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "将"},
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "你"}
+      ]
+    },
+    {
+      "number": 11,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "half", "lyric": "摘"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "下"},
+        {"degree": 5, "octave": 0, "duration": "eighth"}
+      ]
+    },
+    {
+      "number": 12,
+      "notes": [
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "送"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "给"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "别"},
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "人"},
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "家"}
+      ]
+    },
+    {
+      "number": 13,
+      "notes": [
+        {"degree": 2, "octave": 0, "duration": "half"},
+        {"degree": 3, "octave": 0, "duration": "eighth", "lyric": "茉"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "莉"}
+      ]
+    },
+    {
+      "number": 14,
+      "notes": [
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "花"},
+        {"degree": 1, "octave": 1, "duration": "quarter", "lyric": "呀"},
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "茉"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "莉"}
+      ]
+    },
+    {
+      "number": 15,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "花"},
+        {"degree": 5, "octave": 0, "duration": "quarter"},
+        {"degree": 2, "octave": 0, "duration": "half"}
+      ]
+    },
+    {
+      "number": 16,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "whole"}
+      ]
+    }
+  ],
+  "isBuiltIn": true
+}
+

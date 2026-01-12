@@ -1,0 +1,86 @@
+{
+  "id": "sheet_001",
+  "title": "小星星",
+  "difficulty": 1,
+  "category": "folk",
+  "metadata": {
+    "composer": "莫扎特",
+    "lyricist": "Jane Taylor",
+    "key": "C",
+    "timeSignature": "4/4",
+    "tempo": 100,
+    "description": "经典儿歌，适合初学者练习"
+  },
+  "measures": [
+    {
+      "number": 1,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "一"},
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "闪"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "一"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "闪"}
+      ]
+    },
+    {
+      "number": 2,
+      "notes": [
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "亮"},
+        {"degree": 6, "octave": 0, "duration": "quarter", "lyric": "晶"},
+        {"degree": 5, "octave": 0, "duration": "half", "lyric": "晶"}
+      ]
+    },
+    {
+      "number": 3,
+      "notes": [
+        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "满"},
+        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "天"},
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "都"},
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "是"}
+      ]
+    },
+    {
+      "number": 4,
+      "notes": [
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "小"},
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "星"},
+        {"degree": 1, "octave": 0, "duration": "half", "lyric": "星"}
+      ]
+    },
+    {
+      "number": 5,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "挂"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "在"},
+        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "天"},
+        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "上"}
+      ]
+    },
+    {
+      "number": 6,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "放"},
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "光"},
+        {"degree": 2, "octave": 0, "duration": "half", "lyric": "明"}
+      ]
+    },
+    {
+      "number": 7,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "好"},
+        {"degree": 5, "octave": 0, "duration": "quarter", "lyric": "像"},
+        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "许"},
+        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "多"}
+      ]
+    },
+    {
+      "number": 8,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "小"},
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "眼"},
+        {"degree": 2, "octave": 0, "duration": "half", "lyric": "睛"}
+      ]
+    }
+  ],
+  "isBuiltIn": true
+}
+

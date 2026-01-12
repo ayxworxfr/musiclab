@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/utils/logger_util.dart';
 import '../models/sheet_model.dart';
 
 /// 乐谱库控制器
@@ -31,7 +35,32 @@ class SheetMusicController extends GetxController {
   /// 加载乐谱数据
   Future<void> _loadSheets() async {
     isLoading.value = true;
-    sheets.assignAll(_getSampleSheets());
+    try {
+      // 先加载索引文件
+      final indexJson = await rootBundle.loadString('assets/data/sheets/sheets_index.json');
+      final indexData = json.decode(indexJson) as Map<String, dynamic>;
+      final sheetsList = indexData['sheets'] as List;
+
+      // 加载每个乐谱文件
+      final loadedSheets = <SheetModel>[];
+      for (final item in sheetsList) {
+        try {
+          final filename = item['filename'] as String;
+          final sheetJson = await rootBundle.loadString('assets/data/sheets/$filename');
+          final sheetData = json.decode(sheetJson) as Map<String, dynamic>;
+          final sheet = SheetModel.fromJson(sheetData);
+          loadedSheets.add(sheet);
+        } catch (e) {
+          LoggerUtil.error('加载乐谱失败: ${item['filename']}', e);
+        }
+      }
+
+      sheets.assignAll(loadedSheets);
+    } catch (e) {
+      LoggerUtil.error('加载乐谱列表失败', e);
+      // 如果加载失败，使用示例数据
+      sheets.assignAll(_getSampleSheets());
+    }
     _updateFilteredSheets();
     isLoading.value = false;
   }

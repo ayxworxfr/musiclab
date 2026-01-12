@@ -7,7 +7,9 @@ import '../controllers/sheet_music_controller.dart';
 import '../controllers/sheet_player_controller.dart';
 import '../models/sheet_model.dart';
 import '../services/sheet_import_service.dart';
+import '../widgets/dual_notation_widget.dart';
 import '../widgets/jianpu_notation_widget.dart';
+import '../widgets/staff_notation_widget.dart';
 
 /// 乐谱详情页面
 class SheetDetailPage extends StatefulWidget {
@@ -17,9 +19,22 @@ class SheetDetailPage extends StatefulWidget {
   State<SheetDetailPage> createState() => _SheetDetailPageState();
 }
 
+/// 记谱法类型
+enum NotationType {
+  jianpu,  // 简谱
+  staff,   // 五线谱
+  dual,    // 双谱对照
+}
+
 class _SheetDetailPageState extends State<SheetDetailPage> {
   late final SheetMusicController _sheetController;
   late final SheetPlayerController _playerController;
+  
+  /// 记录拖动进度条之前是否在播放
+  bool _wasPlayingBeforeDrag = false;
+  
+  /// 当前记谱法类型
+  NotationType _notationType = NotationType.jianpu;
 
   @override
   void initState() {
@@ -62,6 +77,12 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
               onPressed: () => _sheetController.toggleFavorite(sheet),
             );
           }),
+          // 记谱法切换
+          IconButton(
+            icon: Icon(_getNotationIcon()),
+            tooltip: _getNotationLabel(),
+            onPressed: () => _showNotationPicker(context),
+          ),
           // 导出/分享
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
@@ -121,19 +142,7 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
                 padding: const EdgeInsets.all(16),
                 child: Obx(() {
                   final state = _playerController.playbackState.value;
-                  return JianpuNotationWidget(
-                    sheet: sheet,
-                    style: JianpuStyle(
-                      noteColor: isDark ? Colors.white : Colors.black,
-                      lyricColor: isDark ? Colors.white70 : Colors.black54,
-                      barLineColor: isDark ? Colors.white54 : Colors.black,
-                    ),
-                    highlightMeasureIndex: state.isPlaying ? state.currentMeasureIndex : null,
-                    highlightNoteIndex: state.isPlaying ? state.currentNoteIndex : null,
-                    onNoteTap: (measureIndex, noteIndex) {
-                      _playerController.playNotePreview(measureIndex, noteIndex);
-                    },
-                  );
+                  return _buildNotationWidget(sheet, state, isDark);
                 }),
               ),
             ),
@@ -276,7 +285,22 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
                     child: Slider(
                       value: progress.clamp(0.0, 1.0),
                       onChanged: (value) {
-                        // TODO: 实现拖动跳转
+                        // 拖动时跳转到对应位置
+                        _playerController.seekToProgress(value);
+                      },
+                      onChangeStart: (value) {
+                        // 拖动开始时，如果正在播放则暂停
+                        if (state.isPlaying) {
+                          _wasPlayingBeforeDrag = true;
+                          _playerController.pause();
+                        }
+                      },
+                      onChangeEnd: (value) {
+                        // 拖动结束时，如果之前在播放则继续播放
+                        if (_wasPlayingBeforeDrag) {
+                          _wasPlayingBeforeDrag = false;
+                          _playerController.play();
+                        }
                       },
                       activeColor: AppColors.primary,
                       inactiveColor: AppColors.primary.withValues(alpha: 0.2),
@@ -639,5 +663,139 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
         );
       },
     );
+  }
+
+  /// 获取记谱法图标
+  IconData _getNotationIcon() {
+    switch (_notationType) {
+      case NotationType.jianpu:
+        return Icons.music_note;
+      case NotationType.staff:
+        return Icons.piano;
+      case NotationType.dual:
+        return Icons.library_music;
+    }
+  }
+
+  /// 获取记谱法标签
+  String _getNotationLabel() {
+    switch (_notationType) {
+      case NotationType.jianpu:
+        return '简谱';
+      case NotationType.staff:
+        return '五线谱';
+      case NotationType.dual:
+        return '双谱对照';
+    }
+  }
+
+  /// 显示记谱法选择器
+  void _showNotationPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  '选择记谱法',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.music_note),
+                title: const Text('简谱'),
+                trailing: _notationType == NotationType.jianpu
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  setState(() => _notationType = NotationType.jianpu);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.piano),
+                title: const Text('五线谱'),
+                trailing: _notationType == NotationType.staff
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  setState(() => _notationType = NotationType.staff);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.library_music),
+                title: const Text('双谱对照'),
+                trailing: _notationType == NotationType.dual
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  setState(() => _notationType = NotationType.dual);
+                  Navigator.pop(context);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// 构建记谱组件
+  Widget _buildNotationWidget(
+    SheetModel sheet,
+    SheetPlaybackState state,
+    bool isDark,
+  ) {
+    final jianpuStyle = JianpuStyle(
+      noteColor: isDark ? Colors.white : Colors.black,
+      lyricColor: isDark ? Colors.white70 : Colors.black54,
+      barLineColor: isDark ? Colors.white54 : Colors.black,
+    );
+
+    final staffStyle = StaffStyle(
+      noteColor: isDark ? Colors.white : Colors.black,
+      lyricColor: isDark ? Colors.white70 : Colors.black54,
+      lineColor: isDark ? Colors.white54 : Colors.black,
+    );
+
+    switch (_notationType) {
+      case NotationType.jianpu:
+        return JianpuNotationWidget(
+          sheet: sheet,
+          style: jianpuStyle,
+          highlightMeasureIndex: state.isPlaying ? state.currentMeasureIndex : null,
+          highlightNoteIndex: state.isPlaying ? state.currentNoteIndex : null,
+          onNoteTap: (measureIndex, noteIndex) {
+            _playerController.playNotePreview(measureIndex, noteIndex);
+          },
+        );
+      case NotationType.staff:
+        return StaffNotationWidget(
+          sheet: sheet,
+          style: staffStyle,
+          highlightMeasureIndex: state.isPlaying ? state.currentMeasureIndex : null,
+          highlightNoteIndex: state.isPlaying ? state.currentNoteIndex : null,
+          onNoteTap: (measureIndex, noteIndex) {
+            _playerController.playNotePreview(measureIndex, noteIndex);
+          },
+        );
+      case NotationType.dual:
+        return DualNotationWidget(
+          sheet: sheet,
+          jianpuStyle: jianpuStyle,
+          staffStyle: staffStyle,
+          highlightMeasureIndex: state.isPlaying ? state.currentMeasureIndex : null,
+          highlightNoteIndex: state.isPlaying ? state.currentNoteIndex : null,
+          onNoteTap: (measureIndex, noteIndex) {
+            _playerController.playNotePreview(measureIndex, noteIndex);
+          },
+        );
+    }
   }
 }

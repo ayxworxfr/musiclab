@@ -1,7 +1,12 @@
-# 乐理通 (MusicLab) 🎵
+# MusicLab 🎵
 
 <p align="center">
-  <strong>从零开始，轻松学音乐</strong>
+  <strong>Learn Music from Zero, Made Easy</strong>
+</p>
+
+<p align="center">
+  <a href="./README.md">English</a> •
+  <a href="./README.zh-CN.md">简体中文</a>
 </p>
 
 <p align="center">
@@ -13,117 +18,179 @@
 
 ---
 
-## ✨ 特性
+## ✨ Features
 
-| 特性 | 说明 |
-|------|------|
-| 🎓 **系统化课程** | 简谱入门 → 五线谱入门 → 钢琴入门，循序渐进 |
-| 🎯 **趣味练习** | 识谱、节奏、听音、弹奏多种练习模式 |
-| 🎹 **虚拟钢琴** | 支持多点触控，可录制回放 |
-| 🥁 **节拍器** | 可调 BPM，多种拍号支持 |
-| 📚 **乐谱库** | 内置经典入门曲目 |
-| 🏆 **成就系统** | 学习打卡，成就徽章激励 |
-| 🌍 **国际化** | 中英文支持 |
-| 🎨 **主题系统** | 亮色/暗色主题 |
+| Feature | Description |
+|---------|-------------|
+| 🎓 **Systematic Courses** | Jianpu → Staff Notation → Piano, step by step |
+| 🎯 **Fun Practice** | Note reading, rhythm, ear training, playing exercises |
+| 🎹 **Virtual Piano** | Multi-touch support, 88 keys, recording & playback |
+| 🥁 **Metronome** | Adjustable BPM (20-240), multiple time signatures |
+| 📝 **Sheet Music** | Create, edit, import (Jianpu/JSON/MusicXML) |
+| 🏆 **Achievement System** | Daily check-in, badges, progress tracking |
+| 🌍 **i18n** | Chinese & English support |
+| 🎨 **Themes** | Light / Dark mode |
 
-## 🚀 快速开始
+## 📸 Screenshots
 
-### 环境要求
+| Home | Course | Piano | Practice |
+|------|--------|-------|----------|
+| 🏠 | 📚 | 🎹 | 🎯 |
+
+## 🚀 Quick Start
+
+### Prerequisites
 
 - Flutter >= 3.19.0
 - Dart >= 3.3.0
+- (Optional) Python 3 + FFmpeg for audio generation
 
-### 安装运行
+### Installation
 
 ```bash
-# 克隆项目
+# Clone the project
 git clone https://github.com/ayxworxfr/musiclab.git
 cd musiclab
 
-# 安装依赖
+# Install dependencies
 make install
 
-# 运行项目
+# Run the app
 make run
 ```
 
-## 📁 项目结构
+### Run on Different Platforms
+
+```bash
+make run          # Chrome (default)
+make run-web      # Web (port 8080)
+make run-ios      # iOS Simulator
+make run-android  # Android Device
+```
+
+## 📁 Project Structure
 
 ```
 lib/
-├── app/                      # 应用层
-│   ├── app.dart              # App 入口配置
-│   ├── app_binding.dart      # 全局依赖绑定
-│   ├── middlewares/          # 路由中间件
-│   └── routes/               # 路由定义
+├── app/                      # App Layer
+│   ├── app.dart              # App entry & config
+│   ├── app_binding.dart      # Global dependencies
+│   ├── middlewares/          # Route middlewares
+│   └── routes/               # Route definitions
 │
-├── core/                     # 核心层
-│   ├── audio/                # 音频服务
-│   ├── network/              # 网络请求
-│   ├── storage/              # 本地存储
-│   ├── theme/                # 主题配置
-│   ├── utils/                # 工具类
-│   └── widgets/              # 通用组件
-│       └── music/            # 音乐专用组件
-│           ├── piano_keyboard.dart  # 钢琴键盘
-│           └── staff_widget.dart    # 五线谱
+├── core/                     # Core Layer
+│   ├── audio/                # Audio services (piano, metronome)
+│   ├── network/              # HTTP client & interceptors
+│   ├── storage/              # Local storage (Hive)
+│   ├── theme/                # Theme configuration
+│   ├── utils/                # Utilities (music, date, etc.)
+│   └── widgets/              # Common widgets
+│       └── music/            # Music-specific widgets
+│           ├── piano_keyboard.dart
+│           ├── jianpu_note_text.dart
+│           └── staff_widget.dart
 │
-├── features/                 # 功能模块层
-│   ├── splash/               # 启动页
-│   ├── onboarding/           # 引导页
-│   ├── main/                 # 主框架（底部导航）
-│   ├── home/                 # 首页
-│   ├── course/               # 课程模块
-│   ├── practice/             # 练习模块
-│   ├── tools/                # 工具模块
-│   │   ├── piano/            # 虚拟钢琴
-│   │   ├── metronome/        # 节拍器
-│   │   └── sheet_music/      # 乐谱库
-│   └── profile/              # 个人中心
+├── features/                 # Feature Modules
+│   ├── splash/               # Splash screen
+│   ├── onboarding/           # Onboarding
+│   ├── main/                 # Main navigation
+│   ├── home/                 # Home page
+│   ├── course/               # Course system
+│   ├── practice/             # Practice modules
+│   │   ├── note_practice/    # Note recognition
+│   │   ├── rhythm_practice/  # Rhythm training
+│   │   ├── ear_practice/     # Ear training
+│   │   └── piano_practice/   # Playing practice
+│   ├── tools/                # Tools
+│   │   ├── piano/            # Virtual piano
+│   │   ├── metronome/        # Metronome
+│   │   ├── sheet_music/      # Sheet music library & editor
+│   │   └── reference/        # Reference tables
+│   └── profile/              # User profile
 │
-├── shared/                   # 共享层
-│   ├── constants/            # 常量定义
-│   ├── enums/                # 枚举定义
-│   ├── extensions/           # 扩展方法
-│   └── translations/         # 国际化
+├── shared/                   # Shared Layer
+│   ├── constants/            # Constants
+│   ├── enums/                # Enums
+│   ├── extensions/           # Extensions
+│   └── translations/         # i18n
 │
-└── main.dart                 # 程序入口
+└── main.dart                 # Entry point
 ```
 
-## 🛠️ 技术栈
+## 🛠️ Tech Stack
 
-| 分类 | 技术 | 版本 |
-|------|------|------|
-| 状态管理 | GetX | 4.6.6 |
-| 音频播放 | just_audio | 0.9.36 |
-| 网络请求 | Dio | 5.4.0 |
-| 本地存储 | Hive | 2.2.3 |
-| 屏幕适配 | ScreenUtil | 5.9.0 |
-| 动画 | Lottie | 3.1.0 |
+| Category | Technology | Version |
+|----------|------------|---------|
+| State Management | GetX | 4.6.6 |
+| Audio | just_audio | 0.9.36 |
+| HTTP | Dio | 5.4.0 |
+| Storage | Hive | 2.2.3 |
+| UI | ScreenUtil | 5.9.0 |
+| Animation | Lottie | 3.1.0 |
+| Markdown | flutter_markdown | 0.7.4 |
 
-## 📚 课程体系
+## 📚 Course System
 
-### 简谱入门（10课时）
-学习 1234567 七个音符，认识节拍和节奏
+### Jianpu Basics (10 lessons)
+Learn the numbered musical notation (1234567), rhythm, and beats.
 
-### 五线谱入门（15课时）
-认识五线谱结构，学习高低音谱号
+### Staff Notation Basics (15 lessons)
+Understand the five-line staff, treble and bass clefs.
 
-### 钢琴入门（20课时）
-学习正确坐姿手型，练习经典入门曲目
+### Piano Basics (20 lessons)
+Learn proper posture, hand position, and play classic beginner pieces.
 
-## 📝 常用命令
+## 🎹 Audio Generation
+
+The project includes a Python script to generate piano sounds (88 keys), metronome clicks, and effect sounds:
 
 ```bash
-make help          # 显示所有命令
-make install       # 安装依赖
-make run           # 运行项目
-make analyze       # 代码分析
-make format        # 格式化代码
-make clean         # 清理构建
+# Install Python dependencies
+make audio-install-deps
+
+# Generate all audio files
+make audio
+
+# Clean audio files
+make audio-clean
 ```
 
-## 📄 许可证
+## 📝 Make Commands
+
+```bash
+# Development
+make help          # Show all commands
+make install       # Install dependencies
+make run           # Run on Chrome
+make run-web       # Run on Web (port 8080)
+make stop          # Stop running app
+
+# Build
+make build-web     # Build for Web
+make build-ios     # Build for iOS
+make build-android # Build for Android
+
+# Code Quality
+make analyze       # Code analysis
+make format        # Format code
+make test          # Run tests
+
+# Audio
+make audio         # Generate audio files
+make audio-clean   # Clean audio files
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
 
 [MIT License](LICENSE)
 

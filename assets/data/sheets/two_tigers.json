@@ -1,0 +1,128 @@
+{
+  "id": "sheet_004",
+  "title": "两只老虎",
+  "difficulty": 1,
+  "category": "folk",
+  "metadata": {
+    "key": "C",
+    "timeSignature": "2/4",
+    "tempo": 100,
+    "description": "经典儿歌，旋律简单易学"
+  },
+  "measures": [
+    {
+      "number": 1,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "两"},
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "只"}
+      ]
+    },
+    {
+      "number": 2,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "老"},
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "虎"}
+      ]
+    },
+    {
+      "number": 3,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "两"},
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "只"}
+      ]
+    },
+    {
+      "number": 4,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "老"},
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "虎"}
+      ]
+    },
+    {
+      "number": 5,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "跑"},
+        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "得"}
+      ]
+    },
+    {
+      "number": 6,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "half", "lyric": "快"}
+      ]
+    },
+    {
+      "number": 7,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "跑"},
+        {"degree": 4, "octave": 0, "duration": "quarter", "lyric": "得"}
+      ]
+    },
+    {
+      "number": 8,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "half", "lyric": "快"}
+      ]
+    },
+    {
+      "number": 9,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "一"},
+        {"degree": 6, "octave": 0, "duration": "eighth", "lyric": "只"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "没"},
+        {"degree": 4, "octave": 0, "duration": "eighth", "lyric": "有"}
+      ]
+    },
+    {
+      "number": 10,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "耳"},
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "朵"}
+      ]
+    },
+    {
+      "number": 11,
+      "notes": [
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "一"},
+        {"degree": 6, "octave": 0, "duration": "eighth", "lyric": "只"},
+        {"degree": 5, "octave": 0, "duration": "eighth", "lyric": "没"},
+        {"degree": 4, "octave": 0, "duration": "eighth", "lyric": "有"}
+      ]
+    },
+    {
+      "number": 12,
+      "notes": [
+        {"degree": 3, "octave": 0, "duration": "quarter", "lyric": "尾"},
+        {"degree": 1, "octave": 0, "duration": "quarter", "lyric": "巴"}
+      ]
+    },
+    {
+      "number": 13,
+      "notes": [
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "真"},
+        {"degree": 7, "octave": 0, "duration": "quarter", "lyric": "奇"}
+      ]
+    },
+    {
+      "number": 14,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "half", "lyric": "怪"}
+      ]
+    },
+    {
+      "number": 15,
+      "notes": [
+        {"degree": 2, "octave": 0, "duration": "quarter", "lyric": "真"},
+        {"degree": 7, "octave": 0, "duration": "quarter", "lyric": "奇"}
+      ]
+    },
+    {
+      "number": 16,
+      "notes": [
+        {"degree": 1, "octave": 0, "duration": "half", "lyric": "怪"}
+      ]
+    }
+  ],
+  "isBuiltIn": true
+}
+

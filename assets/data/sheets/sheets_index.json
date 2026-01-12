@@ -1,0 +1,74 @@
+{
+  "sheets": [
+    {
+      "id": "sheet_001",
+      "filename": "twinkle_twinkle.json",
+      "title": "小星星",
+      "difficulty": 1,
+      "category": "folk"
+    },
+    {
+      "id": "sheet_002",
+      "filename": "happy_birthday.json",
+      "title": "生日快乐歌",
+      "difficulty": 1,
+      "category": "folk"
+    },
+    {
+      "id": "sheet_003",
+      "filename": "ode_to_joy.json",
+      "title": "欢乐颂",
+      "difficulty": 2,
+      "category": "classical"
+    },
+    {
+      "id": "sheet_004",
+      "filename": "two_tigers.json",
+      "title": "两只老虎",
+      "difficulty": 1,
+      "category": "folk"
+    },
+    {
+      "id": "sheet_005",
+      "filename": "jingle_bells.json",
+      "title": "铃儿响叮当",
+      "difficulty": 2,
+      "category": "folk"
+    },
+    {
+      "id": "sheet_006",
+      "filename": "jasmine_flower.json",
+      "title": "茉莉花",
+      "difficulty": 2,
+      "category": "folk"
+    },
+    {
+      "id": "sheet_007",
+      "filename": "canon_in_d.json",
+      "title": "C大调卡农",
+      "difficulty": 3,
+      "category": "classical"
+    },
+    {
+      "id": "sheet_008",
+      "filename": "fur_elise.json",
+      "title": "致爱丽丝",
+      "difficulty": 3,
+      "category": "classical"
+    }
+  ],
+  "metadata": {
+    "total": 8,
+    "lastUpdated": "2026-01-12",
+    "categories": {
+      "folk": 5,
+      "classical": 3
+    },
+    "difficulties": {
+      "1": 3,
+      "2": 3,
+      "3": 2
+    }
+  }
+}
+
