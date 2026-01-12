@@ -55,14 +55,15 @@ class MetronomePage extends GetView<MetronomeController> {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(beats, (index) {
-          final isActive = isPlaying && index == current;
+          // currentBeat 为 -1 时表示未开始，所有指示灯都不亮
+          final isActive = isPlaying && current >= 0 && index == current;
           final isStrong = index == 0;
 
           return AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
+            duration: const Duration(milliseconds: 80),
             margin: const EdgeInsets.symmetric(horizontal: 8),
-            width: isActive ? 32 : 24,
-            height: isActive ? 32 : 24,
+            width: isActive ? 36 : 24,
+            height: isActive ? 36 : 24,
             decoration: BoxDecoration(
               color: isActive
                   ? (isStrong ? AppColors.primary : AppColors.secondary)
@@ -72,13 +73,25 @@ class MetronomePage extends GetView<MetronomeController> {
                   ? [
                       BoxShadow(
                         color: (isStrong ? AppColors.primary : AppColors.secondary)
-                            .withValues(alpha: 0.5),
-                        blurRadius: 12,
-                        spreadRadius: 2,
+                            .withValues(alpha: 0.6),
+                        blurRadius: 16,
+                        spreadRadius: 4,
                       ),
                     ]
                   : null,
             ),
+            child: isStrong && !isActive
+                ? Center(
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  )
+                : null,
           );
         }),
       );

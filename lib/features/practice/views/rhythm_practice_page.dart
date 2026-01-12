@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
+import '../../../core/audio/metronome_service.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// 节奏练习页面
@@ -18,6 +19,7 @@ class RhythmPracticePage extends StatefulWidget {
 class _RhythmPracticePageState extends State<RhythmPracticePage>
     with SingleTickerProviderStateMixin {
   final AudioService _audioService = Get.find<AudioService>();
+  late MetronomeService _metronomeService;
 
   // 游戏状态
   bool _isPlaying = false;
@@ -33,12 +35,11 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   int _difficulty = 1;
 
   // BPM
-  int _bpm = 100;
+  int _bpm = 80;
 
-  // 节拍器计时器
-  Timer? _beatTimer;
-  int _currentBeat = 0;
-  int _beatsPerMeasure = 4;
+  // 节拍状态
+  int _currentBeat = -1;
+  final int _beatsPerMeasure = 4;
 
   // 节奏模式
   List<bool> _rhythmPattern = [];
@@ -50,24 +51,31 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
 
   // 敲击检测
   bool _canTap = false;
-  DateTime? _lastBeatTime;
   bool _beatHit = false;
+  Timer? _tapWindowTimer;
 
   @override
   void initState() {
     super.initState();
+    
+    // 获取或创建节拍器服务
+    if (!Get.isRegistered<MetronomeService>()) {
+      Get.put(MetronomeService());
+    }
+    _metronomeService = Get.find<MetronomeService>();
+    
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 150),
     );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeOut),
     );
   }
 
   @override
   void dispose() {
-    _beatTimer?.cancel();
+    _stopGame();
     _pulseController.dispose();
     super.dispose();
   }
@@ -82,6 +90,14 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
         title: const Text('节奏练习'),
         centerTitle: true,
         elevation: 0,
+        actions: [
+          if (_isPlaying)
+            IconButton(
+              icon: const Icon(Icons.stop),
+              onPressed: _stopGame,
+              tooltip: '停止',
+            ),
+        ],
       ),
       body: _isPlaying || _isCountingDown
           ? _buildGameView(context, isDark)
@@ -234,13 +250,26 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   Widget _buildGameView(BuildContext context, bool isDark) {
     if (_isCountingDown) {
       return Center(
-        child: Text(
-          '$_countdown',
-          style: TextStyle(
-            fontSize: 120,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primary,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$_countdown',
+              style: const TextStyle(
+                fontSize: 120,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '准备好跟着节拍敲击',
+              style: TextStyle(
+                fontSize: 16,
+                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -257,6 +286,19 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
               _buildStatItem('连击', '$_combo', AppColors.warning),
               _buildStatItem('命中', '$_hitBeats/$_totalBeats', AppColors.success),
             ],
+          ),
+        ),
+
+        // BPM 显示
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            '$_bpm BPM',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+            ),
           ),
         ),
 
@@ -302,14 +344,14 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(_beatsPerMeasure, (index) {
-        final isActive = index == _currentBeat;
+        final isActive = _currentBeat >= 0 && index == _currentBeat;
         final isStrong = index == 0;
 
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 100),
+          duration: const Duration(milliseconds: 80),
           margin: const EdgeInsets.symmetric(horizontal: 8),
-          width: isActive ? 32 : 24,
-          height: isActive ? 32 : 24,
+          width: isActive ? 36 : 24,
+          height: isActive ? 36 : 24,
           decoration: BoxDecoration(
             color: isActive
                 ? (isStrong ? AppColors.primary : AppColors.secondary)
@@ -319,13 +361,25 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
                 ? [
                     BoxShadow(
                       color: (isStrong ? AppColors.primary : AppColors.secondary)
-                          .withValues(alpha: 0.5),
-                      blurRadius: 12,
-                      spreadRadius: 2,
+                          .withValues(alpha: 0.6),
+                      blurRadius: 16,
+                      spreadRadius: 4,
                     ),
                   ]
                 : null,
           ),
+          child: isStrong && !isActive
+              ? Center(
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade500,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                )
+              : null,
         );
       }),
     );
@@ -336,40 +390,50 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: _rhythmPattern.asMap().entries.map((entry) {
-          final index = entry.key;
-          final shouldTap = entry.value;
-          final isPast = index < _patternIndex;
-          final isCurrent = index == _patternIndex;
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _rhythmPattern.asMap().entries.map((entry) {
+            final index = entry.key;
+            final shouldTap = entry.value;
+            final isPast = index < _patternIndex;
+            final isCurrent = index == _patternIndex;
 
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: isCurrent
-                  ? (shouldTap ? AppColors.primary : Colors.grey.shade400)
-                  : isPast
-                      ? Colors.grey.shade300
-                      : (shouldTap ? AppColors.primary.withValues(alpha: 0.3) : Colors.grey.shade200),
-              borderRadius: BorderRadius.circular(8),
-              border: isCurrent
-                  ? Border.all(color: AppColors.primary, width: 3)
-                  : null,
-            ),
-            child: Center(
-              child: shouldTap
-                  ? Icon(
-                      Icons.touch_app,
-                      color: isCurrent || isPast ? Colors.white : AppColors.primary,
-                      size: 20,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          );
-        }).toList(),
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: isCurrent
+                    ? (shouldTap ? AppColors.primary : Colors.grey.shade400)
+                    : isPast
+                        ? Colors.grey.shade300
+                        : (shouldTap ? AppColors.primary.withValues(alpha: 0.3) : Colors.grey.shade200),
+                borderRadius: BorderRadius.circular(8),
+                border: isCurrent
+                    ? Border.all(color: AppColors.primary, width: 3)
+                    : null,
+              ),
+              child: Center(
+                child: shouldTap
+                    ? Icon(
+                        Icons.touch_app,
+                        color: isCurrent || isPast ? Colors.white : AppColors.primary,
+                        size: 22,
+                      )
+                    : Text(
+                        '-',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isCurrent ? Colors.white : Colors.grey,
+                        ),
+                      ),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -388,7 +452,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
               decoration: BoxDecoration(
                 color: _beatHit
                     ? AppColors.success.withValues(alpha: 0.3)
-                    : AppColors.primary.withValues(alpha: 0.2),
+                    : _canTap
+                        ? AppColors.primary.withValues(alpha: 0.3)
+                        : AppColors.primary.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: _beatHit ? AppColors.success : AppColors.primary,
@@ -397,7 +463,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
               ),
               child: Center(
                 child: Icon(
-                  Icons.touch_app,
+                  _beatHit ? Icons.check : Icons.touch_app,
                   size: 80,
                   color: _beatHit ? AppColors.success : AppColors.primary,
                 ),
@@ -438,17 +504,36 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
       _maxCombo = 0;
       _totalBeats = 0;
       _hitBeats = 0;
-      _currentBeat = 0;
+      _currentBeat = -1;
       _patternIndex = 0;
+      _canTap = false;
+      _beatHit = false;
     });
 
     // 生成节奏模式
     _generateRhythmPattern();
 
+    // 配置节拍器
+    _metronomeService.setBpm(_bpm);
+    _metronomeService.setTimeSignature(_beatsPerMeasure, 4);
+    
+    // 设置节拍回调
+    _metronomeService.onBeat = _onBeat;
+    
     // 启动节拍器
-    final beatInterval = (60000 / _bpm).round();
-    _beatTimer = Timer.periodic(Duration(milliseconds: beatInterval), (_) {
-      _onBeat();
+    _metronomeService.start();
+  }
+
+  /// 停止游戏
+  void _stopGame() {
+    _tapWindowTimer?.cancel();
+    _metronomeService.onBeat = null;
+    _metronomeService.stop();
+    
+    setState(() {
+      _isPlaying = false;
+      _isCountingDown = false;
+      _currentBeat = -1;
     });
   }
 
@@ -459,9 +544,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
       // 根据难度调整空拍概率
       final tapProbability = switch (_difficulty) {
         1 => 1.0, // 入门：全敲
-        2 => 0.9, // 初级：偶尔空拍
+        2 => 0.85, // 初级：偶尔空拍
         3 => 0.7, // 中级：更多变化
-        _ => 0.6, // 高级：复杂节奏
+        _ => 0.55, // 高级：复杂节奏
       };
       return random.nextDouble() < tapProbability;
     });
@@ -469,13 +554,13 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
     _rhythmPattern[0] = true;
   }
 
-  /// 节拍触发
-  void _onBeat() {
-    _audioService.playMetronomeClick(isStrong: _currentBeat == 0);
-
-    // 更新当前拍
+  /// 节拍触发（由 MetronomeService 回调）
+  void _onBeat(int beat, bool isStrong) {
+    if (!_isPlaying) return;
+    
+    // 更新当前拍显示
     setState(() {
-      _currentBeat = (_currentBeat + 1) % _beatsPerMeasure;
+      _currentBeat = beat;
     });
 
     // 脉冲动画
@@ -483,7 +568,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
 
     // 检查节奏模式
     if (_patternIndex < _rhythmPattern.length) {
-      _lastBeatTime = DateTime.now();
+      // 开始敲击窗口
       _canTap = true;
       _beatHit = false;
 
@@ -491,15 +576,19 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
         _totalBeats++;
       }
 
-      // 延迟检查是否错过
-      Future.delayed(Duration(milliseconds: (60000 / _bpm * 0.5).round()), () {
+      // 设置敲击窗口结束定时器
+      final windowDuration = (_metronomeService.beatIntervalMs * 0.45).round();
+      _tapWindowTimer?.cancel();
+      _tapWindowTimer = Timer(Duration(milliseconds: windowDuration), () {
         if (_canTap && _rhythmPattern[_patternIndex] && !_beatHit) {
           // 错过了应该敲的拍
           setState(() {
             _combo = 0;
           });
         }
+        
         _canTap = false;
+        
         setState(() {
           _patternIndex++;
         });
@@ -514,18 +603,22 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
 
   /// 敲击
   void _onTap() {
-    if (!_isPlaying || !_canTap) return;
+    if (!_isPlaying) return;
+    
+    // 在敲击窗口外也可以敲击，但效果不同
+    if (!_canTap || _beatHit) {
+      // 错误的敲击（窗口外或重复敲击）
+      if (!_rhythmPattern[_patternIndex.clamp(0, _rhythmPattern.length - 1)]) {
+        setState(() {
+          _combo = 0;
+        });
+        _audioService.playWrong();
+      }
+      return;
+    }
 
-    final now = DateTime.now();
-    final timeSinceBeat = now.difference(_lastBeatTime!).inMilliseconds;
-    final beatInterval = 60000 / _bpm;
-
-    // 判断敲击是否在正确时间窗口内
-    final tolerance = beatInterval * 0.3; // 30% 容错
-    final isOnTime = timeSinceBeat < tolerance;
-
-    if (_rhythmPattern[_patternIndex] && isOnTime && !_beatHit) {
-      // 命中
+    if (_rhythmPattern[_patternIndex]) {
+      // 命中正确的拍
       setState(() {
         _beatHit = true;
         _hitBeats++;
@@ -533,13 +626,13 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
         if (_combo > _maxCombo) _maxCombo = _combo;
 
         // 计算分数
-        final baseScore = 100;
+        const baseScore = 100;
         final comboBonus = (_combo * 10).clamp(0, 100);
         _score += baseScore + comboBonus;
       });
 
       _audioService.playCorrect();
-    } else if (!_rhythmPattern[_patternIndex]) {
+    } else {
       // 不该敲的时候敲了
       setState(() {
         _combo = 0;
@@ -550,9 +643,12 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
 
   /// 结束游戏
   void _endGame() {
-    _beatTimer?.cancel();
+    _metronomeService.onBeat = null;
+    _metronomeService.stop();
+    
     setState(() {
       _isPlaying = false;
+      _currentBeat = -1;
     });
 
     // 显示结果
@@ -614,4 +710,3 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
     );
   }
 }
-
