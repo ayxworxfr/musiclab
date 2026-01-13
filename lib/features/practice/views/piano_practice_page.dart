@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/music/jianpu_note_text.dart';
-import '../../../core/widgets/music/piano_keyboard.dart';
 import '../../../shared/enums/practice_type.dart';
+import '../../tools/sheet_music/models/enums.dart';
+import '../../tools/sheet_music/painters/piano_keyboard_painter.dart';
+import '../../tools/sheet_music/painters/render_config.dart';
 import '../controllers/practice_controller.dart';
 import '../models/practice_model.dart';
 
 /// 弹奏练习页面
 class PianoPracticePage extends GetView<PracticeController> {
-  const PianoPracticePage({super.key});
+  PianoPracticePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -211,9 +214,9 @@ class PianoPracticePage extends GetView<PracticeController> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  question.content.description ?? '弹出以下旋律',
+                  question.content.description ?? '弹奏练习：在钢琴上弹出以下旋律',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
@@ -246,8 +249,8 @@ class PianoPracticePage extends GetView<PracticeController> {
               _buildUserInputDisplay(context, question, isDark),
               const SizedBox(height: 16),
 
-              // 钢琴键盘
-              _buildPianoKeyboard(context, question),
+              // 钢琴键盘（Canvas 版本）
+              _buildPianoKeyboard(context, question, isDark),
               const SizedBox(height: 16),
             ],
           ),
@@ -432,33 +435,96 @@ class PianoPracticePage extends GetView<PracticeController> {
     });
   }
 
-  /// 钢琴键盘
-  Widget _buildPianoKeyboard(BuildContext context, PracticeQuestion question) {
+  /// 钢琴键盘（使用新的 Canvas 组件）
+  Widget _buildPianoKeyboard(BuildContext context, PracticeQuestion question, bool isDark) {
     final targetNotes = question.content.notes ?? [];
+    final audioService = Get.find<AudioService>();
+    
+    // 使用与乐谱页面一致的主题
+    final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
+    final config = RenderConfig(
+      pianoHeight: 160,
+      theme: renderTheme,
+    );
     
     return Obx(() {
       final userNotes = controller.userPlayedNotes;
       
       // 高亮目标音符中还没弹的下一个
       final nextNoteIndex = userNotes.length;
-      final highlightNotes = nextNoteIndex < targetNotes.length 
-          ? [targetNotes[nextNoteIndex]] 
-          : <int>[];
+      final highlightNotes = <int, Hand>{};
+      if (nextNoteIndex < targetNotes.length) {
+        highlightNotes[targetNotes[nextNoteIndex]] = Hand.right;
+      }
       
-      return SizedBox(
+      return Container(
         height: 160,
-        child: PianoKeyboard(
-          startMidi: 60,
-          endMidi: 72,
-          whiteKeyHeight: 140,
-          whiteKeyWidth: 44,
-          showLabels: true,
-          labelType: 'jianpu',
-          highlightedNotes: highlightNotes,
-          onNotePressed: (midi) => _onNotePlayed(midi, targetNotes),
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: GestureDetector(
+          onTapDown: (details) => _handlePianoTap(details, config, targetNotes, audioService),
+          onPanStart: (details) => _handlePianoTap(details, config, targetNotes, audioService),
+          onPanUpdate: (details) => _handlePianoTap(details, config, targetNotes, audioService),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return CustomPaint(
+                size: Size(constraints.maxWidth, 160),
+                painter: PianoKeyboardPainter(
+                  startMidi: 60,
+                  endMidi: 72,
+                  config: config,
+                  highlightedNotes: highlightNotes,
+                  showLabels: true,
+                  labelType: 'jianpu',
+                ),
+              );
+            },
+          ),
         ),
       );
     });
+  }
+
+  int? _lastPlayedMidi;
+  
+  void _handlePianoTap(dynamic details, RenderConfig config, List<int> targetNotes, AudioService audioService) {
+    if (controller.hasAnswered.value) return;
+    
+    final position = details is TapDownDetails 
+        ? details.localPosition 
+        : (details as DragStartDetails).localPosition;
+    
+    final painter = PianoKeyboardPainter(
+      startMidi: 60,
+      endMidi: 72,
+      config: config,
+    );
+    
+    // 假设宽度为屏幕宽度减去边距
+    final width = Get.width - 32;
+    final midi = painter.findKeyAtPosition(position, Size(width, 160));
+    
+    if (midi != null && midi != _lastPlayedMidi) {
+      _lastPlayedMidi = midi;
+      audioService.markUserInteracted();
+      audioService.playPianoNote(midi);
+      _onNotePlayed(midi, targetNotes);
+      
+      // 重置
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _lastPlayedMidi = null;
+      });
+    }
   }
 
   /// 音符被弹奏
@@ -734,4 +800,3 @@ class PianoPracticePage extends GetView<PracticeController> {
     );
   }
 }
-

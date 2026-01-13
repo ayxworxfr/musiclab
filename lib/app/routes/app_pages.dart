@@ -101,7 +101,7 @@ class AppPages {
     // 弹奏练习
     GetPage(
       name: AppRoutes.pianoPractice,
-      page: () => const PianoPracticePage(),
+      page: () => PianoPracticePage(),
       binding: PracticeBinding(),
       transition: Transition.rightToLeft,
     ),

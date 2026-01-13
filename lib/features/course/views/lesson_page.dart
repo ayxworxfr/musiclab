@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/music/piano_keyboard.dart';
+import '../../tools/sheet_music/models/enums.dart';
+import '../../tools/sheet_music/painters/piano_keyboard_painter.dart';
+import '../../tools/sheet_music/painters/render_config.dart';
 import '../controllers/course_controller.dart';
 import '../models/course_model.dart';
 
@@ -186,7 +188,7 @@ class LessonPage extends GetView<CourseController> {
     );
   }
 
-  /// 钢琴内容块
+  /// 钢琴内容块（使用新的 Canvas 组件）
   Widget _buildPianoBlock(BuildContext context, Map<String, dynamic> data, bool isDark) {
     final startMidi = data['startMidi'] as int? ?? 60;
     final endMidi = data['endMidi'] as int? ?? 72;
@@ -194,6 +196,15 @@ class LessonPage extends GetView<CourseController> {
     final labelType = data['labelType'] as String? ?? 'jianpu';
     final highlightNotes = (data['highlightNotes'] as List<dynamic>?)?.cast<int>() ?? [];
     final instruction = data['instruction'] as String?;
+
+    final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
+    final config = RenderConfig(pianoHeight: 160, theme: renderTheme);
+
+    // 将高亮音符转换为 Map 格式
+    final highlightedNotesMap = <int, Hand?>{};
+    for (final midi in highlightNotes) {
+      highlightedNotesMap[midi] = Hand.right;
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -222,16 +233,27 @@ class LessonPage extends GetView<CourseController> {
               ),
               const SizedBox(height: 16),
             ],
-            SizedBox(
+            // Canvas 钢琴组件
+            Container(
               height: 160,
-              child: PianoKeyboard(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: _InteractivePianoKeyboard(
                 startMidi: startMidi,
                 endMidi: endMidi,
+                config: config,
                 showLabels: showLabels,
                 labelType: labelType,
-                highlightedNotes: highlightNotes,
-                whiteKeyHeight: 140,
-                whiteKeyWidth: 42,
+                highlightedNotes: highlightedNotesMap,
               ),
             ),
           ],
@@ -412,6 +434,78 @@ class LessonPage extends GetView<CourseController> {
   }
 }
 
+/// 可交互的 Canvas 钢琴键盘组件
+class _InteractivePianoKeyboard extends StatefulWidget {
+  final int startMidi;
+  final int endMidi;
+  final RenderConfig config;
+  final bool showLabels;
+  final String labelType;
+  final Map<int, Hand?> highlightedNotes;
+
+  const _InteractivePianoKeyboard({
+    required this.startMidi,
+    required this.endMidi,
+    required this.config,
+    this.showLabels = true,
+    this.labelType = 'jianpu',
+    this.highlightedNotes = const {},
+  });
+
+  @override
+  State<_InteractivePianoKeyboard> createState() => _InteractivePianoKeyboardState();
+}
+
+class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
+  final AudioService _audioService = Get.find<AudioService>();
+  int? _lastPlayedMidi;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final painter = PianoKeyboardPainter(
+          startMidi: widget.startMidi,
+          endMidi: widget.endMidi,
+          config: widget.config,
+          showLabels: widget.showLabels,
+          labelType: widget.labelType,
+          highlightedNotes: widget.highlightedNotes,
+        );
+        
+        return GestureDetector(
+          onTapDown: (details) => _handleTap(details.localPosition, constraints, painter),
+          onPanUpdate: (details) => _handlePan(details.localPosition, constraints, painter),
+          onPanEnd: (_) => _lastPlayedMidi = null,
+          onTapUp: (_) => _lastPlayedMidi = null,
+          child: CustomPaint(
+            size: Size(constraints.maxWidth, constraints.maxHeight),
+            painter: painter,
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleTap(Offset position, BoxConstraints constraints, PianoKeyboardPainter painter) {
+    final midi = painter.findKeyAtPosition(position, Size(constraints.maxWidth, constraints.maxHeight));
+    if (midi != null && midi != _lastPlayedMidi) {
+      _lastPlayedMidi = midi;
+      _audioService.markUserInteracted();
+      _audioService.playPianoNote(midi);
+    }
+  }
+
+  void _handlePan(Offset position, BoxConstraints constraints, PianoKeyboardPainter painter) {
+    final midi = painter.findKeyAtPosition(position, Size(constraints.maxWidth, constraints.maxHeight));
+    if (midi != null && midi != _lastPlayedMidi) {
+      _lastPlayedMidi = midi;
+      _audioService.markUserInteracted();
+      _audioService.playPianoNote(midi);
+    }
+  }
+}
+
 /// Markdown 文本渲染（使用 flutter_markdown）
 class _MarkdownText extends StatelessWidget {
   final String content;
@@ -528,6 +622,7 @@ class _AudioNoteButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: () {
         final audioService = Get.find<AudioService>();
+        audioService.markUserInteracted();
         audioService.playPianoNote(midi);
       },
       style: ElevatedButton.styleFrom(
@@ -753,4 +848,3 @@ class _QuizWidgetState extends State<_QuizWidget> {
     );
   }
 }
-
