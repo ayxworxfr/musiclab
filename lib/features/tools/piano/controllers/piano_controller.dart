@@ -23,6 +23,9 @@ class PianoController extends GetxController {
   /// 标签类型：jianpu（简谱）、noteName（音名）
   final labelType = 'jianpu'.obs;
 
+  /// 当前主题索引
+  final themeIndex = 0.obs;
+
   /// 是否正在录制
   final isRecording = false.obs;
 
@@ -32,15 +35,27 @@ class PianoController extends GetxController {
   /// 录制的音符列表
   final recordedNotes = <Map<String, dynamic>>[].obs;
 
+  /// 当前按下的音符（用于高亮显示）
+  final pressedNotes = <int>[].obs;
+
   /// 播放定时器
   Timer? _playbackTimer;
   
   /// 当前播放索引
   int _playbackIndex = 0;
 
-  /// 播放音符
-  void playNote(int midi) {
-    _audioService.playPianoNote(midi);
+  /// 可用主题列表
+  static const themes = ['默认', '深色', '午夜蓝', '暖阳', '森林'];
+
+  /// 按下音符（用于UI高亮）
+  void pressNote(int midi) {
+    if (!pressedNotes.contains(midi)) {
+      pressedNotes.add(midi);
+      // 自动松开
+      Future.delayed(const Duration(milliseconds: 300), () {
+        releaseNote(midi);
+      });
+    }
 
     // 如果正在录制，记录音符
     if (isRecording.value) {
@@ -49,6 +64,24 @@ class PianoController extends GetxController {
         'timestamp': DateTime.now().millisecondsSinceEpoch,
       });
     }
+  }
+
+  /// 松开音符
+  void releaseNote(int midi) {
+    pressedNotes.remove(midi);
+  }
+
+  /// 设置音域范围
+  void setRange(int start, int end) {
+    startMidi.value = start.clamp(21, 108);
+    endMidi.value = end.clamp(21, 108);
+    octaveCount.value = ((end - start) / 12).round().clamp(1, 7);
+  }
+
+  /// 播放音符
+  void playNote(int midi) {
+    _audioService.markUserInteracted();
+    _audioService.playPianoNote(midi);
   }
 
   /// 停止音符
@@ -64,6 +97,16 @@ class PianoController extends GetxController {
   /// 切换标签类型
   void toggleLabelType() {
     labelType.value = labelType.value == 'jianpu' ? 'noteName' : 'jianpu';
+  }
+
+  /// 切换主题
+  void nextTheme() {
+    themeIndex.value = (themeIndex.value + 1) % themes.length;
+  }
+
+  /// 设置主题
+  void setTheme(int index) {
+    themeIndex.value = index.clamp(0, themes.length - 1);
   }
 
   /// 向左移动音域
@@ -153,7 +196,10 @@ class PianoController extends GetxController {
     
     final note = recordedNotes[_playbackIndex];
     final midi = note['midi'] as int;
+    
+    // 播放音符并高亮
     _audioService.playPianoNote(midi);
+    pressNote(midi);  // 添加高亮
     
     _playbackIndex++;
     
@@ -176,6 +222,7 @@ class PianoController extends GetxController {
     _playbackTimer = null;
     isPlaying.value = false;
     _playbackIndex = 0;
+    pressedNotes.clear();
   }
 
   @override
@@ -184,4 +231,3 @@ class PianoController extends GetxController {
     super.onClose();
   }
 }
-

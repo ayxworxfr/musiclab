@@ -40,7 +40,7 @@ class SheetMusicView extends StatefulWidget {
     this.showFingering = true,
     this.showLyrics = true,
     this.showPiano = true,
-    this.pianoLabelType = 'note',
+    this.pianoLabelType = 'jianpu',
     this.onNoteTap,
     this.onPianoKeyTap,
   });
@@ -464,7 +464,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       const SizedBox(width: 8),
                       DropdownButton<int>(
                         value: _pianoStartMidi,
-                        items: _buildMidiDropdownItems(24, 60),
+                        items: _buildMidiDropdownItems(21, 60, _pianoStartMidi),
                         onChanged: (value) {
                           if (value != null && value < _pianoEndMidi) {
                             setModalState(() {});
@@ -482,7 +482,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       const SizedBox(width: 8),
                       DropdownButton<int>(
                         value: _pianoEndMidi,
-                        items: _buildMidiDropdownItems(60, 108),
+                        items: _buildMidiDropdownItems(60, 108, _pianoEndMidi),
                         onChanged: (value) {
                           if (value != null && value > _pianoStartMidi) {
                             setModalState(() {});
@@ -517,8 +517,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     );
   }
 
-  List<DropdownMenuItem<int>> _buildMidiDropdownItems(int start, int end) {
+  List<DropdownMenuItem<int>> _buildMidiDropdownItems(int start, int end, int currentValue) {
     final items = <DropdownMenuItem<int>>[];
+    bool hasCurrentValue = false;
+    
     for (var midi = start; midi <= end; midi++) {
       // 只显示白键（C, D, E, F, G, A, B）
       if (!_isBlackKey(midi)) {
@@ -526,8 +528,18 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           value: midi,
           child: Text(_getMidiNoteName(midi)),
         ));
+        if (midi == currentValue) hasCurrentValue = true;
       }
     }
+    
+    // 确保当前值在选项中
+    if (!hasCurrentValue && currentValue >= start && currentValue <= end) {
+      items.insert(0, DropdownMenuItem(
+        value: currentValue,
+        child: Text(_getMidiNoteName(currentValue)),
+      ));
+    }
+    
     return items;
   }
 
@@ -799,32 +811,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                   ),
                   const SizedBox(width: 16),
-                  // 右手音量（R = Right）
-                  Text('R', style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: widget.config.theme.rightHandColor,
-                  )),
-                  SizedBox(
-                    width: 70,
-                    child: SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: widget.config.theme.rightHandColor,
-                        inactiveTrackColor: widget.config.theme.rightHandColor.withValues(alpha: 0.2),
-                        thumbColor: widget.config.theme.rightHandColor,
-                        trackHeight: 2,
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
-                      ),
-                      child: Slider(
-                        value: controller.rightHandVolume.value.toDouble(),
-                        min: 0,
-                        max: 100,
-                        onChanged: (v) => controller.setRightHandVolume(v.round()),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  // 左手音量（L = Left）
+                  // 左手音量（L = Left）- 在左边
                   Text('L', style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -845,6 +832,31 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         min: 0,
                         max: 100,
                         onChanged: (v) => controller.setLeftHandVolume(v.round()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  // 右手音量（R = Right）- 在右边
+                  Text('R', style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: widget.config.theme.rightHandColor,
+                  )),
+                  SizedBox(
+                    width: 70,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: widget.config.theme.rightHandColor,
+                        inactiveTrackColor: widget.config.theme.rightHandColor.withValues(alpha: 0.2),
+                        thumbColor: widget.config.theme.rightHandColor,
+                        trackHeight: 2,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                      ),
+                      child: Slider(
+                        value: controller.rightHandVolume.value.toDouble(),
+                        min: 0,
+                        max: 100,
+                        onChanged: (v) => controller.setRightHandVolume(v.round()),
                       ),
                     ),
                   ),
