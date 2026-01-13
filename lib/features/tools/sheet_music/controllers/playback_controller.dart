@@ -62,6 +62,12 @@ class PlaybackController extends GetxController {
   /// 播放模式（双手/左手/右手）
   final Rx<PlayMode> playMode = PlayMode.both.obs;
 
+  /// 右手音量 (0-100)
+  final RxInt rightHandVolume = 100.obs;
+
+  /// 左手音量 (0-100)
+  final RxInt leftHandVolume = 100.obs;
+
   /// 循环播放
   final RxBool loopEnabled = false.obs;
 
@@ -82,9 +88,35 @@ class PlaybackController extends GetxController {
   final List<_ScheduledNote> _scheduledNotes = [];
 
   @override
+  void onInit() {
+    super.onInit();
+    _syncVolumes();
+  }
+
+  @override
   void onClose() {
     stop();
     super.onClose();
+  }
+
+  /// 同步音量到音频服务
+  void _syncVolumes() {
+    _audioService.setRightHandVolume(rightHandVolume.value / 100.0);
+    _audioService.setLeftHandVolume(leftHandVolume.value / 100.0);
+  }
+
+  /// 设置右手音量
+  void setRightHandVolume(int volume) {
+    rightHandVolume.value = volume.clamp(0, 100);
+    _audioService.setRightHandVolume(volume / 100.0);
+    update();
+  }
+
+  /// 设置左手音量
+  void setLeftHandVolume(int volume) {
+    leftHandVolume.value = volume.clamp(0, 100);
+    _audioService.setLeftHandVolume(volume / 100.0);
+    update();
   }
 
   /// 加载乐谱
@@ -314,16 +346,12 @@ class PlaybackController extends GetxController {
     // 当前实际时间（考虑速度倍率）
     final currentRealTime = currentTime.value * speedMultiplier.value;
 
-    // 清除过期的高亮
+    // 清除过期的高亮（不在这里清除钢琴键，最后统一处理）
     final toRemove = <int>[];
     for (final idx in highlightedNoteIndices) {
       final note = _scheduledNotes.firstWhereOrNull((n) => n.layoutIndex == idx);
       if (note == null || currentRealTime > note.endTime) {
         toRemove.add(idx);
-        // 同时清除钢琴键
-        if (note != null) {
-          highlightedPianoKeys.remove(note.midi);
-        }
       }
     }
     for (final idx in toRemove) {
@@ -342,21 +370,46 @@ class PlaybackController extends GetxController {
               playMode.value.handFilter == note.hand;
 
           if (shouldPlay) {
-            // 播放音频（异步，不等待）
-            _audioService.playPianoNote(note.midi);
+            // 播放音频（异步，不等待），传入手信息用于音量控制
+            _audioService.playPianoNote(note.midi, hand: note.hand);
           }
 
           // 高亮音符（按索引）- 无论是否播放都显示
           highlightedNoteIndices.add(note.layoutIndex);
-          
-          // 高亮钢琴键（只有播放的才高亮）
-          if (shouldPlay) {
-            highlightedPianoKeys[note.midi] = note.hand;
-          }
         }
         _scheduledNoteIndex++;
       } else {
         break;
+      }
+    }
+
+    // 统一更新钢琴键高亮（基于当前所有活跃的音符）
+    _refreshPianoKeyHighlights(currentRealTime);
+  }
+
+  /// 刷新钢琴键高亮（基于当前高亮的音符索引）
+  void _refreshPianoKeyHighlights(double currentRealTime) {
+    highlightedPianoKeys.clear();
+    
+    // 遍历当前高亮的音符索引
+    for (final idx in highlightedNoteIndices) {
+      final note = _scheduledNotes.firstWhereOrNull((n) => n.layoutIndex == idx);
+      if (note == null || note.midi <= 0) continue;
+      
+      // 检查是否应该高亮钢琴键（根据播放模式）
+      final shouldHighlight = playMode.value == PlayMode.both ||
+          playMode.value.handFilter == note.hand;
+      
+      if (shouldHighlight) {
+        // 添加到高亮集合（如果已存在，优先显示右手颜色）
+        if (highlightedPianoKeys.containsKey(note.midi)) {
+          // 如果当前是右手，覆盖；否则保持
+          if (note.hand == Hand.right) {
+            highlightedPianoKeys[note.midi] = note.hand;
+          }
+        } else {
+          highlightedPianoKeys[note.midi] = note.hand;
+        }
       }
     }
   }

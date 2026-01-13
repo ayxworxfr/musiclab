@@ -102,10 +102,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         // 加载到播放控制器
         _playbackController?.loadScore(widget.score, _layout!);
 
-        // 底部固定区域高度
+        // 底部固定区域高度（钢琴 + 键位提示 + 控制区）
         final double bottomHeight = widget.showPiano
-            ? widget.config.pianoHeight + 200.0
-            : 200.0;
+            ? widget.config.pianoHeight + 220.0
+            : 190.0;
 
         return Column(
           children: [
@@ -121,9 +121,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
               ),
             ),
 
-            // 固定底部：钢琴 + 控制
+            // 固定底部：钢琴 + 控制（使用 Flexible 避免溢出）
             Container(
-              height: bottomHeight,
+              constraints: BoxConstraints(maxHeight: bottomHeight),
               decoration: BoxDecoration(
                 color: widget.config.theme.backgroundColor,
                 boxShadow: [
@@ -134,11 +134,14 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   ),
                 ],
               ),
-              child: Column(
-                children: [
-                  if (widget.showPiano) _buildPianoArea(constraints),
-                  _buildPlaybackControls(),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.showPiano) _buildPianoArea(constraints),
+                    _buildPlaybackControls(),
+                  ],
+                ),
               ),
             ),
           ],
@@ -394,7 +397,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     if (_playbackController == null) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: GetBuilder<PlaybackController>(
         builder: (controller) {
           final currentTime = controller.currentTime.value;
@@ -448,8 +451,6 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   ],
                 ),
               ),
-
-              const SizedBox(height: 4),
 
               // 控制按钮
               Row(
@@ -531,34 +532,37 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 ],
               ),
 
-              // 速度控制（倍数显示）
+              // 速度和音量控制
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // 速度控制
                   Text(
                     '速度: ',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 11,
                       color: widget.config.theme.textColor.withValues(alpha: 0.7),
                     ),
                   ),
                   IconButton(
                     onPressed: () => controller.prevSpeed(),
-                    icon: const Icon(Icons.remove, size: 20),
+                    icon: const Icon(Icons.remove, size: 16),
                     visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                   ),
                   GestureDetector(
                     onTap: () => _showSpeedPicker(controller),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: widget.config.theme.rightHandColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         '${speedMultiplier}x',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: widget.config.theme.rightHandColor,
                         ),
@@ -567,8 +571,52 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   ),
                   IconButton(
                     onPressed: () => controller.nextSpeed(),
-                    icon: const Icon(Icons.add, size: 20),
+                    icon: const Icon(Icons.add, size: 16),
                     visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  ),
+                  const SizedBox(width: 16),
+                  // 右手音量
+                  Icon(Icons.pan_tool_alt, size: 12, color: widget.config.theme.rightHandColor),
+                  SizedBox(
+                    width: 80,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: widget.config.theme.rightHandColor,
+                        inactiveTrackColor: widget.config.theme.rightHandColor.withValues(alpha: 0.2),
+                        thumbColor: widget.config.theme.rightHandColor,
+                        trackHeight: 2,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                      ),
+                      child: Slider(
+                        value: controller.rightHandVolume.value.toDouble(),
+                        min: 0,
+                        max: 100,
+                        onChanged: (v) => controller.setRightHandVolume(v.round()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 左手音量
+                  Icon(Icons.pan_tool_alt, size: 12, color: widget.config.theme.leftHandColor),
+                  SizedBox(
+                    width: 80,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: widget.config.theme.leftHandColor,
+                        inactiveTrackColor: widget.config.theme.leftHandColor.withValues(alpha: 0.2),
+                        thumbColor: widget.config.theme.leftHandColor,
+                        trackHeight: 2,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                      ),
+                      child: Slider(
+                        value: controller.leftHandVolume.value.toDouble(),
+                        min: 0,
+                        max: 100,
+                        onChanged: (v) => controller.setLeftHandVolume(v.round()),
+                      ),
+                    ),
                   ),
                 ],
               ),

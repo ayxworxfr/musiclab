@@ -92,10 +92,12 @@ class JianpuPainter extends CustomPainter {
           } else {
             // 绘制音符
             for (final beat in beatsInMeasure) {
-              for (final note in beat.notes) {
-                // 查找对应的布局索引
+              for (var noteIdx = 0; noteIdx < beat.notes.length; noteIdx++) {
+                final note = beat.notes[noteIdx];
+                
+                // 查找对应的布局索引（使用noteIndex精确匹配）
                 final noteLayoutIndex = _findNoteLayoutIndex(
-                  trackIndex, measureIndex, beatIndex, note,
+                  trackIndex, measureIndex, beatIndex, noteIdx, note,
                 );
                 final isHighlighted = noteLayoutIndex != null &&
                     highlightedNoteIndices.contains(noteLayoutIndex);
@@ -138,13 +140,14 @@ class JianpuPainter extends CustomPainter {
     }
   }
 
-  int? _findNoteLayoutIndex(int trackIndex, int measureIndex, int beatIndex, Note note) {
+  int? _findNoteLayoutIndex(int trackIndex, int measureIndex, int beatIndex, int noteIndex, Note note) {
+    // 使用精确匹配：trackIndex, measureIndex, beatIndex, noteIndex
     for (var i = 0; i < layout.noteLayouts.length; i++) {
       final nl = layout.noteLayouts[i];
       if (nl.trackIndex == trackIndex &&
           nl.measureIndex == measureIndex &&
           nl.beatIndex == beatIndex &&
-          nl.note.pitch == note.pitch) {
+          nl.noteIndex == noteIndex) {
         return i;
       }
     }

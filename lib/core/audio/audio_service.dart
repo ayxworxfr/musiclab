@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../utils/logger_util.dart';
+import '../../features/tools/sheet_music/models/enums.dart';
 
 /// 音频服务
 /// 
@@ -31,6 +32,22 @@ class AudioService extends GetxService {
 
   /// 用户是否已交互（Web 端需要）
   bool _userInteracted = false;
+
+  /// 右手音量 (0.0-1.0)
+  double _rightHandVolume = 1.0;
+
+  /// 左手音量 (0.0-1.0)
+  double _leftHandVolume = 1.0;
+
+  /// 设置右手音量
+  void setRightHandVolume(double volume) {
+    _rightHandVolume = volume.clamp(0.0, 1.0);
+  }
+
+  /// 设置左手音量
+  void setLeftHandVolume(double volume) {
+    _leftHandVolume = volume.clamp(0.0, 1.0);
+  }
   
   /// 初始化音频服务
   Future<AudioService> init() async {
@@ -88,7 +105,8 @@ class AudioService extends GetxService {
   /// 播放钢琴音符
   /// 
   /// [midiNumber] MIDI 编号 (21-108，标准钢琴范围)
-  Future<void> playPianoNote(int midiNumber) async {
+  /// [hand] 左手或右手，用于音量控制
+  Future<void> playPianoNote(int midiNumber, {Hand? hand}) async {
     // Web 端如果用户没有交互，无法播放音频
     if (kIsWeb && !_userInteracted) {
       LoggerUtil.debug('Web端需要用户先交互才能播放音频');
@@ -120,12 +138,21 @@ class AudioService extends GetxService {
       if (player.playing) {
         await player.stop();
       }
+
+      // 设置音量（根据手）
+      double volume = 1.0;
+      if (hand == Hand.right) {
+        volume = _rightHandVolume;
+      } else if (hand == Hand.left) {
+        volume = _leftHandVolume;
+      }
+      await player.setVolume(volume);
       
       // 回到开头并播放
       await player.seek(Duration.zero);
       await player.play();
       
-      LoggerUtil.debug('播放音符: $midiNumber');
+      LoggerUtil.debug('播放音符: $midiNumber (音量: ${(volume * 100).round()}%)');
     } catch (e) {
       LoggerUtil.warning('播放音符失败: $midiNumber - $e');
     }

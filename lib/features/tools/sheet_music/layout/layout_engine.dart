@@ -215,8 +215,6 @@ class LayoutEngine {
         }
 
         // 计算每个音符的位置
-        var accumulatedTime = 0.0;
-        
         for (var beatIdx = 0; beatIdx < beatsPerMeasure; beatIdx++) {
           final notesInBeat = notesByBeat[beatIdx] ?? [];
           
@@ -225,9 +223,10 @@ class LayoutEngine {
               (beatIdx / beatsPerMeasure) * (measureLayout.width - 30);
           final beatWidth = (measureLayout.width - 30) / beatsPerMeasure;
           
+          // 这一拍的开始时间（基于拍索引）
+          final beatStartTime = measureStartTime + beatIdx / beatsPerSecond;
+          
           if (notesInBeat.isEmpty) {
-            // 没有音符，时间仍然前进一拍
-            accumulatedTime += 1.0 / beatsPerSecond;
             continue;
           }
 
@@ -237,7 +236,6 @@ class LayoutEngine {
             final note = info.note;
             
             if (note.isRest) {
-              accumulatedTime += note.actualBeats / beatsPerSecond;
               continue;
             }
 
@@ -280,10 +278,8 @@ class LayoutEngine {
               hitBox: hitBox,
               pianoKeyX: pianoKeyX,
               hand: track.hand,
-              startTime: measureStartTime + accumulatedTime,
+              startTime: beatStartTime, // 使用拍的开始时间
             ));
-
-            accumulatedTime += note.actualBeats / beatsPerSecond;
           }
         }
       }
