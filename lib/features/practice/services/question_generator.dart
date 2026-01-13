@@ -270,61 +270,77 @@ class QuestionGenerator {
 
   /// 根据难度获取旋律片段
   List<Map<String, dynamic>> _getMelodiesForDifficulty(int difficulty) {
-    if (difficulty <= 2) {
+    if (difficulty == 1) {
+      // 入门 - 3音旋律（15个）
       return [
-        {
-          'notes': [60, 62, 64],
-          'jianpu': _notesToJianpuString([60, 62, 64]),
-          'hint': 'Do Re Mi',
-        },
-        {
-          'notes': [64, 62, 60],
-          'jianpu': _notesToJianpuString([64, 62, 60]),
-          'hint': 'Mi Re Do',
-        },
-        {
-          'notes': [60, 64, 67],
-          'jianpu': _notesToJianpuString([60, 64, 67]),
-          'hint': 'Do Mi Sol',
-        },
-        {
-          'notes': [60, 60, 67, 67],
-          'jianpu': _notesToJianpuString([60, 60, 67, 67]),
-          'hint': '小星星开头',
-        },
-        {
-          'notes': [67, 65, 64, 62],
-          'jianpu': _notesToJianpuString([67, 65, 64, 62]),
-          'hint': '下行音阶',
-        },
+        {'notes': [60, 62, 64], 'jianpu': _notesToJianpuString([60, 62, 64]), 'hint': 'Do Re Mi'},
+        {'notes': [64, 62, 60], 'jianpu': _notesToJianpuString([64, 62, 60]), 'hint': 'Mi Re Do'},
+        {'notes': [60, 64, 67], 'jianpu': _notesToJianpuString([60, 64, 67]), 'hint': 'Do Mi Sol'},
+        {'notes': [67, 64, 60], 'jianpu': _notesToJianpuString([67, 64, 60]), 'hint': 'Sol Mi Do'},
+        {'notes': [62, 64, 65], 'jianpu': _notesToJianpuString([62, 64, 65]), 'hint': 'Re Mi Fa'},
+        {'notes': [65, 64, 62], 'jianpu': _notesToJianpuString([65, 64, 62]), 'hint': 'Fa Mi Re'},
+        {'notes': [64, 65, 67], 'jianpu': _notesToJianpuString([64, 65, 67]), 'hint': 'Mi Fa Sol'},
+        {'notes': [67, 65, 64], 'jianpu': _notesToJianpuString([67, 65, 64]), 'hint': 'Sol Fa Mi'},
+        {'notes': [60, 62, 65], 'jianpu': _notesToJianpuString([60, 62, 65]), 'hint': 'Do Re Fa'},
+        {'notes': [65, 67, 64], 'jianpu': _notesToJianpuString([65, 67, 64]), 'hint': 'Fa Sol Mi'},
+        {'notes': [60, 60, 64], 'jianpu': _notesToJianpuString([60, 60, 64]), 'hint': 'Do Do Mi'},
+        {'notes': [64, 64, 67], 'jianpu': _notesToJianpuString([64, 64, 67]), 'hint': 'Mi Mi Sol'},
+        {'notes': [67, 64, 62], 'jianpu': _notesToJianpuString([67, 64, 62]), 'hint': 'Sol Mi Re'},
+        {'notes': [62, 60, 64], 'jianpu': _notesToJianpuString([62, 60, 64]), 'hint': 'Re Do Mi'},
+        {'notes': [64, 67, 65], 'jianpu': _notesToJianpuString([64, 67, 65]), 'hint': 'Mi Sol Fa'},
+      ];
+    } else if (difficulty == 2) {
+      // 初级 - 4音旋律（20个）
+      return [
+        {'notes': [60, 60, 67, 67], 'jianpu': _notesToJianpuString([60, 60, 67, 67]), 'hint': '小星星开头'},
+        {'notes': [67, 65, 64, 62], 'jianpu': _notesToJianpuString([67, 65, 64, 62]), 'hint': '下行音阶'},
+        {'notes': [60, 62, 64, 65], 'jianpu': _notesToJianpuString([60, 62, 64, 65]), 'hint': '上行四音'},
+        {'notes': [65, 64, 62, 60], 'jianpu': _notesToJianpuString([65, 64, 62, 60]), 'hint': '下行四音'},
+        {'notes': [60, 64, 67, 64], 'jianpu': _notesToJianpuString([60, 64, 67, 64]), 'hint': 'Do Mi Sol Mi'},
+        {'notes': [64, 67, 65, 64], 'jianpu': _notesToJianpuString([64, 67, 65, 64]), 'hint': 'Mi Sol Fa Mi'},
+        {'notes': [67, 64, 62, 60], 'jianpu': _notesToJianpuString([67, 64, 62, 60]), 'hint': 'Sol Mi Re Do'},
+        {'notes': [60, 62, 65, 67], 'jianpu': _notesToJianpuString([60, 62, 65, 67]), 'hint': 'Do Re Fa Sol'},
+        {'notes': [64, 65, 67, 69], 'jianpu': _notesToJianpuString([64, 65, 67, 69]), 'hint': 'Mi Fa Sol La'},
+        {'notes': [67, 65, 64, 65], 'jianpu': _notesToJianpuString([67, 65, 64, 65]), 'hint': 'Sol Fa Mi Fa'},
+        {'notes': [60, 60, 64, 64], 'jianpu': _notesToJianpuString([60, 60, 64, 64]), 'hint': 'Do Do Mi Mi'},
+        {'notes': [64, 64, 67, 67], 'jianpu': _notesToJianpuString([64, 64, 67, 67]), 'hint': 'Mi Mi Sol Sol'},
+        {'notes': [62, 64, 65, 67], 'jianpu': _notesToJianpuString([62, 64, 65, 67]), 'hint': 'Re Mi Fa Sol'},
+        {'notes': [65, 67, 64, 62], 'jianpu': _notesToJianpuString([65, 67, 64, 62]), 'hint': 'Fa Sol Mi Re'},
+        {'notes': [60, 64, 65, 67], 'jianpu': _notesToJianpuString([60, 64, 65, 67]), 'hint': 'Do Mi Fa Sol'},
+        {'notes': [67, 64, 65, 62], 'jianpu': _notesToJianpuString([67, 64, 65, 62]), 'hint': 'Sol Mi Fa Re'},
+        {'notes': [64, 62, 60, 64], 'jianpu': _notesToJianpuString([64, 62, 60, 64]), 'hint': 'Mi Re Do Mi'},
+        {'notes': [60, 67, 64, 62], 'jianpu': _notesToJianpuString([60, 67, 64, 62]), 'hint': 'Do Sol Mi Re'},
+        {'notes': [62, 60, 64, 67], 'jianpu': _notesToJianpuString([62, 60, 64, 67]), 'hint': 'Re Do Mi Sol'},
+        {'notes': [65, 64, 67, 65], 'jianpu': _notesToJianpuString([65, 64, 67, 65]), 'hint': 'Fa Mi Sol Fa'},
       ];
     } else {
+      // 中级 - 8音旋律（25个）
       return [
-        {
-          'notes': [60, 62, 64, 65, 67],
-          'jianpu': _notesToJianpuString([60, 62, 64, 65, 67]),
-          'hint': '上行五音',
-        },
-        {
-          'notes': [60, 60, 67, 67, 69, 69, 67],
-          'jianpu': _notesToJianpuString([60, 60, 67, 67, 69, 69, 67]),
-          'hint': '小星星第一句',
-        },
-        {
-          'notes': [64, 64, 65, 67, 67, 65, 64, 62],
-          'jianpu': _notesToJianpuString([64, 64, 65, 67, 67, 65, 64, 62]),
-          'hint': '欢乐颂第一句',
-        },
-        {
-          'notes': [67, 69, 71, 72],
-          'jianpu': _notesToJianpuString([67, 69, 71, 72]),
-          'hint': '上行到高音',
-        },
-        {
-          'notes': [48, 50, 52, 53, 55],
-          'jianpu': _notesToJianpuString([48, 50, 52, 53, 55]),
-          'hint': '低音上行',
-        },
+        {'notes': [60, 60, 67, 67, 69, 69, 67], 'jianpu': _notesToJianpuString([60, 60, 67, 67, 69, 69, 67]), 'hint': '小星星第一句'},
+        {'notes': [64, 64, 65, 67, 67, 65, 64, 62], 'jianpu': _notesToJianpuString([64, 64, 65, 67, 67, 65, 64, 62]), 'hint': '欢乐颂第一句'},
+        {'notes': [60, 62, 64, 65, 67, 65, 64, 62], 'jianpu': _notesToJianpuString([60, 62, 64, 65, 67, 65, 64, 62]), 'hint': '上行下行'},
+        {'notes': [67, 69, 71, 72, 71, 69, 67], 'jianpu': _notesToJianpuString([67, 69, 71, 72, 71, 69, 67]), 'hint': '高音上行下行'},
+        {'notes': [60, 64, 67, 64, 67, 69, 67, 64], 'jianpu': _notesToJianpuString([60, 64, 67, 64, 67, 69, 67, 64]), 'hint': '和弦分解'},
+        {'notes': [64, 65, 67, 69, 71, 69, 67, 65], 'jianpu': _notesToJianpuString([64, 65, 67, 69, 71, 69, 67, 65]), 'hint': 'Mi到高音'},
+        {'notes': [60, 60, 62, 64, 65, 64, 62, 60], 'jianpu': _notesToJianpuString([60, 60, 62, 64, 65, 64, 62, 60]), 'hint': '对称旋律'},
+        {'notes': [67, 65, 64, 62, 60, 62, 64, 65], 'jianpu': _notesToJianpuString([67, 65, 64, 62, 60, 62, 64, 65]), 'hint': 'V型旋律'},
+        {'notes': [60, 64, 67, 69, 67, 64, 62, 60], 'jianpu': _notesToJianpuString([60, 64, 67, 69, 67, 64, 62, 60]), 'hint': '山峰型'},
+        {'notes': [64, 67, 69, 71, 72, 71, 69, 67], 'jianpu': _notesToJianpuString([64, 67, 69, 71, 72, 71, 69, 67]), 'hint': '高音山峰'},
+        {'notes': [60, 62, 64, 67, 64, 62, 60, 67], 'jianpu': _notesToJianpuString([60, 62, 64, 67, 64, 62, 60, 67]), 'hint': '跳跃练习'},
+        {'notes': [67, 64, 60, 64, 67, 69, 67, 64], 'jianpu': _notesToJianpuString([67, 64, 60, 64, 67, 69, 67, 64]), 'hint': '大跳练习'},
+        {'notes': [60, 60, 64, 64, 67, 67, 64, 64], 'jianpu': _notesToJianpuString([60, 60, 64, 64, 67, 67, 64, 64]), 'hint': '重复音型'},
+        {'notes': [64, 65, 67, 65, 64, 62, 60, 62], 'jianpu': _notesToJianpuString([64, 65, 67, 65, 64, 62, 60, 62]), 'hint': '波浪型'},
+        {'notes': [60, 64, 65, 67, 69, 67, 65, 64], 'jianpu': _notesToJianpuString([60, 64, 65, 67, 69, 67, 65, 64]), 'hint': '五音上行下行'},
+        {'notes': [67, 69, 71, 72, 71, 69, 67, 65], 'jianpu': _notesToJianpuString([67, 69, 71, 72, 71, 69, 67, 65]), 'hint': '高音练习'},
+        {'notes': [60, 62, 65, 67, 69, 67, 65, 62], 'jianpu': _notesToJianpuString([60, 62, 65, 67, 69, 67, 65, 62]), 'hint': '跳跃音阶'},
+        {'notes': [64, 67, 64, 67, 69, 67, 64, 62], 'jianpu': _notesToJianpuString([64, 67, 64, 67, 69, 67, 64, 62]), 'hint': '回音型'},
+        {'notes': [60, 67, 64, 67, 69, 67, 64, 60], 'jianpu': _notesToJianpuString([60, 67, 64, 67, 69, 67, 64, 60]), 'hint': '大跳回音'},
+        {'notes': [62, 64, 65, 67, 69, 71, 69, 67], 'jianpu': _notesToJianpuString([62, 64, 65, 67, 69, 71, 69, 67]), 'hint': '完整音阶'},
+        {'notes': [67, 65, 64, 62, 60, 62, 64, 65], 'jianpu': _notesToJianpuString([67, 65, 64, 62, 60, 62, 64, 65]), 'hint': '下行上行'},
+        {'notes': [60, 64, 67, 69, 71, 69, 67, 64], 'jianpu': _notesToJianpuString([60, 64, 67, 69, 71, 69, 67, 64]), 'hint': '和弦上行'},
+        {'notes': [64, 62, 60, 64, 67, 69, 67, 64], 'jianpu': _notesToJianpuString([64, 62, 60, 64, 67, 69, 67, 64]), 'hint': '低高结合'},
+        {'notes': [60, 62, 64, 67, 69, 67, 65, 64], 'jianpu': _notesToJianpuString([60, 62, 64, 67, 69, 67, 65, 64]), 'hint': '完整乐句'},
+        {'notes': [67, 64, 67, 69, 71, 69, 67, 64], 'jianpu': _notesToJianpuString([67, 64, 67, 69, 71, 69, 67, 64]), 'hint': '重复高音'},
       ];
     }
   }
