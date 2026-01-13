@@ -1,6 +1,6 @@
 {
-    "name": "musiclag",
-    "short_name": "musiclag",
+    "name": "musiclab",
+    "short_name": "musiclab",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

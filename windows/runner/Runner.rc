@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.graycen" "\0"
-            VALUE "FileDescription", "musiclag" "\0"
+            VALUE "FileDescription", "musiclab" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "musiclag" "\0"
+            VALUE "InternalName", "musiclab" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.graycen. All rights reserved." "\0"
-            VALUE "OriginalFilename", "musiclag.exe" "\0"
-            VALUE "ProductName", "musiclag" "\0"
+            VALUE "OriginalFilename", "musiclab.exe" "\0"
+            VALUE "ProductName", "musiclab" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
