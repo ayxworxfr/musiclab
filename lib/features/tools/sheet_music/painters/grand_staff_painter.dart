@@ -459,7 +459,20 @@ class GrandStaffPainter extends CustomPainter {
     final y = noteLayout.y;
     final stemUp = noteLayout.stemUp;
     final stemX = stemUp ? x + config.noteHeadRadius - 1 : x - config.noteHeadRadius + 1;
-    final endY = stemUp ? y - config.stemLength : y + config.stemLength;
+    
+    double endY;
+    
+    // 如果音符属于符杠组，符干需要连接到符杠
+    if (noteLayout.beamGroupIndex >= 0 && noteLayout.beamGroupIndex < layout.beamGroups.length) {
+      final beamGroup = layout.beamGroups[noteLayout.beamGroupIndex];
+      // 计算符杠在当前 x 位置的 y 坐标（线性插值）
+      final progress = beamGroup.endX - beamGroup.startX != 0 
+          ? (stemX - beamGroup.startX) / (beamGroup.endX - beamGroup.startX)
+          : 0.0;
+      endY = beamGroup.startY + progress * (beamGroup.endY - beamGroup.startY);
+    } else {
+      endY = stemUp ? y - config.stemLength : y + config.stemLength;
+    }
 
     canvas.drawLine(Offset(stemX, y), Offset(stemX, endY), stemPaint);
   }

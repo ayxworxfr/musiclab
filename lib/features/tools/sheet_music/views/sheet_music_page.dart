@@ -248,11 +248,14 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                           ),
                         ),
                       const SizedBox(height: 8),
-                      Row(
+                      // 使用 Wrap 自动换行，适配小屏幕
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           // 难度
                           _buildDifficultyStars(score.metadata.difficulty),
-                          const SizedBox(width: 12),
                           // 调号
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -268,7 +271,6 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
                           // BPM
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

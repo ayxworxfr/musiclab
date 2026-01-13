@@ -405,15 +405,35 @@ class LayoutEngine {
     final stemLength = config.lineSpacing * 3.5;
     final first = notes.first;
     final last = notes.last;
+    
+    // 计算符干的 X 位置
+    final firstStemX = stemUp 
+        ? first.x + config.noteHeadRadius - 1 
+        : first.x - config.noteHeadRadius + 1;
+    final lastStemX = stemUp 
+        ? last.x + config.noteHeadRadius - 1 
+        : last.x - config.noteHeadRadius + 1;
+    
+    // 找到最极端的音符位置来确定符杠高度
+    double beamY;
+    if (stemUp) {
+      // 符干向上时，找最高的音符，符杠在其上方
+      final minY = notes.map((n) => n.y).reduce(min);
+      beamY = minY - stemLength;
+    } else {
+      // 符干向下时，找最低的音符，符杠在其下方
+      final maxY = notes.map((n) => n.y).reduce(max);
+      beamY = maxY + stemLength;
+    }
 
     return BeamGroup(
       noteLayoutIndices: indices,
       beamCount: beamCount,
       stemUp: stemUp,
-      startX: first.x,
-      startY: stemUp ? first.y - stemLength : first.y + stemLength,
-      endX: last.x,
-      endY: stemUp ? last.y - stemLength : last.y + stemLength,
+      startX: firstStemX,
+      startY: beamY,
+      endX: lastStemX,
+      endY: beamY, // 保持符杠水平
     );
   }
 

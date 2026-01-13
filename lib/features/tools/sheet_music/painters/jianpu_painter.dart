@@ -52,9 +52,19 @@ class JianpuPainter extends CustomPainter {
     final measureWidth = contentWidth / measuresPerLine;
     final beatWidth = measureWidth / beatsPerMeasure;
     
-    // 行布局
+    // 计算最大和弦音符数量，用于自适应轨道高度
+    final maxNotesInChord = _getMaxNotesInChord();
+    
+    // 行布局 - 自适应轨道高度
     final trackCount = score.tracks.length;
-    final trackHeight = 40.0;
+    final double trackHeight;
+    if (maxNotesInChord <= 2) {
+      trackHeight = 45.0;
+    } else if (maxNotesInChord <= 4) {
+      trackHeight = 55.0;
+    } else {
+      trackHeight = 65.0 + (maxNotesInChord - 4) * 8;
+    }
     final lineSpacing = 20.0;
     final lineHeight = trackCount * trackHeight + lineSpacing;
     
@@ -90,7 +100,8 @@ class JianpuPainter extends CustomPainter {
             // 没有音符，绘制延长线 "-"
             _drawDash(canvas, beatX, trackY, track.hand);
           } else {
-            // 绘制音符
+            // 收集这一拍所有的音符
+            final allNotesInBeat = <({Note note, int noteIdx, bool isHighlighted})>[];
             for (final beat in beatsInMeasure) {
               for (var noteIdx = 0; noteIdx < beat.notes.length; noteIdx++) {
                 final note = beat.notes[noteIdx];
@@ -102,19 +113,50 @@ class JianpuPainter extends CustomPainter {
                 final isHighlighted = noteLayoutIndex != null &&
                     highlightedNoteIndices.contains(noteLayoutIndex);
 
-                _drawJianpuNote(
-                  canvas,
-                  note,
-                  beatX,
-                  trackY,
-                  track.hand,
-                  isHighlighted,
-                );
+                allNotesInBeat.add((note: note, noteIdx: noteIdx, isHighlighted: isHighlighted));
+              }
+            }
+            
+            // 自适应计算垂直间距
+            final noteCount = allNotesInBeat.length;
+            // 根据音符数量自适应间距：音符越多，间距越小
+            final double verticalSpacing;
+            if (noteCount <= 2) {
+              verticalSpacing = 20.0;
+            } else if (noteCount <= 4) {
+              verticalSpacing = 16.0;
+            } else {
+              verticalSpacing = 14.0;
+            }
+            
+            final totalHeight = (noteCount - 1) * verticalSpacing;
+            final startY = trackY - totalHeight / 2;
+            
+            // 获取这组音符的时值（用于下划线，只画一次）
+            final firstNote = allNotesInBeat.first.note;
+            final underlineCount = firstNote.duration.underlineCount;
+            
+            for (var i = 0; i < noteCount; i++) {
+              final noteInfo = allNotesInBeat[i];
+              final noteY = startY + i * verticalSpacing;
+              final isLastNote = i == noteCount - 1;
+              
+              // 绘制音符（和弦中只有最后一个音符绘制下划线）
+              _drawJianpuNoteInChord(
+                canvas,
+                noteInfo.note,
+                beatX,
+                noteY,
+                track.hand,
+                noteInfo.isHighlighted,
+                drawUnderline: isLastNote, // 只在最后一个音符画下划线
+                fontSize: noteCount > 4 ? 16.0 : (noteCount > 2 ? 18.0 : 20.0), // 自适应字号
+              );
 
-                // 歌词
-                if (showLyrics && note.lyric != null && trackIndex == 0) {
-                  _drawLyric(canvas, beatX, trackY + 25, note.lyric!);
-                }
+              // 歌词（只绘制最后一个音符的）
+              if (showLyrics && noteInfo.note.lyric != null && trackIndex == 0 && isLastNote) {
+                final lyricY = noteY + 12 + (underlineCount > 0 ? underlineCount * 3 + 4 : 4);
+                _drawLyric(canvas, beatX, lyricY, noteInfo.note.lyric!);
               }
             }
           }
@@ -152,6 +194,30 @@ class JianpuPainter extends CustomPainter {
       }
     }
     return null;
+  }
+  
+  /// 计算乐谱中最大和弦音符数量
+  int _getMaxNotesInChord() {
+    int maxNotes = 1;
+    final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    
+    for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
+      final track = score.tracks[trackIndex];
+      for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
+        final measure = track.measures[measureIndex];
+        for (var beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
+          final beatsInMeasure = measure.beats.where((b) => b.index == beatIndex).toList();
+          int notesInBeat = 0;
+          for (final beat in beatsInMeasure) {
+            notesInBeat += beat.notes.length;
+          }
+          if (notesInBeat > maxNotes) {
+            maxNotes = notesInBeat;
+          }
+        }
+      }
+    }
+    return maxNotes;
   }
 
   void _drawBarLine(Canvas canvas, double x, double y, double height) {
@@ -204,6 +270,22 @@ class JianpuPainter extends CustomPainter {
     Hand? hand,
     bool isHighlighted,
   ) {
+    _drawJianpuNoteInChord(canvas, note, x, y, hand, isHighlighted, drawUnderline: true, fontSize: 22.0);
+  }
+  
+  /// 绘制和弦中的简谱音符
+  /// [drawUnderline] 控制是否绘制下划线（和弦中只在最后一个音符画）
+  /// [fontSize] 自适应字号
+  void _drawJianpuNoteInChord(
+    Canvas canvas,
+    Note note,
+    double x,
+    double y,
+    Hand? hand,
+    bool isHighlighted, {
+    bool drawUnderline = true,
+    double fontSize = 20.0,
+  }) {
     // 休止符
     if (note.isRest) {
       _drawRest(canvas, x, y, note.duration, hand);
@@ -225,12 +307,12 @@ class JianpuPainter extends CustomPainter {
       color = config.theme.textColor;
     }
 
-    // 绘制数字
+    // 绘制数字（使用自适应字号）
     final textPainter = TextPainter(
       text: TextSpan(
         text: '$degree',
         style: TextStyle(
-          fontSize: 22,
+          fontSize: fontSize,
           color: color,
           fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
           fontFamily: 'Arial, sans-serif',
@@ -241,34 +323,40 @@ class JianpuPainter extends CustomPainter {
 
     textPainter.paint(canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
 
-    // 高低八度点
+    // 高低八度点位置根据字号自适应
+    final dotOffset = fontSize * 0.45;
+    final dotSize = fontSize * 0.1;
     final dotPaint = Paint()..color = color;
+    
     if (octaveOffset > 0) {
-      // 高八度：上方加点
+      // 高八度：数字右上方加点
       for (var i = 0; i < octaveOffset; i++) {
-        canvas.drawCircle(Offset(x, y - 18 - i * 5), 2, dotPaint);
+        canvas.drawCircle(Offset(x + dotOffset + i * (dotSize + 2), y - dotOffset), dotSize, dotPaint);
       }
     } else if (octaveOffset < 0) {
-      // 低八度：下方加点
+      // 低八度：数字右下方加点
       for (var i = 0; i < -octaveOffset; i++) {
-        canvas.drawCircle(Offset(x, y + 16 + i * 5), 2, dotPaint);
+        canvas.drawCircle(Offset(x + dotOffset + i * (dotSize + 2), y + dotOffset), dotSize, dotPaint);
       }
     }
 
-    // 时值下划线（八分、十六分音符）
-    final underlineCount = note.duration.underlineCount;
-    if (underlineCount > 0) {
-      final linePaint = Paint()
-        ..color = color
-        ..strokeWidth = 1.5;
-      final baseLineY = y + 14 + (octaveOffset < 0 ? (-octaveOffset) * 5 : 0);
-      for (var i = 0; i < underlineCount; i++) {
-        final lineY = baseLineY + i * 3;
-        canvas.drawLine(
-          Offset(x - 8, lineY),
-          Offset(x + 8, lineY),
-          linePaint,
-        );
+    // 时值下划线（八分、十六分音符）- 只在需要时绘制
+    if (drawUnderline) {
+      final underlineCount = note.duration.underlineCount;
+      if (underlineCount > 0) {
+        final linePaint = Paint()
+          ..color = color
+          ..strokeWidth = 1.5;
+        final baseLineY = y + fontSize * 0.55;
+        final lineHalfWidth = fontSize * 0.4;
+        for (var i = 0; i < underlineCount; i++) {
+          final lineY = baseLineY + i * 3;
+          canvas.drawLine(
+            Offset(x - lineHalfWidth, lineY),
+            Offset(x + lineHalfWidth, lineY),
+            linePaint,
+          );
+        }
       }
     }
 
@@ -276,7 +364,7 @@ class JianpuPainter extends CustomPainter {
     if (note.dots > 0) {
       for (var i = 0; i < note.dots; i++) {
         canvas.drawCircle(
-          Offset(x + 12 + i * 5, y),
+          Offset(x + fontSize * 0.6 + i * 5, y),
           2,
           Paint()..color = color,
         );
@@ -381,7 +469,37 @@ class JianpuPainter extends CustomPainter {
     final measuresPerLine = 4;
     final lineCount = (score.measureCount / measuresPerLine).ceil();
     final trackCount = score.tracks.length;
-    final trackHeight = 40.0;
+    
+    // 计算最大和弦音符数量
+    int maxNotes = 1;
+    final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
+      final track = score.tracks[trackIndex];
+      for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
+        final measure = track.measures[measureIndex];
+        for (var beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
+          final beatsInMeasure = measure.beats.where((b) => b.index == beatIndex).toList();
+          int notesInBeat = 0;
+          for (final beat in beatsInMeasure) {
+            notesInBeat += beat.notes.length;
+          }
+          if (notesInBeat > maxNotes) {
+            maxNotes = notesInBeat;
+          }
+        }
+      }
+    }
+    
+    // 自适应轨道高度
+    final double trackHeight;
+    if (maxNotes <= 2) {
+      trackHeight = 45.0;
+    } else if (maxNotes <= 4) {
+      trackHeight = 55.0;
+    } else {
+      trackHeight = 65.0 + (maxNotes - 4) * 8;
+    }
+    
     final lineSpacing = 20.0;
     final lineHeight = trackCount * trackHeight + lineSpacing;
     return config.padding.top + lineCount * lineHeight + config.padding.bottom + 40;
