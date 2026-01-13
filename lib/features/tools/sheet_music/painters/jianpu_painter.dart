@@ -136,10 +136,25 @@ class JianpuPainter extends CustomPainter {
             final firstNote = allNotesInBeat.first.note;
             final underlineCount = firstNote.duration.underlineCount;
             
+            // 计算自适应字号
+            final fontSize = noteCount > 4 ? 16.0 : (noteCount > 2 ? 18.0 : 20.0);
+            
+            // 计算和弦底部位置（用于歌词定位）
+            final lastNoteY = startY + (noteCount - 1) * verticalSpacing;
+            final chordBottomY = lastNoteY + fontSize * 0.5; // 最后一个音符底部
+            
+            // 收集歌词（用于绘制）
+            String? lyricText;
+            
             for (var i = 0; i < noteCount; i++) {
               final noteInfo = allNotesInBeat[i];
               final noteY = startY + i * verticalSpacing;
               final isLastNote = i == noteCount - 1;
+              
+              // 记录歌词
+              if (noteInfo.note.lyric != null && trackIndex == 0) {
+                lyricText = noteInfo.note.lyric;
+              }
               
               // 绘制音符（和弦中只有最后一个音符绘制下划线）
               _drawJianpuNoteInChord(
@@ -150,14 +165,15 @@ class JianpuPainter extends CustomPainter {
                 track.hand,
                 noteInfo.isHighlighted,
                 drawUnderline: isLastNote, // 只在最后一个音符画下划线
-                fontSize: noteCount > 4 ? 16.0 : (noteCount > 2 ? 18.0 : 20.0), // 自适应字号
+                fontSize: fontSize,
               );
-
-              // 歌词（只绘制最后一个音符的）
-              if (showLyrics && noteInfo.note.lyric != null && trackIndex == 0 && isLastNote) {
-                final lyricY = noteY + 12 + (underlineCount > 0 ? underlineCount * 3 + 4 : 4);
-                _drawLyric(canvas, beatX, lyricY, noteInfo.note.lyric!);
-              }
+            }
+            
+            // 歌词绘制在和弦底部下方（包括下划线空间）
+            if (showLyrics && lyricText != null && trackIndex == 0) {
+              final underlineSpace = underlineCount > 0 ? underlineCount * 3 + 6 : 0;
+              final lyricY = chordBottomY + underlineSpace + 8;
+              _drawLyric(canvas, beatX, lyricY, lyricText);
             }
           }
         }
