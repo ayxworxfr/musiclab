@@ -440,6 +440,26 @@ class PianoPracticePage extends GetView<PracticeController> {
     final targetNotes = question.content.notes ?? [];
     final audioService = Get.find<AudioService>();
     
+    // 动态计算需要的 MIDI 范围
+    int startMidi = 60;  // 默认 C4
+    int endMidi = 72;    // 默认 C5
+    
+    if (targetNotes.isNotEmpty) {
+      final minNote = targetNotes.reduce((a, b) => a < b ? a : b);
+      final maxNote = targetNotes.reduce((a, b) => a > b ? a : b);
+      
+      // 扩展范围，确保包含所有音符，并留出一些缓冲
+      startMidi = (minNote - 7).clamp(48, 84);  // 至少向下扩展一个五度
+      endMidi = (maxNote + 7).clamp(48, 84);    // 至少向上扩展一个五度
+      
+      // 确保至少显示一个完整的八度
+      if (endMidi - startMidi < 12) {
+        final center = (startMidi + endMidi) ~/ 2;
+        startMidi = (center - 6).clamp(48, 84);
+        endMidi = (center + 6).clamp(48, 84);
+      }
+    }
+    
     // 使用与乐谱页面一致的主题
     final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
     final config = RenderConfig(
@@ -471,33 +491,51 @@ class PianoPracticePage extends GetView<PracticeController> {
           ],
         ),
         clipBehavior: Clip.antiAlias,
-        child: GestureDetector(
-          onTapDown: (details) => _handlePianoTap(details, config, targetNotes, audioService),
-          onPanStart: (details) => _handlePianoTap(details, config, targetNotes, audioService),
-          onPanUpdate: (details) => _handlePianoTap(details, config, targetNotes, audioService),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return CustomPaint(
-                size: Size(constraints.maxWidth, 160),
-                painter: PianoKeyboardPainter(
-                  startMidi: 60,
-                  endMidi: 72,
-                  config: config,
-                  highlightedNotes: highlightNotes,
-                  showLabels: true,
-                  labelType: 'jianpu',
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // 计算钢琴实际宽度
+            var whiteKeyCount = 0;
+            for (var midi = startMidi; midi <= endMidi; midi++) {
+              if (!_isBlackKey(midi)) whiteKeyCount++;
+            }
+            final minWhiteKeyWidth = 35.0;
+            final pianoWidth = whiteKeyCount * minWhiteKeyWidth;
+            final needsScroll = pianoWidth > constraints.maxWidth;
+            final displayWidth = needsScroll ? pianoWidth : constraints.maxWidth;
+            
+            return GestureDetector(
+              onTapDown: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
+              onPanStart: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
+              onPanUpdate: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: CustomPaint(
+                  size: Size(displayWidth, 160),
+                  painter: PianoKeyboardPainter(
+                    startMidi: startMidi,
+                    endMidi: endMidi,
+                    config: config,
+                    highlightedNotes: highlightNotes,
+                    showLabels: true,
+                    labelType: 'jianpu',
+                  ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       );
     });
   }
+  
+  bool _isBlackKey(int midi) {
+    const blackKeys = [1, 3, 6, 8, 10];
+    return blackKeys.contains(midi % 12);
+  }
 
   int? _lastPlayedMidi;
   
-  void _handlePianoTap(dynamic details, RenderConfig config, List<int> targetNotes, AudioService audioService) {
+  void _handlePianoTap(dynamic details, RenderConfig config, List<int> targetNotes, AudioService audioService, int startMidi, int endMidi, double pianoWidth) {
     if (controller.hasAnswered.value) return;
     
     final position = details is TapDownDetails 
@@ -505,14 +543,12 @@ class PianoPracticePage extends GetView<PracticeController> {
         : (details as DragStartDetails).localPosition;
     
     final painter = PianoKeyboardPainter(
-      startMidi: 60,
-      endMidi: 72,
+      startMidi: startMidi,
+      endMidi: endMidi,
       config: config,
     );
     
-    // 假设宽度为屏幕宽度减去边距
-    final width = Get.width - 32;
-    final midi = painter.findKeyAtPosition(position, Size(width, 160));
+    final midi = painter.findKeyAtPosition(position, Size(pianoWidth, 160));
     
     if (midi != null && midi != _lastPlayedMidi) {
       _lastPlayedMidi = midi;

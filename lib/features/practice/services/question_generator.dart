@@ -271,11 +271,16 @@ class QuestionGenerator {
   /// 根据难度获取旋律片段
   List<Map<String, dynamic>> _getMelodiesForDifficulty(int difficulty) {
     if (difficulty == 1) {
-      // 入门 - 3音旋律（15个）
+      // 入门 - 3音旋律（18个，包含经典片段开头）
       return [
+        // 经典片段开头
+        {'notes': [60, 60, 67], 'jianpu': _notesToJianpuString([60, 60, 67]), 'hint': '小星星开头'},
+        {'notes': [60, 60, 62], 'jianpu': _notesToJianpuString([60, 60, 62]), 'hint': '生日快乐开头'},
+        {'notes': [60, 64, 67], 'jianpu': _notesToJianpuString([60, 64, 67]), 'hint': 'Do Mi Sol'},
+        {'notes': [72, 71, 69], 'jianpu': _notesToJianpuString([72, 71, 69]), 'hint': '卡农开头'},
+        // 基础练习
         {'notes': [60, 62, 64], 'jianpu': _notesToJianpuString([60, 62, 64]), 'hint': 'Do Re Mi'},
         {'notes': [64, 62, 60], 'jianpu': _notesToJianpuString([64, 62, 60]), 'hint': 'Mi Re Do'},
-        {'notes': [60, 64, 67], 'jianpu': _notesToJianpuString([60, 64, 67]), 'hint': 'Do Mi Sol'},
         {'notes': [67, 64, 60], 'jianpu': _notesToJianpuString([67, 64, 60]), 'hint': 'Sol Mi Do'},
         {'notes': [62, 64, 65], 'jianpu': _notesToJianpuString([62, 64, 65]), 'hint': 'Re Mi Fa'},
         {'notes': [65, 64, 62], 'jianpu': _notesToJianpuString([65, 64, 62]), 'hint': 'Fa Mi Re'},
@@ -290,9 +295,14 @@ class QuestionGenerator {
         {'notes': [64, 67, 65], 'jianpu': _notesToJianpuString([64, 67, 65]), 'hint': 'Mi Sol Fa'},
       ];
     } else if (difficulty == 2) {
-      // 初级 - 4音旋律（20个）
+      // 初级 - 4音旋律（20个，包含经典片段）
       return [
         {'notes': [60, 60, 67, 67], 'jianpu': _notesToJianpuString([60, 60, 67, 67]), 'hint': '小星星开头'},
+        {'notes': [60, 60, 62, 60], 'jianpu': _notesToJianpuString([60, 60, 62, 60]), 'hint': '生日快乐开头'},
+        {'notes': [72, 71, 69, 71], 'jianpu': _notesToJianpuString([72, 71, 69, 71]), 'hint': '卡农片段1'},
+        {'notes': [72, 67, 64, 67], 'jianpu': _notesToJianpuString([72, 67, 64, 67]), 'hint': '卡农片段2'},
+        {'notes': [60, 64, 67, 72], 'jianpu': _notesToJianpuString([60, 64, 67, 72]), 'hint': '天空之城片段'},
+        {'notes': [64, 67, 72, 76], 'jianpu': _notesToJianpuString([64, 67, 72, 76]), 'hint': 'Flower Dance片段'},
         {'notes': [67, 65, 64, 62], 'jianpu': _notesToJianpuString([67, 65, 64, 62]), 'hint': '下行音阶'},
         {'notes': [60, 62, 64, 65], 'jianpu': _notesToJianpuString([60, 62, 64, 65]), 'hint': '上行四音'},
         {'notes': [65, 64, 62, 60], 'jianpu': _notesToJianpuString([65, 64, 62, 60]), 'hint': '下行四音'},
@@ -306,18 +316,39 @@ class QuestionGenerator {
         {'notes': [64, 64, 67, 67], 'jianpu': _notesToJianpuString([64, 64, 67, 67]), 'hint': 'Mi Mi Sol Sol'},
         {'notes': [62, 64, 65, 67], 'jianpu': _notesToJianpuString([62, 64, 65, 67]), 'hint': 'Re Mi Fa Sol'},
         {'notes': [65, 67, 64, 62], 'jianpu': _notesToJianpuString([65, 67, 64, 62]), 'hint': 'Fa Sol Mi Re'},
-        {'notes': [60, 64, 65, 67], 'jianpu': _notesToJianpuString([60, 64, 65, 67]), 'hint': 'Do Mi Fa Sol'},
-        {'notes': [67, 64, 65, 62], 'jianpu': _notesToJianpuString([67, 64, 65, 62]), 'hint': 'Sol Mi Fa Re'},
-        {'notes': [64, 62, 60, 64], 'jianpu': _notesToJianpuString([64, 62, 60, 64]), 'hint': 'Mi Re Do Mi'},
         {'notes': [60, 67, 64, 62], 'jianpu': _notesToJianpuString([60, 67, 64, 62]), 'hint': 'Do Sol Mi Re'},
         {'notes': [62, 60, 64, 67], 'jianpu': _notesToJianpuString([62, 60, 64, 67]), 'hint': 'Re Do Mi Sol'},
         {'notes': [65, 64, 67, 65], 'jianpu': _notesToJianpuString([65, 64, 67, 65]), 'hint': 'Fa Mi Sol Fa'},
       ];
     } else {
-      // 中级 - 8音旋律（25个）
+      // 中级 - 8音旋律（30个，包含更多经典片段）
       return [
+        // 经典音乐片段
         {'notes': [60, 60, 67, 67, 69, 69, 67], 'jianpu': _notesToJianpuString([60, 60, 67, 67, 69, 69, 67]), 'hint': '小星星第一句'},
         {'notes': [64, 64, 65, 67, 67, 65, 64, 62], 'jianpu': _notesToJianpuString([64, 64, 65, 67, 67, 65, 64, 62]), 'hint': '欢乐颂第一句'},
+        {'notes': [60, 60, 62, 60, 65, 64, 62, 60], 'jianpu': _notesToJianpuString([60, 60, 62, 60, 65, 64, 62, 60]), 'hint': '生日快乐歌'},
+        // 卡农片段（多个）
+        {'notes': [72, 71, 69, 71, 72, 71, 69, 67], 'jianpu': _notesToJianpuString([72, 71, 69, 71, 72, 71, 69, 67]), 'hint': '卡农片段1'},
+        {'notes': [72, 67, 64, 67, 72, 67, 64, 67], 'jianpu': _notesToJianpuString([72, 67, 64, 67, 72, 67, 64, 67]), 'hint': '卡农片段2'},
+        {'notes': [69, 64, 65, 64, 65, 64, 65, 67], 'jianpu': _notesToJianpuString([69, 64, 65, 64, 65, 64, 65, 67]), 'hint': '卡农片段3'},
+        {'notes': [65, 64, 65, 67, 69, 67, 65, 64], 'jianpu': _notesToJianpuString([65, 64, 65, 67, 69, 67, 65, 64]), 'hint': '卡农片段4'},
+        {'notes': [69, 67, 65, 64, 65, 67, 69, 71], 'jianpu': _notesToJianpuString([69, 67, 65, 64, 65, 67, 69, 71]), 'hint': '卡农片段5'},
+        // 天空之城
+        {'notes': [60, 64, 67, 72, 71, 69, 67, 64], 'jianpu': _notesToJianpuString([60, 64, 67, 72, 71, 69, 67, 64]), 'hint': '天空之城片段1'},
+        {'notes': [67, 64, 60, 64, 67, 69, 71, 72], 'jianpu': _notesToJianpuString([67, 64, 60, 64, 67, 69, 71, 72]), 'hint': '天空之城片段2'},
+        {'notes': [72, 71, 69, 67, 64, 67, 69, 71], 'jianpu': _notesToJianpuString([72, 71, 69, 67, 64, 67, 69, 71]), 'hint': '天空之城片段3'},
+        // 克罗地亚狂想曲
+        {'notes': [60, 64, 67, 72, 76, 72, 67, 64], 'jianpu': _notesToJianpuString([60, 64, 67, 72, 76, 72, 67, 64]), 'hint': '克罗地亚狂想曲片段1'},
+        {'notes': [67, 72, 76, 79, 76, 72, 67, 64], 'jianpu': _notesToJianpuString([67, 72, 76, 79, 76, 72, 67, 64]), 'hint': '克罗地亚狂想曲片段2'},
+        {'notes': [64, 67, 72, 76, 79, 84, 79, 76], 'jianpu': _notesToJianpuString([64, 67, 72, 76, 79, 84, 79, 76]), 'hint': '克罗地亚狂想曲片段3'},
+        // Flower Dance
+        {'notes': [60, 64, 67, 72, 76, 72, 67, 64], 'jianpu': _notesToJianpuString([60, 64, 67, 72, 76, 72, 67, 64]), 'hint': 'Flower Dance片段1'},
+        {'notes': [64, 67, 72, 76, 79, 76, 72, 67], 'jianpu': _notesToJianpuString([64, 67, 72, 76, 79, 76, 72, 67]), 'hint': 'Flower Dance片段2'},
+        {'notes': [72, 76, 79, 84, 79, 76, 72, 67], 'jianpu': _notesToJianpuString([72, 76, 79, 84, 79, 76, 72, 67]), 'hint': 'Flower Dance片段3'},
+        {'notes': [84, 79, 76, 72, 79, 76, 72, 67], 'jianpu': _notesToJianpuString([84, 79, 76, 72, 79, 76, 72, 67]), 'hint': 'Flower Dance片段4'},
+        // 其他经典
+        {'notes': [64, 68, 71, 68, 71, 72, 71, 68], 'jianpu': _notesToJianpuString([64, 68, 71, 68, 71, 72, 71, 68]), 'hint': '致爱丽丝片段'},
+        // 练习旋律
         {'notes': [60, 62, 64, 65, 67, 65, 64, 62], 'jianpu': _notesToJianpuString([60, 62, 64, 65, 67, 65, 64, 62]), 'hint': '上行下行'},
         {'notes': [67, 69, 71, 72, 71, 69, 67], 'jianpu': _notesToJianpuString([67, 69, 71, 72, 71, 69, 67]), 'hint': '高音上行下行'},
         {'notes': [60, 64, 67, 64, 67, 69, 67, 64], 'jianpu': _notesToJianpuString([60, 64, 67, 64, 67, 69, 67, 64]), 'hint': '和弦分解'},
