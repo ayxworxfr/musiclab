@@ -58,6 +58,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   // 钢琴设置
   int _pianoStartMidi = 48; // C3
   int _pianoEndMidi = 84;   // C6
+  String _pianoLabelType = 'jianpu'; // 'jianpu' | 'note'
   final ScrollController _pianoScrollController = ScrollController();
 
   @override
@@ -371,7 +372,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   ),
                 ),
               ),
-              // 快捷键位按钮
+              // 快捷键位按钮 + 标签切换
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -380,6 +381,26 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   _buildQuickRangeButton('3八度', 48, 84),
                   const SizedBox(width: 4),
                   _buildQuickRangeButton('全键', 36, 96),
+                  const SizedBox(width: 8),
+                  // 标签切换按钮
+                  GestureDetector(
+                    onTap: _togglePianoLabel,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: widget.config.theme.leftHandColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        _pianoLabelType == 'jianpu' ? '简谱' : '音名',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                          color: widget.config.theme.leftHandColor,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               // 滚动提示
@@ -420,6 +441,12 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         ),
       ),
     );
+  }
+
+  void _togglePianoLabel() {
+    setState(() {
+      _pianoLabelType = _pianoLabelType == 'jianpu' ? 'note' : 'jianpu';
+    });
   }
 
   void _setPianoRange(int start, int end) {
@@ -584,7 +611,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
               config: widget.config,
               highlightedNotes: highlightedMap.cast(),
               showLabels: true,
-              labelType: widget.pianoLabelType,
+              labelType: _pianoLabelType,
               pressedKeys: _pressedKeys,
             ),
           );

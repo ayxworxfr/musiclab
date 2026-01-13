@@ -186,8 +186,8 @@ class PianoKeyboardPainter extends CustomPainter {
         ..strokeWidth = 1,
     );
 
-    // 标签
-    if (showLabels && _shouldShowLabel(key.midi)) {
+    // 标签（所有白键都显示）
+    if (showLabels) {
       _drawLabel(canvas, key, keyColor);
     }
   }
@@ -272,22 +272,34 @@ class PianoKeyboardPainter extends CustomPainter {
         Paint()..color = Colors.white.withValues(alpha: 0.1),
       );
     }
+
+    // 黑键也显示标签
+    if (showLabels) {
+      _drawLabel(canvas, key, keyColor);
+    }
   }
 
-  /// 绘制标签
+  /// 绘制标签（支持简谱高低音点）
   void _drawLabel(Canvas canvas, PianoKeyLayout key, Color keyColor) {
-    final label = _getLabel(key.midi);
     final isHighlighted = highlightedNotes.containsKey(key.midi) ||
         pressedKeys.contains(key.midi);
+    
+    // 获取标签信息
+    final labelInfo = _getLabelWithOctave(key.midi);
+    final label = labelInfo['label'] as String;
+    final octaveDots = labelInfo['dots'] as int; // 正数为高音点，负数为低音点
+
+    final baseFontSize = key.isBlack ? 10.0 : 13.0;
+    final textColor = key.isBlack
+        ? (isHighlighted ? Colors.white : Colors.grey.shade300)
+        : (isHighlighted
+            ? Colors.white
+            : config.theme.textColor.withValues(alpha: 0.7));
 
     final textStyle = TextStyle(
-      fontSize: key.isBlack ? 9 : 11,
-      fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w500,
-      color: key.isBlack
-          ? (isHighlighted ? Colors.white : Colors.grey.shade400)
-          : (isHighlighted
-              ? Colors.white
-              : config.theme.textColor.withValues(alpha: 0.6)),
+      fontSize: baseFontSize,
+      fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
+      color: textColor,
     );
 
     final textPainter = TextPainter(
@@ -298,31 +310,55 @@ class PianoKeyboardPainter extends CustomPainter {
     final rect = key.rect;
     final x = rect.center.dx - textPainter.width / 2;
     final y = key.isBlack
-        ? rect.bottom - textPainter.height - 6
-        : rect.bottom - textPainter.height - 10;
+        ? rect.bottom - textPainter.height - 8
+        : rect.bottom - textPainter.height - 14;
 
     textPainter.paint(canvas, Offset(x, y));
-  }
 
-  /// 获取标签文本
-  String _getLabel(int midi) {
-    switch (labelType) {
-      case 'solfege':
-        const solfege = ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'];
-        return solfege[midi % 12];
-      case 'jianpu':
-        const jianpu = ['1', '1#', '2', '2#', '3', '4', '4#', '5', '5#', '6', '6#', '7'];
-        return jianpu[midi % 12];
-      default:
-        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        final octave = (midi ~/ 12) - 1;
-        return '${notes[midi % 12]}$octave';
+    // 绘制高低音点（仅简谱模式）
+    if (labelType == 'jianpu' && octaveDots != 0) {
+      _drawOctaveDots(canvas, Offset(x, y), textPainter.width,
+          textPainter.height, octaveDots, textColor, key.isBlack);
     }
   }
 
-  /// 是否显示标签（只在 C 键显示）
-  bool _shouldShowLabel(int midi) {
-    return midi % 12 == 0; // C 音
+  /// 绘制八度点
+  void _drawOctaveDots(Canvas canvas, Offset textTopLeft, double textWidth,
+      double textHeight, int dots, Color color, bool isBlack) {
+    final dotRadius = isBlack ? 1.2 : 1.5;
+    final dotSpacing = isBlack ? 3.0 : 4.0;
+    final paint = Paint()..color = color;
+    
+    final absCount = dots.abs().clamp(0, 3);  // 最多显示3个点
+    final isHigh = dots > 0;
+    final centerX = textTopLeft.dx + textWidth / 2;
+    
+    for (var i = 0; i < absCount; i++) {
+      final dotY = isHigh 
+          ? textTopLeft.dy - 3 - (i * dotSpacing)  // 高音点在文字上方
+          : textTopLeft.dy + textHeight + 3 + (i * dotSpacing);  // 低音点在文字下方
+      canvas.drawCircle(Offset(centerX, dotY), dotRadius, paint);
+    }
+  }
+
+  /// 获取标签文本和八度信息
+  Map<String, dynamic> _getLabelWithOctave(int midi) {
+    final noteIndex = midi % 12;
+    final octave = (midi ~/ 12) - 1;  // MIDI 60 = C4
+    
+    switch (labelType) {
+      case 'solfege':
+        const solfege = ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'];
+        return {'label': solfege[noteIndex], 'dots': 0};
+      case 'jianpu':
+        // 简谱：C4 = 1（中央C，无点），C5 = 1̇（高音），C3 = 1̣（低音）
+        const jianpuBase = ['1', '1#', '2', '2#', '3', '4', '4#', '5', '5#', '6', '6#', '7'];
+        final dots = octave - 4;  // C4 = 0点，C5 = 1点（高），C3 = -1点（低）
+        return {'label': jianpuBase[noteIndex], 'dots': dots};
+      default:
+        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        return {'label': '${notes[noteIndex]}$octave', 'dots': 0};
+    }
   }
 
   /// 判断是否为黑键
