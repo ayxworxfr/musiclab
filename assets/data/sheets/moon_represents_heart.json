@@ -31,7 +31,7 @@
           "beats": [
             {"index": 0, "notes": [{"pitch": 69, "duration": "half", "lyric": "你"}]},
             {"index": 2, "notes": [{"pitch": 67, "duration": "quarter", "lyric": "有"}]},
-            {"index": 3, "notes": [{"pitch": 65, "duration": "eighth", "lyric": "多"}, {"pitch": 64, "duration": "eighth"}]}
+            {"index": 3, "notes": [{"pitch": 65, "duration": "eighth", "lyric": "多"}, {"pitch": 64, "duration": "eighth", "lyric": "深"}]}
           ]
         },
         {
@@ -62,7 +62,7 @@
           "beats": [
             {"index": 0, "notes": [{"pitch": 69, "duration": "half", "lyric": "的"}]},
             {"index": 2, "notes": [{"pitch": 67, "duration": "quarter", "lyric": "情"}]},
-            {"index": 3, "notes": [{"pitch": 65, "duration": "eighth", "lyric": "也"}, {"pitch": 64, "duration": "eighth"}]}
+            {"index": 3, "notes": [{"pitch": 65, "duration": "eighth", "lyric": "也"}, {"pitch": 64, "duration": "eighth", "lyric": "真"}]}
           ]
         },
         {

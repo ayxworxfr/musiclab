@@ -41,9 +41,9 @@ class RenderConfig {
     this.padding = const EdgeInsets.all(16),
     this.lineSpacing = 10,
     this.lineWidth = 1.0,
-    this.staffGap = 45,
-    this.lineHeight = 120,
-    this.minMeasureWidth = 80,
+    this.staffGap = 50, // 高低音谱表间距
+    this.lineHeight = 200, // 大谱表需要足够高度（高音谱+低音谱+间距）
+    this.minMeasureWidth = 100,
     this.noteHeadRadius = 5,
     this.stemLength = 35,
     this.pianoHeight = 100,

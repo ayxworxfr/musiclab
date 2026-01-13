@@ -48,20 +48,27 @@
       "title": "欢乐颂",
       "difficulty": 2,
       "category": "classical"
+    },
+    {
+      "id": "sheet_008",
+      "filename": "flower_dance.json",
+      "title": "Flower Dance",
+      "difficulty": 3,
+      "category": "pop"
     }
   ],
   "metadata": {
-    "total": 7,
+    "total": 8,
     "lastUpdated": "2026-01-13",
     "categories": {
       "folk": 3,
       "classical": 3,
-      "pop": 1
+      "pop": 2
     },
     "difficulties": {
       "1": 2,
       "2": 3,
-      "3": 2
+      "3": 3
     }
   }
 }

@@ -339,20 +339,28 @@ class JianpuPainter extends CustomPainter {
 
     textPainter.paint(canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
 
-    // 高低八度点位置根据字号自适应
-    final dotOffset = fontSize * 0.45;
-    final dotSize = fontSize * 0.1;
+    // 高低八度点位置 - 在数字正上方或正下方
+    final dotSize = fontSize * 0.12;
+    final dotSpacing = dotSize + 2; // 多个点之间的间距
     final dotPaint = Paint()..color = color;
     
     if (octaveOffset > 0) {
-      // 高八度：数字右上方加点
+      // 高八度：数字正上方加点（竖向排列）
       for (var i = 0; i < octaveOffset; i++) {
-        canvas.drawCircle(Offset(x + dotOffset + i * (dotSize + 2), y - dotOffset), dotSize, dotPaint);
+        canvas.drawCircle(
+          Offset(x, y - fontSize * 0.55 - i * dotSpacing), 
+          dotSize, 
+          dotPaint,
+        );
       }
     } else if (octaveOffset < 0) {
-      // 低八度：数字右下方加点
+      // 低八度：数字正下方加点（竖向排列）
       for (var i = 0; i < -octaveOffset; i++) {
-        canvas.drawCircle(Offset(x + dotOffset + i * (dotSize + 2), y + dotOffset), dotSize, dotPaint);
+        canvas.drawCircle(
+          Offset(x, y + fontSize * 0.55 + i * dotSpacing), 
+          dotSize, 
+          dotPaint,
+        );
       }
     }
 

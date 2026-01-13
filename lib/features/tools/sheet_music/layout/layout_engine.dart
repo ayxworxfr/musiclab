@@ -20,32 +20,31 @@ class LayoutEngine {
 
   /// 计算完整布局
   LayoutResult calculate(Score score) {
-    // 1. 计算谱表位置
+    // 1. 分行（先计算行数）
+    final lines = _breakIntoLines(score);
+    final lineCount = lines.isEmpty ? 1 : lines.length;
+    
+    // 2. 计算谱表位置
     final staffHeight = config.lineSpacing * 4;
     final trebleY = config.padding.top + 20; // 留空间给标题
     final bassY = score.isGrandStaff
         ? trebleY + staffHeight + config.staffGap
         : trebleY; // 非大谱表时只用一个谱表
 
-    final scoreHeight = score.isGrandStaff
-        ? bassY + staffHeight + 40 // 歌词空间
-        : trebleY + staffHeight + 40;
-
+    // 3. 计算总高度（根据行数）
+    final scoreHeight = config.padding.top + lineCount * config.lineHeight;
     final pianoY = scoreHeight + 20;
 
-    // 2. 分行
-    final lines = _breakIntoLines(score);
-
-    // 3. 计算小节布局
+    // 4. 计算小节布局
     final measureLayouts = _layoutMeasures(score, lines);
 
-    // 4. 计算音符布局
+    // 5. 计算音符布局
     final noteLayouts = _layoutNotes(score, measureLayouts, trebleY, bassY);
 
-    // 5. 计算符杠
+    // 6. 计算符杠
     final beamGroups = _calculateBeamGroups(noteLayouts);
 
-    // 6. 计算连音线
+    // 7. 计算连音线
     final ties = _calculateTies(noteLayouts);
 
     // 更新音符的符杠索引
@@ -67,55 +66,40 @@ class LayoutEngine {
     );
   }
 
-  /// 将小节分成多行
+  /// 将小节分成多行（参考简谱的简单方式）
   List<LineLayout> _breakIntoLines(Score score) {
     final lines = <LineLayout>[];
     if (score.measureCount == 0) return lines;
 
-    final contentWidth = availableWidth - config.padding.left - config.padding.right;
-    final clefWidth = 45.0;
-    final keySignatureWidth = 30.0;
-    final timeSignatureWidth = 25.0;
-    final firstLineHeaderWidth = clefWidth + keySignatureWidth + timeSignatureWidth;
-
-    var currentLine = <int>[];
-    var currentWidth = firstLineHeaderWidth;
+    // 固定每行小节数（和简谱一样简单）
+    final measuresPerLine = 4;
+    
     var y = config.padding.top;
+    var measureIndex = 0;
 
-    for (var i = 0; i < score.measureCount; i++) {
-      final measureWidth = _estimateMeasureWidth(score, i);
-
-      if (currentWidth + measureWidth > contentWidth && currentLine.isNotEmpty) {
-        // 换行
-        lines.add(LineLayout(
-          lineIndex: lines.length,
-          y: y,
-          height: config.lineHeight,
-          measureIndices: List.from(currentLine),
-          showClef: lines.isEmpty,
-          showKeySignature: lines.isEmpty,
-          showTimeSignature: lines.isEmpty,
-        ));
-        y += config.lineHeight;
-        currentLine = [i];
-        currentWidth = clefWidth + measureWidth; // 非首行只有谱号
-      } else {
-        currentLine.add(i);
-        currentWidth += measureWidth;
-      }
-    }
-
-    // 最后一行
-    if (currentLine.isNotEmpty) {
+    while (measureIndex < score.measureCount) {
+      final lineIndex = lines.length;
+      final isFirstLine = lineIndex == 0;
+      
+      // 计算这一行的小节
+      final endIndex = (measureIndex + measuresPerLine).clamp(0, score.measureCount);
+      final measureIndices = List.generate(
+        endIndex - measureIndex, 
+        (i) => measureIndex + i,
+      );
+      
       lines.add(LineLayout(
-        lineIndex: lines.length,
+        lineIndex: lineIndex,
         y: y,
         height: config.lineHeight,
-        measureIndices: List.from(currentLine),
-        showClef: lines.isEmpty,
-        showKeySignature: lines.isEmpty,
-        showTimeSignature: lines.isEmpty,
+        measureIndices: measureIndices,
+        showClef: true, // 每行都显示谱号
+        showKeySignature: isFirstLine,
+        showTimeSignature: isFirstLine,
       ));
+      
+      y += config.lineHeight;
+      measureIndex = endIndex;
     }
 
     return lines;
@@ -185,12 +169,16 @@ class LayoutEngine {
     for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
       final track = score.tracks[trackIndex];
       final isTreble = track.clef == Clef.treble;
-      final staffY = isTreble ? trebleY : bassY;
+      final baseStaffY = isTreble ? trebleY : bassY;
 
       for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
         final measure = track.measures[measureIndex];
         final measureLayout = measureLayouts[measureIndex];
         if (measureLayout == null) continue;
+
+        // 根据行号计算 Y 偏移
+        final lineOffset = measureLayout.lineIndex * config.lineHeight;
+        final staffY = baseStaffY + lineOffset;
 
         // 计算这个小节的开始时间
         final measureStartTime = measureIndex * beatsPerMeasure / beatsPerSecond;

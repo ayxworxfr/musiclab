@@ -270,9 +270,16 @@ class GrandStaffPainter extends CustomPainter {
   }
 
   void _drawBeamGroup(Canvas canvas, BeamGroup beamGroup) {
-    // 根据音符所属的手确定颜色
-    Color beamColor = config.theme.noteColor;
-    if (beamGroup.noteLayoutIndices.isNotEmpty) {
+    // 检查符杠组中是否有任何音符被高亮
+    final anyNoteHighlighted = beamGroup.noteLayoutIndices.any(
+      (idx) => highlightedNoteIndices.contains(idx),
+    );
+    
+    // 根据高亮状态或音符所属的手确定颜色
+    Color beamColor;
+    if (anyNoteHighlighted) {
+      beamColor = config.theme.playingColor;
+    } else if (beamGroup.noteLayoutIndices.isNotEmpty) {
       final firstNoteIdx = beamGroup.noteLayoutIndices.first;
       if (firstNoteIdx < layout.noteLayouts.length) {
         final hand = layout.noteLayouts[firstNoteIdx].hand;
@@ -280,8 +287,14 @@ class GrandStaffPainter extends CustomPainter {
           beamColor = config.theme.rightHandColor;
         } else if (hand == Hand.left) {
           beamColor = config.theme.leftHandColor;
+        } else {
+          beamColor = config.theme.noteColor;
         }
+      } else {
+        beamColor = config.theme.noteColor;
       }
+    } else {
+      beamColor = config.theme.noteColor;
     }
 
     final paint = Paint()
