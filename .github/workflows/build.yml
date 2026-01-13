@@ -80,17 +80,8 @@ jobs:
         id: version
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
-          BUILD_NUMBER=$(grep '^version:' pubspec.yaml | sed 's/.*+//')
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          DATE=$(date +'%Y%m%d')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
-          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "date=$DATE" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
-          echo "Build Number: $BUILD_NUMBER"
-          echo "Short SHA: $SHORT_SHA"
-          echo "Date: $DATE"
 
       - name: 构建 Android APK
         run: flutter build apk --release
@@ -100,7 +91,7 @@ jobs:
 
       - name: 重命名并上传 APK 产物
         run: |
-          APK_NAME="musiclab-v${{ steps.version.outputs.version }}-build${{ steps.version.outputs.build_number }}-android-${{ steps.version.outputs.date }}-${{ steps.version.outputs.short_sha }}.apk"
+          APK_NAME="musiclab-v${{ steps.version.outputs.version }}-android.apk"
           cp build/app/outputs/flutter-apk/app-release.apk "$APK_NAME"
           echo "APK_NAME=$APK_NAME" >> $GITHUB_ENV
         shell: bash
@@ -108,13 +99,13 @@ jobs:
       - name: 上传 APK 产物
         uses: actions/upload-artifact@v4
         with:
-          name: musiclab-android-apk-v${{ steps.version.outputs.version }}-${{ steps.version.outputs.date }}
+          name: musiclab-android-apk-v${{ steps.version.outputs.version }}
           path: ${{ env.APK_NAME }}
           retention-days: 30
 
       - name: 重命名并上传 AAB 产物
         run: |
-          AAB_NAME="musiclab-v${{ steps.version.outputs.version }}-build${{ steps.version.outputs.build_number }}-android-${{ steps.version.outputs.date }}-${{ steps.version.outputs.short_sha }}.aab"
+          AAB_NAME="musiclab-v${{ steps.version.outputs.version }}-android.aab"
           cp build/app/outputs/bundle/release/app-release.aab "$AAB_NAME"
           echo "AAB_NAME=$AAB_NAME" >> $GITHUB_ENV
         shell: bash
@@ -122,7 +113,7 @@ jobs:
       - name: 上传 AAB 产物
         uses: actions/upload-artifact@v4
         with:
-          name: musiclab-android-aab-v${{ steps.version.outputs.version }}-${{ steps.version.outputs.date }}
+          name: musiclab-android-aab-v${{ steps.version.outputs.version }}
           path: ${{ env.AAB_NAME }}
           retention-days: 30
 
@@ -161,17 +152,8 @@ jobs:
         id: version
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
-          BUILD_NUMBER=$(grep '^version:' pubspec.yaml | sed 's/.*+//')
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          DATE=$(date +'%Y%m%d')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
-          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "date=$DATE" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
-          echo "Build Number: $BUILD_NUMBER"
-          echo "Short SHA: $SHORT_SHA"
-          echo "Date: $DATE"
 
       - name: 构建 iOS IPA
         run: flutter build ipa --release
@@ -193,7 +175,7 @@ jobs:
         run: |
           IPA_FILE=$(find build/ios/ipa -name "*.ipa" | head -1)
           if [ -n "$IPA_FILE" ]; then
-            IPA_NAME="musiclab-v${{ steps.version.outputs.version }}-build${{ steps.version.outputs.build_number }}-ios-${{ steps.version.outputs.date }}-${{ steps.version.outputs.short_sha }}.ipa"
+            IPA_NAME="musiclab-v${{ steps.version.outputs.version }}-ios.ipa"
             cp "$IPA_FILE" "$IPA_NAME"
             echo "IPA_NAME=$IPA_NAME" >> $GITHUB_ENV
             echo "IPA_PATH=$IPA_NAME" >> $GITHUB_ENV
@@ -206,7 +188,7 @@ jobs:
         if: always() && env.IPA_PATH != ''
         uses: actions/upload-artifact@v4
         with:
-          name: musiclab-ios-ipa-v${{ steps.version.outputs.version }}-${{ steps.version.outputs.date }}
+          name: musiclab-ios-ipa-v${{ steps.version.outputs.version }}
           path: ${{ env.IPA_PATH }}
           retention-days: 30
 
@@ -226,30 +208,24 @@ jobs:
         id: version
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
-          BUILD_NUMBER=$(grep '^version:' pubspec.yaml | sed 's/.*+//')
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          DATE=$(date +'%Y%m%d')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
-          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "date=$DATE" >> $GITHUB_OUTPUT
 
       - name: 下载 Android APK
         uses: actions/download-artifact@v4
         with:
-          name: musiclab-android-apk-v${{ steps.version.outputs.version }}-${{ steps.version.outputs.date }}
+          name: musiclab-android-apk-v${{ steps.version.outputs.version }}
           path: ./artifacts/android
 
       - name: 下载 Android AAB
         uses: actions/download-artifact@v4
         with:
-          name: musiclab-android-aab-v${{ steps.version.outputs.version }}-${{ steps.version.outputs.date }}
+          name: musiclab-android-aab-v${{ steps.version.outputs.version }}
           path: ./artifacts/android
 
       - name: 下载 iOS IPA
         uses: actions/download-artifact@v4
         with:
-          name: musiclab-ios-ipa-v${{ steps.version.outputs.version }}-${{ steps.version.outputs.date }}
+          name: musiclab-ios-ipa-v${{ steps.version.outputs.version }}
           path: ./artifacts/ios
         continue-on-error: true
 

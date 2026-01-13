@@ -71,6 +71,14 @@ class SettingsPage extends StatelessWidget {
   }
 
   Widget _buildThemeCard(BuildContext context, bool isDark) {
+    // 安全获取 ThemeController
+    ThemeController? themeController;
+    try {
+      themeController = Get.find<ThemeController>();
+    } catch (e) {
+      // 如果未找到，返回简单的主题卡片
+    }
+    
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -83,37 +91,66 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-      child: GetBuilder<ThemeController>(
-        builder: (themeController) {
-          return Column(
-            children: [
-              _buildSwitchTile(
-                context,
-                icon: Icons.dark_mode,
-                title: '深色模式',
-                subtitle: '切换亮色/深色主题',
-                value: themeController.isDarkMode,
-                onChanged: (value) => themeController.toggleTheme(),
-              ),
-              const Divider(height: 1, indent: 56),
-              _buildTile(
-                context,
-                icon: Icons.color_lens,
-                title: '主题色',
-                trailing: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+      child: themeController != null
+          ? GetBuilder<ThemeController>(
+              init: themeController,
+              builder: (controller) {
+                return Column(
+                  children: [
+                    _buildSwitchTile(
+                      context,
+                      icon: Icons.dark_mode,
+                      title: '深色模式',
+                      subtitle: '切换亮色/深色主题',
+                      value: controller.isDarkMode,
+                      onChanged: (value) => controller.toggleTheme(),
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    _buildTile(
+                      context,
+                      icon: Icons.color_lens,
+                      title: '主题色',
+                      trailing: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      onTap: () => _showThemeColorPicker(context),
+                    ),
+                  ],
+                );
+              },
+            )
+          : Column(
+              children: [
+                _buildSwitchTile(
+                  context,
+                  icon: Icons.dark_mode,
+                  title: '深色模式',
+                  subtitle: '切换亮色/深色主题',
+                  value: isDark,
+                  onChanged: (value) {},
                 ),
-                onTap: () => _showThemeColorPicker(context),
-              ),
-            ],
-          );
-        },
-      ),
+                const Divider(height: 1, indent: 56),
+                _buildTile(
+                  context,
+                  icon: Icons.color_lens,
+                  title: '主题色',
+                  trailing: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  onTap: () => _showThemeColorPicker(context),
+                ),
+              ],
+            ),
     );
   }
 
