@@ -119,7 +119,7 @@ class QuestionGenerator {
         final midi2 = midi1 + _getIntervalSemitones(interval);
 
         final intervalName = _getIntervalName(interval);
-        final options = _generateIntervalOptions();
+        final options = _generateIntervalOptions(interval);
 
         questions.add(PracticeQuestion(
           id: 'ear_interval_${DateTime.now().millisecondsSinceEpoch}_$i',
@@ -232,9 +232,40 @@ class QuestionGenerator {
     };
   }
 
-  /// 生成音程选项
-  List<String> _generateIntervalOptions() {
-    return ['二度', '三度', '四度', '五度', '六度', '八度'];
+  /// 生成音程选项（4个选项，包含正确答案）
+  List<String> _generateIntervalOptions(int correctInterval) {
+    final allIntervals = [1, 2, 3, 4, 5, 6, 7, 8];
+    final options = <int>[correctInterval];
+    
+    // 生成3个干扰项，优先选择与正确答案相近的音程
+    final candidates = allIntervals.where((i) => i != correctInterval).toList();
+    
+    // 优先选择相邻的音程作为干扰项
+    final nearbyIntervals = <int>[];
+    if (correctInterval > 1) nearbyIntervals.add(correctInterval - 1);
+    if (correctInterval < 8) nearbyIntervals.add(correctInterval + 1);
+    if (correctInterval > 2) nearbyIntervals.add(correctInterval - 2);
+    if (correctInterval < 7) nearbyIntervals.add(correctInterval + 2);
+    
+    // 先添加相邻的音程
+    for (final interval in nearbyIntervals) {
+      if (options.length < 4 && candidates.contains(interval)) {
+        options.add(interval);
+        candidates.remove(interval);
+      }
+    }
+    
+    // 如果还不够4个，随机添加其他音程
+    candidates.shuffle(_random);
+    while (options.length < 4 && candidates.isNotEmpty) {
+      options.add(candidates.removeAt(0));
+    }
+    
+    // 打乱选项顺序
+    options.shuffle(_random);
+    
+    // 转换为中文名称
+    return options.map((i) => _getIntervalName(i)).toList();
   }
 
   /// 根据难度获取旋律片段
