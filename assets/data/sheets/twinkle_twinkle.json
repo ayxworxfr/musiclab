@@ -1,14 +1,13 @@
 {
   "id": "sheet_001",
-  "title": "小星星",
+  "title": "小星星（钢琴）",
   "difficulty": 1,
   "category": "folk",
   "metadata": {
-    "composer": "莫扎特",
-    "lyricist": "Jane Taylor",
+    "composer": "民谣",
     "key": "C",
     "timeSignature": "4/4",
-    "tempo": 100,
+    "tempo": 90,
     "description": "经典儿歌，适合初学者练习"
   },
   "measures": [
@@ -83,4 +82,3 @@
   ],
   "isBuiltIn": true
 }
-

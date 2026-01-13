@@ -1,160 +1,154 @@
 {
-  "id": "sheet_003",
+  "id": "sheet_007",
   "title": "欢乐颂",
   "difficulty": 2,
   "category": "classical",
   "metadata": {
     "composer": "贝多芬",
-    "key": "C",
+    "key": "D",
     "timeSignature": "4/4",
     "tempo": 120,
-    "description": "贝多芬《第九交响曲》第四乐章主题"
+    "description": "贝多芬第九交响曲第四乐章主题，世界名曲"
   },
-  "measures": [
+  "tracks": [
     {
-      "number": 1,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 4, "octave": 0, "duration": "quarter"},
-        {"degree": 5, "octave": 0, "duration": "quarter"}
+      "id": "right",
+      "name": "右手",
+      "clef": "treble",
+      "hand": "right",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 62, "duration": "quarter"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
+            {"index": 3, "notes": [{"pitch": 65, "duration": "quarter"}]}
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
+            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
+            {"index": 2, "notes": [{"pitch": 62, "duration": "quarter"}]},
+            {"index": 3, "notes": [{"pitch": 60, "duration": "quarter"}]}
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 60, "duration": "quarter"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
+            {"index": 3, "notes": [{"pitch": 62, "duration": "eighth"}, {"pitch": 60, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 62, "duration": "half"}]},
+            {"index": 2, "notes": [{"pitch": 62, "duration": "quarter"}]},
+            {"index": 3, "notes": [{"pitch": 62, "duration": "quarter"}]}
+          ]
+        },
+        {
+          "number": 5,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter"}]},
+            {"index": 1, "notes": [{"pitch": 65, "duration": "quarter"}]},
+            {"index": 2, "notes": [{"pitch": 67, "duration": "quarter"}]},
+            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+          ]
+        },
+        {
+          "number": 6,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
+            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
+            {"index": 2, "notes": [{"pitch": 62, "duration": "quarter"}]},
+            {"index": 3, "notes": [{"pitch": 60, "duration": "quarter"}]}
+          ]
+        },
+        {
+          "number": 7,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 60, "duration": "quarter"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
+            {"index": 3, "notes": [{"pitch": 62, "duration": "eighth"}, {"pitch": 60, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 8,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 62, "duration": "whole"}]}
+          ]
+        }
       ]
     },
     {
-      "number": 2,
-      "notes": [
-        {"degree": 5, "octave": 0, "duration": "quarter"},
-        {"degree": 4, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 3,
-      "notes": [
-        {"degree": 1, "octave": 0, "duration": "quarter"},
-        {"degree": 1, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 4,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "quarter", "isDotted": true},
-        {"degree": 2, "octave": 0, "duration": "eighth"},
-        {"degree": 2, "octave": 0, "duration": "half"}
-      ]
-    },
-    {
-      "number": 5,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 4, "octave": 0, "duration": "quarter"},
-        {"degree": 5, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 6,
-      "notes": [
-        {"degree": 5, "octave": 0, "duration": "quarter"},
-        {"degree": 4, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 7,
-      "notes": [
-        {"degree": 1, "octave": 0, "duration": "quarter"},
-        {"degree": 1, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 8,
-      "notes": [
-        {"degree": 2, "octave": 0, "duration": "quarter", "isDotted": true},
-        {"degree": 1, "octave": 0, "duration": "eighth"},
-        {"degree": 1, "octave": 0, "duration": "half"}
-      ]
-    },
-    {
-      "number": 9,
-      "notes": [
-        {"degree": 2, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 1, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 10,
-      "notes": [
-        {"degree": 2, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "eighth"},
-        {"degree": 4, "octave": 0, "duration": "eighth"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 1, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 11,
-      "notes": [
-        {"degree": 2, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "eighth"},
-        {"degree": 4, "octave": 0, "duration": "eighth"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 12,
-      "notes": [
-        {"degree": 1, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"},
-        {"degree": 1, "octave": -1, "duration": "quarter"},
-        {"degree": 1, "octave": -1, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 13,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 4, "octave": 0, "duration": "quarter"},
-        {"degree": 5, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 14,
-      "notes": [
-        {"degree": 5, "octave": 0, "duration": "quarter"},
-        {"degree": 4, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 15,
-      "notes": [
-        {"degree": 1, "octave": 0, "duration": "quarter"},
-        {"degree": 1, "octave": 0, "duration": "quarter"},
-        {"degree": 2, "octave": 0, "duration": "quarter"},
-        {"degree": 3, "octave": 0, "duration": "quarter"}
-      ]
-    },
-    {
-      "number": 16,
-      "notes": [
-        {"degree": 2, "octave": 0, "duration": "quarter", "isDotted": true},
-        {"degree": 1, "octave": 0, "duration": "eighth"},
-        {"degree": 1, "octave": 0, "duration": "half"}
+      "id": "left",
+      "name": "左手",
+      "clef": "bass",
+      "hand": "left",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 50, "duration": "half"}]},
+            {"index": 2, "notes": [{"pitch": 50, "duration": "half"}]}
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 50, "duration": "half"}]},
+            {"index": 2, "notes": [{"pitch": 48, "duration": "half"}]}
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 48, "duration": "half"}]},
+            {"index": 2, "notes": [{"pitch": 50, "duration": "half"}]}
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 50, "duration": "whole"}]}
+          ]
+        },
+        {
+          "number": 5,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 50, "duration": "half"}]},
+            {"index": 2, "notes": [{"pitch": 50, "duration": "half"}]}
+          ]
+        },
+        {
+          "number": 6,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 50, "duration": "half"}]},
+            {"index": 2, "notes": [{"pitch": 48, "duration": "half"}]}
+          ]
+        },
+        {
+          "number": 7,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 48, "duration": "half"}]},
+            {"index": 2, "notes": [{"pitch": 50, "duration": "half"}]}
+          ]
+        },
+        {
+          "number": 8,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 50, "duration": "whole"}]}
+          ]
+        }
       ]
     }
   ],
   "isBuiltIn": true
 }
-

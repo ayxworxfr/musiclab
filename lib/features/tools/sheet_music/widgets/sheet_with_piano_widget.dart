@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../core/widgets/music/piano_keyboard.dart';
+import '../../../../core/audio/audio_service.dart';
 import '../../../../core/utils/music_utils.dart';
+import '../models/enums.dart';
+import '../painters/piano_keyboard_painter.dart';
+import '../painters/render_config.dart';
 import '../controllers/sheet_player_controller.dart';
 import '../models/sheet_model.dart';
 import 'dual_notation_widget.dart';
@@ -98,8 +101,12 @@ class SheetWithPianoWidget extends StatelessWidget {
     controller.playNotePreview(measureIndex, noteIndex);
   }
 
-  /// 构建钢琴键盘区域
+  /// 构建钢琴键盘区域（使用新的 Canvas 组件）
   Widget _buildPianoSection(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
+    final config = RenderConfig(pianoHeight: 120, theme: renderTheme);
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -121,25 +128,28 @@ class SheetWithPianoWidget extends StatelessWidget {
             return _buildCurrentNoteInfo(context, currentNote);
           }),
 
-          // 钢琴键盘
+          // Canvas 钢琴键盘
           Obx(() {
             final state = controller.playbackState.value;
             final highlightedMidi = _getHighlightedMidi(state);
 
-            return SizedBox(
-              height: 120,
-              child: PianoKeyboard(
-                startMidi: pianoStartMidi,
-                endMidi: pianoEndMidi,
-                highlightedNotes: highlightedMidi != null ? [highlightedMidi] : [],
-                onNotePressed: (midi) {
-                  // 用户点击钢琴键时播放音符
-                  controller.playNotePreview(
-                    state.currentMeasureIndex,
-                    state.currentNoteIndex,
-                  );
-                },
-              ),
+            // 将高亮音符转换为 Map 格式
+            final highlightedNotesMap = <int, Hand?>{};
+            if (highlightedMidi != null) {
+              highlightedNotesMap[highlightedMidi] = Hand.right;
+            }
+
+            return _InteractivePianoKeyboard(
+              startMidi: pianoStartMidi,
+              endMidi: pianoEndMidi,
+              config: config,
+              highlightedNotes: highlightedNotesMap,
+              onNotePressed: (midi) {
+                controller.playNotePreview(
+                  state.currentMeasureIndex,
+                  state.currentNoteIndex,
+                );
+              },
             );
           }),
 
@@ -273,6 +283,93 @@ class SheetWithPianoWidget extends StatelessWidget {
       note.octave,
       sheet.metadata.key,
     );
+  }
+}
+
+/// 可交互的 Canvas 钢琴键盘组件
+class _InteractivePianoKeyboard extends StatefulWidget {
+  final int startMidi;
+  final int endMidi;
+  final RenderConfig config;
+  final Map<int, Hand?> highlightedNotes;
+  final Function(int midi)? onNotePressed;
+
+  const _InteractivePianoKeyboard({
+    required this.startMidi,
+    required this.endMidi,
+    required this.config,
+    this.highlightedNotes = const {},
+    this.onNotePressed,
+  });
+
+  @override
+  State<_InteractivePianoKeyboard> createState() => _InteractivePianoKeyboardState();
+}
+
+class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
+  final AudioService _audioService = Get.find<AudioService>();
+  int? _lastPlayedMidi;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: widget.config.pianoHeight,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final painter = PianoKeyboardPainter(
+            startMidi: widget.startMidi,
+            endMidi: widget.endMidi,
+            config: widget.config,
+            showLabels: true,
+            labelType: 'jianpu',
+            highlightedNotes: widget.highlightedNotes,
+          );
+
+          return GestureDetector(
+            onTapDown: (details) => _handleTap(details.localPosition, constraints, painter),
+            onPanUpdate: (details) => _handlePan(details.localPosition, constraints, painter),
+            onPanEnd: (_) => _lastPlayedMidi = null,
+            onTapUp: (_) => _lastPlayedMidi = null,
+            child: CustomPaint(
+              size: Size(constraints.maxWidth, widget.config.pianoHeight),
+              painter: painter,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _handleTap(Offset position, BoxConstraints constraints, PianoKeyboardPainter painter) {
+    final midi = painter.findKeyAtPosition(position, Size(constraints.maxWidth, widget.config.pianoHeight));
+    if (midi != null && midi != _lastPlayedMidi) {
+      _lastPlayedMidi = midi;
+      _audioService.markUserInteracted();
+      _audioService.playPianoNote(midi);
+      widget.onNotePressed?.call(midi);
+    }
+  }
+
+  void _handlePan(Offset position, BoxConstraints constraints, PianoKeyboardPainter painter) {
+    final midi = painter.findKeyAtPosition(position, Size(constraints.maxWidth, widget.config.pianoHeight));
+    if (midi != null && midi != _lastPlayedMidi) {
+      _lastPlayedMidi = midi;
+      _audioService.markUserInteracted();
+      _audioService.playPianoNote(midi);
+      widget.onNotePressed?.call(midi);
+    }
   }
 }
 
@@ -462,4 +559,3 @@ class _SheetPlayerPageState extends State<SheetPlayerPage> {
     );
   }
 }
-

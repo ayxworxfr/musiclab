@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -66,6 +67,9 @@ class _PianoKeyboardState extends State<PianoKeyboard> {
   final Set<int> _pressedNotes = {};
   late AudioService _audioService;
   
+  // 跟踪每个指针按下的键
+  final Map<int, int> _pointerToMidi = {};
+  
   // 白键的 MIDI 偏移（C=0, D=2, E=4, F=5, G=7, A=9, B=11）
   static const _whiteKeyOffsets = [0, 2, 4, 5, 7, 9, 11];
   
@@ -87,21 +91,94 @@ class _PianoKeyboardState extends State<PianoKeyboard> {
       height: widget.whiteKeyHeight,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: SizedBox(
-          width: whiteKeys.length * widget.whiteKeyWidth,
-          child: Stack(
-            children: [
-              // 白键
-              Row(
-                children: whiteKeys.map((midi) => _buildWhiteKey(midi)).toList(),
-              ),
-              // 黑键
-              ...blackKeys.map((midi) => _buildBlackKey(midi, whiteKeys)),
-            ],
+        child: Listener(
+          onPointerDown: (event) => _handlePointerDown(event, whiteKeys, blackKeys),
+          onPointerMove: (event) => _handlePointerMove(event, whiteKeys, blackKeys),
+          onPointerUp: (event) => _handlePointerUp(event),
+          onPointerCancel: (event) => _handlePointerUp(event),
+          child: SizedBox(
+            width: whiteKeys.length * widget.whiteKeyWidth,
+            height: widget.whiteKeyHeight,
+            child: Stack(
+              children: [
+                // 白键
+                Row(
+                  children: whiteKeys.map((midi) => _buildWhiteKey(midi)).toList(),
+                ),
+                // 黑键
+                ...blackKeys.map((midi) => _buildBlackKey(midi, whiteKeys)),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+  
+  /// 处理指针按下事件
+  void _handlePointerDown(PointerDownEvent event, List<int> whiteKeys, List<int> blackKeys) {
+    final midi = _getMidiAtPosition(event.localPosition, whiteKeys, blackKeys);
+    if (midi != null) {
+      _pointerToMidi[event.pointer] = midi;
+      _onKeyPressed(midi);
+    }
+  }
+  
+  /// 处理指针移动事件（支持滑动换键）
+  void _handlePointerMove(PointerMoveEvent event, List<int> whiteKeys, List<int> blackKeys) {
+    final oldMidi = _pointerToMidi[event.pointer];
+    final newMidi = _getMidiAtPosition(event.localPosition, whiteKeys, blackKeys);
+    
+    if (newMidi != oldMidi) {
+      if (oldMidi != null) {
+        _onKeyReleased(oldMidi);
+      }
+      if (newMidi != null) {
+        _pointerToMidi[event.pointer] = newMidi;
+        _onKeyPressed(newMidi);
+      } else {
+        _pointerToMidi.remove(event.pointer);
+      }
+    }
+  }
+  
+  /// 处理指针抬起事件
+  void _handlePointerUp(PointerEvent event) {
+    final midi = _pointerToMidi.remove(event.pointer);
+    if (midi != null) {
+      _onKeyReleased(midi);
+    }
+  }
+  
+  /// 根据位置获取 MIDI 编号
+  int? _getMidiAtPosition(Offset position, List<int> whiteKeys, List<int> blackKeys) {
+    // 先检查黑键（黑键在上层）
+    final blackKeyWidth = widget.whiteKeyWidth * 0.6;
+    final blackKeyHeight = widget.whiteKeyHeight * 0.6;
+    
+    for (final midi in blackKeys) {
+      final prevWhiteKey = midi - 1;
+      final actualPrevWhite = _whiteKeyOffsets.contains(prevWhiteKey % 12)
+          ? prevWhiteKey
+          : prevWhiteKey - 1;
+      final whiteKeyIndex = whiteKeys.indexOf(actualPrevWhite);
+      if (whiteKeyIndex == -1) continue;
+      
+      final leftOffset = (whiteKeyIndex + 1) * widget.whiteKeyWidth - blackKeyWidth / 2;
+      final blackKeyRect = Rect.fromLTWH(leftOffset, 0, blackKeyWidth, blackKeyHeight);
+      
+      if (blackKeyRect.contains(position)) {
+        return midi;
+      }
+    }
+    
+    // 再检查白键
+    final whiteKeyIndex = (position.dx / widget.whiteKeyWidth).floor();
+    if (whiteKeyIndex >= 0 && whiteKeyIndex < whiteKeys.length) {
+      return whiteKeys[whiteKeyIndex];
+    }
+    
+    return null;
   }
   
   /// 获取范围内的白键 MIDI 列表
@@ -133,42 +210,37 @@ class _PianoKeyboardState extends State<PianoKeyboard> {
     final isPressed = _pressedNotes.contains(midi);
     final isHighlighted = widget.highlightedNotes.contains(midi);
     
-    return GestureDetector(
-      onTapDown: (_) => _onKeyPressed(midi),
-      onTapUp: (_) => _onKeyReleased(midi),
-      onTapCancel: () => _onKeyReleased(midi),
-      child: Container(
-        width: widget.whiteKeyWidth,
-        height: widget.whiteKeyHeight,
-        decoration: BoxDecoration(
-          color: isPressed
-              ? AppColors.primary.withValues(alpha: 0.3)
-              : isHighlighted
-                  ? AppColors.success.withValues(alpha: 0.3)
-                  : Colors.white,
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(6),
-            bottomRight: Radius.circular(6),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 2,
-              offset: const Offset(0, 2),
-            ),
-          ],
+    return Container(
+      width: widget.whiteKeyWidth,
+      height: widget.whiteKeyHeight,
+      decoration: BoxDecoration(
+        color: isPressed
+            ? AppColors.primary.withValues(alpha: 0.3)
+            : isHighlighted
+                ? AppColors.success.withValues(alpha: 0.3)
+                : Colors.white,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(6),
+          bottomRight: Radius.circular(6),
         ),
-        child: widget.showLabels
-            ? Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _buildLabel(midi, isHighlighted, false),
-                ),
-              )
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
+      child: widget.showLabels
+          ? Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _buildLabel(midi, isHighlighted, false),
+              ),
+            )
+          : null,
     );
   }
   
@@ -194,10 +266,8 @@ class _PianoKeyboardState extends State<PianoKeyboard> {
     return Positioned(
       left: leftOffset,
       top: 0,
-      child: GestureDetector(
-        onTapDown: (_) => _onKeyPressed(midi),
-        onTapUp: (_) => _onKeyReleased(midi),
-        onTapCancel: () => _onKeyReleased(midi),
+      child: IgnorePointer(
+        // 忽略指针事件，由父级 Listener 统一处理
         child: Container(
           width: blackKeyWidth,
           height: blackKeyHeight,

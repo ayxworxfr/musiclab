@@ -3,194 +3,76 @@ import 'package:get/get.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../controllers/metronome_controller.dart';
+import '../painters/metronome_painter.dart';
 
-/// 节拍器页面
+/// 节拍器页面（Canvas 重构版）
 class MetronomePage extends GetView<MetronomeController> {
   const MetronomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('节拍器'),
         centerTitle: true,
         elevation: 0,
+        actions: [
+          // 主题切换
+          Obx(() => IconButton(
+            icon: const Icon(Icons.palette),
+            onPressed: () => _showThemeSelector(context),
+            tooltip: MetronomeController.themeNames[controller.themeIndex.value],
+          )),
+        ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            const Spacer(),
-
-            // 节拍指示器
-            _buildBeatIndicator(context, isDark),
-            const SizedBox(height: 48),
-
-            // BPM 显示和调节
-            _buildBpmControl(context, isDark),
-            const SizedBox(height: 32),
-
-            // 拍号选择
-            _buildTimeSignatureSelector(context, isDark),
-
-            const Spacer(),
-
-            // 开始/停止按钮
-            _buildPlayButton(context),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBeatIndicator(BuildContext context, bool isDark) {
-    return Obx(() {
-      final beats = controller.beatsPerMeasure.value;
-      final current = controller.currentBeat.value;
-      final isPlaying = controller.isPlaying.value;
-
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(beats, (index) {
-          // currentBeat 为 -1 时表示未开始，所有指示灯都不亮
-          final isActive = isPlaying && current >= 0 && index == current;
-          final isStrong = index == 0;
-
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 80),
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            width: isActive ? 36 : 24,
-            height: isActive ? 36 : 24,
-            decoration: BoxDecoration(
-              color: isActive
-                  ? (isStrong ? AppColors.primary : AppColors.secondary)
-                  : (isDark ? Colors.grey.shade700 : Colors.grey.shade300),
-              shape: BoxShape.circle,
-              boxShadow: isActive
-                  ? [
-                      BoxShadow(
-                        color: (isStrong ? AppColors.primary : AppColors.secondary)
-                            .withValues(alpha: 0.6),
-                        blurRadius: 16,
-                        spreadRadius: 4,
-                      ),
-                    ]
-                  : null,
+            // 节拍器主体（Canvas 绘制）
+            Expanded(
+              flex: 3,
+              child: Obx(() => CustomPaint(
+                painter: MetronomePainter(
+                  bpm: controller.bpm.value,
+                  beatsPerMeasure: controller.beatsPerMeasure.value,
+                  currentBeat: controller.currentBeat.value,
+                  isPlaying: controller.isPlaying.value,
+                  pendulumAngle: controller.pendulumAngle.value,
+                  theme: controller.currentTheme,
+                ),
+                child: Container(),
+              )),
             ),
-            child: isStrong && !isActive
-                ? Center(
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  )
-                : null,
-          );
-        }),
-      );
-    });
-  }
 
-  Widget _buildBpmControl(BuildContext context, bool isDark) {
-    return Column(
-      children: [
-        // BPM 显示
-        Obx(() => Text(
-          '${controller.bpm.value}',
-          style: TextStyle(
-            fontSize: 80,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-          ),
-        )),
-        const Text(
-          'BPM',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
-        ),
-        const SizedBox(height: 24),
+            // 控制区域
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // BPM 调节
+                  _buildBpmControl(context),
+                  const SizedBox(height: 20),
 
-        // 调节按钮
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildAdjustButton(
-              icon: Icons.remove,
-              onTap: () => controller.decreaseBpm(10),
-              label: '-10',
-            ),
-            const SizedBox(width: 12),
-            _buildAdjustButton(
-              icon: Icons.remove,
-              onTap: () => controller.decreaseBpm(1),
-              label: '-1',
-            ),
-            const SizedBox(width: 12),
-            _buildAdjustButton(
-              icon: Icons.add,
-              onTap: () => controller.increaseBpm(1),
-              label: '+1',
-            ),
-            const SizedBox(width: 12),
-            _buildAdjustButton(
-              icon: Icons.add,
-              onTap: () => controller.increaseBpm(10),
-              label: '+10',
-            ),
-          ],
-        ),
+                  // 拍号选择
+                  _buildTimeSignatureSelector(context),
+                  const SizedBox(height: 24),
 
-        const SizedBox(height: 24),
-
-        // 滑块
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Obx(() => Slider(
-            value: controller.bpm.value.toDouble(),
-            min: 20,
-            max: 240,
-            divisions: 220,
-            onChanged: (value) => controller.setBpm(value.round()),
-            activeColor: AppColors.primary,
-          )),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAdjustButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required String label,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppColors.primary, size: 20),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 10,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w500,
+                  // 播放按钮
+                  _buildPlayButton(context),
+                  const SizedBox(height: 8),
+                ],
               ),
             ),
           ],
@@ -199,8 +81,168 @@ class MetronomePage extends GetView<MetronomeController> {
     );
   }
 
-  Widget _buildTimeSignatureSelector(BuildContext context, bool isDark) {
-    final signatures = [2, 3, 4, 6];
+  void _showThemeSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '选择主题',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: List.generate(MetronomeController.themes.length, (index) {
+                final theme = MetronomeController.themes[index];
+                return Obx(() {
+                  final isSelected = controller.themeIndex.value == index;
+                  return GestureDetector(
+                    onTap: () {
+                      controller.setTheme(index);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: theme.backgroundColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected ? theme.primaryColor : Colors.grey.shade300,
+                          width: isSelected ? 3 : 1,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            MetronomeController.themeNames[index],
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: theme.textColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                });
+              }),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBpmControl(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // -10
+        _buildAdjustButton(
+          icon: Icons.remove,
+          label: '-10',
+          onTap: () => controller.decreaseBpm(10),
+        ),
+        const SizedBox(width: 8),
+        // -1
+        _buildAdjustButton(
+          icon: Icons.remove,
+          label: '-1',
+          onTap: () => controller.decreaseBpm(1),
+        ),
+        const SizedBox(width: 16),
+        
+        // BPM 滑块
+        Expanded(
+          child: Obx(() => SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 8,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+            ),
+            child: Slider(
+              value: controller.bpm.value.toDouble(),
+              min: 20,
+              max: 240,
+              divisions: 220,
+              onChanged: (value) => controller.setBpm(value.round()),
+              activeColor: AppColors.primary,
+              inactiveColor: AppColors.primary.withValues(alpha: 0.2),
+            ),
+          )),
+        ),
+        
+        const SizedBox(width: 16),
+        // +1
+        _buildAdjustButton(
+          icon: Icons.add,
+          label: '+1',
+          onTap: () => controller.increaseBpm(1),
+        ),
+        const SizedBox(width: 8),
+        // +10
+        _buildAdjustButton(
+          icon: Icons.add,
+          label: '+10',
+          onTap: () => controller.increaseBpm(10),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdjustButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: AppColors.primary, size: 18),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 9,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeSignatureSelector(BuildContext context) {
+    const signatures = [2, 3, 4, 6];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       children: [
@@ -208,10 +250,10 @@ class MetronomePage extends GetView<MetronomeController> {
           '拍号',
           style: TextStyle(
             fontSize: 14,
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+            color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Obx(() => Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: signatures.map((beats) {
@@ -220,21 +262,22 @@ class MetronomePage extends GetView<MetronomeController> {
               onTap: () => controller.setTimeSignature(beats),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: isSelected ? AppColors.primary : Colors.grey.shade400,
+                    width: isSelected ? 2 : 1,
                   ),
                 ),
                 child: Text(
                   '$beats/4',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.white : Colors.grey,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : Colors.grey.shade600,
                   ),
                 ),
               ),
@@ -248,33 +291,38 @@ class MetronomePage extends GetView<MetronomeController> {
   Widget _buildPlayButton(BuildContext context) {
     return Obx(() {
       final isPlaying = controller.isPlaying.value;
-
+      
       return GestureDetector(
         onTap: controller.toggle,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 80,
-          height: 80,
+          width: 72,
+          height: 72,
           decoration: BoxDecoration(
-            color: isPlaying ? AppColors.error : AppColors.primary,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isPlaying
+                  ? [AppColors.error.withValues(alpha: 0.9), AppColors.error]
+                  : [AppColors.primary.withValues(alpha: 0.9), AppColors.primary],
+            ),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
                 color: (isPlaying ? AppColors.error : AppColors.primary)
                     .withValues(alpha: 0.4),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: Icon(
-            isPlaying ? Icons.stop : Icons.play_arrow,
+            isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded,
             color: Colors.white,
-            size: 40,
+            size: 36,
           ),
         ),
       );
     });
   }
 }
-

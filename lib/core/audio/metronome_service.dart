@@ -79,6 +79,9 @@ class MetronomeService extends GetxService {
   void start() {
     if (isPlaying.value) return;
     
+    // 标记用户交互（Web 音频需要）
+    _audioService.markUserInteracted();
+    
     isPlaying.value = true;
     _beatIndex = 0;
     currentBeat.value = -1;  // 重置为未开始状态

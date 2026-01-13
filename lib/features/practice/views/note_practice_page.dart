@@ -5,9 +5,10 @@ import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/music/jianpu_note_text.dart';
-import '../../../core/widgets/music/piano_keyboard.dart';
 import '../../../core/widgets/music/staff_widget.dart';
 import '../../../shared/enums/practice_type.dart';
+import '../../tools/sheet_music/painters/piano_keyboard_painter.dart';
+import '../../tools/sheet_music/painters/render_config.dart';
 import '../controllers/practice_controller.dart';
 import '../models/practice_model.dart';
 
@@ -266,8 +267,11 @@ class NotePracticePage extends GetView<PracticeController> {
     }
   }
 
-  /// 音频内容
+  /// 音频内容（使用新的 Canvas 钢琴组件）
   Widget _buildAudioContent(BuildContext context, QuestionContent content, bool isDark) {
+    final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
+    final config = RenderConfig(pianoHeight: 120, theme: renderTheme);
+    
     return Column(
       children: [
         // 播放按钮
@@ -300,18 +304,35 @@ class NotePracticePage extends GetView<PracticeController> {
           ),
         ),
 
-        // 显示钢琴键盘供参考
+        // 显示钢琴键盘供参考（Canvas 版本）
         const SizedBox(height: 24),
-        SizedBox(
+        Container(
           height: 120,
-          child: PianoKeyboard(
-            startMidi: 60,
-            endMidi: 72,
-            showLabels: true,
-            labelType: 'jianpu',
-            whiteKeyHeight: 100,
-            whiteKeyWidth: 38,
-            soundEnabled: false, // 禁用声音，只用于展示
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return CustomPaint(
+                size: Size(constraints.maxWidth, 120),
+                painter: PianoKeyboardPainter(
+                  startMidi: 60,
+                  endMidi: 72,
+                  config: config,
+                  showLabels: true,
+                  labelType: 'jianpu',
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -691,4 +712,3 @@ class NotePracticePage extends GetView<PracticeController> {
     );
   }
 }
-
