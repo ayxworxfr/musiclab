@@ -337,24 +337,57 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 )
               : _buildPianoCanvas(constraints.maxWidth),
         ),
-        // 键位设置提示
+        // 钢琴控制栏
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${_getMidiNoteName(_pianoStartMidi)} - ${_getMidiNoteName(_pianoEndMidi)}',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: widget.config.theme.textColor.withValues(alpha: 0.5),
+              // 键位范围显示和设置
+              GestureDetector(
+                onTap: () => _showPianoSettings(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: widget.config.theme.rightHandColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.piano, size: 14, color: widget.config.theme.rightHandColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_getMidiNoteName(_pianoStartMidi)} - ${_getMidiNoteName(_pianoEndMidi)}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: widget.config.theme.rightHandColor,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.settings, size: 12, color: widget.config.theme.rightHandColor.withValues(alpha: 0.6)),
+                    ],
+                  ),
                 ),
               ),
+              // 快捷键位按钮
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildQuickRangeButton('2八度', 48, 72),
+                  const SizedBox(width: 4),
+                  _buildQuickRangeButton('3八度', 48, 84),
+                  const SizedBox(width: 4),
+                  _buildQuickRangeButton('全键', 36, 96),
+                ],
+              ),
+              // 滚动提示
               if (needsScroll)
                 Text(
-                  '← 滑动查看更多 →',
+                  '← 滑动 →',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 10,
                     color: widget.config.theme.textColor.withValues(alpha: 0.4),
                   ),
                 ),
@@ -362,6 +395,156 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildQuickRangeButton(String label, int start, int end) {
+    final isActive = _pianoStartMidi == start && _pianoEndMidi == end;
+    return GestureDetector(
+      onTap: () => _setPianoRange(start, end),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: isActive 
+              ? widget.config.theme.rightHandColor 
+              : widget.config.theme.textColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            color: isActive ? Colors.white : widget.config.theme.textColor.withValues(alpha: 0.6),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setPianoRange(int start, int end) {
+    setState(() {
+      _pianoStartMidi = start;
+      _pianoEndMidi = end;
+    });
+    // 滚动到中间位置
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pianoScrollController.hasClients) {
+        final maxScroll = _pianoScrollController.position.maxScrollExtent;
+        _pianoScrollController.animateTo(
+          maxScroll / 2,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  void _showPianoSettings() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '钢琴键盘设置',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  // 起始音
+                  Row(
+                    children: [
+                      const Text('起始音: '),
+                      const SizedBox(width: 8),
+                      DropdownButton<int>(
+                        value: _pianoStartMidi,
+                        items: _buildMidiDropdownItems(24, 60),
+                        onChanged: (value) {
+                          if (value != null && value < _pianoEndMidi) {
+                            setModalState(() {});
+                            setState(() => _pianoStartMidi = value);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // 结束音
+                  Row(
+                    children: [
+                      const Text('结束音: '),
+                      const SizedBox(width: 8),
+                      DropdownButton<int>(
+                        value: _pianoEndMidi,
+                        items: _buildMidiDropdownItems(60, 108),
+                        onChanged: (value) {
+                          if (value != null && value > _pianoStartMidi) {
+                            setModalState(() {});
+                            setState(() => _pianoEndMidi = value);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // 预设
+                  const Text('快速设置:', style: TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildPresetChip('2八度 (C3-C5)', 48, 72, setModalState),
+                      _buildPresetChip('3八度 (C3-C6)', 48, 84, setModalState),
+                      _buildPresetChip('4八度 (C2-C6)', 36, 84, setModalState),
+                      _buildPresetChip('5八度 (C2-C7)', 36, 96, setModalState),
+                      _buildPresetChip('全键盘 (A0-C8)', 21, 108, setModalState),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  List<DropdownMenuItem<int>> _buildMidiDropdownItems(int start, int end) {
+    final items = <DropdownMenuItem<int>>[];
+    for (var midi = start; midi <= end; midi++) {
+      // 只显示白键（C, D, E, F, G, A, B）
+      if (!_isBlackKey(midi)) {
+        items.add(DropdownMenuItem(
+          value: midi,
+          child: Text(_getMidiNoteName(midi)),
+        ));
+      }
+    }
+    return items;
+  }
+
+  Widget _buildPresetChip(String label, int start, int end, StateSetter setModalState) {
+    final isActive = _pianoStartMidi == start && _pianoEndMidi == end;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isActive,
+      onSelected: (selected) {
+        if (selected) {
+          setModalState(() {});
+          setState(() {
+            _pianoStartMidi = start;
+            _pianoEndMidi = end;
+          });
+        }
+      },
     );
   }
 
@@ -375,6 +558,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       child: GetBuilder<PlaybackController>(
         builder: (controller) {
           final highlightedMap = Map<int, dynamic>.from(controller.highlightedPianoKeys);
+
+          // 自动滚动到高亮音符（播放时）
+          if (highlightedMap.isNotEmpty && controller.isPlaying.value) {
+            _scrollToHighlightedKey(highlightedMap.keys.first, width);
+          }
 
           return CustomPaint(
             size: Size(width, widget.config.pianoHeight),
@@ -391,6 +579,40 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         },
       ),
     );
+  }
+
+  /// 滚动到高亮的钢琴键位置
+  void _scrollToHighlightedKey(int midi, double totalWidth) {
+    if (!_pianoScrollController.hasClients) return;
+
+    // 计算这个 MIDI 键在钢琴上的相对位置
+    var whiteKeysBefore = 0;
+    var totalWhiteKeys = 0;
+    for (var m = _pianoStartMidi; m <= _pianoEndMidi; m++) {
+      if (!_isBlackKey(m)) {
+        totalWhiteKeys++;
+        if (m < midi) whiteKeysBefore++;
+      }
+    }
+
+    if (totalWhiteKeys == 0) return;
+
+    // 计算目标滚动位置（让高亮键显示在中间）
+    final keyPosition = (whiteKeysBefore / totalWhiteKeys) * totalWidth;
+    final viewportWidth = _pianoScrollController.position.viewportDimension;
+    final targetScroll = (keyPosition - viewportWidth / 2).clamp(
+      0.0,
+      _pianoScrollController.position.maxScrollExtent,
+    );
+
+    // 平滑滚动
+    if ((targetScroll - _pianoScrollController.offset).abs() > viewportWidth * 0.3) {
+      _pianoScrollController.animateTo(
+        targetScroll,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   Widget _buildPlaybackControls() {
@@ -577,10 +799,14 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                   ),
                   const SizedBox(width: 16),
-                  // 右手音量
-                  Icon(Icons.pan_tool_alt, size: 12, color: widget.config.theme.rightHandColor),
+                  // 右手音量（R = Right）
+                  Text('R', style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: widget.config.theme.rightHandColor,
+                  )),
                   SizedBox(
-                    width: 80,
+                    width: 70,
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         activeTrackColor: widget.config.theme.rightHandColor,
@@ -597,11 +823,15 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  // 左手音量
-                  Icon(Icons.pan_tool_alt, size: 12, color: widget.config.theme.leftHandColor),
+                  const SizedBox(width: 4),
+                  // 左手音量（L = Left）
+                  Text('L', style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: widget.config.theme.leftHandColor,
+                  )),
                   SizedBox(
-                    width: 80,
+                    width: 70,
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         activeTrackColor: widget.config.theme.leftHandColor,
