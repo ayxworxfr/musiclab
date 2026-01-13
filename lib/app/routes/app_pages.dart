@@ -24,6 +24,7 @@ import '../../features/tools/sheet_music/views/sheet_detail_page.dart';
 import '../../features/tools/sheet_music/views/sheet_editor_page.dart';
 import '../../features/tools/sheet_music/views/sheet_import_page.dart';
 import '../../features/tools/sheet_music/controllers/sheet_music_controller.dart';
+import '../../features/tools/sheet_music/controllers/playback_controller.dart';
 import '../../features/tools/reference/views/reference_table_page.dart';
 import '../../features/profile/views/learning_stats_page.dart';
 import '../../features/profile/views/achievements_page.dart';
@@ -143,10 +144,13 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
 
-    // 乐谱详情
+    // 乐谱详情 (新版 Canvas 渲染)
     GetPage(
       name: AppRoutes.sheetDetail,
       page: () => const SheetDetailPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut(() => PlaybackController());
+      }),
       transition: Transition.rightToLeft,
     ),
 

@@ -4,9 +4,10 @@ import 'package:get/get.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../controllers/sheet_music_controller.dart';
-import '../models/sheet_model.dart';
+import '../models/score.dart';
+import '../models/enums.dart';
 
-/// 乐谱库页面
+/// 乐谱库页面 (列表)
 class SheetMusicPage extends GetView<SheetMusicController> {
   const SheetMusicPage({super.key});
 
@@ -67,15 +68,14 @@ class SheetMusicPage extends GetView<SheetMusicController> {
           // 乐谱列表
           Expanded(
             child: Obx(() {
-              // 确保访问响应式变量
               final isLoading = controller.isLoading.value;
-              final sheets = controller.filteredSheets.toList();
+              final scores = controller.filteredScores.toList();
               
               if (isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              if (sheets.isEmpty) {
+              if (scores.isEmpty) {
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -100,9 +100,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
 
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
-                itemCount: sheets.length,
+                itemCount: scores.length,
                 itemBuilder: (context, index) {
-                  return _buildSheetCard(context, sheets[index], isDark);
+                  return _buildScoreCard(context, scores[index], isDark);
                 },
               );
             }),
@@ -114,13 +114,12 @@ class SheetMusicPage extends GetView<SheetMusicController> {
 
   /// 分类标签
   Widget _buildCategoryTabs(BuildContext context, bool isDark) {
-    final categories = [null, ...SheetCategory.values];
+    final categories = [null, ...ScoreCategory.values];
 
     return Container(
       height: 50,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Obx(() {
-        // 确保访问响应式变量
         final currentCategory = controller.currentCategory.value;
         
         return ListView.builder(
@@ -164,7 +163,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
   }
 
   /// 乐谱卡片
-  Widget _buildSheetCard(BuildContext context, SheetModel sheet, bool isDark) {
+  Widget _buildScoreCard(BuildContext context, Score score, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -182,8 +181,8 @@ class SheetMusicPage extends GetView<SheetMusicController> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            controller.selectSheet(sheet);
-            Get.toNamed(AppRoutes.sheetDetail);
+            controller.selectScore(score);
+            Get.toNamed(AppRoutes.sheetDetail, arguments: {'scoreId': score.id});
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -195,12 +194,12 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: _getCategoryColor(sheet.category).withValues(alpha: 0.1),
+                    color: _getCategoryColor(score.metadata.category).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
                     child: Text(
-                      sheet.category.emoji,
+                      score.metadata.category.emoji,
                       style: const TextStyle(fontSize: 28),
                     ),
                   ),
@@ -212,18 +211,37 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        sheet.title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              score.title,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                          ),
+                          // 大谱表标识
+                          if (score.isGrandStaff)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                '🎹 钢琴',
+                                style: TextStyle(fontSize: 10),
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 4),
-                      if (sheet.metadata.composer != null)
+                      if (score.composer != null)
                         Text(
-                          sheet.metadata.composer!,
+                          score.composer!,
                           style: TextStyle(
                             fontSize: 13,
                             color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -233,7 +251,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                       Row(
                         children: [
                           // 难度
-                          _buildDifficultyStars(sheet.difficulty),
+                          _buildDifficultyStars(score.metadata.difficulty),
                           const SizedBox(width: 12),
                           // 调号
                           Container(
@@ -243,7 +261,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              '${sheet.metadata.key}调',
+                              score.metadata.key.displayName,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -259,7 +277,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              '${sheet.metadata.tempo} BPM',
+                              '♩=${score.metadata.tempo}',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
@@ -275,10 +293,10 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                 // 收藏按钮
                 IconButton(
                   icon: Icon(
-                    sheet.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: sheet.isFavorite ? AppColors.error : Colors.grey,
+                    score.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: score.isFavorite ? AppColors.error : Colors.grey,
                   ),
-                  onPressed: () => controller.toggleFavorite(sheet),
+                  onPressed: () => controller.toggleFavorite(score),
                 ),
               ],
             ),
@@ -303,13 +321,13 @@ class SheetMusicPage extends GetView<SheetMusicController> {
   }
 
   /// 获取分类颜色
-  Color _getCategoryColor(SheetCategory category) {
+  Color _getCategoryColor(ScoreCategory category) {
     return switch (category) {
-      SheetCategory.children => const Color(0xFF4facfe),
-      SheetCategory.folk => const Color(0xFFf093fb),
-      SheetCategory.pop => const Color(0xFF43e97b),
-      SheetCategory.classical => const Color(0xFF667eea),
-      SheetCategory.exercise => const Color(0xFFfda085),
+      ScoreCategory.children => const Color(0xFF4facfe),
+      ScoreCategory.folk => const Color(0xFFf093fb),
+      ScoreCategory.pop => const Color(0xFF43e97b),
+      ScoreCategory.classical => const Color(0xFF667eea),
+      ScoreCategory.exercise => const Color(0xFFfda085),
     };
   }
 
@@ -350,4 +368,3 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     );
   }
 }
-
