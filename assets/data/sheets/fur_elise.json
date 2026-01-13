@@ -1,107 +1,128 @@
 {
-  "id": "sheet_008",
+  "id": "sheet_006",
   "title": "致爱丽丝",
   "difficulty": 3,
   "category": "classical",
   "metadata": {
     "composer": "贝多芬",
-    "key": "Am",
+    "key": "A",
     "timeSignature": "3/8",
-    "tempo": 72,
-    "description": "贝多芬最著名的钢琴小品之一"
+    "tempo": 100,
+    "description": "贝多芬最著名的钢琴小品之一（简化版）"
   },
-  "measures": [
+  "tracks": [
     {
-      "number": 1,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"},
-        {"degree": 3, "octave": 0, "duration": "sixteenth"},
-        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"}
+      "id": "right",
+      "name": "右手",
+      "clef": "treble",
+      "hand": "right",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 64, "duration": "eighth"}, {"pitch": 68, "duration": "eighth"}, {"pitch": 71, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 71, "duration": "eighth"}, {"pitch": 68, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 68, "duration": "eighth"}, {"pitch": 71, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 64, "duration": "eighth"}, {"pitch": 71, "duration": "eighth"}, {"pitch": 68, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 5,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 64, "duration": "eighth"}, {"pitch": 68, "duration": "eighth"}, {"pitch": 71, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 6,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 71, "duration": "eighth"}, {"pitch": 68, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 7,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 68, "duration": "eighth"}, {"pitch": 71, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 8,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 64, "duration": "eighth"}, {"pitch": 71, "duration": "eighth"}, {"pitch": 68, "duration": "eighth"}]}
+          ]
+        }
       ]
     },
     {
-      "number": 2,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "sixteenth"},
-        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"},
-        {"degree": 7, "octave": -1, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 3,
-      "notes": [
-        {"degree": 2, "octave": 0, "duration": "sixteenth"},
-        {"degree": 1, "octave": 0, "duration": "sixteenth"},
-        {"degree": 6, "octave": -1, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 4,
-      "notes": [
-        {"degree": 1, "octave": -1, "duration": "eighth"},
-        {"degree": 3, "octave": 0, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 5,
-      "notes": [
-        {"degree": 6, "octave": -1, "duration": "eighth"},
-        {"degree": 1, "octave": 0, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 6,
-      "notes": [
-        {"degree": 7, "octave": -1, "duration": "eighth"},
-        {"degree": 3, "octave": 0, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 7,
-      "notes": [
-        {"degree": 1, "octave": 0, "duration": "eighth"},
-        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"}
-      ]
-    },
-    {
-      "number": 8,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "sixteenth"},
-        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"},
-        {"degree": 3, "octave": 0, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 9,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "sixteenth", "accidental": "sharp"},
-        {"degree": 7, "octave": -1, "duration": "sixteenth"},
-        {"degree": 2, "octave": 0, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 10,
-      "notes": [
-        {"degree": 1, "octave": 0, "duration": "sixteenth"},
-        {"degree": 6, "octave": -1, "duration": "sixteenth"},
-        {"degree": 1, "octave": -1, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 11,
-      "notes": [
-        {"degree": 3, "octave": 0, "duration": "eighth"},
-        {"degree": 6, "octave": -1, "duration": "sixteenth"}
-      ]
-    },
-    {
-      "number": 12,
-      "notes": [
-        {"degree": 1, "octave": 0, "duration": "eighth"},
-        {"degree": 0, "octave": 0, "duration": "sixteenth"}
+      "id": "left",
+      "name": "左手",
+      "clef": "bass",
+      "hand": "left",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 5,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 6,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 7,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        },
+        {
+          "number": 8,
+          "beats": [
+            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+          ]
+        }
       ]
     }
   ],
   "isBuiltIn": true
 }
-
