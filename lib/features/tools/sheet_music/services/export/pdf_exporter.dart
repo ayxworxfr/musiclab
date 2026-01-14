@@ -346,6 +346,9 @@ class PdfExporter {
   pw.Widget _buildStaffLine(List<Measure> measures, Clef clef) {
     if (measures.isEmpty) return pw.SizedBox();
 
+    // 计算五线谱总宽度
+    final staffWidth = 50.0 + measures.length * 200.0;
+
     return pw.Container(
       height: 100,
       child: pw.Stack(
@@ -359,7 +362,7 @@ class PdfExporter {
               left: 0,
               top: y,
               child: pw.Container(
-                width: double.infinity,
+                width: staffWidth,
                 height: 0.5,
                 color: PdfColors.black,
               ),
@@ -445,13 +448,19 @@ class PdfExporter {
           }
           
           if (accidentalSymbol.isNotEmpty) {
+            // SMuFL升降号符号的基准点通常在符号中心
+            // noteY是音符在五线谱上的位置（音符中心）
+            // pw.Text的top是文本顶部，需要向上偏移一半字体高度使中心对齐
+            final accidentalFontSize = 16.0;
+            final accidentalTop = noteY - accidentalFontSize / 2;
+            
             widgets.add(
               pw.Positioned(
-                left: currentX - 12,
-                top: noteY,
+                left: currentX - 14,
+                top: accidentalTop,
                 child: pw.Text(
                   accidentalSymbol,
-                  style: pw.TextStyle(font: _smuflFont, fontSize: 16),
+                  style: pw.TextStyle(font: _smuflFont, fontSize: accidentalFontSize),
                 ),
               ),
             );
@@ -459,10 +468,16 @@ class PdfExporter {
         }
 
         // 绘制音符
+        // SMuFL音符符号的基准点通常在符号中心
+        // noteY是音符在五线谱上的位置（音符中心）
+        // pw.Text的top是文本顶部，需要向上偏移一半字体高度使中心对齐
+        final noteFontSize = 20.0;
+        final noteTop = noteY - noteFontSize / 2;
+        
         widgets.add(
           pw.Positioned(
             left: currentX,
-            top: noteY,
+            top: noteTop,
             child: _buildStaffNote(note),
           ),
         );
@@ -481,7 +496,7 @@ class PdfExporter {
   double _getNoteY(int pitch, Clef clef) {
     // 五线谱基准线位置
     final staffTop = 30.0;
-    final lineSpacing = 4.0;
+    final lineSpacing = 8.0; // 必须与五线绘制时的间距一致
 
     // 计算音符在五线谱上的位置
     int position;
@@ -496,8 +511,7 @@ class PdfExporter {
     }
 
     final y = staffTop + position * lineSpacing;
-    // 确保Y坐标在有效范围内
-    return y.clamp(10.0, 90.0);
+    return y;
   }
 
   /// 构建五线谱音符
