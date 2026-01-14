@@ -21,8 +21,8 @@ dependencies:
   hive_flutter: ^1.1.0
   shared_preferences: ^2.2.2
 
-  # 音频播放（低延迟多音 Soundpool）
-  soundpool: ^2.4.1
+  # 音频播放（多音播放）
+  audioplayers: ^6.0.0
 
   # UI 增强
   cupertino_icons: ^1.0.8
