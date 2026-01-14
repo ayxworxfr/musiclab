@@ -92,10 +92,23 @@ enum MusicKey {
   /// 从字符串解析
   static MusicKey fromString(String s) {
     final normalized = s.replaceAll('大调', '').replaceAll('小调', '').trim();
-    return MusicKey.values.firstWhere(
-      (k) => k.name == normalized || k.displayName.contains(normalized),
-      orElse: () => MusicKey.C,
-    );
+
+    // 先尝试精确匹配 name
+    for (final k in MusicKey.values) {
+      if (k.name == normalized) {
+        return k;
+      }
+    }
+
+    // 再尝试匹配 displayName
+    for (final k in MusicKey.values) {
+      if (k.displayName.contains(normalized)) {
+        return k;
+      }
+    }
+
+    // 默认返回 C
+    return MusicKey.C;
   }
 }
 

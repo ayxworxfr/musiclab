@@ -463,7 +463,7 @@ class PdfExporter {
             
             widgets.add(
               pw.Positioned(
-                left: currentX - 14,
+                left: currentX - 3, // 升降号离音符更近（从14调整为8）
                 top: accidentalTop,
                 child: pw.Text(
                   accidentalSymbol,
