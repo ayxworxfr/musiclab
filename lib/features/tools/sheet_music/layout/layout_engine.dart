@@ -258,16 +258,24 @@ class LayoutEngine {
           for (var i = 0; i < notesInBeat.length; i++) {
             final info = notesInBeat[i];
             final note = info.note;
-            
+
             if (note.isRest) {
               continue;
             }
 
             // 计算 X 坐标：在拍内均匀分布
-            final noteProgress = notesInBeat.length > 1 
-                ? (i + 0.5) / notesInBeat.length 
+            final noteProgress = notesInBeat.length > 1
+                ? (i + 0.5) / notesInBeat.length
                 : 0.5;
             final noteX = beatStartX + noteProgress * beatWidth;
+
+            // 计算开始时间：如果一拍内有多个音符，按顺序延迟
+            // 假设它们是等分这一拍的时间
+            double noteStartTime = beatStartTime;
+            if (notesInBeat.length > 1) {
+              // 多个音符按顺序播放，每个占据(1/notesInBeat.length)拍
+              noteStartTime += (i * 1.0 / notesInBeat.length) / beatsPerSecond;
+            }
 
             // 计算五线谱位置
             final staffPosition = _getStaffPosition(note.pitch, isTreble);
@@ -302,7 +310,7 @@ class LayoutEngine {
               hitBox: hitBox,
               pianoKeyX: pianoKeyX,
               hand: track.hand,
-              startTime: beatStartTime, // 使用拍的开始时间
+              startTime: noteStartTime, // 使用计算出的开始时间（可能有延迟）
             ));
           }
         }

@@ -107,7 +107,7 @@ class JianpuPainter extends CustomPainter {
             for (final beat in beatsInMeasure) {
               for (var noteIdx = 0; noteIdx < beat.notes.length; noteIdx++) {
                 final note = beat.notes[noteIdx];
-                
+
                 // 查找对应的布局索引（使用noteIndex精确匹配）
                 final noteLayoutIndex = _findNoteLayoutIndex(
                   trackIndex, measureIndex, beatIndex, noteIdx, note,
@@ -118,64 +118,139 @@ class JianpuPainter extends CustomPainter {
                 allNotesInBeat.add((note: note, noteIdx: noteIdx, isHighlighted: isHighlighted));
               }
             }
-            
-            // 自适应计算垂直间距
+
+            // 判断是否所有音符都是8分音符（应该水平排列）
             final noteCount = allNotesInBeat.length;
-            // 根据音符数量自适应间距：音符越多，间距越小
-            final double verticalSpacing;
-            if (noteCount <= 2) {
-              verticalSpacing = 20.0;
-            } else if (noteCount <= 4) {
-              verticalSpacing = 16.0;
-            } else {
-              verticalSpacing = 14.0;
-            }
-            
-            final totalHeight = (noteCount - 1) * verticalSpacing;
-            final startY = trackY - totalHeight / 2;
-            
-            // 获取这组音符的时值（用于下划线，只画一次）
-            final firstNote = allNotesInBeat.first.note;
-            final underlineCount = firstNote.duration.underlineCount;
-            
-            // 计算自适应字号
-            final fontSize = noteCount > 4 ? 16.0 : (noteCount > 2 ? 18.0 : 20.0);
-            
-            // 计算和弦底部位置（用于歌词定位）
-            final lastNoteY = startY + (noteCount - 1) * verticalSpacing;
-            final chordBottomY = lastNoteY + fontSize * 0.5; // 最后一个音符底部
-            
-            // 收集歌词（用于绘制）
-            String? lyricText;
-            
-            for (var i = 0; i < noteCount; i++) {
-              final noteInfo = allNotesInBeat[i];
-              final noteY = startY + i * verticalSpacing;
-              final isLastNote = i == noteCount - 1;
-              
-              // 记录歌词
-              if (noteInfo.note.lyric != null && trackIndex == 0) {
-                lyricText = noteInfo.note.lyric;
+            final allAreEighth = noteCount > 1 &&
+                allNotesInBeat.every((n) => n.note.duration == NoteDuration.eighth);
+
+            if (allAreEighth) {
+              // 8分音符：水平排列
+              final horizontalSpacing = 12.0; // 水平间距
+              final totalWidth = (noteCount - 1) * horizontalSpacing;
+              final startXInBeat = beatX - totalWidth / 2;
+
+              // 获取第一个音符的时值（用于下划线）
+              final firstNote = allNotesInBeat.first.note;
+              final underlineCount = firstNote.duration.underlineCount;
+
+              String? lyricText;
+
+              for (var i = 0; i < noteCount; i++) {
+                final noteInfo = allNotesInBeat[i];
+                final noteXInBeat = startXInBeat + i * horizontalSpacing;
+
+                // 记录歌词（取最后一个有歌词的）
+                if (noteInfo.note.lyric != null && trackIndex == 0) {
+                  lyricText = noteInfo.note.lyric;
+                }
+
+                // 绘制音符（不绘制下划线，下划线统一在外面画）
+                _drawJianpuNoteInChord(
+                  canvas,
+                  noteInfo.note,
+                  noteXInBeat,
+                  trackY,
+                  track.hand,
+                  noteInfo.isHighlighted,
+                  drawUnderline: false, // 不在这里画下划线
+                  fontSize: 20.0,
+                );
               }
-              
-              // 绘制音符（和弦中只有最后一个音符绘制下划线）
-              _drawJianpuNoteInChord(
-                canvas,
-                noteInfo.note,
-                beatX,
-                noteY,
-                track.hand,
-                noteInfo.isHighlighted,
-                drawUnderline: isLastNote, // 只在最后一个音符画下划线
-                fontSize: fontSize,
-              );
-            }
-            
-            // 歌词绘制在和弦底部下方（包括下划线空间）
-            if (showLyrics && lyricText != null && trackIndex == 0) {
-              final underlineSpace = underlineCount > 0 ? underlineCount * 3 + 6 : 0;
-              final lyricY = chordBottomY + underlineSpace + 8;
-              _drawLyric(canvas, beatX, lyricY, lyricText);
+
+              // 统一绘制下划线（从第一个音符到最后一个音符）
+              if (underlineCount > 0) {
+                // 根据手来决定颜色
+                Color underlineColor;
+                if (track.hand == Hand.right) {
+                  underlineColor = config.theme.rightHandColor;
+                } else if (track.hand == Hand.left) {
+                  underlineColor = config.theme.leftHandColor;
+                } else {
+                  underlineColor = config.theme.textColor;
+                }
+
+                final linePaint = Paint()
+                  ..color = underlineColor
+                  ..strokeWidth = 1.5;
+                final baseLineY = trackY + 20.0 * 0.55; // fontSize = 20.0
+                final firstNoteX = startXInBeat;
+                final lastNoteX = startXInBeat + (noteCount - 1) * horizontalSpacing;
+
+                for (var i = 0; i < underlineCount; i++) {
+                  final lineY = baseLineY + i * 3;
+                  canvas.drawLine(
+                    Offset(firstNoteX - 3, lineY), // 从第一个音符左边一点开始
+                    Offset(lastNoteX + 3, lineY),  // 到最后一个音符右边一点结束
+                    linePaint,
+                  );
+                }
+              }
+
+              // 歌词绘制在最后一个音符下方
+              if (showLyrics && lyricText != null && trackIndex == 0) {
+                final underlineSpace = underlineCount > 0 ? underlineCount * 3 + 6 : 0;
+                final lyricY = trackY + 10 + underlineSpace + 8;
+                _drawLyric(canvas, beatX, lyricY, lyricText);
+              }
+            } else {
+              // 和弦或其他：垂直排列（原有逻辑）
+              // 自适应计算垂直间距
+              final double verticalSpacing;
+              if (noteCount <= 2) {
+                verticalSpacing = 20.0;
+              } else if (noteCount <= 4) {
+                verticalSpacing = 16.0;
+              } else {
+                verticalSpacing = 14.0;
+              }
+
+              final totalHeight = (noteCount - 1) * verticalSpacing;
+              final startY = trackY - totalHeight / 2;
+
+              // 获取这组音符的时值（用于下划线，只画一次）
+              final firstNote = allNotesInBeat.first.note;
+              final underlineCount = firstNote.duration.underlineCount;
+
+              // 计算自适应字号
+              final fontSize = noteCount > 4 ? 16.0 : (noteCount > 2 ? 18.0 : 20.0);
+
+              // 计算和弦底部位置（用于歌词定位）
+              final lastNoteY = startY + (noteCount - 1) * verticalSpacing;
+              final chordBottomY = lastNoteY + fontSize * 0.5; // 最后一个音符底部
+
+              // 收集歌词（用于绘制）
+              String? lyricText;
+
+              for (var i = 0; i < noteCount; i++) {
+                final noteInfo = allNotesInBeat[i];
+                final noteY = startY + i * verticalSpacing;
+                final isLastNote = i == noteCount - 1;
+
+                // 记录歌词
+                if (noteInfo.note.lyric != null && trackIndex == 0) {
+                  lyricText = noteInfo.note.lyric;
+                }
+
+                // 绘制音符（和弦中只有最后一个音符绘制下划线）
+                _drawJianpuNoteInChord(
+                  canvas,
+                  noteInfo.note,
+                  beatX,
+                  noteY,
+                  track.hand,
+                  noteInfo.isHighlighted,
+                  drawUnderline: isLastNote, // 只在最后一个音符画下划线
+                  fontSize: fontSize,
+                );
+              }
+
+              // 歌词绘制在和弦底部下方（包括下划线空间）
+              if (showLyrics && lyricText != null && trackIndex == 0) {
+                final underlineSpace = underlineCount > 0 ? underlineCount * 3 + 6 : 0;
+                final lyricY = chordBottomY + underlineSpace + 8;
+                _drawLyric(canvas, beatX, lyricY, lyricText);
+              }
             }
           }
         }

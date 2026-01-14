@@ -29,9 +29,9 @@
         {
           "number": 2,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "空"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "低"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "half", "lyric": "垂"}]}
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "空"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "低"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "half", "lyric": "垂"}]}
           ]
         },
         {
@@ -46,9 +46,9 @@
         {
           "number": 4,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "星"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "相"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "half", "lyric": "随"}]}
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "星"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "相"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "half", "lyric": "随"}]}
           ]
         },
         {
@@ -63,9 +63,9 @@
         {
           "number": 6,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "儿"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "飞"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "half", "lyric": "你"}]}
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "儿"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "飞"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "half", "lyric": "你"}]}
           ]
         },
         {
@@ -80,9 +80,9 @@
         {
           "number": 8,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "天"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "上"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "half", "lyric": "的"}]}
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "天"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "上"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "half", "lyric": "的"}]}
           ]
         },
         {
@@ -97,9 +97,9 @@
         {
           "number": 10,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "地"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "上"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "half", "lyric": "的"}]}
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "地"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "上"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "half", "lyric": "的"}]}
           ]
         },
         {
@@ -114,9 +114,9 @@
         {
           "number": 12,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "冷"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "风"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "half", "lyric": "吹"}]}
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "冷"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "风"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "half", "lyric": "吹"}]}
           ]
         },
         {
@@ -131,9 +131,9 @@
         {
           "number": 14,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "儿"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "飞"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "half", "lyric": "你"}]}
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "儿"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "飞"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "half", "lyric": "你"}]}
           ]
         },
         {
@@ -148,9 +148,9 @@
         {
           "number": 16,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "不"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "管"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "half", "lyric": "累"}]}
+            {"index": 0, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "不"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "管"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "half", "lyric": "累"}]}
           ]
         }
       ]
