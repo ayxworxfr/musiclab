@@ -250,11 +250,16 @@ class PdfExporter {
     int beatsPerMeasure,
     double contentWidth,
   ) {
-    // 防止除以零
-    if (measures.isEmpty || beatsPerMeasure <= 0) {
+    // 防止除以零和无效值
+    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN) {
       return pw.SizedBox(height: 30);
     }
     final measureWidth = contentWidth / measures.length;
+
+    // 确保 measureWidth 有效
+    if (measureWidth.isNaN || measureWidth.isInfinite || measureWidth <= 0) {
+      return pw.SizedBox(height: 30);
+    }
 
     return pw.Row(
       children: measures.map((measure) {
@@ -460,11 +465,16 @@ class PdfExporter {
     int beatsPerMeasure,
     double contentWidth,
   ) {
-    // 防止除以零
-    if (measures.isEmpty) {
+    // 防止除以零和无效值
+    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN) {
       return pw.SizedBox();
     }
     final measureWidth = contentWidth / measures.length;
+
+    // 确保 measureWidth 有效
+    if (measureWidth.isNaN || measureWidth.isInfinite || measureWidth <= 0) {
+      return pw.SizedBox();
+    }
 
     return pw.Row(
       children: measures.map((measure) {
@@ -556,15 +566,21 @@ class PdfExporter {
     Clef clef,
     bool showClef,
   ) {
-    // 防止除以零
-    if (measures.isEmpty) {
+    // 防止除以零和无效值
+    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN) {
       return pw.SizedBox(height: 60);
     }
-    
+
     final staffHeight = 40.0;
     final lineSpacing = staffHeight / 4;
     final clefWidth = showClef ? 30.0 : 0.0;
     final measureWidth = (contentWidth - clefWidth) / measures.length;
+
+    // 确保 measureWidth 和 lineSpacing 有效
+    if (measureWidth.isNaN || measureWidth.isInfinite || measureWidth <= 0 ||
+        lineSpacing.isNaN || lineSpacing.isInfinite || lineSpacing <= 0) {
+      return pw.SizedBox(height: 60);
+    }
 
     return pw.Stack(
       children: [
@@ -573,11 +589,14 @@ class PdfExporter {
           size: PdfPoint(contentWidth, staffHeight + 20),
           painter: (canvas, size) {
             final topMargin = 10.0;
-            
+
             // 绘制五条线
             for (var i = 0; i < 5; i++) {
               final y = topMargin + i * lineSpacing;
-              canvas.drawLine(0, size.y - y, size.x, size.y - y);
+              // 确保 y 值有效
+              if (!y.isNaN && !y.isInfinite) {
+                canvas.drawLine(0, size.y - y, size.x, size.y - y);
+              }
             }
             canvas.strokePath();
           },
@@ -606,7 +625,12 @@ class PdfExporter {
                   final measureIndex = entry.key;
                   final measure = entry.value;
                   final xOffset = clefWidth + measureIndex * measureWidth;
-                  
+
+                  // 确保 xOffset 有效
+                  if (xOffset.isNaN || xOffset.isInfinite) {
+                    return pw.SizedBox();
+                  }
+
                   return pw.Positioned(
                     left: xOffset,
                     top: 10,
@@ -620,6 +644,10 @@ class PdfExporter {
                 // 小节线
                 ...List.generate(measures.length + 1, (index) {
                   final x = clefWidth + index * measureWidth;
+                  // 确保 x 值有效
+                  if (x.isNaN || x.isInfinite) {
+                    return pw.SizedBox();
+                  }
                   return pw.Positioned(
                     left: x,
                     top: 10,

@@ -1,9 +1,8 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 
-import '../models/score.dart';
-import '../models/enums.dart';
 import '../layout/layout_result.dart';
+import '../models/enums.dart';
+import '../models/score.dart';
 import 'render_config.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -191,8 +190,10 @@ class GrandStaffPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
+    // 修复高音谱号位置：应该居中在第二线（G4）
+    // 低音谱号居中在第四线（F3）
     final y = clef == Clef.treble
-        ? staffY + config.lineSpacing * 3 - textPainter.height * 0.7
+        ? staffY + config.lineSpacing * 1.5 - textPainter.height * 0.35
         : staffY + config.lineSpacing - textPainter.height * 0.3;
 
     textPainter.paint(canvas, Offset(x, y));
