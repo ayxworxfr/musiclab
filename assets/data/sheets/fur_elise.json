@@ -208,7 +208,7 @@
         {
           "number": 3,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+            {"index": 0, "notes": [{"pitch": 57, "duration": "quarter", "lyric": "和弦测试"}, {"pitch": 64, "duration": "quarter"}, {"pitch": 68, "duration": "quarter"}]}
           ]
         },
         {
@@ -226,7 +226,7 @@
         {
           "number": 6,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 57, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]}
+            {"index": 0, "notes": [{"pitch": 57, "duration": "dotted-eighth"}, {"pitch": 64, "duration": "dotted-eighth"}, {"pitch": 68, "duration": "dotted-eighth"}]}
           ]
         },
         {
