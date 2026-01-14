@@ -61,6 +61,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   String _pianoLabelType = 'jianpu'; // 'jianpu' | 'note'
   final ScrollController _pianoScrollController = ScrollController();
 
+  // 乐谱滚动控制器
+  final ScrollController _scoreScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +74,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   @override
   void dispose() {
     _pianoScrollController.dispose();
+    _scoreScrollController.dispose();
     super.dispose();
   }
 
@@ -113,6 +117,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
             // 可滚动的乐谱区域
             Expanded(
               child: SingleChildScrollView(
+                controller: _scoreScrollController,
                 child: Column(
                   children: [
                     _buildHeader(),
@@ -275,6 +280,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         builder: (controller) {
           final currentTime = controller.currentTime.value;
           final highlightedIndices = controller.highlightedNoteIndices.toSet();
+
+          // 自动滚动到当前播放位置（播放时）
+          if (controller.isPlaying.value && highlightedIndices.isNotEmpty) {
+            _scrollToCurrentPlayPosition(currentTime);
+          }
 
           if (_currentMode == NotationMode.staff) {
             // 五线谱模式
@@ -650,6 +660,49 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         targetScroll,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
+      );
+    }
+  }
+
+  /// 滚动乐谱到当前播放位置
+  void _scrollToCurrentPlayPosition(double currentTime) {
+    if (!_scoreScrollController.hasClients || _layout == null) return;
+
+    // 找到当前时间对应的音符位置
+    NoteLayout? currentNote;
+    for (final noteLayout in _layout!.noteLayouts) {
+      // 计算音符的结束时间
+      final noteDuration = noteLayout.note.duration.beats;
+      final endTime = noteLayout.startTime + noteDuration;
+
+      if (noteLayout.startTime <= currentTime && endTime >= currentTime) {
+        currentNote = noteLayout;
+        break;
+      }
+    }
+
+    if (currentNote == null) return;
+
+    // 计算音符的 Y 位置（考虑header高度）
+    final headerHeight = 120.0; // 估算header高度
+    final noteY = currentNote.y + headerHeight;
+
+    // 获取可视区域高度
+    final viewportHeight = _scoreScrollController.position.viewportDimension;
+
+    // 计算目标滚动位置（让当前播放的音符显示在屏幕中上部，约1/3处）
+    final targetScroll = (noteY - viewportHeight * 0.35).clamp(
+      0.0,
+      _scoreScrollController.position.maxScrollExtent,
+    );
+
+    // 只有当目标位置与当前位置差距较大时才滚动（避免频繁小幅滚动）
+    final currentScroll = _scoreScrollController.offset;
+    if ((targetScroll - currentScroll).abs() > viewportHeight * 0.15) {
+      _scoreScrollController.animateTo(
+        targetScroll,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
       );
     }
   }
