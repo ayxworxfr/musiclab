@@ -23,16 +23,16 @@
     },
     {
       "id": "sheet_004",
-      "filename": "jasmine_flower.json",
-      "title": "茉莉花",
-      "difficulty": 2,
+      "filename": "two_tigers.json",
+      "title": "两只老虎",
+      "difficulty": 1,
       "category": "folk"
     },
     {
       "id": "sheet_005",
-      "filename": "moon_represents_heart.json",
-      "title": "月亮代表我的心",
-      "difficulty": 2,
+      "filename": "river_flows_in_you.json",
+      "title": "River Flows in You",
+      "difficulty": 3,
       "category": "pop"
     },
     {
@@ -55,20 +55,48 @@
       "title": "Flower Dance",
       "difficulty": 3,
       "category": "pop"
+    },
+    {
+      "id": "sheet_009",
+      "filename": "castle_in_the_sky.json",
+      "title": "天空之城",
+      "difficulty": 2,
+      "category": "pop"
+    },
+    {
+      "id": "sheet_010",
+      "filename": "farewell.json",
+      "title": "送别",
+      "difficulty": 2,
+      "category": "folk"
+    },
+    {
+      "id": "sheet_011",
+      "filename": "fireflies.json",
+      "title": "虫儿飞",
+      "difficulty": 1,
+      "category": "folk"
+    },
+    {
+      "id": "sheet_012",
+      "filename": "maple.json",
+      "title": "枫",
+      "difficulty": 3,
+      "category": "pop"
     }
   ],
   "metadata": {
-    "total": 8,
+    "total": 12,
     "lastUpdated": "2026-01-13",
     "categories": {
-      "folk": 3,
+      "folk": 5,
       "classical": 3,
-      "pop": 2
+      "pop": 4
     },
     "difficulties": {
-      "1": 2,
+      "1": 4,
       "2": 3,
-      "3": 3
+      "3": 5
     }
   }
 }
