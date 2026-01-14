@@ -15,9 +15,18 @@ class SheetPlayerController extends GetxController {
 
   /// 播放状态
   final playbackState = Rx<SheetPlaybackState>(const SheetPlaybackState());
+  
+  /// 节拍器开关
+  final metronomeEnabled = false.obs;
 
   /// 播放定时器
   Timer? _playTimer;
+  
+  /// 节拍器定时器
+  Timer? _metronomeTimer;
+  
+  /// 上一次节拍号（用于检测新拍）
+  int _lastBeatNumber = -1;
 
   /// 当前播放的所有音符（扁平化）
   final List<_PlayableNote> _playableNotes = [];
@@ -127,6 +136,10 @@ class SheetPlayerController extends GetxController {
         );
         _scheduleNextNote();
       } else {
+        // 更新进度到100%后再暂停
+        playbackState.value = playbackState.value.copyWith(
+          currentTime: playbackState.value.totalDuration,
+        );
         pause();
       }
       return;
@@ -224,6 +237,11 @@ class SheetPlayerController extends GetxController {
     playbackState.value = playbackState.value.copyWith(
       playbackSpeed: speed.clamp(0.5, 2.0),
     );
+  }
+  
+  /// 设置播放速度（简写）
+  void setSpeed(double speed) {
+    setPlaybackSpeed(speed);
   }
 
   /// 切换循环播放

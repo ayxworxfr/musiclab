@@ -276,6 +276,8 @@ class JianpuEditorWidget extends StatelessWidget {
     return Obx(() {
       final isSelected = controller.selectedMeasureIndex.value == measureIndex &&
           controller.selectedNoteIndex.value == noteIndex;
+      final noteColor = isSelected ? Colors.white : (isDark ? Colors.white : Colors.black);
+      final subColor = isSelected ? Colors.white70 : (isDark ? Colors.white70 : Colors.black87);
 
       return GestureDetector(
         onTap: () {
@@ -299,21 +301,26 @@ class JianpuEditorWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 高音点
-              if (note.octave > 0)
-                _buildOctaveDots(note.octave, isSelected),
+              // 高音点占位区（固定高度保证对齐）- 休止符不显示
+              SizedBox(
+                height: 12,
+                child: (!note.isRest && note.octave > 0)
+                    ? _buildOctaveDots(note.octave, isSelected)
+                    : null,
+              ),
 
               // 音符主体
               Row(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 变音记号
-                  if (note.accidental != Accidental.none)
+                  // 变音记号（休止符不显示）
+                  if (!note.isRest && note.accidental != Accidental.none)
                     Text(
                       note.accidental.displaySymbol,
                       style: TextStyle(
                         fontSize: 14,
-                        color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black),
+                        color: noteColor,
                       ),
                     ),
 
@@ -323,52 +330,58 @@ class JianpuEditorWidget extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black),
+                      color: noteColor,
                     ),
                   ),
 
-                  // 附点
-                  if (note.isDotted)
+                  // 附点（休止符不显示）
+                  if (!note.isRest && note.isDotted)
                     Container(
                       width: 4,
                       height: 4,
                       margin: const EdgeInsets.only(left: 2),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black),
+                        color: noteColor,
                         shape: BoxShape.circle,
                       ),
                     ),
                 ],
               ),
 
-              // 下划线（时值）
-              if (note.duration.underlineCount > 0)
-                Column(
-                  children: List.generate(
-                    note.duration.underlineCount,
-                    (_) => Container(
-                      width: 20,
-                      height: 2,
-                      margin: const EdgeInsets.only(top: 2),
-                      color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
-                    ),
-                  ),
-                ),
+              // 下划线占位区（固定高度保证对齐）
+              SizedBox(
+                height: note.duration.underlineCount > 0 ? (note.duration.underlineCount * 4.0 + 2) : 6,
+                child: note.duration.underlineCount > 0
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(
+                          note.duration.underlineCount,
+                          (_) => Container(
+                            width: 20,
+                            height: 2,
+                            margin: const EdgeInsets.only(top: 2),
+                            color: subColor,
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
 
-              // 低音点
-              if (note.octave < 0)
-                _buildOctaveDots(-note.octave, isSelected),
+              // 低音点占位区（固定高度保证对齐）- 休止符不显示
+              SizedBox(
+                height: 12,
+                child: (!note.isRest && note.octave < 0)
+                    ? _buildOctaveDots(-note.octave, isSelected)
+                    : null,
+              ),
 
               // 歌词
               if (note.lyric != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    note.lyric!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isSelected ? Colors.white70 : Colors.grey,
-                    ),
+                Text(
+                  note.lyric!,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isSelected ? Colors.white70 : Colors.grey,
                   ),
                 ),
             ],
@@ -399,7 +412,7 @@ class JianpuEditorWidget extends StatelessWidget {
   /// 输入键盘
   Widget _buildInputKeyboard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         boxShadow: [
@@ -411,41 +424,56 @@ class JianpuEditorWidget extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 时值选择
-            _buildDurationSelector(),
-            const SizedBox(height: 8),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 400;
+            
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 时值选择（自适应布局）
+                _buildDurationSelector(isNarrow: isNarrow),
+                const SizedBox(height: 6),
 
-            // 修饰符
-            _buildModifierSelector(),
-            const SizedBox(height: 8),
+                // 修饰符（自适应布局）
+                _buildModifierSelector(isNarrow: isNarrow),
+                const SizedBox(height: 6),
 
-            // 音符键盘
-            _buildNoteKeyboard(context),
-          ],
+                // 音符键盘（自适应布局）
+                _buildNoteKeyboard(context, isNarrow: isNarrow),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
   /// 时值选择器
-  Widget _buildDurationSelector() {
-    return Obx(() => Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: SelectedDuration.values.map((duration) {
-        final isSelected = controller.selectedDuration.value == duration;
-        return _buildDurationButton(duration, isSelected);
-      }).toList(),
+  Widget _buildDurationSelector({bool isNarrow = false}) {
+    return Obx(() => SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: SelectedDuration.values.map((duration) {
+          final isSelected = controller.selectedDuration.value == duration;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: _buildDurationButton(duration, isSelected, isNarrow: isNarrow),
+          );
+        }).toList(),
+      ),
     ));
   }
 
-  Widget _buildDurationButton(SelectedDuration duration, bool isSelected) {
+  Widget _buildDurationButton(SelectedDuration duration, bool isSelected, {bool isNarrow = false}) {
     return GestureDetector(
       onTap: () => controller.selectedDuration.value = duration,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(
+          horizontal: isNarrow ? 8 : 12, 
+          vertical: isNarrow ? 4 : 6,
+        ),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
@@ -454,20 +482,21 @@ class JianpuEditorWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              duration.label,
+              isNarrow ? duration.label.substring(0, 1) : duration.label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: isNarrow ? 11 : 12,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? Colors.white : Colors.grey,
               ),
             ),
-            Text(
-              duration.description,
-              style: TextStyle(
-                fontSize: 10,
-                color: isSelected ? Colors.white70 : Colors.grey,
+            if (!isNarrow)
+              Text(
+                duration.description,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: isSelected ? Colors.white70 : Colors.grey,
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -475,82 +504,119 @@ class JianpuEditorWidget extends StatelessWidget {
   }
 
   /// 修饰符选择器
-  Widget _buildModifierSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // 附点
-        Obx(() => _buildModifierChip(
-          label: '附点',
-          icon: Icons.brightness_1,
-          isSelected: controller.isDotted.value,
-          onTap: () => controller.isDotted.value = !controller.isDotted.value,
-        )),
-        const SizedBox(width: 8),
+  Widget _buildModifierSelector({bool isNarrow = false}) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 附点
+          Obx(() => _buildModifierChip(
+            label: isNarrow ? '•' : '附点',
+            icon: isNarrow ? null : Icons.brightness_1,
+            isSelected: controller.isDotted.value,
+            onTap: () => controller.isDotted.value = !controller.isDotted.value,
+            isNarrow: isNarrow,
+          )),
+          SizedBox(width: isNarrow ? 4 : 8),
 
-        // 升号
-        Obx(() => _buildModifierChip(
-          label: '♯',
-          isSelected: controller.selectedAccidental.value == Accidental.sharp,
-          onTap: () {
-            controller.selectedAccidental.value =
-                controller.selectedAccidental.value == Accidental.sharp
-                    ? Accidental.none
-                    : Accidental.sharp;
-          },
-        )),
-        const SizedBox(width: 8),
+          // 升号
+          Obx(() => _buildModifierChip(
+            label: '♯',
+            isSelected: controller.selectedAccidental.value == Accidental.sharp,
+            onTap: () {
+              controller.selectedAccidental.value =
+                  controller.selectedAccidental.value == Accidental.sharp
+                      ? Accidental.none
+                      : Accidental.sharp;
+            },
+            isNarrow: isNarrow,
+          )),
+          SizedBox(width: isNarrow ? 4 : 8),
 
-        // 降号
-        Obx(() => _buildModifierChip(
-          label: '♭',
-          isSelected: controller.selectedAccidental.value == Accidental.flat,
-          onTap: () {
-            controller.selectedAccidental.value =
-                controller.selectedAccidental.value == Accidental.flat
-                    ? Accidental.none
-                    : Accidental.flat;
-          },
-        )),
-        const SizedBox(width: 16),
+          // 降号
+          Obx(() => _buildModifierChip(
+            label: '♭',
+            isSelected: controller.selectedAccidental.value == Accidental.flat,
+            onTap: () {
+              controller.selectedAccidental.value =
+                  controller.selectedAccidental.value == Accidental.flat
+                      ? Accidental.none
+                      : Accidental.flat;
+            },
+            isNarrow: isNarrow,
+          )),
+          SizedBox(width: isNarrow ? 8 : 16),
 
-        // 八度
-        Obx(() => Row(
-          children: [
-            IconButton(
-              onPressed: controller.selectedOctave.value > -2
-                  ? () => controller.selectedOctave.value--
-                  : null,
-              icon: const Icon(Icons.arrow_downward, size: 18),
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              padding: EdgeInsets.zero,
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
+          // 八度
+          Obx(() => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: controller.selectedOctave.value > -2
+                    ? () => controller.selectedOctave.value--
+                    : null,
+                child: Container(
+                  padding: EdgeInsets.all(isNarrow ? 4 : 6),
+                  decoration: BoxDecoration(
+                    color: controller.selectedOctave.value > -2
+                        ? Colors.grey.withValues(alpha: 0.15)
+                        : Colors.grey.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(
+                    Icons.arrow_downward, 
+                    size: isNarrow ? 14 : 18,
+                    color: controller.selectedOctave.value > -2
+                        ? null
+                        : Colors.grey.withValues(alpha: 0.3),
+                  ),
+                ),
               ),
-              child: Text(
-                controller.selectedOctave.value == 0
-                    ? '中音'
-                    : controller.selectedOctave.value > 0
-                        ? '高${controller.selectedOctave.value}'
-                        : '低${-controller.selectedOctave.value}',
-                style: const TextStyle(fontSize: 12),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: isNarrow ? 4 : 8),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isNarrow ? 6 : 8, 
+                  vertical: isNarrow ? 3 : 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  controller.selectedOctave.value == 0
+                      ? (isNarrow ? '中' : '中音')
+                      : controller.selectedOctave.value > 0
+                          ? '高${controller.selectedOctave.value}'
+                          : '低${-controller.selectedOctave.value}',
+                  style: TextStyle(fontSize: isNarrow ? 10 : 12),
+                ),
               ),
-            ),
-            IconButton(
-              onPressed: controller.selectedOctave.value < 2
-                  ? () => controller.selectedOctave.value++
-                  : null,
-              icon: const Icon(Icons.arrow_upward, size: 18),
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              padding: EdgeInsets.zero,
-            ),
-          ],
-        )),
-      ],
+              GestureDetector(
+                onTap: controller.selectedOctave.value < 2
+                    ? () => controller.selectedOctave.value++
+                    : null,
+                child: Container(
+                  padding: EdgeInsets.all(isNarrow ? 4 : 6),
+                  decoration: BoxDecoration(
+                    color: controller.selectedOctave.value < 2
+                        ? Colors.grey.withValues(alpha: 0.15)
+                        : Colors.grey.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(
+                    Icons.arrow_upward, 
+                    size: isNarrow ? 14 : 18,
+                    color: controller.selectedOctave.value < 2
+                        ? null
+                        : Colors.grey.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+            ],
+          )),
+        ],
+      ),
     );
   }
 
@@ -559,11 +625,15 @@ class JianpuEditorWidget extends StatelessWidget {
     IconData? icon,
     required bool isSelected,
     required VoidCallback onTap,
+    bool isNarrow = false,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(
+          horizontal: isNarrow ? 8 : 12, 
+          vertical: isNarrow ? 4 : 6,
+        ),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
@@ -572,13 +642,13 @@ class JianpuEditorWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 8, color: isSelected ? Colors.white : Colors.grey),
-              const SizedBox(width: 4),
+              Icon(icon, size: isNarrow ? 6 : 8, color: isSelected ? Colors.white : Colors.grey),
+              SizedBox(width: isNarrow ? 2 : 4),
             ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: isNarrow ? 12 : 14,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? Colors.white : Colors.grey,
               ),
@@ -590,38 +660,65 @@ class JianpuEditorWidget extends StatelessWidget {
   }
 
   /// 音符键盘
-  Widget _buildNoteKeyboard(BuildContext context) {
+  Widget _buildNoteKeyboard(BuildContext context, {bool isNarrow = false}) {
     return Obx(() {
       final octave = controller.selectedOctave.value;
       
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // 休止符
-          _buildNoteKey(context, 0, '0', '休止', 0),
+      // 计算按键尺寸
+      final keyWidth = isNarrow ? 32.0 : 42.0;
+      final keyHeight = isNarrow ? 50.0 : 60.0;
+      final fontSize = isNarrow ? 18.0 : 22.0;
+      final spacing = isNarrow ? 2.0 : 4.0;
+      
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 休止符
+            _buildNoteKey(context, 0, '0', isNarrow ? '0' : '休止', 0,
+                keyWidth: keyWidth, keyHeight: keyHeight, fontSize: fontSize),
+            SizedBox(width: spacing),
 
-          // 1-7
-          for (var i = 1; i <= 7; i++)
-            _buildNoteKey(context, i, '$i', _getNoteName(i), octave),
+            // 1-7
+            for (var i = 1; i <= 7; i++) ...[
+              _buildNoteKey(context, i, '$i', isNarrow ? '' : _getNoteName(i), octave,
+                  keyWidth: keyWidth, keyHeight: keyHeight, fontSize: fontSize),
+              if (i < 7) SizedBox(width: spacing),
+            ],
+            
+            SizedBox(width: spacing),
 
-          // 删除键
-          _buildActionKey(
-            context,
-            icon: Icons.backspace,
-            label: '删除',
-            onTap: controller.deleteSelectedNote,
-          ),
-        ],
+            // 删除键
+            _buildActionKey(
+              context,
+              icon: Icons.backspace,
+              label: isNarrow ? '' : '删除',
+              onTap: controller.deleteSelectedNote,
+              keyWidth: keyWidth,
+              keyHeight: keyHeight,
+            ),
+          ],
+        ),
       );
     });
   }
 
-  Widget _buildNoteKey(BuildContext context, int degree, String label, String subLabel, int octave) {
+  Widget _buildNoteKey(
+    BuildContext context, 
+    int degree, 
+    String label, 
+    String subLabel, 
+    int octave, {
+    double keyWidth = 42,
+    double keyHeight = 60,
+    double fontSize = 22,
+  }) {
     return GestureDetector(
       onTap: () => controller.addNote(degree),
       child: Container(
-        width: 48,
-        height: 70,
+        width: keyWidth,
+        height: keyHeight,
         decoration: BoxDecoration(
           color: degree == 0 ? Colors.grey.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
@@ -632,32 +729,33 @@ class JianpuEditorWidget extends StatelessWidget {
           children: [
             // 使用 JianpuNoteText 显示带八度点的音符
             if (degree == 0)
-              const Text(
+              Text(
                 '0',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: fontSize,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
               )
             else
               SizedBox(
-                height: 40,
+                height: keyHeight * 0.6,
                 child: JianpuNoteText(
                   number: label,
                   octaveOffset: octave,
-                  fontSize: 22,
+                  fontSize: fontSize,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
               ),
-            Text(
-              subLabel,
-              style: TextStyle(
-                fontSize: 9,
-                color: Colors.grey.shade600,
+            if (subLabel.isNotEmpty)
+              Text(
+                subLabel,
+                style: TextStyle(
+                  fontSize: 8,
+                  color: Colors.grey.shade600,
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -669,12 +767,14 @@ class JianpuEditorWidget extends StatelessWidget {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    double keyWidth = 42,
+    double keyHeight = 60,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44,
-        height: 56,
+        width: keyWidth,
+        height: keyHeight,
         decoration: BoxDecoration(
           color: Colors.red.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
@@ -683,14 +783,15 @@ class JianpuEditorWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: Colors.red),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 9,
-                color: Colors.red,
+            Icon(icon, size: keyHeight * 0.3, color: Colors.red),
+            if (label.isNotEmpty)
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 8,
+                  color: Colors.red,
+                ),
               ),
-            ),
           ],
         ),
       ),

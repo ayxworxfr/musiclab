@@ -503,12 +503,14 @@ class PianoPracticePage extends GetView<PracticeController> {
             final needsScroll = pianoWidth > constraints.maxWidth;
             final displayWidth = needsScroll ? pianoWidth : constraints.maxWidth;
             
-            return GestureDetector(
-              onTapDown: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
-              onPanStart: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
-              onPanUpdate: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+            // 将 GestureDetector 放到 SingleChildScrollView 内部
+            // 这样 localPosition 是相对于 CustomPaint 的，不受滚动影响
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: GestureDetector(
+                onTapDown: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
+                onPanStart: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
+                onPanUpdate: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
                 child: CustomPaint(
                   size: Size(displayWidth, 160),
                   painter: PianoKeyboardPainter(
@@ -538,9 +540,17 @@ class PianoPracticePage extends GetView<PracticeController> {
   void _handlePianoTap(dynamic details, RenderConfig config, List<int> targetNotes, AudioService audioService, int startMidi, int endMidi, double pianoWidth) {
     if (controller.hasAnswered.value) return;
     
-    final position = details is TapDownDetails 
-        ? details.localPosition 
-        : (details as DragStartDetails).localPosition;
+    // 处理不同类型的手势事件
+    late final Offset position;
+    if (details is TapDownDetails) {
+      position = details.localPosition;
+    } else if (details is DragStartDetails) {
+      position = details.localPosition;
+    } else if (details is DragUpdateDetails) {
+      position = details.localPosition;
+    } else {
+      return;
+    }
     
     final painter = PianoKeyboardPainter(
       startMidi: startMidi,

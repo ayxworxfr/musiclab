@@ -2,11 +2,227 @@ import 'package:collection/collection.dart';
 
 import '../models/score.dart';
 import '../models/enums.dart';
+import '../models/sheet_model.dart' as sheet_model;
 
 /// ═══════════════════════════════════════════════════════════════
 /// 乐谱转换工具
 /// ═══════════════════════════════════════════════════════════════
 class ScoreConverter {
+  /// 从 SheetModel 转换为 Score
+  static Score fromSheetModel(sheet_model.SheetModel sheet) {
+    // 解析调号
+    final key = MusicKey.fromString(sheet.metadata.key);
+
+    // 解析拍号
+    final beatsPerMeasure = sheet.metadata.beatsPerMeasure;
+    final beatUnit = sheet.metadata.beatUnit;
+
+    // 转换分类
+    ScoreCategory category;
+    switch (sheet.category) {
+      case sheet_model.SheetCategory.folk:
+        category = ScoreCategory.folk;
+        break;
+      case sheet_model.SheetCategory.pop:
+        category = ScoreCategory.pop;
+        break;
+      case sheet_model.SheetCategory.classical:
+        category = ScoreCategory.classical;
+        break;
+      case sheet_model.SheetCategory.exercise:
+        category = ScoreCategory.exercise;
+        break;
+      default:
+        category = ScoreCategory.children;
+    }
+
+    // 转换小节
+    final measures = sheet.measures.asMap().entries.map((entry) {
+      final index = entry.key;
+      final measure = entry.value;
+      return _convertSheetMeasure(measure, index + 1, beatsPerMeasure);
+    }).toList();
+
+    // 创建单轨道
+    final track = Track(
+      id: 'main',
+      name: '旋律',
+      clef: Clef.treble,
+      hand: Hand.right,
+      measures: measures,
+    );
+
+    return Score(
+      id: sheet.id,
+      title: sheet.title,
+      subtitle: sheet.subtitle,
+      composer: sheet.metadata.composer,
+      arranger: sheet.metadata.arranger,
+      metadata: ScoreMetadata(
+        key: key,
+        beatsPerMeasure: beatsPerMeasure,
+        beatUnit: beatUnit,
+        tempo: sheet.metadata.tempo,
+        tempoText: sheet.metadata.tempoText,
+        difficulty: sheet.difficulty,
+        category: category,
+        tags: sheet.tags,
+      ),
+      tracks: [track],
+      coverImage: sheet.coverImage,
+      isFavorite: sheet.isFavorite,
+      isBuiltIn: sheet.isBuiltIn,
+    );
+  }
+
+  /// 转换小节（从 SheetMeasure 到 Measure）
+  static Measure _convertSheetMeasure(
+    sheet_model.SheetMeasure sheetMeasure,
+    int number,
+    int beatsPerMeasure,
+  ) {
+    // 将音符按拍分组
+    final beats = <Beat>[];
+    var currentBeatIndex = 0;
+    var accumulatedBeats = 0.0;
+    final beatNotes = <Note>[];
+
+    for (final sheetNote in sheetMeasure.notes) {
+      final note = _convertSheetNote(sheetNote);
+      beatNotes.add(note);
+      accumulatedBeats += note.actualBeats;
+
+      // 累积够一拍则创建 Beat
+      while (accumulatedBeats >= 1.0) {
+        beats.add(Beat(
+          index: currentBeatIndex,
+          notes: List.from(beatNotes),
+        ));
+        beatNotes.clear();
+        currentBeatIndex++;
+        accumulatedBeats = accumulatedBeats - 1.0;
+      }
+    }
+
+    // 处理剩余音符
+    if (beatNotes.isNotEmpty) {
+      beats.add(Beat(
+        index: currentBeatIndex,
+        notes: List.from(beatNotes),
+      ));
+    }
+
+    // 反复记号
+    RepeatSign? repeatSign;
+    if (sheetMeasure.hasRepeatStart && sheetMeasure.hasRepeatEnd) {
+      repeatSign = RepeatSign.both;
+    } else if (sheetMeasure.hasRepeatStart) {
+      repeatSign = RepeatSign.start;
+    } else if (sheetMeasure.hasRepeatEnd) {
+      repeatSign = RepeatSign.end;
+    }
+
+    // 力度
+    Dynamics? dynamics;
+    if (sheetMeasure.dynamics != null) {
+      dynamics = Dynamics.values.firstWhereOrNull(
+        (d) => d.symbol == sheetMeasure.dynamics!.symbol,
+      );
+    }
+
+    return Measure(
+      number: number,
+      beats: beats,
+      repeatSign: repeatSign,
+      ending: sheetMeasure.ending,
+      dynamics: dynamics,
+    );
+  }
+
+  /// 转换音符（从 SheetNote 到 Note）
+  static Note _convertSheetNote(sheet_model.SheetNote sheetNote) {
+    // 计算 MIDI 值
+    int pitch;
+    if (sheetNote.degree == 0) {
+      // 休止符
+      pitch = 0;
+    } else {
+      // 简谱音级到半音偏移
+      const degreeToSemitone = [0, 0, 2, 4, 5, 7, 9, 11]; // 1=C, 2=D, ...
+      final semitone = degreeToSemitone[sheetNote.degree.clamp(0, 7)];
+      pitch = 60 + sheetNote.octave * 12 + semitone; // C4 = 60
+    }
+
+    // 时值转换
+    NoteDuration duration;
+    switch (sheetNote.duration) {
+      case sheet_model.NoteDuration.whole:
+        duration = NoteDuration.whole;
+        break;
+      case sheet_model.NoteDuration.half:
+        duration = NoteDuration.half;
+        break;
+      case sheet_model.NoteDuration.eighth:
+        duration = NoteDuration.eighth;
+        break;
+      case sheet_model.NoteDuration.sixteenth:
+        duration = NoteDuration.sixteenth;
+        break;
+      case sheet_model.NoteDuration.thirtySecond:
+        duration = NoteDuration.thirtySecond;
+        break;
+      default:
+        duration = NoteDuration.quarter;
+    }
+
+    // 变音记号转换
+    Accidental accidental = Accidental.none;
+    switch (sheetNote.accidental) {
+      case sheet_model.Accidental.sharp:
+        accidental = Accidental.sharp;
+        break;
+      case sheet_model.Accidental.flat:
+        accidental = Accidental.flat;
+        break;
+      case sheet_model.Accidental.natural:
+        accidental = Accidental.natural;
+        break;
+      default:
+        accidental = Accidental.none;
+    }
+
+    // 奏法转换
+    Articulation articulation = Articulation.none;
+    switch (sheetNote.articulation) {
+      case sheet_model.Articulation.staccato:
+        articulation = Articulation.staccato;
+        break;
+      case sheet_model.Articulation.accent:
+        articulation = Articulation.accent;
+        break;
+      case sheet_model.Articulation.tenuto:
+        articulation = Articulation.tenuto;
+        break;
+      case sheet_model.Articulation.legato:
+        articulation = Articulation.legato;
+        break;
+      default:
+        articulation = Articulation.none;
+    }
+
+    return Note(
+      pitch: pitch,
+      duration: duration,
+      accidental: accidental,
+      dots: sheetNote.isDotted ? 1 : 0,
+      fingering: sheetNote.fingering,
+      lyric: sheetNote.lyric,
+      articulation: articulation,
+      tieStart: sheetNote.tieStart,
+      tieEnd: sheetNote.tieEnd,
+    );
+  }
+
   /// 从 JSON 转换为 Score 模型
   static Score fromLegacyJson(Map<String, dynamic> json) {
     final metadata = json['metadata'] as Map<String, dynamic>? ?? {};

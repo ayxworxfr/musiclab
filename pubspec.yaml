@@ -21,9 +21,8 @@ dependencies:
   hive_flutter: ^1.1.0
   shared_preferences: ^2.2.2
 
-  # 音频播放
-  just_audio: ^0.9.36
-  audio_session: ^0.1.18
+  # 音频播放（低延迟多音 Soundpool）
+  soundpool: ^2.4.1
 
   # UI 增强
   cupertino_icons: ^1.0.8
@@ -40,6 +39,10 @@ dependencies:
   uuid: ^4.3.3
   collection: ^1.18.0
   xml: ^6.5.0
+  
+  # PDF 导出
+  printing: ^5.13.4
+  pdf: ^3.11.2
 
 dev_dependencies:
   flutter_test:
@@ -64,3 +67,13 @@ flutter:
     - assets/animations/
     - assets/fonts/
     - .env
+
+  fonts:
+    # SMuFL 音乐符号字体
+    # 注意: PDF 导出需要 TTF 格式，请运行 python scripts/convert_font.py 转换
+    - family: Bravura
+      fonts:
+        - asset: assets/fonts/Bravura.otf
+    - family: Leland
+      fonts:
+        - asset: assets/fonts/Leland.otf

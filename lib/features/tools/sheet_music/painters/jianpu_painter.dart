@@ -48,7 +48,9 @@ class JianpuPainter extends CustomPainter {
     
     // 计算布局参数
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    final measuresPerLine = 4; // 每行4小节
+    
+    // 动态计算每行小节数
+    final measuresPerLine = _calculateMeasuresPerLine(contentWidth, beatsPerMeasure);
     final measureWidth = contentWidth / measuresPerLine;
     final beatWidth = measureWidth / beatsPerMeasure;
     
@@ -234,6 +236,31 @@ class JianpuPainter extends CustomPainter {
       }
     }
     return maxNotes;
+  }
+
+  /// 动态计算每行小节数
+  /// 根据屏幕宽度和音符密度自动调整
+  int _calculateMeasuresPerLine(double contentWidth, int beatsPerMeasure) {
+    // 基础参数
+    const minBeatWidth = 25.0;  // 每拍最小宽度
+    const minMeasuresPerLine = 2; // 每行最少小节数
+    const maxMeasuresPerLine = 6; // 每行最多小节数
+    
+    // 计算每小节需要的最小宽度
+    final minMeasureWidth = minBeatWidth * beatsPerMeasure;
+    
+    // 根据内容宽度计算可以放多少小节
+    int measuresPerLine = (contentWidth / minMeasureWidth).floor();
+    
+    // 检查音符密度 - 如果有复杂和弦，减少每行小节数
+    final maxNotesInChord = _getMaxNotesInChord();
+    if (maxNotesInChord > 3) {
+      // 复杂和弦，减少每行小节数
+      measuresPerLine = (measuresPerLine * 0.75).floor();
+    }
+    
+    // 限制范围
+    return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
   }
 
   void _drawBarLine(Canvas canvas, double x, double y, double height) {
@@ -460,10 +487,21 @@ class JianpuPainter extends CustomPainter {
     final contentWidth = size.width - config.padding.left - config.padding.right;
     final startX = config.padding.left;
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    final measuresPerLine = 4;
+    final measuresPerLine = _calculateMeasuresPerLine(contentWidth, beatsPerMeasure);
     final measureWidth = contentWidth / measuresPerLine;
     final trackCount = score.tracks.length;
-    final trackHeight = 40.0;
+    
+    // 自适应轨道高度
+    final maxNotes = _getMaxNotesInChord();
+    final double trackHeight;
+    if (maxNotes <= 2) {
+      trackHeight = 45.0;
+    } else if (maxNotes <= 4) {
+      trackHeight = 55.0;
+    } else {
+      trackHeight = 65.0 + (maxNotes - 4) * 8;
+    }
+    
     final lineSpacing = 20.0;
     final lineHeight = trackCount * trackHeight + lineSpacing;
 
@@ -488,15 +526,29 @@ class JianpuPainter extends CustomPainter {
     canvas.drawLine(Offset(x, y), Offset(x, y + trackCount * trackHeight), paint);
   }
 
-  /// 计算简谱所需高度
-  static double calculateHeight(Score score, RenderConfig config) {
-    final measuresPerLine = 4;
-    final lineCount = (score.measureCount / measuresPerLine).ceil();
-    final trackCount = score.tracks.length;
+  /// 静态方法计算每行小节数
+  static int _staticCalculateMeasuresPerLine(double contentWidth, int beatsPerMeasure, Score score) {
+    const minBeatWidth = 25.0;
+    const minMeasuresPerLine = 2;
+    const maxMeasuresPerLine = 6;
     
-    // 计算最大和弦音符数量
+    final minMeasureWidth = minBeatWidth * beatsPerMeasure;
+    int measuresPerLine = (contentWidth / minMeasureWidth).floor();
+    
+    // 检查音符密度
+    final maxNotesInChord = _staticGetMaxNotesInChord(score);
+    if (maxNotesInChord > 3) {
+      measuresPerLine = (measuresPerLine * 0.75).floor();
+    }
+    
+    return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
+  }
+  
+  /// 静态方法计算最大和弦音符数量
+  static int _staticGetMaxNotesInChord(Score score) {
     int maxNotes = 1;
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    
     for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
       final track = score.tracks[trackIndex];
       for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
@@ -513,6 +565,20 @@ class JianpuPainter extends CustomPainter {
         }
       }
     }
+    return maxNotes;
+  }
+
+  /// 计算简谱所需高度
+  static double calculateHeight(Score score, RenderConfig config, {double? availableWidth}) {
+    // 动态计算每行小节数
+    final contentWidth = (availableWidth ?? 400) - config.padding.left - config.padding.right;
+    final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    final measuresPerLine = _staticCalculateMeasuresPerLine(contentWidth, beatsPerMeasure, score);
+    final lineCount = (score.measureCount / measuresPerLine).ceil();
+    final trackCount = score.tracks.length;
+    
+    // 计算最大和弦音符数量
+    final maxNotes = _staticGetMaxNotesInChord(score);
     
     // 自适应轨道高度
     final double trackHeight;

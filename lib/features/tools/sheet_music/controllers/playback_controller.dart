@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:collection/collection.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
@@ -82,10 +81,16 @@ class PlaybackController extends GetxController {
 
   /// 等待计数
   final RxInt countIn = 0.obs;
+  
+  /// 节拍器音量 (0-100)
+  final RxInt metronomeVolume = 80.obs;
 
   Timer? _playTimer;
   int _scheduledNoteIndex = 0;
   final List<_ScheduledNote> _scheduledNotes = [];
+  
+  /// 上一次节拍的拍号（用于检测新拍）
+  int _lastBeatNumber = -1;
 
   @override
   void onInit() {
@@ -215,6 +220,7 @@ class PlaybackController extends GetxController {
     highlightedNoteIndices.clear();
     highlightedPianoKeys.clear();
     _scheduledNoteIndex = 0;
+    _lastBeatNumber = -1; // 重置节拍器
     update();
   }
 
@@ -287,7 +293,7 @@ class PlaybackController extends GetxController {
       if (metronomeEnabled.value) {
         _audioService.playMetronomeClick(isStrong: i == count);
       }
-      await Future.delayed(interval);
+      await Future<void>.delayed(interval);
     }
 
     isPlaying.value = true;
@@ -421,14 +427,31 @@ class PlaybackController extends GetxController {
     final beatsPerMeasure = _score!.metadata.beatsPerMeasure;
     final beatDuration = 60.0 / actualTempo;
     final totalBeats = currentTime.value / beatDuration;
-    final beatInMeasure = totalBeats % beatsPerMeasure;
-
-    // 简单检测：每拍开始时播放
-    if (beatInMeasure < 0.02) {
-      final isStrong = beatInMeasure < 0.02 &&
-          (totalBeats.floor() % beatsPerMeasure == 0);
+    final currentBeatNumber = totalBeats.floor();
+    
+    // 检测是否进入新的一拍
+    if (currentBeatNumber != _lastBeatNumber && currentBeatNumber >= 0) {
+      _lastBeatNumber = currentBeatNumber;
+      
+      // 判断是否为强拍（小节第一拍）
+      final beatInMeasure = currentBeatNumber % beatsPerMeasure;
+      final isStrong = beatInMeasure == 0;
+      
       _audioService.playMetronomeClick(isStrong: isStrong);
     }
+  }
+  
+  /// 切换节拍器
+  void toggleMetronome() {
+    metronomeEnabled.value = !metronomeEnabled.value;
+    _lastBeatNumber = -1; // 重置拍号
+    update();
+  }
+  
+  /// 设置节拍器音量
+  void setMetronomeVolume(int volume) {
+    metronomeVolume.value = volume.clamp(0, 100);
+    update();
   }
 
   /// 停止所有音符

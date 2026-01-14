@@ -66,13 +66,49 @@ class LayoutEngine {
     );
   }
 
-  /// 将小节分成多行（参考简谱的简单方式）
+  /// 动态计算每行小节数
+  int _calculateMeasuresPerLine(Score score) {
+    // 基础参数
+    const minMeasureWidth = 80.0; // 每小节最小宽度
+    const minMeasuresPerLine = 2;
+    const maxMeasuresPerLine = 6;
+    
+    final contentWidth = availableWidth - config.padding.left - config.padding.right;
+    final headerWidth = 100.0; // 谱号、调号、拍号
+    final availableLineWidth = contentWidth - headerWidth;
+    
+    // 根据可用宽度计算每行小节数
+    int measuresPerLine = (availableLineWidth / minMeasureWidth).floor();
+    
+    // 检查音符密度 - 如果有密集的音符，减少每行小节数
+    int maxNotesPerBeat = 1;
+    for (final track in score.tracks) {
+      for (final measure in track.measures) {
+        for (final beat in measure.beats) {
+          if (beat.notes.length > maxNotesPerBeat) {
+            maxNotesPerBeat = beat.notes.length;
+          }
+        }
+      }
+    }
+    
+    // 根据音符密度调整
+    if (maxNotesPerBeat > 4) {
+      measuresPerLine = (measuresPerLine * 0.6).floor();
+    } else if (maxNotesPerBeat > 2) {
+      measuresPerLine = (measuresPerLine * 0.8).floor();
+    }
+    
+    return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
+  }
+
+  /// 将小节分成多行（动态计算）
   List<LineLayout> _breakIntoLines(Score score) {
     final lines = <LineLayout>[];
     if (score.measureCount == 0) return lines;
 
-    // 固定每行小节数（和简谱一样简单）
-    final measuresPerLine = 4;
+    // 动态计算每行小节数
+    final measuresPerLine = _calculateMeasuresPerLine(score);
     
     var y = config.padding.top;
     var measureIndex = 0;

@@ -360,7 +360,7 @@ class _StaffLinePainter extends CustomPainter {
       text: TextSpan(
         text: clef == 'treble' ? '𝄞' : '𝄢',
         style: TextStyle(
-          fontSize: lineSpacing * 6,
+          fontSize: lineSpacing * 5,  // 缩小一点
           color: style.lineColor,
           fontFamily: 'Bravura', // 音乐字体，如果没有则使用系统字体
         ),
@@ -369,9 +369,12 @@ class _StaffLinePainter extends CustomPainter {
     );
     textPainter.layout();
 
+    // 高音谱号：中心点在第二线（G线，从上往下第四条线 = startY + 3 * lineSpacing）
+    // 低音谱号：中心点在第四线（F线，从上往下第二条线 = startY + 1 * lineSpacing）
+    // 根据字体特性调整，使谱号中心对齐到正确的线上
     final y = clef == 'treble'
-        ? startY - lineSpacing * 1.5
-        : startY - lineSpacing * 0.5;
+        ? startY - lineSpacing * 0.8  // 高音谱号从顶部往下延伸
+        : startY + lineSpacing * 0.2;
     textPainter.paint(canvas, Offset(x, y));
   }
 

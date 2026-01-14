@@ -374,6 +374,7 @@ class JianpuNotationWidget extends StatelessWidget {
   ) {
     final noteColor = isHighlighted ? style.highlightColor : style.noteColor;
     final dashCount = note.duration.dashCount;
+    final dotSize = style.noteFontSize * 0.18;
 
     return GestureDetector(
       onTap: () => onNoteTap?.call(measureIndex, noteIndex),
@@ -391,33 +392,35 @@ class JianpuNotationWidget extends StatelessWidget {
                   style: const TextStyle(fontSize: 10, color: Colors.grey),
                 ),
               ),
-            // 高音点
-            if (note.octave > 0)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 1),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(
-                    note.octave,
-                    (_) => Container(
-                      width: 4,
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 0.5),
-                      decoration: BoxDecoration(
-                        color: noteColor,
-                        shape: BoxShape.circle,
+            // 高音点占位区（固定高度保证对齐）- 休止符不显示
+            SizedBox(
+              height: dotSize + 4,
+              child: (!note.isRest && note.octave > 0)
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        note.octave,
+                        (_) => Container(
+                          width: dotSize,
+                          height: dotSize,
+                          margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                          decoration: BoxDecoration(
+                            color: noteColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              ),
+                    )
+                  : null,
+            ),
             // 音符主体行：变音记号 + 数字 + 附点 + 延音线
             Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 变音记号
-                if (note.accidental != Accidental.none)
+                // 变音记号（休止符不显示）
+                if (!note.isRest && note.accidental != Accidental.none)
                   Padding(
                     padding: const EdgeInsets.only(right: 1),
                     child: Text(
@@ -437,13 +440,13 @@ class JianpuNotationWidget extends StatelessWidget {
                     color: noteColor,
                   ),
                 ),
-                // 附点（紧跟数字右侧）
-                if (note.isDotted)
+                // 附点（休止符不显示）
+                if (!note.isRest && note.isDotted)
                   Padding(
                     padding: const EdgeInsets.only(left: 2, bottom: 8),
                     child: Container(
-                      width: 4,
-                      height: 4,
+                      width: dotSize,
+                      height: dotSize,
                       decoration: BoxDecoration(
                         color: noteColor,
                         shape: BoxShape.circle,
@@ -469,41 +472,52 @@ class JianpuNotationWidget extends StatelessWidget {
                   ),
               ],
             ),
-            // 下划线（八分、十六分音符）
-            if (note.duration.underlineCount > 0)
-              ...List.generate(
-                note.duration.underlineCount,
-                (_) => Container(
-                  width: style.noteFontSize * 0.7,
-                  height: 2,
-                  margin: const EdgeInsets.only(top: 1),
-                  color: noteColor,
-                ),
-              ),
-            // 低音点
-            if (note.octave < 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 1),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(
-                    -note.octave,
-                    (_) => Container(
-                      width: 4,
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 0.5),
-                      decoration: BoxDecoration(
-                        color: noteColor,
-                        shape: BoxShape.circle,
+            // 下划线占位区（固定高度保证对齐）
+            SizedBox(
+              height: note.duration.underlineCount > 0 
+                  ? (note.duration.underlineCount * 4.0) 
+                  : 4,
+              child: note.duration.underlineCount > 0
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(
+                        note.duration.underlineCount,
+                        (_) => Container(
+                          width: style.noteFontSize * 0.7,
+                          height: 2,
+                          margin: const EdgeInsets.only(top: 1),
+                          color: noteColor,
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              ),
+                    )
+                  : null,
+            ),
+            // 低音点占位区（固定高度保证对齐）- 休止符不显示
+            SizedBox(
+              height: dotSize + 4,
+              child: (!note.isRest && note.octave < 0)
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        -note.octave,
+                        (_) => Container(
+                          width: dotSize,
+                          height: dotSize,
+                          margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                          decoration: BoxDecoration(
+                            color: noteColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
             // 歌词
             if (style.showLyrics && note.lyric != null)
               Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.only(top: 2),
                 child: Text(
                   note.lyric!,
                   style: TextStyle(
@@ -579,37 +593,46 @@ class JianpuLineWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 高音点
+            // 高音点占位区（固定高度保证对齐）- 休止符不显示
             SizedBox(
               height: 10,
-              child: note.octave > 0
+              child: (!note.isRest && note.octave > 0)
                   ? _buildOctaveDots(note.octave, noteColor)
                   : null,
             ),
-            // 音符
+            // 音符（休止符只显示0，不显示变音记号）
             Text(
-              note.displayString,
+              note.isRest ? '0' : note.displayString,
               style: TextStyle(
                 fontSize: style.noteFontSize,
                 fontWeight: FontWeight.bold,
                 color: noteColor,
               ),
             ),
-            // 下划线
-            if (note.duration.underlineCount > 0)
-              ...List.generate(
-                note.duration.underlineCount,
-                (_) => Container(
-                  width: style.noteSpacing * 0.6,
-                  height: 2,
-                  margin: const EdgeInsets.only(top: 1),
-                  color: noteColor,
-                ),
-              ),
-            // 低音点
+            // 下划线占位区（固定高度保证对齐）
+            SizedBox(
+              height: note.duration.underlineCount > 0 
+                  ? (note.duration.underlineCount * 4.0) 
+                  : 4,
+              child: note.duration.underlineCount > 0
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(
+                        note.duration.underlineCount,
+                        (_) => Container(
+                          width: style.noteSpacing * 0.6,
+                          height: 2,
+                          margin: const EdgeInsets.only(top: 1),
+                          color: noteColor,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            // 低音点占位区（固定高度保证对齐）- 休止符不显示
             SizedBox(
               height: 10,
-              child: note.octave < 0
+              child: (!note.isRest && note.octave < 0)
                   ? _buildOctaveDots(-note.octave, noteColor)
                   : null,
             ),

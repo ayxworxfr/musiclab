@@ -146,9 +146,13 @@ class LessonPage extends GetView<CourseController> {
 
   /// 音频内容块
   Widget _buildAudioBlock(BuildContext context, Map<String, dynamic> data, bool isDark) {
-    final notes = (data['notes'] as List<dynamic>?)?.cast<int>() ?? [];
+    final notesData = data['notes'] as List<dynamic>? ?? [];
     final labels = (data['labels'] as List<dynamic>?)?.cast<String>() ?? [];
     final instruction = data['instruction'] as String?;
+
+    // 检测是否是嵌套列表（和弦格式）
+    final bool isChordFormat = notesData.isNotEmpty && 
+        notesData.first is List;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -175,11 +179,27 @@ class LessonPage extends GetView<CourseController> {
               spacing: 12,
               runSpacing: 12,
               alignment: WrapAlignment.center,
-              children: List.generate(notes.length, (index) {
-                return _AudioNoteButton(
-                  midi: notes[index],
-                  label: index < labels.length ? labels[index] : '${notes[index]}',
-                );
+              children: List.generate(notesData.length, (index) {
+                if (isChordFormat) {
+                  // 和弦格式：[[60, 64, 67]]
+                  final chordNotes = (notesData[index] as List<dynamic>)
+                      .map((e) => e as int)
+                      .toList();
+                  final label = index < labels.length ? labels[index] : 
+                      chordNotes.join('-');
+                  return _AudioChordButton(
+                    midiNumbers: chordNotes,
+                    label: label,
+                  );
+                } else {
+                  // 单音格式：[60, 62, 64]
+                  final midi = notesData[index] as int;
+                  final label = index < labels.length ? labels[index] : '$midi';
+                  return _AudioNoteButton(
+                    midi: midi,
+                    label: label,
+                  );
+                }
               }),
             ),
           ],
@@ -269,9 +289,13 @@ class LessonPage extends GetView<CourseController> {
     final correctIndex = data['correctIndex'] as int? ?? 0;
     final explanation = data['explanation'] as String?;
 
+    // 使用课程ID和问题作为key，确保切换课程时状态重置
+    final lessonId = controller.currentLesson.value?.id ?? '';
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: _QuizWidget(
+        key: ValueKey('quiz_${lessonId}_$question'),
         question: question,
         options: options,
         correctIndex: correctIndex,
@@ -643,6 +667,42 @@ class _AudioNoteButton extends StatelessWidget {
   }
 }
 
+/// 和弦音频按钮（支持同时播放多个音符）
+class _AudioChordButton extends StatelessWidget {
+  final List<int> midiNumbers;
+  final String label;
+
+  const _AudioChordButton({
+    required this.midiNumbers,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        final audioService = Get.find<AudioService>();
+        audioService.markUserInteracted();
+        audioService.playChord(midiNumbers);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.volume_up, size: 18),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+    );
+  }
+}
+
 /// 测验组件
 class _QuizWidget extends StatefulWidget {
   final String question;
@@ -652,6 +712,7 @@ class _QuizWidget extends StatefulWidget {
   final bool isDark;
 
   const _QuizWidget({
+    super.key,
     required this.question,
     required this.options,
     required this.correctIndex,
