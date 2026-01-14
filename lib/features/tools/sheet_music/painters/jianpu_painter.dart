@@ -120,13 +120,14 @@ class JianpuPainter extends CustomPainter {
             }
 
             // 判断是否所有音符都是相同的短时值（8分、16分、32分音符应该水平排列）
+            // 短时值音符通常是旋律（顺序演奏），长音符在同一拍通常是和弦（同时演奏）
             final noteCount = allNotesInBeat.length;
             final allAreSameShortDuration = noteCount > 1 &&
                 allNotesInBeat.first.note.duration.beamCount > 0 &&
                 allNotesInBeat.every((n) => n.note.duration == allNotesInBeat.first.note.duration);
 
             if (allAreSameShortDuration) {
-              // 短时值音符：水平排列
+              // 短时值音符：水平排列（顺序演奏）
               final horizontalSpacing = 12.0; // 水平间距
               final totalWidth = (noteCount - 1) * horizontalSpacing;
               final startXInBeat = beatX - totalWidth / 2;
