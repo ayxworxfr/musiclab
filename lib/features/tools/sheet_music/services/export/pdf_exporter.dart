@@ -236,11 +236,34 @@ class PdfExporter {
       return _buildJianpuNote(beat.notes.first, key);
     }
 
-    // 和弦：垂直排列
-    return pw.Column(
-      mainAxisSize: pw.MainAxisSize.min,
-      children: beat.notes.map((n) => _buildJianpuNote(n, key)).toList(),
-    );
+    // 多个音符：根据时值判断布局方式
+    // beamCount > 0 (短时值)：水平排列
+    // beamCount = 0 (长时值)：垂直排列(和弦)
+    final firstNote = beat.notes.first;
+    final allAreSameShortDuration = beat.notes.length > 1 &&
+        firstNote.duration.beamCount > 0 &&
+        beat.notes.every((n) => n.duration == firstNote.duration);
+
+    if (allAreSameShortDuration) {
+      // 短时值音符：水平排列
+      return pw.Row(
+        mainAxisSize: pw.MainAxisSize.min,
+        children: beat.notes.map((n) =>
+          pw.Container(
+            margin: const pw.EdgeInsets.symmetric(horizontal: 2),
+            child: _buildJianpuNote(n, key),
+          )
+        ).toList(),
+      );
+    } else {
+      // 和弦(长时值)：垂直排列，按音高从低到高排序
+      final sortedNotes = List<Note>.from(beat.notes);
+      sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
+      return pw.Column(
+        mainAxisSize: pw.MainAxisSize.min,
+        children: sortedNotes.map((n) => _buildJianpuNote(n, key)).toList(),
+      );
+    }
   }
 
   /// 构建简谱音符
@@ -418,87 +441,139 @@ class PdfExporter {
 
     // 计算每个拍的位置
     final beatWidth = 180.0 / measure.beats.length;
-    var noteOffset = 0.0; // 用于处理同一拍内的多个音符
 
     for (var beatIndex = 0; beatIndex < measure.beats.length; beatIndex++) {
       final beat = measure.beats[beatIndex];
-      if (beat.notes.isEmpty) {
-        noteOffset = 0.0;
-        continue;
-      }
+      if (beat.notes.isEmpty) continue;
 
       final beatX = measureX + 10 + beatIndex * beatWidth;
-      noteOffset = 0.0; // 每拍重置偏移
 
-      for (var noteIndex = 0; noteIndex < beat.notes.length; noteIndex++) {
-        final note = beat.notes[noteIndex];
-        if (note.isRest) continue;
+      // 判断是否为短时值音符(需要水平排列)
+      final firstNote = beat.notes.first;
+      final allAreSameShortDuration = beat.notes.length > 1 &&
+          firstNote.duration.beamCount > 0 &&
+          beat.notes.every((n) => n.duration == firstNote.duration);
 
-        final noteY = _getNoteY(note.pitch, clef);
-        final currentX = beatX + noteOffset;
+      if (allAreSameShortDuration) {
+        // 短时值音符：水平排列
+        final horizontalSpacing = 15.0;
+        for (var noteIndex = 0; noteIndex < beat.notes.length; noteIndex++) {
+          final note = beat.notes[noteIndex];
+          if (note.isRest) continue;
 
-        // 绘制升降号（如果有）
-        if (note.accidental != Accidental.none && _smuflFont != null) {
-          String accidentalSymbol;
-          switch (note.accidental) {
-            case Accidental.sharp:
-              accidentalSymbol = SmuflSymbols.sharp;
-              break;
-            case Accidental.flat:
-              accidentalSymbol = SmuflSymbols.flat;
-              break;
-            case Accidental.natural:
-              accidentalSymbol = SmuflSymbols.natural;
-              break;
-            default:
-              accidentalSymbol = '';
-          }
-          
-          if (accidentalSymbol.isNotEmpty) {
-            // SMuFL升降号符号的基准点通常在符号中心
-            // noteY是音符在五线谱上的位置（音符中心）
-            // pw.Text的top是文本顶部，需要向上偏移一半字体高度使中心对齐
-            final accidentalFontSize = 16.0;
-            final accidentalTop = noteY - accidentalFontSize / 2;
-            
-            widgets.add(
-              pw.Positioned(
-                left: currentX - 3, // 升降号离音符更近（从14调整为8）
-                top: accidentalTop,
-                child: pw.Text(
-                  accidentalSymbol,
-                  style: pw.TextStyle(font: _smuflFont, fontSize: accidentalFontSize),
+          final noteX = beatX + noteIndex * horizontalSpacing;
+          final noteY = _getNoteY(note.pitch, clef);
+
+          // 绘制升降号
+          if (note.accidental != Accidental.none && _smuflFont != null) {
+            String accidentalSymbol;
+            switch (note.accidental) {
+              case Accidental.sharp:
+                accidentalSymbol = SmuflSymbols.sharp;
+                break;
+              case Accidental.flat:
+                accidentalSymbol = SmuflSymbols.flat;
+                break;
+              case Accidental.natural:
+                accidentalSymbol = SmuflSymbols.natural;
+                break;
+              default:
+                accidentalSymbol = '';
+            }
+
+            if (accidentalSymbol.isNotEmpty) {
+              final accidentalFontSize = 16.0;
+              final accidentalTop = noteY - accidentalFontSize / 2;
+              widgets.add(
+                pw.Positioned(
+                  left: noteX - 3,
+                  top: accidentalTop,
+                  child: pw.Text(
+                    accidentalSymbol,
+                    style: pw.TextStyle(font: _smuflFont, fontSize: accidentalFontSize),
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           }
+
+          // 绘制加线
+          final staffPosition = _getStaffPosition(note.pitch, clef == Clef.treble);
+          if (staffPosition < 0 || staffPosition > 8) {
+            widgets.add(_buildLedgerLines(noteX, noteY, staffPosition, clef));
+          }
+
+          // 绘制音符
+          final noteFontSize = 20.0;
+          final noteTop = noteY - noteFontSize / 2;
+          widgets.add(
+            pw.Positioned(
+              left: noteX,
+              top: noteTop,
+              child: _buildStaffNote(note),
+            ),
+          );
         }
+      } else {
+        // 和弦(长时值)：垂直重叠显示，按音高从低到高排序
+        final sortedNotes = List<Note>.from(beat.notes);
+        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
 
-        // 绘制加线（如果有需要）
-        final staffPosition = _getStaffPosition(note.pitch, clef == Clef.treble);
-        if (staffPosition < 0 || staffPosition > 8) {
-          widgets.add(_buildLedgerLines(currentX, noteY, staffPosition, clef));
-        }
+        for (final note in sortedNotes) {
+          if (note.isRest) continue;
 
-        // 绘制音符
-        // SMuFL音符符号的基准点通常在符号中心
-        // noteY是音符在五线谱上的位置（音符中心）
-        // pw.Text的top是文本顶部，需要向上偏移一半字体高度使中心对齐
-        // 已在上层计算中调整了noteY，这里直接使用
-        final noteFontSize = 20.0;
-        final noteTop = noteY - noteFontSize / 2;
-        
-        widgets.add(
-          pw.Positioned(
-            left: currentX,
-            top: noteTop,
-            child: _buildStaffNote(note),
-          ),
-        );
+          final noteX = beatX;
+          final noteY = _getNoteY(note.pitch, clef);
 
-        // 同一拍内的多个音符需要水平偏移
-        if (beat.notes.length > 1) {
-          noteOffset += 15.0;
+          // 绘制升降号
+          if (note.accidental != Accidental.none && _smuflFont != null) {
+            String accidentalSymbol;
+            switch (note.accidental) {
+              case Accidental.sharp:
+                accidentalSymbol = SmuflSymbols.sharp;
+                break;
+              case Accidental.flat:
+                accidentalSymbol = SmuflSymbols.flat;
+                break;
+              case Accidental.natural:
+                accidentalSymbol = SmuflSymbols.natural;
+                break;
+              default:
+                accidentalSymbol = '';
+            }
+
+            if (accidentalSymbol.isNotEmpty) {
+              final accidentalFontSize = 16.0;
+              final accidentalTop = noteY - accidentalFontSize / 2;
+              widgets.add(
+                pw.Positioned(
+                  left: noteX - 3,
+                  top: accidentalTop,
+                  child: pw.Text(
+                    accidentalSymbol,
+                    style: pw.TextStyle(font: _smuflFont, fontSize: accidentalFontSize),
+                  ),
+                ),
+              );
+            }
+          }
+
+          // 绘制加线
+          final staffPosition = _getStaffPosition(note.pitch, clef == Clef.treble);
+          if (staffPosition < 0 || staffPosition > 8) {
+            widgets.add(_buildLedgerLines(noteX, noteY, staffPosition, clef));
+          }
+
+          // 绘制音符
+          final noteFontSize = 20.0;
+          final noteTop = noteY - noteFontSize / 2;
+          widgets.add(
+            pw.Positioned(
+              left: noteX,
+              top: noteTop,
+              child: _buildStaffNote(note),
+            ),
+          );
         }
       }
     }

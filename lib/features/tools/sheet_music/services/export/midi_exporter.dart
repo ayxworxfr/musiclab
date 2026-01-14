@@ -109,10 +109,21 @@ class MidiExporter {
       for (final beat in measure.beats) {
         final beatStartTick = measureStartTick + (beat.index * ticksPerBeat);
 
-        for (final note in beat.notes) {
+        for (var noteIndex = 0; noteIndex < beat.notes.length; noteIndex++) {
+          final note = beat.notes[noteIndex];
           if (note.isRest) continue;
 
-          final noteOnTick = beatStartTick;
+          // 计算音符开始时间：
+          // - 短时值音符(beamCount > 0)按顺序播放
+          // - 长时值音符(beamCount = 0)同时播放(和弦)
+          int noteOnTick = beatStartTick;
+          if (beat.notes.length > 1 && note.duration.beamCount > 0) {
+            // 短时值音符按顺序播放，每个音符占据 (1/notesCount) 拍
+            final subBeatDuration = ticksPerBeat ~/ beat.notes.length;
+            noteOnTick += noteIndex * subBeatDuration;
+          }
+          // beamCount == 0 的音符保持 noteOnTick = beatStartTick，实现同时播放
+
           final noteDuration = _getDurationTicks(note.duration, ticksPerBeat, note.dots);
           final noteOffTick = noteOnTick + noteDuration;
 

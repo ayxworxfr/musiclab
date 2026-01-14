@@ -26,7 +26,7 @@
 | 🎯 **Fun Practice** | Note reading, rhythm, ear training, playing exercises |
 | 🎹 **Virtual Piano** | Multi-touch support, 88 keys, recording & playback |
 | 🥁 **Metronome** | Adjustable BPM (20-240), multiple time signatures |
-| 📝 **Sheet Music** | Create, edit, import (Jianpu/JSON/MusicXML) |
+| 📝 **Sheet Music** | View, play, export (PDF/MIDI), support chords & multi-track |
 | 🏆 **Achievement System** | Daily check-in, badges, progress tracking |
 | 🌍 **i18n** | Chinese & English support |
 | 🎨 **Themes** | Light / Dark mode |
@@ -104,7 +104,12 @@ lib/
 │   ├── tools/                # Tools
 │   │   ├── piano/            # Virtual piano
 │   │   ├── metronome/        # Metronome
-│   │   ├── sheet_music/      # Sheet music library & editor
+│   │   ├── sheet_music/      # Sheet music viewer & player
+│   │   │   ├── models/       # Score data models (Note, Beat, Measure, Track)
+│   │   │   ├── painters/     # Canvas renderers (Jianpu, Staff, Piano)
+│   │   │   ├── layout/       # Layout engine (positioning, timing)
+│   │   │   ├── services/     # Export services (PDF, MIDI)
+│   │   │   └── controllers/  # Playback & state management
 │   │   └── reference/        # Reference tables
 │   └── profile/              # User profile
 │
@@ -125,6 +130,7 @@ lib/
 | Audio | just_audio | 0.9.36 |
 | HTTP | Dio | 5.4.0 |
 | Storage | Hive | 2.2.3 |
+| PDF Export | pdf, printing | 1.18+, 5.14+ |
 | UI | ScreenUtil | 5.9.0 |
 | Animation | Lottie | 3.1.0 |
 | Markdown | flutter_markdown | 0.7.4 |
