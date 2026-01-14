@@ -20,7 +20,7 @@
         {
           "number": 1,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 60, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}, {"pitch": 67, "duration": "eighth"}, {"pitch": 72, "duration": "eighth"}]},
+            {"index": 0, "notes": [{"pitch": 60, "duration": "sixteenth"}, {"pitch": 64, "duration": "sixteenth"}, {"pitch": 67, "duration": "sixteenth"}, {"pitch": 72, "duration": "sixteenth"}]},
             {"index": 1, "notes": [{"pitch": 72, "duration": "quarter"}]},
             {"index": 2, "notes": [{"pitch": 67, "duration": "eighth"}, {"pitch": 64, "duration": "eighth"}]},
             {"index": 3, "notes": [{"pitch": 60, "duration": "quarter"}]}

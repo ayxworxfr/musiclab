@@ -119,13 +119,14 @@ class JianpuPainter extends CustomPainter {
               }
             }
 
-            // 判断是否所有音符都是8分音符（应该水平排列）
+            // 判断是否所有音符都是相同的短时值（8分、16分、32分音符应该水平排列）
             final noteCount = allNotesInBeat.length;
-            final allAreEighth = noteCount > 1 &&
-                allNotesInBeat.every((n) => n.note.duration == NoteDuration.eighth);
+            final allAreSameShortDuration = noteCount > 1 &&
+                allNotesInBeat.first.note.duration.beamCount > 0 &&
+                allNotesInBeat.every((n) => n.note.duration == allNotesInBeat.first.note.duration);
 
-            if (allAreEighth) {
-              // 8分音符：水平排列
+            if (allAreSameShortDuration) {
+              // 短时值音符：水平排列
               final horizontalSpacing = 12.0; // 水平间距
               final totalWidth = (noteCount - 1) * horizontalSpacing;
               final startXInBeat = beatX - totalWidth / 2;
@@ -178,7 +179,7 @@ class JianpuPainter extends CustomPainter {
                 final lastNoteX = startXInBeat + (noteCount - 1) * horizontalSpacing;
 
                 for (var i = 0; i < underlineCount; i++) {
-                  final lineY = baseLineY + i * 3;
+                  final lineY = baseLineY + i * 5; // 增加间距从3到5像素
                   canvas.drawLine(
                     Offset(firstNoteX - 3, lineY), // 从第一个音符左边一点开始
                     Offset(lastNoteX + 3, lineY),  // 到最后一个音符右边一点结束
@@ -189,7 +190,7 @@ class JianpuPainter extends CustomPainter {
 
               // 歌词绘制在最后一个音符下方
               if (showLyrics && lyricText != null && trackIndex == 0) {
-                final underlineSpace = underlineCount > 0 ? underlineCount * 3 + 6 : 0;
+                final underlineSpace = underlineCount > 0 ? underlineCount * 5 + 6 : 0; // 更新为5像素间距
                 final lyricY = trackY + 10 + underlineSpace + 8;
                 _drawLyric(canvas, beatX, lyricY, lyricText);
               }
@@ -247,7 +248,7 @@ class JianpuPainter extends CustomPainter {
 
               // 歌词绘制在和弦底部下方（包括下划线空间）
               if (showLyrics && lyricText != null && trackIndex == 0) {
-                final underlineSpace = underlineCount > 0 ? underlineCount * 3 + 6 : 0;
+                final underlineSpace = underlineCount > 0 ? underlineCount * 5 + 6 : 0; // 更新为5像素间距
                 final lyricY = chordBottomY + underlineSpace + 8;
                 _drawLyric(canvas, beatX, lyricY, lyricText);
               }
@@ -483,7 +484,7 @@ class JianpuPainter extends CustomPainter {
         final baseLineY = y + fontSize * 0.55;
         final lineHalfWidth = fontSize * 0.4;
         for (var i = 0; i < underlineCount; i++) {
-          final lineY = baseLineY + i * 3;
+          final lineY = baseLineY + i * 5; // 增加间距从3到5像素
           canvas.drawLine(
             Offset(x - lineHalfWidth, lineY),
             Offset(x + lineHalfWidth, lineY),
@@ -537,7 +538,7 @@ class JianpuPainter extends CustomPainter {
         ..color = color
         ..strokeWidth = 1.5;
       for (var i = 0; i < underlineCount; i++) {
-        final lineY = y + 14 + i * 3;
+        final lineY = y + 14 + i * 5; // 增加间距从3到5像素
         canvas.drawLine(
           Offset(x - 8, lineY),
           Offset(x + 8, lineY),

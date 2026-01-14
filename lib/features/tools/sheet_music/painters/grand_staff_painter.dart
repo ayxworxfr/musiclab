@@ -312,7 +312,7 @@ class GrandStaffPainter extends CustomPainter {
 
     // 绘制附加符杠（16分音符等）
     for (var i = 1; i < beamGroup.beamCount; i++) {
-      final offset = beamGroup.stemUp ? i * 6.0 : -i * 6.0;
+      final offset = beamGroup.stemUp ? i * 8.0 : -i * 8.0; // 增加间距从6.0到8.0像素
       canvas.drawLine(
         Offset(beamGroup.startX, beamGroup.startY + offset),
         Offset(beamGroup.endX, beamGroup.endY + offset),
@@ -493,31 +493,39 @@ class GrandStaffPainter extends CustomPainter {
 
   void _drawFlags(Canvas canvas, NoteLayout noteLayout, Color color) {
     final beamCount = noteLayout.note.duration.beamCount;
+    if (beamCount == 0) return;
+
     final stemUp = noteLayout.stemUp;
     final x = noteLayout.x;
     final y = noteLayout.y;
     final stemX = stemUp ? x + config.noteHeadRadius - 1 : x - config.noteHeadRadius + 1;
     final stemEndY = stemUp ? y - config.stemLength : y + config.stemLength;
 
-    const flagSymbols = ['', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '𝅘𝅥𝅰'];
-    final symbol = beamCount < flagSymbols.length ? flagSymbols[beamCount] : '𝅘𝅥𝅰';
+    // 手动绘制符尾线条而不是使用Unicode符号
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
 
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: symbol,
-        style: TextStyle(fontSize: 30, color: color),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
+    const flagLength = 12.0; // 符尾长度
+    const flagCurve = 8.0;   // 符尾弯曲度
 
-    if (stemUp) {
-      textPainter.paint(canvas, Offset(stemX, stemEndY));
-    } else {
-      canvas.save();
-      canvas.translate(stemX + textPainter.width, stemEndY + textPainter.height);
-      canvas.scale(-1, -1);
-      textPainter.paint(canvas, Offset.zero);
-      canvas.restore();
+    for (var i = 0; i < beamCount; i++) {
+      final offsetY = stemUp ? i * 5.0 : -i * 5.0; // 每条符尾间距5像素
+      final startY = stemEndY + offsetY;
+      final endX = stemUp ? stemX + flagLength : stemX - flagLength;
+      final endY = startY + (stemUp ? flagCurve : -flagCurve);
+
+      // 绘制弯曲的符尾
+      final path = Path();
+      path.moveTo(stemX, startY);
+      path.quadraticBezierTo(
+        stemX + (endX - stemX) * 0.5,
+        startY + (endY - startY) * 0.3,
+        endX,
+        endY,
+      );
+      canvas.drawPath(path, paint);
     }
   }
 
