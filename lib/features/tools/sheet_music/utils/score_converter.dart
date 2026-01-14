@@ -90,7 +90,15 @@ class ScoreConverter {
     for (final sheetNote in sheetMeasure.notes) {
       final note = _convertSheetNote(sheetNote);
       beatNotes.add(note);
-      accumulatedBeats += note.actualBeats;
+
+      // 安全获取音符时值，防止NaN
+      final noteBeats = note.actualBeats;
+      if (noteBeats.isNaN || noteBeats.isInfinite || noteBeats <= 0) {
+        // 如果时值无效，使用默认值（四分音符 = 1拍）
+        accumulatedBeats += 1.0;
+      } else {
+        accumulatedBeats += noteBeats;
+      }
 
       // 累积够一拍则创建 Beat
       while (accumulatedBeats >= 1.0) {

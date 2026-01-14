@@ -251,7 +251,7 @@ class PdfExporter {
     double contentWidth,
   ) {
     // 防止除以零和无效值
-    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN) {
+    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN || contentWidth.isInfinite) {
       return pw.SizedBox(height: 30);
     }
     final measureWidth = contentWidth / measures.length;
@@ -466,7 +466,7 @@ class PdfExporter {
     double contentWidth,
   ) {
     // 防止除以零和无效值
-    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN) {
+    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN || contentWidth.isInfinite) {
       return pw.SizedBox();
     }
     final measureWidth = contentWidth / measures.length;
@@ -567,7 +567,7 @@ class PdfExporter {
     bool showClef,
   ) {
     // 防止除以零和无效值
-    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN) {
+    if (measures.isEmpty || beatsPerMeasure <= 0 || contentWidth <= 0 || contentWidth.isNaN || contentWidth.isInfinite) {
       return pw.SizedBox(height: 60);
     }
 
@@ -674,12 +674,18 @@ class PdfExporter {
     double lineSpacing,
     Clef clef,
   ) {
-    // 防止除以零
-    if (beatsPerMeasure <= 0 || measureWidth <= 0) {
+    // 防止除以零和无效值
+    if (beatsPerMeasure <= 0 || measureWidth <= 0 || measureWidth.isNaN || measureWidth.isInfinite ||
+        lineSpacing <= 0 || lineSpacing.isNaN || lineSpacing.isInfinite) {
       return pw.SizedBox();
     }
-    
+
     final noteWidth = measureWidth / beatsPerMeasure;
+
+    // 确保 noteWidth 有效
+    if (noteWidth.isNaN || noteWidth.isInfinite || noteWidth <= 0) {
+      return pw.SizedBox();
+    }
     
     return pw.Stack(
       children: List.generate(beatsPerMeasure, (beatIndex) {

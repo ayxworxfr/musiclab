@@ -31,6 +31,9 @@ class SheetPlayerController extends GetxController {
   /// 当前播放的所有音符（扁平化）
   final List<_PlayableNote> _playableNotes = [];
 
+  /// 当前播放的实际时间（秒）
+  double _currentPlayTime = 0.0;
+
   /// 当前播放索引
   int _currentPlayIndex = 0;
 
@@ -80,6 +83,9 @@ class SheetPlayerController extends GetxController {
 
   /// 播放/暂停
   void togglePlay() {
+    // 标记用户已交互（Web端需要）
+    _audioService.markUserInteracted();
+
     if (playbackState.value.isPlaying) {
       pause();
     } else {
@@ -90,6 +96,9 @@ class SheetPlayerController extends GetxController {
   /// 开始播放
   void play() {
     if (currentSheet.value == null || _playableNotes.isEmpty) return;
+
+    // 标记用户已交互（Web端需要）
+    _audioService.markUserInteracted();
 
     playbackState.value = playbackState.value.copyWith(isPlaying: true);
 
@@ -118,6 +127,8 @@ class SheetPlayerController extends GetxController {
     _playTimer?.cancel();
     _playTimer = null;
     _currentPlayIndex = 0;
+    _currentPlayTime = 0.0;
+    _lastBeatNumber = -1;
     playbackState.value = const SheetPlaybackState();
   }
 
@@ -148,6 +159,14 @@ class SheetPlayerController extends GetxController {
     final playable = _playableNotes[_currentPlayIndex];
     _playNote(playable);
 
+    // 更新播放时间
+    _currentPlayTime = playable.startTime;
+
+    // 检查节拍器
+    if (metronomeEnabled.value) {
+      _checkMetronome();
+    }
+
     // 更新状态
     playbackState.value = playbackState.value.copyWith(
       currentMeasureIndex: playable.measureIndex,
@@ -175,6 +194,7 @@ class SheetPlayerController extends GetxController {
     if (sheet == null) return;
 
     // 将简谱音符转换为MIDI
+    // jianpuToMidi 参数: degree (1-7), octave (偏移), key (调号)
     final midi = MusicUtils.jianpuToMidi(
       playable.note.degree,
       playable.note.octave,
@@ -288,6 +308,7 @@ class SheetPlayerController extends GetxController {
       if (noteIndex < measure.notes.length) {
         final note = measure.notes[noteIndex];
         if (!note.isRest) {
+          // jianpuToMidi 参数: degree (1-7), octave (偏移), key (调号)
           final midi = MusicUtils.jianpuToMidi(
             note.degree,
             note.octave,
@@ -298,6 +319,29 @@ class SheetPlayerController extends GetxController {
           }
         }
       }
+    }
+  }
+
+  /// 检查并播放节拍器
+  void _checkMetronome() {
+    final sheet = currentSheet.value;
+    if (sheet == null) return;
+
+    final beatsPerMeasure = sheet.metadata.beatsPerMeasure;
+    final tempo = sheet.metadata.tempo;
+    final beatDuration = 60.0 / tempo;
+    final totalBeats = _currentPlayTime / beatDuration;
+    final currentBeatNumber = totalBeats.floor();
+
+    // 检测是否进入新的一拍
+    if (currentBeatNumber != _lastBeatNumber && currentBeatNumber >= 0) {
+      _lastBeatNumber = currentBeatNumber;
+
+      // 判断是否为强拍（小节第一拍）
+      final beatInMeasure = currentBeatNumber % beatsPerMeasure;
+      final isStrong = beatInMeasure == 0;
+
+      _audioService.playMetronomeClick(isStrong: isStrong);
     }
   }
 }
