@@ -350,10 +350,16 @@ class JianpuPainter extends CustomPainter {
       color = config.theme.textColor;
     }
 
+    // 构建显示文本（包含升降号）
+    String displayText = '$degree';
+    if (note.accidental != Accidental.none) {
+      displayText = '${note.accidental.symbol}$degree';
+    }
+
     // 绘制数字（使用自适应字号）
     final textPainter = TextPainter(
       text: TextSpan(
-        text: '$degree',
+        text: displayText,
         style: TextStyle(
           fontSize: fontSize,
           color: color,

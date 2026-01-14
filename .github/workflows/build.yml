@@ -101,7 +101,7 @@ jobs:
         with:
           name: musiclab-android-apk-v${{ steps.version.outputs.version }}
           path: ${{ env.APK_NAME }}
-          retention-days: 30
+          retention-days: 3
 
       - name: 重命名并上传 AAB 产物
         run: |
@@ -115,7 +115,7 @@ jobs:
         with:
           name: musiclab-android-aab-v${{ steps.version.outputs.version }}
           path: ${{ env.AAB_NAME }}
-          retention-days: 30
+          retention-days: 3
 
   # # iOS 构建
   # # 注意：iOS 构建需要有效的 Apple 开发证书和配置文件
@@ -190,7 +190,7 @@ jobs:
   #       with:
   #         name: musiclab-ios-ipa-v${{ steps.version.outputs.version }}
   #         path: ${{ env.IPA_PATH }}
-  #         retention-days: 30
+  #         retention-days: 3
 
   # 发布到 GitHub Releases（仅当推送 tag 时）
   # 注意：即使 iOS 构建失败，只要有 Android 构建成功，仍会创建 Release
@@ -273,7 +273,7 @@ jobs:
   #       with:
   #         name: web-build
   #         path: build/web
-  #         retention-days: 30
+  #         retention-days: 3
 
   # # Windows 构建
   # build-windows:
@@ -302,7 +302,7 @@ jobs:
   #       with:
   #         name: windows-build
   #         path: build/windows/runner/Release
-  #         retention-days: 30
+  #         retention-days: 3
 
   # # Linux 构建
   # build-linux:
@@ -336,7 +336,7 @@ jobs:
   #       with:
   #         name: linux-build
   #         path: build/linux/x64/release/bundle
-  #         retention-days: 30
+  #         retention-days: 3
 
   # # macOS 构建
   # build-macos:
@@ -365,5 +365,5 @@ jobs:
   #       with:
   #         name: macos-build
   #         path: build/macos/Build/Products/Release
-  #         retention-days: 30
+  #         retention-days: 3
 

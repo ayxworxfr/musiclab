@@ -254,6 +254,12 @@ class PdfExporter {
     final underlineCount = note.duration.underlineCount;
     final hasDot = note.dots > 0;
 
+    // 构建显示文本（包含升降号）
+    String displayText = '$degree';
+    if (note.accidental != Accidental.none) {
+      displayText = '${note.accidental.symbol}$degree';
+    }
+
     return pw.Stack(
       alignment: pw.Alignment.center,
       children: [
@@ -272,8 +278,8 @@ class PdfExporter {
                   ),
                 )),
               ),
-            // 数字
-            pw.Text('$degree', style: pw.TextStyle(font: _chineseBoldFont, fontSize: 16)),
+            // 数字（包含升降号）
+            pw.Text(displayText, style: pw.TextStyle(font: _chineseBoldFont, fontSize: 16)),
             // 下划线
             if (underlineCount > 0)
               pw.Column(
@@ -344,19 +350,21 @@ class PdfExporter {
       height: 100,
       child: pw.Stack(
         children: [
-          // 五线
-          pw.Positioned.fill(
-            child: pw.CustomPaint(
-              painter: (canvas, size) {
-                final topMargin = 30.0;
-                for (var i = 0; i < 5; i++) {
-                  final y = topMargin + i * 8.0;
-                  canvas.drawLine(0, y, size.x, y);
-                }
-                canvas.strokePath();
-              },
-            ),
-          ),
+          // 五线 - 使用Container绘制
+          ...List.generate(5, (i) {
+            final topMargin = 30.0;
+            final lineSpacing = 8.0;
+            final y = topMargin + i * lineSpacing;
+            return pw.Positioned(
+              left: 0,
+              top: y,
+              child: pw.Container(
+                width: double.infinity,
+                height: 0.5,
+                color: PdfColors.black,
+              ),
+            );
+          }),
           // 谱号
           if (_smuflFont != null)
             pw.Positioned(
@@ -376,10 +384,15 @@ class PdfExporter {
           // 小节线
           ...List.generate(measures.length + 1, (i) {
             final x = 50.0 + i * 200.0;
+            final isFirstOrLast = i == 0 || i == measures.length;
             return pw.Positioned(
               left: x,
               top: 30,
-              child: pw.Container(width: 1, height: 32, color: PdfColors.black),
+              child: pw.Container(
+                width: isFirstOrLast ? 2 : 1,
+                height: 32,
+                color: PdfColors.black,
+              ),
             );
           }),
         ],
@@ -395,25 +408,69 @@ class PdfExporter {
 
     // 计算每个拍的位置
     final beatWidth = 180.0 / measure.beats.length;
+    var noteOffset = 0.0; // 用于处理同一拍内的多个音符
 
     for (var beatIndex = 0; beatIndex < measure.beats.length; beatIndex++) {
       final beat = measure.beats[beatIndex];
-      if (beat.notes.isEmpty) continue;
+      if (beat.notes.isEmpty) {
+        noteOffset = 0.0;
+        continue;
+      }
 
       final beatX = measureX + 10 + beatIndex * beatWidth;
+      noteOffset = 0.0; // 每拍重置偏移
 
-      for (final note in beat.notes) {
+      for (var noteIndex = 0; noteIndex < beat.notes.length; noteIndex++) {
+        final note = beat.notes[noteIndex];
         if (note.isRest) continue;
 
         final noteY = _getNoteY(note.pitch, clef);
+        final currentX = beatX + noteOffset;
 
+        // 绘制升降号（如果有）
+        if (note.accidental != Accidental.none && _smuflFont != null) {
+          String accidentalSymbol;
+          switch (note.accidental) {
+            case Accidental.sharp:
+              accidentalSymbol = SmuflSymbols.sharp;
+              break;
+            case Accidental.flat:
+              accidentalSymbol = SmuflSymbols.flat;
+              break;
+            case Accidental.natural:
+              accidentalSymbol = SmuflSymbols.natural;
+              break;
+            default:
+              accidentalSymbol = '';
+          }
+          
+          if (accidentalSymbol.isNotEmpty) {
+            widgets.add(
+              pw.Positioned(
+                left: currentX - 12,
+                top: noteY,
+                child: pw.Text(
+                  accidentalSymbol,
+                  style: pw.TextStyle(font: _smuflFont, fontSize: 16),
+                ),
+              ),
+            );
+          }
+        }
+
+        // 绘制音符
         widgets.add(
           pw.Positioned(
-            left: beatX,
+            left: currentX,
             top: noteY,
             child: _buildStaffNote(note),
           ),
         );
+
+        // 同一拍内的多个音符需要水平偏移
+        if (beat.notes.length > 1) {
+          noteOffset += 15.0;
+        }
       }
     }
 
@@ -430,13 +487,17 @@ class PdfExporter {
     int position;
     if (clef == Clef.treble) {
       // 高音谱号：E4(64)在第一线
+      // 中央C(60)在下加一线
       position = 64 - pitch;
     } else {
       // 低音谱号：G2(43)在第一线
+      // 中央C(60)在上加一线
       position = 43 - pitch;
     }
 
-    return staffTop + position * lineSpacing;
+    final y = staffTop + position * lineSpacing;
+    // 确保Y坐标在有效范围内
+    return y.clamp(10.0, 90.0);
   }
 
   /// 构建五线谱音符
