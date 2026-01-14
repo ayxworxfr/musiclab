@@ -99,7 +99,45 @@ class Note {
     return degreeMap[relativePitch];
   }
 
-  /// 获取八度偏移 (相对于中央C所在八度)
+  /// 获取八度偏移 (相对于调号主音所在八度)
+  int getOctaveOffset(MusicKey key) {
+    if (isRest) return 0;
+
+    // 调号主音的MIDI值映射（基准为第4八度）
+    final keyTonicMidiMap = {
+      MusicKey.C: 60,   // C4
+      MusicKey.G: 67,   // G4
+      MusicKey.D: 62,   // D4
+      MusicKey.A: 69,   // A4
+      MusicKey.E: 64,   // E4
+      MusicKey.B: 71,   // B4
+      MusicKey.Fs: 66,  // F#4
+      MusicKey.F: 65,   // F4
+      MusicKey.Bb: 70,  // Bb4
+      MusicKey.Eb: 63,  // Eb4
+      MusicKey.Ab: 68,  // Ab4
+      MusicKey.Db: 61,  // Db4
+      MusicKey.Am: 69,  // A4 (小调)
+      MusicKey.Em: 64,  // E4 (小调)
+      MusicKey.Dm: 62,  // D4 (小调)
+    };
+
+    final tonicMidi = keyTonicMidiMap[key] ?? 60;
+
+    // 计算相对于主音的八度差
+    // 例如：F4(65)是主音，E4(64)在它下方，应该算低音7
+    // E4相对于F4: (64 - 65) = -1，但E是前一个八度的7
+    final relativePitch = pitch - tonicMidi;
+
+    // 如果音符低于主音且不是度数1，说明跨了八度
+    if (relativePitch < 0) {
+      return (relativePitch / 12).floor();
+    } else {
+      return (relativePitch / 12).floor();
+    }
+  }
+
+  /// 获取八度偏移 (相对于中央C所在八度) - 保留用于五线谱等场景
   int get octaveOffset {
     if (isRest) return 0;
     return (pitch ~/ 12) - 5; // C4 = MIDI 60, octave 5
