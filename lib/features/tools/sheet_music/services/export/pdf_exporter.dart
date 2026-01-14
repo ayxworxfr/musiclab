@@ -378,7 +378,7 @@ class PdfExporter {
             pw.Positioned(
               left: 5,
               top: clef == Clef.treble 
-                  ? staffY + lineSpacing * 1.5 - 30 // 高音谱号向上调整（字体基准点补偿）
+                  ? staffY + lineSpacing * 1.5 - 55 // 高音谱号向上大幅调整（字体基准点补偿）
                   : staffY + lineSpacing * 3 - 15, // 低音谱号居中在第四线
               child: pw.Text(
                 clef == Clef.treble ? SmuflSymbols.trebleClef : SmuflSymbols.bassClef,
@@ -521,8 +521,8 @@ class PdfExporter {
     
     // 音符Y坐标：从第一线（最下面）向上移动 staffPosition 个半间距
     // staffPosition 正数向上（Y减小），负数向下（Y增大）
-    // 向上调整5个像素以补偿SMuFL字体的基准点偏移
-    final noteY = firstLineY - staffPosition * (lineSpacing / 2) - 5.0;
+    // 向上调整35个像素以补偿SMuFL字体的基准点偏移
+    final noteY = firstLineY - staffPosition * (lineSpacing / 2) - 30.0;
     
     return noteY;
   }

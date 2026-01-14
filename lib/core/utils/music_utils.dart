@@ -107,12 +107,25 @@ class MusicUtils {
     if (degree < 1 || degree > 7) return null;
 
     // 简谱音级对应的半音偏移（相对于 do）
+    // 1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11
     const degreeToSemitone = [0, 0, 2, 4, 5, 7, 9, 11]; // index 0 unused
-    
+
     final keyOffset = keyOffsets[key] ?? 0;
     final semitone = degreeToSemitone[degree];
-    final midi = (baseOctave + 1 + octave) * 12 + keyOffset + semitone;
-    
+
+    // 计算 MIDI 值
+    // 从 C (baseOctave+1) 开始，加上调号偏移和度数偏移
+    var midi = (baseOctave + 1) * 12 + keyOffset + semitone + octave * 12;
+
+    // 关键修复：当 keyOffset + semitone >= 12 时，
+    // 说明音符跨过了八度边界（进入了下一个八度）
+    // 需要降低一个八度，因为简谱的 1-7 应该在同一个八度内
+    // 例如：F调(keyOffset=5)的7(semitone=11)，5+11=16>=12，
+    // 计算出的是 E5，但应该是 E4
+    if (keyOffset + semitone >= 12) {
+      midi -= 12;
+    }
+
     return midi.clamp(21, 108); // 限制在标准钢琴范围内
   }
 
