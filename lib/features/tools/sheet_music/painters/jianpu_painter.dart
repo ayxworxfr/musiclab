@@ -197,6 +197,9 @@ class JianpuPainter extends CustomPainter {
               }
             } else {
               // 和弦或其他：垂直排列（原有逻辑）
+              // 按音高从低到高排序（低音在下，高音在上）
+              allNotesInBeat.sort((a, b) => a.note.pitch.compareTo(b.note.pitch));
+
               // 自适应计算垂直间距
               final double verticalSpacing;
               if (noteCount <= 2) {

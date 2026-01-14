@@ -269,13 +269,15 @@ class LayoutEngine {
                 : 0.5;
             final noteX = beatStartX + noteProgress * beatWidth;
 
-            // 计算开始时间：如果一拍内有多个音符，按顺序延迟
-            // 假设它们是等分这一拍的时间
+            // 计算开始时间：
+            // - 短时值音符(beamCount > 0，如八分、十六分)按顺序播放
+            // - 长时值音符(beamCount = 0，如四分、二分)同时播放(和弦)
             double noteStartTime = beatStartTime;
-            if (notesInBeat.length > 1) {
-              // 多个音符按顺序播放，每个占据(1/notesInBeat.length)拍
+            if (notesInBeat.length > 1 && note.duration.beamCount > 0) {
+              // 短时值音符按顺序播放，每个占据(1/notesInBeat.length)拍
               noteStartTime += (i * 1.0 / notesInBeat.length) / beatsPerSecond;
             }
+            // beamCount == 0 的音符保持 noteStartTime = beatStartTime，实现同时播放
 
             // 计算五线谱位置
             final staffPosition = _getStaffPosition(note.pitch, isTreble);
