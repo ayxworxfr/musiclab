@@ -150,7 +150,7 @@ class SheetExportService {
               noteStrs.add('-');
               lyrics.add('');
             } else {
-              noteStrs.add(notes.map(_noteToJianpuString).join('/'));
+              noteStrs.add(notes.map((n) => _noteToJianpuString(n, score.metadata.key)).join('/'));
               lyrics.add(notes.map((n) => n.lyric ?? '').join());
             }
           }
@@ -168,7 +168,7 @@ class SheetExportService {
     return buffer.toString();
   }
 
-  String _noteToJianpuString(Note note) {
+  String _noteToJianpuString(Note note, MusicKey key) {
     if (note.isRest) return '0';
 
     final buffer = StringBuffer();
@@ -177,8 +177,8 @@ class SheetExportService {
     if (note.accidental == Accidental.sharp) buffer.write('#');
     if (note.accidental == Accidental.flat) buffer.write('b');
 
-    // 音级
-    buffer.write(note.jianpuDegree);
+    // 音级（根据调号计算）
+    buffer.write(note.getJianpuDegree(key));
 
     // 八度
     if (note.octaveOffset > 0) buffer.write("'" * note.octaveOffset);

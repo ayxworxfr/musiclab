@@ -335,7 +335,8 @@ class JianpuPainter extends CustomPainter {
       return;
     }
 
-    final degree = note.jianpuDegree;
+    // 根据调号计算简谱度数
+    final degree = note.getJianpuDegree(score.metadata.key);
     final octaveOffset = note.octaveOffset;
 
     // 颜色：根据手来区分

@@ -186,7 +186,7 @@ class PdfExporter {
         final end = (i + measuresPerLine).clamp(0, track.measures.length);
         final lineMeasures = track.measures.sublist(i, end);
 
-        widgets.add(_buildJianpuLine(lineMeasures, beatsPerMeasure, contentWidth));
+        widgets.add(_buildJianpuLine(lineMeasures, beatsPerMeasure, contentWidth, score.metadata.key));
         widgets.add(pw.SizedBox(height: 8));
       }
     }
@@ -195,7 +195,7 @@ class PdfExporter {
   }
 
   /// 构建简谱行
-  pw.Widget _buildJianpuLine(List<Measure> measures, int beatsPerMeasure, double contentWidth) {
+  pw.Widget _buildJianpuLine(List<Measure> measures, int beatsPerMeasure, double contentWidth, MusicKey key) {
     if (measures.isEmpty) return pw.SizedBox();
 
     final measureWidth = _safeDivide(contentWidth, measures.length.toDouble(), 100.0);
@@ -214,7 +214,7 @@ class PdfExporter {
                       (b) => b.index == beatIndex,
                       orElse: () => Beat(index: beatIndex, notes: []),
                     );
-                    return _buildJianpuBeat(beat);
+                    return _buildJianpuBeat(beat, key);
                   }),
                 ),
               ),
@@ -227,29 +227,30 @@ class PdfExporter {
   }
 
   /// 构建简谱拍
-  pw.Widget _buildJianpuBeat(Beat beat) {
+  pw.Widget _buildJianpuBeat(Beat beat, MusicKey key) {
     if (beat.notes.isEmpty) {
       return pw.Text('-', style: pw.TextStyle(font: _chineseFont, fontSize: 16));
     }
 
     if (beat.notes.length == 1) {
-      return _buildJianpuNote(beat.notes.first);
+      return _buildJianpuNote(beat.notes.first, key);
     }
 
     // 和弦：垂直排列
     return pw.Column(
       mainAxisSize: pw.MainAxisSize.min,
-      children: beat.notes.map((n) => _buildJianpuNote(n)).toList(),
+      children: beat.notes.map((n) => _buildJianpuNote(n, key)).toList(),
     );
   }
 
   /// 构建简谱音符
-  pw.Widget _buildJianpuNote(Note note) {
+  pw.Widget _buildJianpuNote(Note note, MusicKey key) {
     if (note.isRest) {
       return pw.Text('0', style: pw.TextStyle(font: _chineseFont, fontSize: 16));
     }
 
-    final degree = note.jianpuDegree;
+    // 根据调号计算简谱度数
+    final degree = note.getJianpuDegree(key);
     final octave = note.octaveOffset;
     final underlineCount = note.duration.underlineCount;
     final hasDot = note.dots > 0;
@@ -349,15 +350,19 @@ class PdfExporter {
     // 计算五线谱总宽度
     final staffWidth = 50.0 + measures.length * 200.0;
 
+    // 五线谱参数（与Canvas保持一致）
+    // staffY 是第五线（最上面）的Y坐标，对应Canvas的startY
+    final staffY = 30.0; // 第五线（最上面）的Y坐标
+    final lineSpacing = 8.0; // 线间距
+    final staffHeight = 4 * lineSpacing; // 五线谱高度（第五线到第一线）
+    
     return pw.Container(
-      height: 100,
+      height: 100, // 容器高度，留出上下空间用于加线
       child: pw.Stack(
         children: [
-          // 五线 - 使用Container绘制
+          // 五线 - 使用Container绘制（参考Canvas的_drawStaffLines）
           ...List.generate(5, (i) {
-            final topMargin = 30.0;
-            final lineSpacing = 8.0;
-            final y = topMargin + i * lineSpacing;
+            final y = staffY + i * lineSpacing;
             return pw.Positioned(
               left: 0,
               top: y,
@@ -368,11 +373,13 @@ class PdfExporter {
               ),
             );
           }),
-          // 谱号
+          // 谱号（参考Canvas的_drawClef位置计算）
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
-              top: clef == Clef.treble ? 8 : 18,
+              top: clef == Clef.treble 
+                  ? staffY + lineSpacing * 1.5 - 30 // 高音谱号向上调整（字体基准点补偿）
+                  : staffY + lineSpacing * 3 - 15, // 低音谱号居中在第四线
               child: pw.Text(
                 clef == Clef.treble ? SmuflSymbols.trebleClef : SmuflSymbols.bassClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
@@ -384,16 +391,16 @@ class PdfExporter {
             final measureX = 50.0 + measureIndex * 200.0;
             return _buildMeasureNotes(measure, measureX, clef);
           }),
-          // 小节线
+          // 小节线（参考Canvas的_drawBarLine，高度应该覆盖五线谱）
           ...List.generate(measures.length + 1, (i) {
             final x = 50.0 + i * 200.0;
             final isFirstOrLast = i == 0 || i == measures.length;
             return pw.Positioned(
               left: x,
-              top: 30,
+              top: staffY,
               child: pw.Container(
                 width: isFirstOrLast ? 2 : 1,
-                height: 32,
+                height: staffHeight,
                 color: PdfColors.black,
               ),
             );
@@ -467,10 +474,17 @@ class PdfExporter {
           }
         }
 
+        // 绘制加线（如果有需要）
+        final staffPosition = _getStaffPosition(note.pitch, clef == Clef.treble);
+        if (staffPosition < 0 || staffPosition > 8) {
+          widgets.add(_buildLedgerLines(currentX, noteY, staffPosition, clef));
+        }
+
         // 绘制音符
         // SMuFL音符符号的基准点通常在符号中心
         // noteY是音符在五线谱上的位置（音符中心）
         // pw.Text的top是文本顶部，需要向上偏移一半字体高度使中心对齐
+        // 已在上层计算中调整了noteY，这里直接使用
         final noteFontSize = 20.0;
         final noteTop = noteY - noteFontSize / 2;
         
@@ -492,26 +506,97 @@ class PdfExporter {
     return pw.Stack(children: widgets);
   }
 
-  /// 计算音符Y坐标
+  /// 计算音符Y坐标（参考Canvas绘制逻辑）
   double _getNoteY(int pitch, Clef clef) {
-    // 五线谱基准线位置
-    final staffTop = 30.0;
+    // 五线谱参数（与_buildStaffLine中的参数保持一致）
+    final staffY = 30.0; // 第五线（最上面）的Y坐标，对应Canvas的startY
     final lineSpacing = 8.0; // 必须与五线绘制时的间距一致
+    
+    // 使用与Canvas相同的计算方式
+    // staffPosition: 0 = 第一线（最下面，E4 for treble）, 正数向上，负数向下
+    final staffPosition = _getStaffPosition(pitch, clef == Clef.treble);
+    
+    // 第一线（最下面）的Y坐标 = 第五线（最上面）的Y坐标 + 4个间距
+    final firstLineY = staffY + 4 * lineSpacing;
+    
+    // 音符Y坐标：从第一线（最下面）向上移动 staffPosition 个半间距
+    // staffPosition 正数向上（Y减小），负数向下（Y增大）
+    // 向上调整5个像素以补偿SMuFL字体的基准点偏移
+    final noteY = firstLineY - staffPosition * (lineSpacing / 2) - 5.0;
+    
+    return noteY;
+  }
+  
+  /// 获取五线谱位置（与Canvas的_getStaffPosition保持一致）
+  /// 返回值：0 = 第一线(E4 for treble), 正数向上，负数向下
+  int _getStaffPosition(int midi, bool isTreble) {
+    // 高音谱表: E4(64)=0, F4(65)=1, G4(67)=2...
+    // 低音谱表: G2(43)=0, A2(45)=1, B2(47)=2...
+    const trebleBase = 64; // E4
+    const bassBase = 43; // G2
 
-    // 计算音符在五线谱上的位置
-    int position;
-    if (clef == Clef.treble) {
-      // 高音谱号：E4(64)在第一线
-      // 中央C(60)在下加一线
-      position = 64 - pitch;
-    } else {
-      // 低音谱号：G2(43)在第一线
-      // 中央C(60)在上加一线
-      position = 43 - pitch;
+    final base = isTreble ? trebleBase : bassBase;
+
+    // 计算音高差
+    final diff = midi - base;
+
+    // 将半音差转换为线/间位置
+    // 白键的相对位置 [C, D, E, F, G, A, B] = [0, 1, 2, 3, 4, 5, 6]
+    final midiOctave = midi ~/ 12;
+    final baseOctave = base ~/ 12;
+    final octaveDiff = midiOctave - baseOctave;
+
+    // 音符在八度内的位置
+    const notePositionInOctave = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6];
+    final midiNoteInOctave = notePositionInOctave[midi % 12];
+    final baseNoteInOctave = notePositionInOctave[base % 12];
+
+    return octaveDiff * 7 + midiNoteInOctave - baseNoteInOctave;
+  }
+
+  /// 构建加线（下加线和上加线）
+  pw.Widget _buildLedgerLines(double noteX, double noteY, int staffPosition, Clef clef) {
+    final widgets = <pw.Widget>[];
+    final lineSpacing = 8.0;
+    final staffY = 30.0; // 第五线（最上面）的Y坐标，与_buildStaffLine保持一致
+    final firstLineY = staffY + 4 * lineSpacing; // 第一线（最下面）的Y坐标
+    final lineWidth = 20.0; // 加线宽度
+    
+    if (staffPosition < 0) {
+      // 下加线：从下加一线开始画，直到音符所在的线
+      for (var i = -2; i >= staffPosition; i -= 2) {
+        final lineY = firstLineY - i * (lineSpacing / 2);
+        widgets.add(
+          pw.Positioned(
+            left: noteX - lineWidth / 2,
+            top: lineY,
+            child: pw.Container(
+              width: lineWidth,
+              height: 0.5,
+              color: PdfColors.black,
+            ),
+          ),
+        );
+      }
+    } else if (staffPosition > 8) {
+      // 上加线：从上加一线开始画，直到音符所在的线
+      for (var i = 10; i <= staffPosition; i += 2) {
+        final lineY = firstLineY - i * (lineSpacing / 2);
+        widgets.add(
+          pw.Positioned(
+            left: noteX - lineWidth / 2,
+            top: lineY,
+            child: pw.Container(
+              width: lineWidth,
+              height: 0.5,
+              color: PdfColors.black,
+            ),
+          ),
+        );
+      }
     }
-
-    final y = staffTop + position * lineSpacing;
-    return y;
+    
+    return pw.Stack(children: widgets);
   }
 
   /// 构建五线谱音符

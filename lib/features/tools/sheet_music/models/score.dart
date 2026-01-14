@@ -57,11 +57,46 @@ class Note {
     return beats;
   }
 
-  /// 获取简谱数字 (1-7, 0=休止)
+  /// 获取简谱数字 (1-7, 0=休止) - 默认按C调计算
   int get jianpuDegree {
     if (isRest) return 0;
     const degreeMap = [1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6, 7]; // C, C#, D...
     return degreeMap[pitch % 12];
+  }
+
+  /// 根据调号获取简谱数字 (1-7, 0=休止)
+  int getJianpuDegree(MusicKey key) {
+    if (isRest) return 0;
+
+    // 计算相对于调号主音的半音数
+    // 例如：F调的主音是F(5)，C调的主音是C(0)
+    final keyTonicMap = {
+      MusicKey.C: 0,   // C
+      MusicKey.G: 7,   // G
+      MusicKey.D: 2,   // D
+      MusicKey.A: 9,   // A
+      MusicKey.E: 4,   // E
+      MusicKey.B: 11,  // B
+      MusicKey.Fs: 6,  // F#
+      MusicKey.F: 5,   // F
+      MusicKey.Bb: 10, // Bb
+      MusicKey.Eb: 3,  // Eb
+      MusicKey.Ab: 8,  // Ab
+      MusicKey.Db: 1,  // Db
+      MusicKey.Am: 9,  // A (小调)
+      MusicKey.Em: 4,  // E (小调)
+      MusicKey.Dm: 2,  // D (小调)
+    };
+
+    final tonic = keyTonicMap[key] ?? 0;
+
+    // 先将 pitch 转换为音级（0-11），再计算相对于主音的偏移
+    final pitchClass = pitch % 12;
+    final relativePitch = (pitchClass - tonic + 12) % 12;
+
+    // 根据相对音高映射到简谱度数
+    const degreeMap = [1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6, 7];
+    return degreeMap[relativePitch];
   }
 
   /// 获取八度偏移 (相对于中央C所在八度)
