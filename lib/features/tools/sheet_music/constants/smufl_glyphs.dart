@@ -39,6 +39,25 @@ class SMuFLGlyphs {
   static const String noteheadBlack = '\uE0A4';
 
   // ═══════════════════════════════════════════════════════════════
+  // 完整音符 (Complete Notes with stems)
+  // ═══════════════════════════════════════════════════════════════
+
+  /// 全音符（完整） - U+E1D2
+  static const String noteWhole = '\uE1D2';
+
+  /// 二分音符（完整，带符干） - U+E1D3
+  static const String noteHalf = '\uE1D3';
+
+  /// 四分音符（完整，带符干） - U+E1D5
+  static const String noteQuarter = '\uE1D5';
+
+  /// 八分音符（完整，带符干和符尾） - U+E1D7
+  static const String note8th = '\uE1D7';
+
+  /// 十六分音符（完整，带符干和符尾） - U+E1D9
+  static const String note16th = '\uE1D9';
+
+  // ═══════════════════════════════════════════════════════════════
   // 符尾 (Flags)
   // ═══════════════════════════════════════════════════════════════
 

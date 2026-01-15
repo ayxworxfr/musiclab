@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:html' as html;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/theme_controller.dart';
+import '../../../core/utils/file_utils.dart';
 import '../controllers/profile_controller.dart';
 
 /// 设置页面
@@ -474,15 +474,12 @@ class SettingsPage extends StatelessWidget {
       final jsonString = jsonEncode(data);
 
       if (kIsWeb) {
-        // Web平台：创建下载链接
-        final bytes = utf8.encode(jsonString);
-        final blob = html.Blob([bytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
+        // Web平台：下载文件
         final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', 'musiclab_data_$timestamp.json')
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        FileUtils.downloadFile(
+          content: jsonString,
+          filename: 'musiclab_data_$timestamp.json',
+        );
 
         Get.snackbar(
           '导出成功',
@@ -513,55 +510,42 @@ class SettingsPage extends StatelessWidget {
   /// 导入数据
   Future<void> _importData(BuildContext context) async {
     if (kIsWeb) {
-      // Web平台：使用文件选择器
-      final input = html.FileUploadInputElement()..accept = '.json';
-      input.click();
+      try {
+        // Web平台：选择并读取文件
+        final content = await FileUtils.pickAndReadTextFile(accept: '.json');
+        if (content == null) return;
 
-      input.onChange.listen((e) async {
-        final files = input.files;
-        if (files == null || files.isEmpty) return;
+        final data = jsonDecode(content) as Map<String, dynamic>;
 
-        final file = files[0];
-        final reader = html.FileReader();
+        final profileController = Get.find<ProfileController>();
+        final success = await profileController.importData(data);
 
-        reader.onLoadEnd.listen((e) async {
-          try {
-            final content = reader.result as String;
-            final data = jsonDecode(content) as Map<String, dynamic>;
-
-            final profileController = Get.find<ProfileController>();
-            final success = await profileController.importData(data);
-
-            if (success) {
-              Get.snackbar(
-                '导入成功',
-                '数据已恢复',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-              );
-            } else {
-              Get.snackbar(
-                '导入失败',
-                '数据格式不正确',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.red,
-                colorText: Colors.white,
-              );
-            }
-          } catch (e) {
-            Get.snackbar(
-              '导入失败',
-              '无法解析文件: $e',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-            );
-          }
-        });
-
-        reader.readAsText(file);
-      });
+        if (success) {
+          Get.snackbar(
+            '导入成功',
+            '数据已恢复',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+        } else {
+          Get.snackbar(
+            '导入失败',
+            '数据格式不正确',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } catch (e) {
+        Get.snackbar(
+          '导入失败',
+          '无法解析文件: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
     } else {
       // 移动平台：TODO
       Get.snackbar(

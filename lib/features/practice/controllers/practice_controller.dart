@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
+import '../../../core/settings/settings_service.dart';
 import '../../../core/utils/logger_util.dart';
 import '../../../shared/enums/practice_type.dart';
 import '../models/practice_model.dart';
@@ -11,6 +12,7 @@ import '../services/question_generator.dart';
 class PracticeController extends GetxController {
   final AudioService _audioService = Get.find<AudioService>();
   final PracticeRepository _repository = Get.find<PracticeRepository>();
+  final SettingsService _settingsService = Get.find<SettingsService>();
   final QuestionGenerator _questionGenerator = QuestionGenerator();
 
   /// 当前练习类型
@@ -18,6 +20,9 @@ class PracticeController extends GetxController {
 
   /// 当前难度
   final currentDifficulty = 1.obs;
+
+  /// 默认题目数量
+  final defaultQuestionCount = 10.obs;
 
   /// 题目列表
   final questions = <PracticeQuestion>[].obs;
@@ -62,17 +67,41 @@ class PracticeController extends GetxController {
   /// 进度（0.0 - 1.0）
   double get progress => questions.isEmpty ? 0 : (currentIndex.value + 1) / questions.length;
 
+  @override
+  void onInit() {
+    super.onInit();
+    _loadSettings();
+  }
+
+  /// 加载练习设置
+  void _loadSettings() {
+    currentDifficulty.value = _settingsService.getPracticeDefaultDifficulty();
+    defaultQuestionCount.value = _settingsService.getPracticeDefaultQuestionCount();
+  }
+
   /// 开始练习
   void startPractice({
     required PracticeType type,
     required int difficulty,
-    int questionCount = 10,
+    int? questionCount,
   }) {
     currentType.value = type;
     currentDifficulty.value = difficulty;
 
+    // 保存用户选择的难度
+    _settingsService.setPracticeDefaultDifficulty(difficulty);
+
+    // 使用传入的题数，如果没有则使用默认值
+    final count = questionCount ?? defaultQuestionCount.value;
+
+    // 如果用户指定了题数，保存为新的默认值
+    if (questionCount != null) {
+      _settingsService.setPracticeDefaultQuestionCount(questionCount);
+      defaultQuestionCount.value = questionCount;
+    }
+
     // 生成题目
-    questions.value = _generateQuestions(type, difficulty, questionCount);
+    questions.value = _generateQuestions(type, difficulty, count);
 
     // 重置状态
     currentIndex.value = 0;

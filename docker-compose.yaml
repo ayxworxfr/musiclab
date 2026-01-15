@@ -1,6 +1,7 @@
 services:
   flutter:
     image: ghcr.io/cirruslabs/flutter:3.35.0
+    platform: linux/amd64  # 指定使用x86_64架构，避免arm64架构问题
     volumes:
       - .:/app
       - flutter-cache:/opt/flutter/.pub-cache

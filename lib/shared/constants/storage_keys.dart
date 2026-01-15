@@ -116,4 +116,11 @@ abstract class StorageKeys {
 
   /// 主音量（0.0-1.0）
   static const String audioMasterVolume = 'audio_master_volume';
+
+  // ========== 练习设置 ==========
+  /// 练习默认难度（1-3）
+  static const String practiceDefaultDifficulty = 'practice_default_difficulty';
+
+  /// 练习默认题目数量
+  static const String practiceDefaultQuestionCount = 'practice_default_question_count';
 }

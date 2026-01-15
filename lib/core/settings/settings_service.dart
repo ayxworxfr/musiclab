@@ -228,5 +228,34 @@ class SettingsService extends GetxService {
     await resetMetronomeSettings();
     await resetSheetMusicSettings();
     await resetAudioSettings();
+    await resetPracticeSettings();
+  }
+
+  // ==================== 练习设置 ====================
+
+  /// 获取练习默认难度（默认1）
+  int getPracticeDefaultDifficulty() {
+    return _storage.getInt(StorageKeys.practiceDefaultDifficulty) ?? 1;
+  }
+
+  /// 设置练习默认难度
+  Future<bool> setPracticeDefaultDifficulty(int value) {
+    return _storage.setInt(StorageKeys.practiceDefaultDifficulty, value);
+  }
+
+  /// 获取练习默认题目数量（默认10）
+  int getPracticeDefaultQuestionCount() {
+    return _storage.getInt(StorageKeys.practiceDefaultQuestionCount) ?? 10;
+  }
+
+  /// 设置练习默认题目数量
+  Future<bool> setPracticeDefaultQuestionCount(int value) {
+    return _storage.setInt(StorageKeys.practiceDefaultQuestionCount, value);
+  }
+
+  /// 重置练习设置为默认值
+  Future<void> resetPracticeSettings() async {
+    await setPracticeDefaultDifficulty(1);
+    await setPracticeDefaultQuestionCount(10);
   }
 }

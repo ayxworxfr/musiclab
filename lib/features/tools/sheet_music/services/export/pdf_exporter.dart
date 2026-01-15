@@ -636,18 +636,19 @@ class PdfExporter {
     String noteSymbol;
     switch (note.duration) {
       case NoteDuration.whole:
-        noteSymbol = SMuFLGlyphs.noteheadWhole;
+        noteSymbol = SMuFLGlyphs.noteWhole;
         break;
       case NoteDuration.half:
-        noteSymbol = SMuFLGlyphs.noteheadHalf;
+        noteSymbol = SMuFLGlyphs.noteHalf;
         break;
       case NoteDuration.eighth:
+        noteSymbol = SMuFLGlyphs.note8th;
+        break;
       case NoteDuration.sixteenth:
-      case NoteDuration.thirtySecond:
-        noteSymbol = SMuFLGlyphs.noteheadBlack;
+        noteSymbol = SMuFLGlyphs.note16th;
         break;
       default:
-        noteSymbol = SMuFLGlyphs.noteheadBlack; // 四分音符使用实心符头
+        noteSymbol = SMuFLGlyphs.noteQuarter;
     }
 
     return pw.Text(

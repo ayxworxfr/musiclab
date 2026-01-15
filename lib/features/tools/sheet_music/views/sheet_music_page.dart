@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:html' as html;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/file_utils.dart';
 import '../controllers/sheet_music_controller.dart';
 import '../models/score.dart';
 import '../models/enums.dart';
@@ -385,15 +385,12 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     try {
       final jsonString = controller.exportScore(score);
 
-      // 在 Web 平台，创建下载链接
+      // 在 Web 平台，下载文件
       if (kIsWeb) {
-        final bytes = utf8.encode(jsonString);
-        final blob = html.Blob([bytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', '${score.title}.json')
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        FileUtils.downloadFile(
+          content: jsonString,
+          filename: '${score.title}.json',
+        );
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
