@@ -1,8 +1,11 @@
 import 'package:get/get.dart';
 
 import '../../auth/services/auth_service.dart';
+import '../../profile/models/learning_stats_model.dart';
 import '../../profile/repositories/profile_repository.dart';
+import '../../../core/storage/storage_service.dart';
 import '../../../core/utils/logger_util.dart';
+import '../../../shared/constants/storage_keys.dart';
 
 /// 首页控制器
 class HomeController extends GetxController {
@@ -14,6 +17,9 @@ class HomeController extends GetxController {
 
   // 获取个人中心仓库
   ProfileRepository get _profileRepository => Get.find<ProfileRepository>();
+  
+  // 获取存储服务
+  StorageService get _storage => Get.find<StorageService>();
 
   /// 是否已登录
   bool get isLoggedIn => _authService.isLoggedIn;
@@ -38,21 +44,40 @@ class HomeController extends GetxController {
     try {
       final stats = await _profileRepository.getLearningStats();
       final today = DateTime.now();
+      final todayStr = _formatDate(today);
 
-      // 检查今日是否有学习记录
+      // 查找今日记录
+      DailyLearningRecord? todayRecord;
       if (stats.weeklyRecords.isNotEmpty) {
-        final todayRecord = stats.weeklyRecords.firstWhere(
-          (record) => record.date == _formatDate(today),
-          orElse: () => stats.weeklyRecords.first,
-        );
+        try {
+          todayRecord = stats.weeklyRecords.firstWhere(
+            (record) => record.date == todayStr,
+          );
+        } catch (_) {
+          // 没有找到今日记录，使用默认值
+          todayRecord = null;
+        }
+      }
 
+      // 更新任务状态
+      if (todayRecord != null) {
         todayCompletedLesson.value = todayRecord.completedLessons > 0;
         todayCompletedPractice.value = todayRecord.practiceCount > 0;
-        // 暂时无法判断是否使用了钢琴，保持为false
-        todayUsedPiano.value = false;
+      } else {
+        // 没有今日记录，重置为 false
+        todayCompletedLesson.value = false;
+        todayCompletedPractice.value = false;
       }
+      
+      // 检查今天是否使用了钢琴
+      final lastPianoDate = _storage.getString('last_piano_usage_date');
+      todayUsedPiano.value = lastPianoDate == todayStr;
     } catch (e) {
       LoggerUtil.warning('加载今日任务失败', e);
+      // 发生错误时重置状态
+      todayCompletedLesson.value = false;
+      todayCompletedPractice.value = false;
+      todayUsedPiano.value = false;
     }
   }
 

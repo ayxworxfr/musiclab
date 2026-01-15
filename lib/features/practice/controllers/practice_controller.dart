@@ -4,6 +4,7 @@ import '../../../core/audio/audio_service.dart';
 import '../../../core/settings/settings_service.dart';
 import '../../../core/utils/logger_util.dart';
 import '../../../shared/enums/practice_type.dart';
+import '../../profile/controllers/profile_controller.dart';
 import '../models/practice_model.dart';
 import '../repositories/practice_repository.dart';
 import '../services/question_generator.dart';
@@ -225,20 +226,25 @@ class PracticeController extends GetxController {
   }
 
   /// 完成练习
-  void _completePractice() async {
+  Future<void> _completePractice() async {
     isCompleted.value = true;
     totalSeconds.value = DateTime.now().difference(_startTime!).inSeconds;
 
     _audioService.playComplete();
 
     // 保存练习记录
-    final record = getPracticeRecord();
-    await _repository.savePracticeRecord(record);
+    try {
+      final record = getPracticeRecord();
+      await _repository.savePracticeRecord(record);
+      LoggerUtil.info('练习记录保存成功: ${record.id}');
+    } catch (e) {
+      LoggerUtil.error('保存练习记录失败', e);
+    }
 
     // 更新学习统计
     try {
-      final profileController = Get.find<dynamic>();
-      if (profileController != null && profileController.runtimeType.toString() == 'ProfileController') {
+      if (Get.isRegistered<ProfileController>()) {
+        final profileController = Get.find<ProfileController>();
         await profileController.recordPractice(
           total: questions.length,
           correct: correctCount,

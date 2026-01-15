@@ -51,19 +51,19 @@ class CourseRepositoryImpl implements CourseRepository {
       final courses = <CourseModel>[];
 
       // 加载简谱入门课程
-      final jianpuCourse = await _loadCourseFromAsset('assets/data/courses/jianpu_basics.json');
+      final jianpuCourse = await _loadCourseFromAsset('data/courses/jianpu_basics.json');
       if (jianpuCourse != null) {
         courses.add(jianpuCourse);
       }
 
       // 加载五线谱入门课程
-      final staffCourse = await _loadCourseFromAsset('assets/data/courses/staff_basics.json');
+      final staffCourse = await _loadCourseFromAsset('data/courses/staff_basics.json');
       if (staffCourse != null) {
         courses.add(staffCourse);
       }
 
       // 加载钢琴入门课程
-      final pianoCourse = await _loadCourseFromAsset('assets/data/courses/piano_basics.json');
+      final pianoCourse = await _loadCourseFromAsset('data/courses/piano_basics.json');
       if (pianoCourse != null) {
         courses.add(pianoCourse);
       };

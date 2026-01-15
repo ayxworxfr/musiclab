@@ -64,6 +64,12 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   // 乐谱滚动控制器
   final ScrollController _scoreScrollController = ScrollController();
 
+  // 底部固定区域高度（钢琴 + 控制区）
+  double _bottomFixedHeight = 0.0;
+  
+  // Header的GlobalKey用于精确获取高度
+  final GlobalKey _headerKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -112,6 +118,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
             ? widget.config.pianoHeight + 220.0
             : 190.0;
 
+        // 存储底部高度供滚动计算使用
+        _bottomFixedHeight = bottomHeight;
+
         return Column(
           children: [
             // 可滚动的乐谱区域
@@ -158,6 +167,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
   Widget _buildHeader() {
     return Container(
+      key: _headerKey,
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
@@ -665,46 +675,73 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   }
 
   /// 滚动乐谱到当前播放位置
+  /// 核心逻辑：让播放音符所在的行滚动到可视区域的顶部（第一行）
   void _scrollToCurrentPlayPosition(double currentTime) {
     if (!_scoreScrollController.hasClients || _layout == null) return;
 
-    // 找到当前时间对应的音符位置
-    NoteLayout? currentNote;
-    for (final noteLayout in _layout!.noteLayouts) {
-      // 计算音符的结束时间
-      final noteDuration = noteLayout.note.duration.beats;
-      final endTime = noteLayout.startTime + noteDuration;
-
-      if (noteLayout.startTime <= currentTime && endTime >= currentTime) {
-        currentNote = noteLayout;
-        break;
-      }
-    }
-
+    // 1. 找到当前时间对应的音符
+    final currentNote = _findNoteAtTime(currentTime);
     if (currentNote == null) return;
 
-    // 计算音符的 Y 位置（考虑header高度）
-    final headerHeight = 120.0; // 估算header高度
-    final noteY = currentNote.y + headerHeight;
+    // 2. 找到该音符所在的行
+    final currentLine = _findLineForMeasure(currentNote.measureIndex);
+    if (currentLine == null) return;
 
-    // 获取可视区域高度
-    final viewportHeight = _scoreScrollController.position.viewportDimension;
+    // 3. 获取header的实际高度（用于计算行的绝对位置）
+    final headerHeight = _getHeaderHeight();
 
-    // 计算目标滚动位置（让当前播放的音符显示在屏幕顶部，约10%处）
-    final targetScroll = (noteY - viewportHeight * 0.1).clamp(
+    // 4. 计算目标滚动位置
+    // 行的Y坐标是相对于乐谱内容区域的起始位置
+    // 要让这一行显示在可视区域顶部，滚动位置 = header高度 + 行的Y坐标
+    final targetScroll = (headerHeight + currentLine.y).clamp(
       0.0,
       _scoreScrollController.position.maxScrollExtent,
     );
 
-    // 只有当目标位置与当前位置差距较大时才滚动（避免频繁小幅滚动）
+    // 5. 只有当目标位置与当前位置差距较大时才滚动（避免频繁小幅滚动）
     final currentScroll = _scoreScrollController.offset;
-    if ((targetScroll - currentScroll).abs() > viewportHeight * 0.1) {
+    if ((targetScroll - currentScroll).abs() > 30) {
       _scoreScrollController.animateTo(
         targetScroll,
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
       );
     }
+  }
+
+  /// 根据时间查找对应的音符
+  NoteLayout? _findNoteAtTime(double currentTime) {
+    for (final noteLayout in _layout!.noteLayouts) {
+      final noteDuration = noteLayout.note.duration.beats;
+      final endTime = noteLayout.startTime + noteDuration;
+      if (noteLayout.startTime <= currentTime && endTime >= currentTime) {
+        return noteLayout;
+      }
+    }
+    return null;
+  }
+
+  /// 根据小节索引查找对应的行
+  LineLayout? _findLineForMeasure(int measureIndex) {
+    for (final line in _layout!.lines) {
+      if (line.measureIndices.contains(measureIndex)) {
+        return line;
+      }
+    }
+    return null;
+  }
+
+  /// 获取header的实际高度
+  double _getHeaderHeight() {
+    if (_headerKey.currentContext != null) {
+      final RenderBox? headerBox =
+          _headerKey.currentContext?.findRenderObject() as RenderBox?;
+      if (headerBox != null && headerBox.hasSize) {
+        return headerBox.size.height;
+      }
+    }
+    // 如果无法获取实际高度，返回估算值（基于实际header内容）
+    return 120.0;
   }
 
   Widget _buildPlaybackControls() {

@@ -75,12 +75,48 @@ class SettingsPage extends StatelessWidget {
   }
 
   Widget _buildThemeCard(BuildContext context, bool isDark) {
-    // 安全获取 ThemeController
-    ThemeController? themeController;
-    try {
-      themeController = Get.find<ThemeController>();
-    } catch (e) {
-      // 如果未找到，返回简单的主题卡片
+    // ThemeController 应该在 AppBinding 中已注册
+    if (!Get.isRegistered<ThemeController>()) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            _buildSwitchTile(
+              context,
+              icon: Icons.dark_mode,
+              title: '深色模式',
+              subtitle: '切换亮色/深色主题',
+              value: isDark,
+              onChanged: (value) {},
+            ),
+            const Divider(height: 1, indent: 56),
+            _buildTile(
+              context,
+              icon: Icons.color_lens,
+              title: '主题色',
+              trailing: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              onTap: () {},
+            ),
+          ],
+        ),
+      );
     }
     
     return Container(
@@ -95,70 +131,79 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-      child: themeController != null
-          ? GetBuilder<ThemeController>(
-              init: themeController,
-              builder: (controller) {
-                return Column(
-                  children: [
-                    _buildSwitchTile(
-                      context,
-                      icon: Icons.dark_mode,
-                      title: '深色模式',
-                      subtitle: '切换亮色/深色主题',
-                      value: controller.isDarkMode,
-                      onChanged: (value) => controller.toggleTheme(),
-                    ),
-                    const Divider(height: 1, indent: 56),
-                    _buildTile(
-                      context,
-                      icon: Icons.color_lens,
-                      title: '主题色',
-                      trailing: Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      onTap: () => _showThemeColorPicker(context),
-                    ),
-                  ],
-                );
-              },
-            )
-          : Column(
-              children: [
-                _buildSwitchTile(
-                  context,
-                  icon: Icons.dark_mode,
-                  title: '深色模式',
-                  subtitle: '切换亮色/深色主题',
-                  value: isDark,
-                  onChanged: (value) {},
-                ),
-                const Divider(height: 1, indent: 56),
-                _buildTile(
-                  context,
-                  icon: Icons.color_lens,
-                  title: '主题色',
-                  trailing: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+      child: GetBuilder<ThemeController>(
+        builder: (controller) {
+          return Column(
+            children: [
+              _buildSwitchTile(
+                context,
+                icon: Icons.dark_mode,
+                title: '深色模式',
+                subtitle: '切换亮色/深色主题',
+                value: controller.isDarkMode,
+                onChanged: (value) => controller.setDarkMode(value),
+              ),
+              const Divider(height: 1, indent: 56),
+              _buildTile(
+                context,
+                icon: Icons.color_lens,
+                title: '主题色',
+                trailing: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  onTap: () => _showThemeColorPicker(context),
                 ),
-              ],
-            ),
+                onTap: () => _showThemeColorPicker(context),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
   Widget _buildSoundCard(BuildContext context, bool isDark) {
+    // ProfileController 应该在 ProfileBinding 中已注册
+    if (!Get.isRegistered<ProfileController>()) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            _buildSwitchTile(
+              context,
+              icon: Icons.piano,
+              title: '钢琴音效',
+              subtitle: '弹奏钢琴时播放声音',
+              value: false,
+              onChanged: (value) {},
+            ),
+            const Divider(height: 1, indent: 56),
+            _buildSwitchTile(
+              context,
+              icon: Icons.music_note,
+              title: '效果音',
+              subtitle: '正确/错误提示音',
+              value: false,
+              onChanged: (value) {},
+            ),
+          ],
+        ),
+      );
+    }
+
     final profileController = Get.find<ProfileController>();
 
     return Container(
@@ -386,6 +431,11 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _showThemeColorPicker(BuildContext context) {
+    if (!Get.isRegistered<ThemeController>()) {
+      _showComingSoon(context);
+      return;
+    }
+
     final themeController = Get.find<ThemeController>();
 
     Get.dialog(

@@ -1,20 +1,25 @@
 services:
   flutter:
     image: ghcr.io/cirruslabs/flutter:3.35.0
-    platform: linux/amd64  # 指定使用x86_64架构，避免arm64架构问题
+    platform: linux/amd64
     volumes:
       - .:/app
-      - ./shell/flutter-android-build.sh:/flutter-android-build.sh
       - flutter-cache:/opt/flutter/.pub-cache
       - gradle-cache:/root/.gradle
     working_dir: /app
     environment:
-      # 配置 Flutter 中国镜像
+      # Flutter 中国镜像
       - PUB_HOSTED_URL=https://pub.flutter-io.cn
       - FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
-      # 配置 Gradle 中国镜像
-      - GRADLE_OPTS=-Dgradle.user.home=/root/.gradle -Dorg.gradle.daemon=false
-    command: chmod +x /flutter-android-build.sh && /flutter-android-build.sh
+      # Gradle 配置
+      - GRADLE_OPTS=-Dorg.gradle.daemon=false
+    # 添加 --android-skip-build-dependency-validation 和 --no-track-widget-creation
+    command: >
+      sh -c "
+        flutter clean && 
+        flutter pub get && 
+        flutter build apk --release --android-skip-build-dependency-validation --no-track-widget-creation
+      "
 
 volumes:
   flutter-cache:

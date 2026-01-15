@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../../core/utils/logger_util.dart';
+import '../../profile/controllers/profile_controller.dart';
 import '../models/course_model.dart';
 import '../repositories/course_repository.dart';
 
@@ -76,6 +77,16 @@ class CourseController extends GetxController {
       currentCourse.value!.id,
       completedCount,
     );
+
+    // 更新学习统计
+    try {
+      if (Get.isRegistered<ProfileController>()) {
+        final profileController = Get.find<ProfileController>();
+        await profileController.recordCompletedLesson();
+      }
+    } catch (e) {
+      LoggerUtil.warning('更新学习统计失败', e);
+    }
 
     // 刷新数据
     await loadCourses();

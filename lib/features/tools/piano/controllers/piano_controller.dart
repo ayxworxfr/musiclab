@@ -4,11 +4,14 @@ import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/settings/settings_service.dart';
+import '../../../../core/storage/storage_service.dart';
+import '../../../home/controllers/home_controller.dart';
 
 /// 虚拟钢琴控制器
 class PianoController extends GetxController {
   final AudioService _audioService = Get.find<AudioService>();
   final SettingsService _settingsService = Get.find<SettingsService>();
+  final StorageService _storage = Get.find<StorageService>();
 
   /// 起始 MIDI 编号
   final startMidi = 48.obs; // C3
@@ -54,6 +57,33 @@ class PianoController extends GetxController {
     super.onInit();
     _loadSettings();
     _setupListeners();
+    _recordPianoUsage();
+  }
+
+  /// 记录使用虚拟钢琴
+  void _recordPianoUsage() {
+    try {
+      final today = DateTime.now();
+      final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+      final lastPianoDate = _storage.getString('last_piano_usage_date');
+      
+      // 如果今天还没有记录使用钢琴，则记录
+      if (lastPianoDate != todayStr) {
+        _storage.setString('last_piano_usage_date', todayStr);
+        
+        // 通知 HomeController 更新任务状态
+        try {
+          if (Get.isRegistered<HomeController>()) {
+            final homeController = Get.find<HomeController>();
+            homeController.loadTodayTasks();
+          }
+        } catch (e) {
+          // 忽略错误
+        }
+      }
+    } catch (e) {
+      // 忽略错误
+    }
   }
 
   /// 加载保存的设置

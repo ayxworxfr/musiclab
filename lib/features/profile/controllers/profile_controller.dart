@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
 import '../../../core/settings/settings_service.dart';
+import '../../home/controllers/home_controller.dart';
 import '../models/achievement_model.dart';
 import '../models/learning_stats_model.dart';
 import '../repositories/profile_repository.dart';
@@ -68,12 +69,14 @@ class ProfileController extends GetxController {
   Future<void> recordLearningDuration(int seconds) async {
     await _repository.updateTodayRecord(addDuration: seconds);
     await refresh();
+    _notifyHomeController();
   }
 
   /// 记录完成课时
   Future<void> recordCompletedLesson() async {
     await _repository.updateTodayRecord(addLessons: 1);
     await refresh();
+    _notifyHomeController();
   }
 
   /// 记录练习
@@ -83,6 +86,19 @@ class ProfileController extends GetxController {
       addCorrect: correct,
     );
     await refresh();
+    _notifyHomeController();
+  }
+
+  /// 通知首页控制器刷新数据
+  void _notifyHomeController() {
+    try {
+      if (Get.isRegistered<HomeController>()) {
+        final homeController = Get.find<HomeController>();
+        homeController.loadTodayTasks();
+      }
+    } catch (e) {
+      // 忽略错误，HomeController 可能未注册
+    }
   }
 
   /// 清除新解锁成就提示
