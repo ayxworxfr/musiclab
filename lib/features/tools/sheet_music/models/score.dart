@@ -362,12 +362,48 @@ class Track {
   });
 
   factory Track.fromJson(Map<String, dynamic> json) {
+    // 兼容旧数据：可能存储的是中文名称（'G谱号'）或枚举名称（'treble'）
+    Clef parseClef(dynamic clefValue) {
+      if (clefValue == null) return Clef.treble;
+      final clefStr = clefValue.toString();
+      // 先尝试按枚举名称解析
+      try {
+        return Clef.values.byName(clefStr);
+      } catch (_) {
+        // 如果失败，尝试按中文名称匹配
+        for (final clef in Clef.values) {
+          if (clef.name == clefStr) {
+            return clef;
+          }
+        }
+        // 默认返回高音谱号
+        return Clef.treble;
+      }
+    }
+    
+    // 兼容旧数据：可能存储的是中文名称（'钢琴'）或枚举名称（'piano'）
+    Instrument parseInstrument(dynamic instrumentValue) {
+      if (instrumentValue == null) return Instrument.piano;
+      final instrumentStr = instrumentValue.toString();
+      // 先尝试按枚举名称解析
+      try {
+        return Instrument.values.byName(instrumentStr);
+      } catch (_) {
+        // 如果失败，尝试按中文名称匹配
+        for (final instrument in Instrument.values) {
+          if (instrument.name == instrumentStr) {
+            return instrument;
+          }
+        }
+        // 默认返回钢琴
+        return Instrument.piano;
+      }
+    }
+    
     return Track(
       id: json['id'] as String? ?? 'track_1',
       name: json['name'] as String? ?? '轨道',
-      clef: json['clef'] != null
-          ? Clef.values.byName(json['clef'] as String)
-          : Clef.treble,
+      clef: parseClef(json['clef']),
       hand: json['hand'] != null
           ? Hand.values.byName(json['hand'] as String)
           : null,
@@ -375,9 +411,7 @@ class Track {
               ?.map((e) => Measure.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      instrument: json['instrument'] != null
-          ? Instrument.values.byName(json['instrument'] as String)
-          : Instrument.piano,
+      instrument: parseInstrument(json['instrument']),
       isMuted: json['isMuted'] as bool? ?? false,
       volume: (json['volume'] as num?)?.toDouble() ?? 1.0,
     );
@@ -461,6 +495,25 @@ class ScoreMetadata {
   String get timeSignature => '$beatsPerMeasure/$beatUnit';
 
   factory ScoreMetadata.fromJson(Map<String, dynamic> json) {
+    // 兼容旧数据：可能存储的是中文标签（'儿歌'）或枚举名称（'children'）
+    ScoreCategory parseCategory(dynamic categoryValue) {
+      if (categoryValue == null) return ScoreCategory.children;
+      final categoryStr = categoryValue.toString();
+      // 先尝试按枚举名称解析
+      try {
+        return ScoreCategory.values.byName(categoryStr);
+      } catch (_) {
+        // 如果失败，尝试按中文标签匹配
+        for (final category in ScoreCategory.values) {
+          if (category.label == categoryStr) {
+            return category;
+          }
+        }
+        // 默认返回儿歌
+        return ScoreCategory.children;
+      }
+    }
+    
     return ScoreMetadata(
       key: json['key'] != null
           ? MusicKey.fromString(json['key'] as String)
@@ -470,9 +523,7 @@ class ScoreMetadata {
       tempo: json['tempo'] as int? ?? 120,
       tempoText: json['tempoText'] as String?,
       difficulty: json['difficulty'] as int? ?? 1,
-      category: json['category'] != null
-          ? ScoreCategory.values.byName(json['category'] as String)
-          : ScoreCategory.children,
+      category: parseCategory(json['category']),
       tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
     );
   }

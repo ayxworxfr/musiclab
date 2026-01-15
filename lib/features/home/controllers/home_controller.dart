@@ -32,11 +32,28 @@ class HomeController extends GetxController {
   final todayCompletedPractice = false.obs;
   final todayUsedPiano = false.obs;
 
+  /// 连续学习天数
+  int streakDays = 0;
+
   @override
   void onInit() {
     super.onInit();
     LoggerUtil.info('首页初始化');
     loadTodayTasks();
+    loadStreakDays();
+  }
+
+  /// 加载连续学习天数
+  Future<void> loadStreakDays() async {
+    try {
+      final stats = await _profileRepository.getLearningStats();
+      streakDays = stats.streakDays;
+      update(); // 通知 UI 更新
+    } catch (e) {
+      LoggerUtil.warning('加载连续学习天数失败', e);
+      streakDays = 0;
+      update();
+    }
   }
 
   /// 加载今日任务完成状态
@@ -61,8 +78,8 @@ class HomeController extends GetxController {
 
       // 更新任务状态
       if (todayRecord != null) {
-        todayCompletedLesson.value = todayRecord.completedLessons > 0;
-        todayCompletedPractice.value = todayRecord.practiceCount > 0;
+        todayCompletedLesson.value = todayRecord.completedLessons >= 1;
+        todayCompletedPractice.value = todayRecord.practiceCount >= 10; // 需要完成10道题
       } else {
         // 没有今日记录，重置为 false
         todayCompletedLesson.value = false;

@@ -69,8 +69,11 @@ class SheetStorageService extends GetxService {
 
       final sheets = data
           .map((json) {
-            final map = json as Map;
-            return Score.fromJson(Map<String, dynamic>.from(map));
+            // 使用 JSON 编码/解码来确保类型正确转换
+            // 这样可以处理 LinkedMap 等特殊 Map 类型
+            final jsonString = jsonEncode(json);
+            final map = jsonDecode(jsonString) as Map<String, dynamic>;
+            return Score.fromJson(map);
           })
           .toList();
 

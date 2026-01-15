@@ -50,53 +50,57 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildWelcomeSection(BuildContext context, bool isDark) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '👋 欢迎回来！',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                ),
+    return GetBuilder<HomeController>(
+      builder: (controller) {
+        return Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '👋 欢迎回来！',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppConstants.slogan,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                AppConstants.slogan,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
-                ),
+            ),
+            // 连续学习天数
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
               ),
-            ],
-          ),
-        ),
-        // 连续学习天数
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.local_fire_department, color: Colors.orange, size: 20),
-              SizedBox(width: 4),
-              Text(
-                '1天',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
+              child: Row(
+                children: [
+                  const Icon(Icons.local_fire_department, color: Colors.orange, size: 20),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${controller.streakDays}天',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
