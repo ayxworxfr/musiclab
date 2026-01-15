@@ -33,13 +33,17 @@ class SheetMusicPage extends GetView<SheetMusicController> {
           PopupMenuButton<String>(
             icon: const Icon(Icons.add),
             tooltip: '添加乐谱',
-            onSelected: (value) {
+            onSelected: (value) async {
               switch (value) {
                 case 'new':
-                  Get.toNamed(AppRoutes.sheetEditor);
+                  await Get.toNamed(AppRoutes.sheetEditor);
+                  // 返回后刷新列表
+                  controller.refreshScores();
                   break;
                 case 'import':
-                  Get.toNamed(AppRoutes.sheetImport);
+                  await Get.toNamed(AppRoutes.sheetImport);
+                  // 返回后刷新列表（导入页面已保存，这里刷新即可）
+                  controller.refreshScores();
                   break;
               }
             },
@@ -184,9 +188,11 @@ class SheetMusicPage extends GetView<SheetMusicController> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
+          onTap: () async {
             controller.selectScore(score);
-            Get.toNamed(AppRoutes.sheetDetail, arguments: {'scoreId': score.id});
+            await Get.toNamed(AppRoutes.sheetDetail, arguments: {'scoreId': score.id});
+            // 返回后刷新列表（可能编辑或删除了乐谱）
+            controller.refreshScores();
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
