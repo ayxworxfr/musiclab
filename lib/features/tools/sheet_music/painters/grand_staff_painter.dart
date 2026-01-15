@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/smufl_glyphs.dart';
 import '../layout/layout_result.dart';
 import '../models/enums.dart';
 import '../models/score.dart';
@@ -367,20 +368,8 @@ class GrandStaffPainter extends CustomPainter {
     // 加线
     _drawLedgerLines(canvas, noteLayout);
 
-    // 符头
-    final noteHeadPaint = Paint()
-      ..color = noteColor
-      ..style = note.duration == NoteDuration.whole || note.duration == NoteDuration.half
-          ? PaintingStyle.stroke
-          : PaintingStyle.fill
-      ..strokeWidth = 1.5;
-
-    final headRect = Rect.fromCenter(
-      center: Offset(x, y),
-      width: config.noteHeadRadius * 2.5,
-      height: config.noteHeadRadius * 2,
-    );
-    canvas.drawOval(headRect, noteHeadPaint);
+    // 符头 - 使用 SMuFL 字体
+    _drawNoteHead(canvas, x, y, note.duration, noteColor);
 
     // 符干
     if (note.duration != NoteDuration.whole) {
@@ -464,6 +453,43 @@ class GrandStaffPainter extends CustomPainter {
     }
   }
 
+  /// 绘制音符头 - 使用 SMuFL 字体
+  void _drawNoteHead(Canvas canvas, double x, double y, NoteDuration duration, Color color) {
+    String symbol;
+    double fontSize;
+
+    // 根据时值选择符号
+    if (duration == NoteDuration.whole) {
+      symbol = SMuFLGlyphs.noteheadWhole;
+      fontSize = 38;
+    } else if (duration == NoteDuration.half) {
+      symbol = SMuFLGlyphs.noteheadHalf;
+      fontSize = 38;
+    } else {
+      // 四分音符及更短音符使用实心符头
+      symbol = SMuFLGlyphs.noteheadBlack;
+      fontSize = 38;
+    }
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: symbol,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontFamily: SMuFLGlyphs.fontFamily,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    // 居中绘制符头
+    textPainter.paint(
+      canvas,
+      Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+    );
+  }
+
   void _drawStem(Canvas canvas, NoteLayout noteLayout, Color color) {
     final stemPaint = Paint()
       ..color = color
@@ -501,39 +527,41 @@ class GrandStaffPainter extends CustomPainter {
     final stemX = stemUp ? x + config.noteHeadRadius - 1 : x - config.noteHeadRadius + 1;
     final stemEndY = stemUp ? y - config.stemLength : y + config.stemLength;
 
-    // 手动绘制符尾线条而不是使用Unicode符号
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
+    // 使用 SMuFL 字体符号绘制符尾
+    final flagGlyph = SMuFLGlyphs.getFlag(beamCount, stemUp);
+    if (flagGlyph.isEmpty) return;
 
-    const flagLength = 12.0; // 符尾长度
-    const flagCurve = 8.0;   // 符尾弯曲度
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: flagGlyph,
+        style: TextStyle(
+          fontSize: 38,
+          fontFamily: SMuFLGlyphs.fontFamily,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
 
-    for (var i = 0; i < beamCount; i++) {
-      final offsetY = stemUp ? i * 5.0 : -i * 5.0; // 每条符尾间距5像素
-      final startY = stemEndY + offsetY;
-      final endX = stemUp ? stemX + flagLength : stemX - flagLength;
-      final endY = startY + (stemUp ? flagCurve : -flagCurve);
+    // 符尾位置：符干末端
+    final flagX = stemUp ? stemX - 2 : stemX - textPainter.width + 2;
+    final flagY = stemUp ? stemEndY - textPainter.height + 10 : stemEndY - 10;
 
-      // 绘制弯曲的符尾
-      final path = Path();
-      path.moveTo(stemX, startY);
-      path.quadraticBezierTo(
-        stemX + (endX - stemX) * 0.5,
-        startY + (endY - startY) * 0.3,
-        endX,
-        endY,
-      );
-      canvas.drawPath(path, paint);
-    }
+    textPainter.paint(canvas, Offset(flagX, flagY));
   }
 
   void _drawAccidental(Canvas canvas, double x, double y, Accidental accidental, Color color) {
+    final symbol = SMuFLGlyphs.getAccidental(accidental.name);
+    if (symbol.isEmpty) return;
+
     final textPainter = TextPainter(
       text: TextSpan(
-        text: accidental.displaySymbol,
-        style: TextStyle(fontSize: 16, color: color),
+        text: symbol,
+        style: TextStyle(
+          fontSize: 20,
+          fontFamily: SMuFLGlyphs.fontFamily,
+          color: color,
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -547,35 +575,39 @@ class GrandStaffPainter extends CustomPainter {
 
     switch (duration) {
       case NoteDuration.whole:
-        symbol = '𝄻';
+        symbol = SMuFLGlyphs.restWhole;
         fontSize = 20;
         break;
       case NoteDuration.half:
-        symbol = '𝄼';
+        symbol = SMuFLGlyphs.restHalf;
         fontSize = 20;
         break;
       case NoteDuration.quarter:
-        symbol = '𝄽';
-        fontSize = 26;
+        symbol = SMuFLGlyphs.restQuarter;
+        fontSize = 28;
         break;
       case NoteDuration.eighth:
-        symbol = '𝄾';
-        fontSize = 26;
+        symbol = SMuFLGlyphs.rest8th;
+        fontSize = 28;
         break;
       case NoteDuration.sixteenth:
-        symbol = '𝄿';
-        fontSize = 26;
+        symbol = SMuFLGlyphs.rest16th;
+        fontSize = 28;
         break;
       case NoteDuration.thirtySecond:
-        symbol = '𝅀';
-        fontSize = 26;
+        symbol = SMuFLGlyphs.rest32nd;
+        fontSize = 28;
         break;
     }
 
     final textPainter = TextPainter(
       text: TextSpan(
         text: symbol,
-        style: TextStyle(fontSize: fontSize, color: config.theme.noteColor),
+        style: TextStyle(
+          fontSize: fontSize,
+          fontFamily: SMuFLGlyphs.fontFamily,
+          color: config.theme.noteColor,
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();

@@ -70,10 +70,10 @@ flutter:
 
   fonts:
     # SMuFL 音乐符号字体
-    # 注意: PDF 导出需要 TTF 格式，请运行 python scripts/convert_font.py 转换
+    # 优先使用 TTF 格式以获得更好的兼容性
     - family: Bravura
       fonts:
-        - asset: assets/fonts/Bravura.otf
+        - asset: assets/fonts/Bravura.ttf
     - family: Leland
       fonts:
-        - asset: assets/fonts/Leland.otf
+        - asset: assets/fonts/Leland.ttf
