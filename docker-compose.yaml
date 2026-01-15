@@ -1,0 +1,30 @@
+version: '3'
+services:
+  flutter:
+    image: ghcr.io/cirruslabs/flutter:3.35.0
+    volumes:
+      - .:/app
+      - flutter-cache:/opt/flutter/.pub-cache
+      - gradle-cache:/root/.gradle
+    working_dir: /app
+    command: >
+      sh -c "
+        yes | flutter doctor --android-licenses 2>/dev/null &&
+        flutter pub get &&
+        flutter build apk --release --split-per-abi &&
+        APP_NAME=$(grep '^name:' pubspec.yaml | sed 's/name: //' | tr -d ' ') &&
+        VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//') &&
+        cd build/app/outputs/flutter-apk &&
+        for apk in app-*-release.apk; do
+          if [ -f \"$apk\" ]; then
+            ABI=$(echo \"$apk\" | sed 's/app-\(.*\)-release.apk/\1/') &&
+            NEW_NAME=\"${APP_NAME}-v${VERSION}-android-${ABI}.apk\" &&
+            mv \"$apk\" \"$NEW_NAME\" &&
+            echo \"重命名: $apk -> $NEW_NAME\"
+          fi
+        done &&
+        echo \"构建完成，APK文件已重命名\"
+      "
+volumes:
+  flutter-cache:
+  gradle-cache:

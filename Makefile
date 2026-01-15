@@ -58,6 +58,10 @@ build-android: ## 构建 Android 版本
 	@echo "$(GREEN)正在构建 Android 版本...$(NC)"
 	flutter build apk
 
+build-android-docker: ## 构建 Android 版本（使用 DockerCompose）
+	@echo "$(GREEN)正在构建 Android 版本...$(NC)"
+	docker-compose up --build
+
 build-all: ## 构建所有平台
 	@echo "$(GREEN)正在构建所有平台...$(NC)"
 	flutter build web

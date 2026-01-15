@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-音频文件生成脚本 v4.0 (增强优化版)
+音频文件生成脚本 v5.0 (多乐器支持版)
 - 添加音频质量评估系统
 - 增强钢琴音色真实度（音板共鸣、琴弦耦合）
 - 支持多进程并行生成
 - 添加频谱分析可视化
+- 支持多种乐器音色生成（钢琴、电钢琴、风琴、弦乐、垫音、钟琴、贝斯、拨弦）
 
 使用方法：
-  python3 scripts/generate_audio.py
-  python3 scripts/generate_audio.py --parallel         # 并行模式
-  python3 scripts/generate_audio.py --analyze          # 生成分析图表
-  python3 scripts/generate_audio.py --parallel --analyze  # 全功能
+  python3 scripts/generate_audio.py                                    # 默认生成钢琴
+  python3 scripts/generate_audio.py --instrument piano                 # 生成钢琴
+  python3 scripts/generate_audio.py --instrument electric_piano        # 生成电钢琴
+  python3 scripts/generate_audio.py --instrument organ                 # 生成风琴
+  python3 scripts/generate_audio.py --instrument strings                # 生成弦乐
+  python3 scripts/generate_audio.py --instrument pad                    # 生成垫音
+  python3 scripts/generate_audio.py --instrument bell                  # 生成钟琴
+  python3 scripts/generate_audio.py --instrument bass                  # 生成贝斯
+  python3 scripts/generate_audio.py --instrument pluck                 # 生成拨弦
+  python3 scripts/generate_audio.py --parallel                         # 并行模式
+  python3 scripts/generate_audio.py --analyze                          # 生成分析图表
+  python3 scripts/generate_audio.py --list-instruments                 # 列出所有支持的乐器
 
 依赖：
   pip3 install numpy scipy matplotlib librosa
@@ -24,7 +33,7 @@ import sys
 import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, auto
 from functools import partial
 from multiprocessing import Pool, cpu_count
 from pathlib import Path
@@ -39,6 +48,39 @@ from scipy import signal as scipy_signal
 from scipy.io import wavfile
 from scipy.ndimage import uniform_filter1d
 from scipy.signal import butter, filtfilt
+
+# 导入 audio_util 中的乐器生成器
+try:
+    # 尝试从当前目录导入（scripts 目录）
+    import sys
+    from pathlib import Path
+    script_dir = Path(__file__).parent
+    if str(script_dir) not in sys.path:
+        sys.path.insert(0, str(script_dir))
+    
+    from audio_util import (
+        InstrumentGenerator, 
+        InstrumentType, 
+        AudioProcessor as UtilAudioProcessor,
+        EnvelopeGenerator as UtilEnvelopeGenerator,
+        EnvelopeConfig as UtilEnvelopeConfig
+    )
+    HAS_AUDIO_UTIL = True
+except ImportError as e:
+    # 如果导入失败，定义基本的 InstrumentType
+    class InstrumentType(Enum):
+        """乐器类型"""
+        PIANO = auto()
+        ELECTRIC_PIANO = auto()
+        ORGAN = auto()
+        STRINGS = auto()
+        PAD = auto()
+        BELL = auto()
+        BASS = auto()
+        PLUCK = auto()
+    HAS_AUDIO_UTIL = False
+    print(f"⚠️  警告: 无法导入 audio_util.py ({e})")
+    print("   将只能使用增强钢琴生成器，其他乐器需要 audio_util.py 模块")
 
 # 设置标准输出为UTF-8编码（Windows兼容）
 if sys.platform == 'win32':
@@ -157,6 +199,69 @@ class EffectType(Enum):
     WRONG = "wrong"
     COMPLETE = "complete"
     LEVEL_UP = "levelUp"
+
+
+# ============================================================================
+# 乐器类型映射和工具函数
+# ============================================================================
+
+# 乐器名称到 InstrumentType 的映射
+INSTRUMENT_NAME_MAP = {
+    'piano': InstrumentType.PIANO,
+    'electric_piano': InstrumentType.ELECTRIC_PIANO,
+    'organ': InstrumentType.ORGAN,
+    'strings': InstrumentType.STRINGS,
+    'pad': InstrumentType.PAD,
+    'bell': InstrumentType.BELL,
+    'bass': InstrumentType.BASS,
+    'pluck': InstrumentType.PLUCK,
+}
+
+# 乐器中文名称
+INSTRUMENT_NAMES_CN = {
+    InstrumentType.PIANO: '钢琴',
+    InstrumentType.ELECTRIC_PIANO: '电钢琴',
+    InstrumentType.ORGAN: '风琴',
+    InstrumentType.STRINGS: '弦乐',
+    InstrumentType.PAD: '合成垫音',
+    InstrumentType.BELL: '钟琴',
+    InstrumentType.BASS: '贝斯',
+    InstrumentType.PLUCK: '拨弦',
+}
+
+# 乐器默认时长配置
+INSTRUMENT_DURATION = {
+    InstrumentType.PIANO: 2.5,
+    InstrumentType.ELECTRIC_PIANO: 2.0,
+    InstrumentType.ORGAN: 3.0,
+    InstrumentType.STRINGS: 3.0,
+    InstrumentType.PAD: 4.0,
+    InstrumentType.BELL: 2.0,
+    InstrumentType.BASS: 1.5,
+    InstrumentType.PLUCK: 1.5,
+}
+
+
+def get_instrument_type(name: str) -> InstrumentType:
+    """根据名称获取乐器类型"""
+    name_lower = name.lower().replace('-', '_')
+    if name_lower in INSTRUMENT_NAME_MAP:
+        return INSTRUMENT_NAME_MAP[name_lower]
+    raise ValueError(f"未知的乐器类型: {name}。支持的乐器: {', '.join(INSTRUMENT_NAME_MAP.keys())}")
+
+
+def list_instruments():
+    """列出所有支持的乐器"""
+    print("=" * 70)
+    print(" 🎵 支持的乐器类型")
+    print("=" * 70)
+    print()
+    for name, inst_type in INSTRUMENT_NAME_MAP.items():
+        cn_name = INSTRUMENT_NAMES_CN[inst_type]
+        duration = INSTRUMENT_DURATION[inst_type]
+        print(f"  • {name:20s} ({cn_name:10s}) - 默认时长: {duration}s")
+    print()
+    print("=" * 70)
 
 
 # ============================================================================
@@ -612,6 +717,42 @@ class AudioGenerator(ABC):
 
 
 # ============================================================================
+# 通用乐器生成器（使用 audio_util）
+# ============================================================================
+
+class UniversalInstrumentGenerator(AudioGenerator):
+    """通用乐器生成器（支持多种乐器类型）"""
+    
+    def __init__(self, config: AudioConfig, instrument_type: InstrumentType):
+        super().__init__(config)
+        self.instrument_type = instrument_type
+        self.duration = INSTRUMENT_DURATION.get(instrument_type, 2.5)
+        
+        if HAS_AUDIO_UTIL:
+            self.inst_generator = InstrumentGenerator(config.sample_rate)
+        else:
+            raise ImportError("需要 audio_util.py 模块来生成乐器音色")
+    
+    def generate(self, midi_number: int, velocity: float = 0.8) -> Tuple[np.ndarray, int]:
+        """生成乐器音符"""
+        if not HAS_AUDIO_UTIL:
+            raise ImportError("需要 audio_util.py 模块")
+        
+        # 使用 audio_util 的 InstrumentGenerator
+        audio_float = self.inst_generator.generate(
+            self.instrument_type,
+            midi_number,
+            self.duration,
+            velocity
+        )
+        
+        # 转换为 int16
+        audio = self.processor.to_int16(audio_float)
+        
+        return audio, self.config.sample_rate
+
+
+# ============================================================================
 # 增强钢琴生成器
 # ============================================================================
 
@@ -972,10 +1113,12 @@ class AudioExporter:
 class AudioGenerationPipeline:
     """音频生成流水线"""
     
-    def __init__(self, base_dir: Path, parallel: bool = False, analyze: bool = False):
+    def __init__(self, base_dir: Path, instrument_type: Optional[InstrumentType] = None,
+                 parallel: bool = False, analyze: bool = False):
         self.base_dir = base_dir
         self.assets_dir = base_dir / 'assets' / 'audio'
         self.config = AudioConfig()
+        self.instrument_type = instrument_type or InstrumentType.PIANO
         self.parallel = parallel
         self.analyze = analyze
         
@@ -991,6 +1134,12 @@ class AudioGenerationPipeline:
         """运行完整流程"""
         self._print_header()
         
+        # 显示当前乐器类型
+        inst_name_cn = INSTRUMENT_NAMES_CN.get(self.instrument_type, '未知')
+        inst_name_en = self.instrument_type.name.lower()
+        print(f"🎵 当前乐器: {inst_name_cn} ({inst_name_en})")
+        print()
+        
         if self.analyze:
             print("📊 分析模式已启用，将生成频谱分析图表\n")
         
@@ -1004,33 +1153,58 @@ class AudioGenerationPipeline:
         # 生成音频
         if self.parallel:
             print("🚀 使用并行模式加速生成...\n")
-            self._generate_piano_notes_parallel(exporter)
+            self._generate_instrument_notes_parallel(exporter)
         else:
-            self._generate_piano_notes(exporter)
+            self._generate_instrument_notes(exporter)
         
-        self._generate_metronome_clicks(exporter)
-        self._generate_effects(exporter)
+        # 只有钢琴模式才生成节拍器和效果音（保持向后兼容）
+        if self.instrument_type == InstrumentType.PIANO:
+            self._generate_metronome_clicks(exporter)
+            self._generate_effects(exporter)
         
         # 显示质量报告
         self._print_quality_report()
         self._print_footer()
     
-    def _generate_piano_notes(self, exporter: AudioExporter):
-        """串行生成钢琴音符（带质量验证）"""
-        print("1. 生成钢琴音符 (增强音色 + 质量验证)...")
+    def _generate_instrument_notes(self, exporter: AudioExporter):
+        """串行生成乐器音符（带质量验证）"""
+        inst_name_cn = INSTRUMENT_NAMES_CN.get(self.instrument_type, '乐器')
+        print(f"1. 生成{inst_name_cn}音符 (质量验证)...")
         
-        piano_dir = self.assets_dir / 'piano'
-        self._clean_directory(piano_dir)
-        piano_exporter = AudioExporter(piano_dir)
+        # 确定输出目录
+        if self.instrument_type == InstrumentType.PIANO:
+            output_dir = self.assets_dir / 'piano'
+        else:
+            # 其他乐器使用乐器名称作为目录
+            inst_dir_name = self.instrument_type.name.lower()
+            output_dir = self.assets_dir / inst_dir_name
         
-        generator = EnhancedPianoGenerator(self.config, EnhancedPianoConfig())
+        self._clean_directory(output_dir)
+        inst_exporter = AudioExporter(output_dir)
+        
+        # 选择生成器
+        if self.instrument_type == InstrumentType.PIANO and not HAS_AUDIO_UTIL:
+            # 使用增强钢琴生成器（如果 audio_util 不可用）
+            generator = EnhancedPianoGenerator(self.config, EnhancedPianoConfig())
+            use_enhanced_piano = True
+        else:
+            # 使用通用乐器生成器
+            if not HAS_AUDIO_UTIL:
+                raise ImportError("需要 audio_util.py 模块来生成非钢琴乐器")
+            generator = UniversalInstrumentGenerator(self.config, self.instrument_type)
+            use_enhanced_piano = False
+        
         analyzer = AudioQualityAnalyzer()
         
         # 用于分析的样本音符
         sample_notes = SAMPLE_NOTES_FOR_ANALYSIS if self.analyze else []
         
         for midi in MIDI_RANGE:
-            audio, sr = generator.generate(midi)
+            # 生成音频
+            if use_enhanced_piano:
+                audio, sr = generator.generate(midi)
+            else:
+                audio, sr = generator.generate(midi, velocity=0.8)
             
             # 质量分析
             spectrum_result = analyzer.analyze_spectrum(audio, sr, midi)
@@ -1049,13 +1223,13 @@ class AudioGenerationPipeline:
                 )
             
             # 导出
-            output_path = piano_exporter.export(audio, sr, f'note_{midi}')
+            output_path = inst_exporter.export(audio, sr, f'note_{midi}')
             
             # 可视化分析（仅样本）
             if self.analyze and midi in sample_notes:
                 viz_dir = self.assets_dir / 'analysis'
                 viz_dir.mkdir(exist_ok=True)
-                output_viz_path = viz_dir / f'analysis_midi_{midi}.png'
+                output_viz_path = viz_dir / f'analysis_{inst_dir_name}_midi_{midi}.png'
                 AudioVisualizer.plot_analysis(audio, sr, midi, output_viz_path)
                 print(f"    📊 分析图表: {output_viz_path.name}")
             
@@ -1063,19 +1237,26 @@ class AudioGenerationPipeline:
             status = '✓' if spectrum_result['is_accurate'] else '⚠'
             print(f"  {status} {output_path.name} | 误差: {spectrum_result['error_cents']:.1f}¢ | SNR: {snr:.0f}dB")
         
-        print(f"  完成！生成了 {len(MIDI_RANGE)} 个钢琴音符\n")
+        print(f"  完成！生成了 {len(MIDI_RANGE)} 个{inst_name_cn}音符\n")
     
-    def _generate_piano_notes_parallel(self, exporter: AudioExporter):
-        """并行生成钢琴音符"""
-        print(f"1. 生成钢琴音符 (并行模式，{cpu_count()} 进程)...")
+    def _generate_instrument_notes_parallel(self, exporter: AudioExporter):
+        """并行生成乐器音符"""
+        inst_name_cn = INSTRUMENT_NAMES_CN.get(self.instrument_type, '乐器')
+        print(f"1. 生成{inst_name_cn}音符 (并行模式，{cpu_count()} 进程)...")
         
-        piano_dir = self.assets_dir / 'piano'
-        self._clean_directory(piano_dir)
+        # 确定输出目录
+        if self.instrument_type == InstrumentType.PIANO:
+            output_dir = self.assets_dir / 'piano'
+        else:
+            inst_dir_name = self.instrument_type.name.lower()
+            output_dir = self.assets_dir / inst_dir_name
+        
+        self._clean_directory(output_dir)
         
         midi_notes = list(MIDI_RANGE)
         
         with Pool(cpu_count()) as pool:
-            generate_func = partial(self._generate_single_note, piano_dir)
+            generate_func = partial(self._generate_single_note, output_dir, self.instrument_type)
             results = pool.map(generate_func, midi_notes)
         
         # 统计结果
@@ -1092,27 +1273,55 @@ class AudioGenerationPipeline:
         # 如果启用分析，生成分析图表
         if self.analyze:
             print("\n  生成分析图表...")
-            generator = EnhancedPianoGenerator(self.config, EnhancedPianoConfig())
+            if self.instrument_type == InstrumentType.PIANO and not HAS_AUDIO_UTIL:
+                generator = EnhancedPianoGenerator(self.config, EnhancedPianoConfig())
+                use_enhanced_piano = True
+            else:
+                if not HAS_AUDIO_UTIL:
+                    print("  ⚠️  需要 audio_util.py 模块来生成分析图表")
+                    return
+                generator = UniversalInstrumentGenerator(self.config, self.instrument_type)
+                use_enhanced_piano = False
+            
             viz_dir = self.assets_dir / 'analysis'
             viz_dir.mkdir(exist_ok=True)
+            inst_dir_name = self.instrument_type.name.lower()
             
             for midi in SAMPLE_NOTES_FOR_ANALYSIS:
-                audio, sr = generator.generate(midi)
-                output_path = viz_dir / f'analysis_midi_{midi}.png'
+                if use_enhanced_piano:
+                    audio, sr = generator.generate(midi)
+                else:
+                    audio, sr = generator.generate(midi, velocity=0.8)
+                output_path = viz_dir / f'analysis_{inst_dir_name}_midi_{midi}.png'
                 AudioVisualizer.plot_analysis(audio, sr, midi, output_path)
                 print(f"  ✓ 生成分析图表: {output_path.name}")
         
         print(f"  完成！生成了 {len([r for r in results if r])} 个音符\n")
     
-    def _generate_single_note(self, output_dir: Path, midi: int) -> Optional[Dict]:
+    def _generate_single_note(self, output_dir: Path, instrument_type: InstrumentType, midi: int) -> Optional[Dict]:
         """生成单个音符（用于并行）"""
         try:
             config = AudioConfig()
-            generator = EnhancedPianoGenerator(config, EnhancedPianoConfig())
+            
+            # 选择生成器
+            if instrument_type == InstrumentType.PIANO and not HAS_AUDIO_UTIL:
+                generator = EnhancedPianoGenerator(config, EnhancedPianoConfig())
+                use_enhanced_piano = True
+            else:
+                if not HAS_AUDIO_UTIL:
+                    return {'midi': midi, 'accurate': False, 'high_snr': False, 
+                            'issue': f"MIDI {midi}: 需要 audio_util.py 模块"}
+                generator = UniversalInstrumentGenerator(config, instrument_type)
+                use_enhanced_piano = False
+            
             exporter = AudioExporter(output_dir)
             analyzer = AudioQualityAnalyzer()
             
-            audio, sr = generator.generate(midi)
+            # 生成音频
+            if use_enhanced_piano:
+                audio, sr = generator.generate(midi)
+            else:
+                audio, sr = generator.generate(midi, velocity=0.8)
             
             spectrum_result = analyzer.analyze_spectrum(audio, sr, midi)
             snr = analyzer.calculate_snr(audio, sr)
@@ -1185,7 +1394,7 @@ class AudioGenerationPipeline:
     def _print_header(self):
         """打印标题"""
         print("=" * 70)
-        print(" 🎵 音频文件生成器 v4.0 (增强优化版)")
+        print(" 🎵 音频文件生成器 v5.0 (多乐器支持版)")
         print("=" * 70)
     
     def _print_quality_report(self):
@@ -1219,7 +1428,11 @@ class AudioGenerationPipeline:
         print(" ✅ 所有音频文件生成完成！")
         print("=" * 70)
         print("\n特性：")
-        print("  • 增强音色：音板共鸣 + 琴弦耦合 + 丰富泛音")
+        inst_name_cn = INSTRUMENT_NAMES_CN.get(self.instrument_type, '乐器')
+        if self.instrument_type == InstrumentType.PIANO:
+            print("  • 增强音色：音板共鸣 + 琴弦耦合 + 丰富泛音")
+        else:
+            print(f"  • 乐器类型：{inst_name_cn}")
         print("  • 质量验证：频谱分析 + SNR检测 + THD计算")
         print("  • 动态优化：根据音高调整包络和滤波")
         if self.parallel:
@@ -1238,15 +1451,36 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description='音频文件生成器 v4.0',
+        description='音频文件生成器 v5.0 (多乐器支持版)',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例：
-  python3 scripts/generate_audio.py                    # 基础生成
-  python3 scripts/generate_audio.py --parallel         # 并行加速
-  python3 scripts/generate_audio.py --analyze          # 生成分析图表
-  python3 scripts/generate_audio.py --parallel --analyze  # 全功能
+  python3 scripts/generate_audio.py                                    # 默认生成钢琴
+  python3 scripts/generate_audio.py --instrument piano                 # 生成钢琴
+  python3 scripts/generate_audio.py --instrument electric_piano        # 生成电钢琴
+  python3 scripts/generate_audio.py --instrument organ                 # 生成风琴
+  python3 scripts/generate_audio.py --instrument strings               # 生成弦乐
+  python3 scripts/generate_audio.py --instrument pad                   # 生成垫音
+  python3 scripts/generate_audio.py --instrument bell                  # 生成钟琴
+  python3 scripts/generate_audio.py --instrument bass                  # 生成贝斯
+  python3 scripts/generate_audio.py --instrument pluck                 # 生成拨弦
+  python3 scripts/generate_audio.py --parallel                         # 并行加速
+  python3 scripts/generate_audio.py --analyze                         # 生成分析图表
+  python3 scripts/generate_audio.py --list-instruments                 # 列出所有支持的乐器
         """
+    )
+    
+    parser.add_argument(
+        '--instrument',
+        type=str,
+        default='piano',
+        help='乐器类型 (默认: piano)。使用 --list-instruments 查看所有支持的乐器'
+    )
+    
+    parser.add_argument(
+        '--list-instruments',
+        action='store_true',
+        help='列出所有支持的乐器类型'
     )
     
     parser.add_argument(
@@ -1263,9 +1497,22 @@ def main():
     
     args = parser.parse_args()
     
+    # 如果请求列出乐器，直接返回
+    if args.list_instruments:
+        list_instruments()
+        return 0
+    
     try:
         script_dir = Path(__file__).parent
         base_dir = script_dir.parent
+        
+        # 解析乐器类型
+        try:
+            instrument_type = get_instrument_type(args.instrument)
+        except ValueError as e:
+            print(f"❌ 错误: {e}")
+            print("\n使用 --list-instruments 查看所有支持的乐器")
+            return 1
         
         # 调试输出
         if args.analyze:
@@ -1274,7 +1521,8 @@ def main():
             print(f"[DEBUG] assets_dir = {base_dir / 'assets' / 'audio'}\n")
         
         pipeline = AudioGenerationPipeline(
-            base_dir, 
+            base_dir,
+            instrument_type=instrument_type,
             parallel=args.parallel,
             analyze=args.analyze
         )

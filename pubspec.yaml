@@ -22,7 +22,7 @@ dependencies:
   shared_preferences: ^2.2.2
 
   # 音频播放（多音播放）
-  audioplayers: ^6.0.0
+  audioplayers: ^5.2.1
 
   # UI 增强
   cupertino_icons: ^1.0.8

@@ -1,9 +1,7 @@
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../utils/logger_util.dart';
@@ -15,7 +13,7 @@ import '../../features/tools/sheet_music/models/enums.dart';
 /// 特性：
 /// - 支持同时播放多个音符（复音/和弦）
 /// - 智能混音（√N 音量调整）
-/// - 预加载到内存，减少延迟
+/// - 使用 AssetSource 直接播放，更稳定
 /// - 每个音符独立播放器池，避免冲突
 class AudioService extends GetxService {
   /// 每个音符的播放器数量（用于快速连续播放）
@@ -35,24 +33,14 @@ class AudioService extends GetxService {
   /// 钢琴音符播放器当前索引：Map<midiNumber, currentIndex>
   final Map<int, int> _pianoPlayerIndex = {};
 
-  /// 钢琴音符音频数据缓存：Map<midiNumber, ByteData>
-  final Map<int, Uint8List> _pianoAudioData = {};
-
   /// 节拍器播放器池
   final List<AudioPlayer> _metronomeStrongPlayers = [];
   final List<AudioPlayer> _metronomeWeakPlayers = [];
   int _metronomeStrongIndex = 0;
   int _metronomeWeakIndex = 0;
 
-  /// 节拍器音频数据
-  Uint8List? _metronomeStrongData;
-  Uint8List? _metronomeWeakData;
-
   /// 效果音播放器：Map<effectType, AudioPlayer>
   final Map<String, AudioPlayer> _effectPlayers = {};
-
-  /// 效果音音频数据：Map<effectType, ByteData>
-  final Map<String, Uint8List> _effectAudioData = {};
 
   /// 当前活跃的播放数（用于智能混音）
   int _activeStreams = 0;
@@ -104,7 +92,7 @@ class AudioService extends GetxService {
       await _preloadEffectSounds();
 
       _isInitialized = true;
-      LoggerUtil.info('音频服务初始化完成 (AudioPlayers, 预加载音符: ${_pianoAudioData.length})');
+      LoggerUtil.info('音频服务初始化完成 (AudioPlayers, 预加载音符: ${_pianoPlayerPools.length})');
     } catch (e) {
       LoggerUtil.error('音频服务初始化失败', e);
     }
@@ -117,17 +105,13 @@ class AudioService extends GetxService {
     _userInteracted = true;
   }
 
-  /// 预加载钢琴音色
+  /// 预加载钢琴音色（创建播放器池）
   Future<void> _preloadPianoSounds() async {
     int loadedCount = 0;
 
     for (int midi = preloadMidiMin; midi <= preloadMidiMax; midi++) {
       try {
-        final assetPath = 'assets/audio/piano/note_$midi.mp3';
-        final data = await rootBundle.load(assetPath);
-        _pianoAudioData[midi] = data.buffer.asUint8List();
-
-        // 为每个音符创建播放器池
+        // 为每个音符创建播放器池（不预加载音频数据）
         _pianoPlayerPools[midi] = [];
         for (int i = 0; i < playersPerNote; i++) {
           final player = AudioPlayer();
@@ -139,7 +123,7 @@ class AudioService extends GetxService {
 
         loadedCount++;
       } catch (e) {
-        // 音频文件可能不存在，静默跳过
+        // 创建播放器失败，静默跳过
         LoggerUtil.debug('预加载音符跳过: $midi');
       }
     }
@@ -147,13 +131,9 @@ class AudioService extends GetxService {
     LoggerUtil.info('钢琴音色预加载完成 ($loadedCount 个，每个音符 $playersPerNote 个播放器)');
   }
 
-  /// 预加载节拍器音效
+  /// 预加载节拍器音效（创建播放器池）
   Future<void> _preloadMetronomeSounds() async {
     try {
-      // 加载强拍音效
-      final strongData = await rootBundle.load('assets/audio/metronome/click_strong.mp3');
-      _metronomeStrongData = strongData.buffer.asUint8List();
-
       // 创建强拍播放器池
       for (int i = 0; i < 2; i++) {
         final player = AudioPlayer();
@@ -161,10 +141,6 @@ class AudioService extends GetxService {
         await player.setReleaseMode(ReleaseMode.stop);
         _metronomeStrongPlayers.add(player);
       }
-
-      // 加载弱拍音效
-      final weakData = await rootBundle.load('assets/audio/metronome/click_weak.mp3');
-      _metronomeWeakData = weakData.buffer.asUint8List();
 
       // 创建弱拍播放器池
       for (int i = 0; i < 2; i++) {
@@ -180,16 +156,13 @@ class AudioService extends GetxService {
     }
   }
 
-  /// 预加载效果音
+  /// 预加载效果音（创建播放器）
   Future<void> _preloadEffectSounds() async {
     const effectTypes = ['correct', 'wrong', 'complete'];
 
     for (final type in effectTypes) {
       try {
-        final data = await rootBundle.load('assets/audio/effects/$type.mp3');
-        _effectAudioData[type] = data.buffer.asUint8List();
-
-        // 为每个效果音创建独立播放器
+        // 为每个效果音创建独立播放器（不预加载音频数据）
         final player = AudioPlayer();
         await player.setPlayerMode(PlayerMode.lowLatency);
         await player.setReleaseMode(ReleaseMode.stop);
@@ -199,22 +172,18 @@ class AudioService extends GetxService {
       }
     }
 
-    LoggerUtil.info('效果音预加载完成 (${_effectAudioData.length} 个)');
+    LoggerUtil.info('效果音预加载完成 (${_effectPlayers.length} 个)');
   }
 
   /// 延迟加载单个钢琴音符（如果未预加载）
   Future<bool> _ensurePianoNoteLoaded(int midiNumber) async {
-    // 如果已经加载，直接返回
-    if (_pianoAudioData.containsKey(midiNumber)) {
+    // 如果已经创建播放器池，直接返回
+    if (_pianoPlayerPools.containsKey(midiNumber)) {
       return true;
     }
 
     try {
-      final assetPath = 'assets/audio/piano/note_$midiNumber.mp3';
-      final data = await rootBundle.load(assetPath);
-      _pianoAudioData[midiNumber] = data.buffer.asUint8List();
-
-      // 创建播放器池
+      // 创建播放器池（不预加载音频数据）
       _pianoPlayerPools[midiNumber] = [];
       for (int i = 0; i < playersPerNote; i++) {
         final player = AudioPlayer();
@@ -295,8 +264,8 @@ class AudioService extends GetxService {
       // 设置音量
       await player.setVolume(smartVolume);
 
-      // 从内存播放
-      await player.play(BytesSource(_pianoAudioData[midiNumber]!));
+      // 使用 AssetSource 直接播放（更稳定）
+      await player.play(AssetSource('audio/piano/note_$midiNumber.mp3'));
 
       // 播放完成后减少活跃流计数
       Future.delayed(const Duration(milliseconds: 2000), () {
@@ -373,7 +342,7 @@ class AudioService extends GetxService {
 
           // 设置音量并播放
           await player.setVolume(chordVolume);
-          await player.play(BytesSource(_pianoAudioData[midi]!));
+          await player.play(AssetSource('audio/piano/note_$midi.mp3'));
         } catch (e) {
           LoggerUtil.warning('播放和弦音符失败: $midi', e);
         }
@@ -392,9 +361,8 @@ class AudioService extends GetxService {
     if (kIsWeb && !_userInteracted) return;
 
     final players = isStrong ? _metronomeStrongPlayers : _metronomeWeakPlayers;
-    final audioData = isStrong ? _metronomeStrongData : _metronomeWeakData;
 
-    if (players.isEmpty || audioData == null) {
+    if (players.isEmpty) {
       LoggerUtil.warning('节拍器音效未加载');
       return;
     }
@@ -413,7 +381,10 @@ class AudioService extends GetxService {
     try {
       await player.stop();
       await player.setVolume(_masterVolume);
-      await player.play(BytesSource(audioData));
+      final assetPath = isStrong
+          ? 'audio/metronome/click_strong.mp3'
+          : 'audio/metronome/click_weak.mp3';
+      await player.play(AssetSource(assetPath));
     } catch (e) {
       LoggerUtil.warning('播放节拍器音效失败', e);
     }
@@ -425,25 +396,18 @@ class AudioService extends GetxService {
   Future<void> playEffect(String type) async {
     if (kIsWeb && !_userInteracted) return;
 
-    final player = _effectPlayers[type];
-    final audioData = _effectAudioData[type];
+    var player = _effectPlayers[type];
 
     // 延迟加载未预加载的效果音
-    if (player == null || audioData == null) {
+    if (player == null) {
       try {
-        final data = await rootBundle.load('assets/audio/effects/$type.mp3');
-        _effectAudioData[type] = data.buffer.asUint8List();
-
         final newPlayer = AudioPlayer();
         await newPlayer.setPlayerMode(PlayerMode.lowLatency);
         await newPlayer.setReleaseMode(ReleaseMode.stop);
         _effectPlayers[type] = newPlayer;
-
-        await newPlayer.setVolume(_masterVolume);
-        await newPlayer.play(BytesSource(_effectAudioData[type]!));
-        return;
+        player = newPlayer;
       } catch (e) {
-        LoggerUtil.warning('播放效果音失败: $type', e);
+        LoggerUtil.warning('创建效果音播放器失败: $type', e);
         return;
       }
     }
@@ -451,7 +415,7 @@ class AudioService extends GetxService {
     try {
       await player.stop();
       await player.setVolume(_masterVolume);
-      await player.play(BytesSource(audioData));
+      await player.play(AssetSource('audio/effects/$type.mp3'));
     } catch (e) {
       LoggerUtil.warning('播放效果音失败: $type', e);
     }
@@ -470,7 +434,7 @@ class AudioService extends GetxService {
   bool get isInitialized => _isInitialized;
 
   /// 获取已加载的音符数量
-  int get loadedNotesCount => _pianoAudioData.length;
+  int get loadedNotesCount => _pianoPlayerPools.length;
 
   /// 获取当前活跃流数
   int get activeStreams => _activeStreams;
@@ -486,7 +450,6 @@ class AudioService extends GetxService {
     }
     _pianoPlayerPools.clear();
     _pianoPlayerIndex.clear();
-    _pianoAudioData.clear();
 
     // 释放节拍器播放器
     for (final player in _metronomeStrongPlayers) {
@@ -497,15 +460,12 @@ class AudioService extends GetxService {
     }
     _metronomeStrongPlayers.clear();
     _metronomeWeakPlayers.clear();
-    _metronomeStrongData = null;
-    _metronomeWeakData = null;
 
     // 释放效果音播放器
     for (final player in _effectPlayers.values) {
       player.dispose();
     }
     _effectPlayers.clear();
-    _effectAudioData.clear();
 
     _isInitialized = false;
     LoggerUtil.info('音频服务已释放');
