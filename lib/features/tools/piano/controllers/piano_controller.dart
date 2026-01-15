@@ -3,16 +3,18 @@ import 'dart:async';
 import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
+import '../../../../core/settings/settings_service.dart';
 
 /// 虚拟钢琴控制器
 class PianoController extends GetxController {
   final AudioService _audioService = Get.find<AudioService>();
+  final SettingsService _settingsService = Get.find<SettingsService>();
 
   /// 起始 MIDI 编号
-  final startMidi = 48.obs;  // C3
+  final startMidi = 48.obs; // C3
 
   /// 结束 MIDI 编号
-  final endMidi = 72.obs;    // C5
+  final endMidi = 72.obs; // C5
 
   /// 显示的八度数（1-4）
   final octaveCount = 2.obs;
@@ -40,12 +42,48 @@ class PianoController extends GetxController {
 
   /// 播放定时器
   Timer? _playbackTimer;
-  
+
   /// 当前播放索引
   int _playbackIndex = 0;
 
   /// 可用主题列表
   static const themes = ['默认', '深色', '午夜蓝', '暖阳', '森林'];
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadSettings();
+    _setupListeners();
+  }
+
+  /// 加载保存的设置
+  void _loadSettings() {
+    startMidi.value = _settingsService.getPianoStartMidi();
+    endMidi.value = _settingsService.getPianoEndMidi();
+    showLabels.value = _settingsService.getPianoShowLabels();
+    labelType.value = _settingsService.getPianoLabelType();
+    themeIndex.value = _settingsService.getPianoThemeIndex();
+
+    // 根据加载的音域计算八度数
+    octaveCount.value = ((endMidi.value - startMidi.value) / 12).round().clamp(
+      1,
+      7,
+    );
+  }
+
+  /// 设置监听器，自动保存设置
+  void _setupListeners() {
+    // 监听音域变化
+    ever(startMidi, (value) => _settingsService.setPianoStartMidi(value));
+    ever(endMidi, (value) => _settingsService.setPianoEndMidi(value));
+
+    // 监听标签设置变化
+    ever(showLabels, (value) => _settingsService.setPianoShowLabels(value));
+    ever(labelType, (value) => _settingsService.setPianoLabelType(value));
+
+    // 监听主题变化
+    ever(themeIndex, (value) => _settingsService.setPianoThemeIndex(value));
+  }
 
   /// 按下音符（用于UI高亮）
   void pressNote(int midi) {
@@ -111,7 +149,8 @@ class PianoController extends GetxController {
 
   /// 向左移动音域
   void shiftLeft() {
-    if (startMidi.value > 21) {  // A0
+    if (startMidi.value > 21) {
+      // A0
       startMidi.value -= 12;
       endMidi.value -= 12;
     }
@@ -119,7 +158,8 @@ class PianoController extends GetxController {
 
   /// 向右移动音域
   void shiftRight() {
-    if (endMidi.value < 108) {  // C8
+    if (endMidi.value < 108) {
+      // C8
       startMidi.value += 12;
       endMidi.value += 12;
     }
@@ -128,15 +168,15 @@ class PianoController extends GetxController {
   /// 设置显示的八度数
   void setOctaveCount(int count) {
     if (count < 1 || count > 4) return;
-    
+
     octaveCount.value = count;
     final newKeyCount = count * 12;
-    
+
     // 保持中心点不变，调整起始和结束
     final center = (startMidi.value + endMidi.value) ~/ 2;
     var newStart = center - newKeyCount ~/ 2;
     var newEnd = newStart + newKeyCount;
-    
+
     // 确保在合法范围内（21-108）
     if (newStart < 21) {
       newStart = 21;
@@ -146,7 +186,7 @@ class PianoController extends GetxController {
       newEnd = 108;
       newStart = newEnd - newKeyCount;
     }
-    
+
     startMidi.value = newStart;
     endMidi.value = newEnd;
   }
@@ -176,12 +216,12 @@ class PianoController extends GetxController {
       Get.snackbar('提示', '没有录制的内容', snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    
+
     if (isPlaying.value) {
       stopPlayback();
       return;
     }
-    
+
     isPlaying.value = true;
     _playbackIndex = 0;
     _playNextNote();
@@ -193,23 +233,26 @@ class PianoController extends GetxController {
       stopPlayback();
       return;
     }
-    
+
     final note = recordedNotes[_playbackIndex];
     final midi = note['midi'] as int;
-    
+
     // 播放音符并高亮
     _audioService.playPianoNote(midi);
-    pressNote(midi);  // 添加高亮
-    
+    pressNote(midi); // 添加高亮
+
     _playbackIndex++;
-    
+
     if (_playbackIndex < recordedNotes.length) {
       // 计算与下一个音符的间隔
       final currentTime = note['timestamp'] as int;
       final nextTime = recordedNotes[_playbackIndex]['timestamp'] as int;
       final delay = nextTime - currentTime;
-      
-      _playbackTimer = Timer(Duration(milliseconds: delay.clamp(50, 5000)), _playNextNote);
+
+      _playbackTimer = Timer(
+        Duration(milliseconds: delay.clamp(50, 5000)),
+        _playNextNote,
+      );
     } else {
       // 播放完成
       Future.delayed(const Duration(milliseconds: 500), stopPlayback);

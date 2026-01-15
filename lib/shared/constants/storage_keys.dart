@@ -56,4 +56,64 @@ abstract class StorageKeys {
 
   /// 总学习时长（分钟）
   static const String totalStudyMinutes = 'total_study_minutes';
+
+  // ========== 乐谱相关 ==========
+  /// 用户自定义乐谱列表
+  static const String userSheets = 'user_sheets';
+
+  /// 最近打开的乐谱ID列表
+  static const String recentSheets = 'recent_sheets';
+
+  // ========== 工具设置 ==========
+  /// 钢琴 - 起始MIDI编号
+  static const String pianoStartMidi = 'piano_start_midi';
+
+  /// 钢琴 - 结束MIDI编号
+  static const String pianoEndMidi = 'piano_end_midi';
+
+  /// 钢琴 - 是否显示标签
+  static const String pianoShowLabels = 'piano_show_labels';
+
+  /// 钢琴 - 标签类型（jianpu/noteName）
+  static const String pianoLabelType = 'piano_label_type';
+
+  /// 钢琴 - 主题索引
+  static const String pianoThemeIndex = 'piano_theme_index';
+
+  /// 节拍器 - BPM（每分钟拍数）
+  static const String metronomeBpm = 'metronome_bpm';
+
+  /// 节拍器 - 拍号分子
+  static const String metronomeBeatsPerBar = 'metronome_beats_per_bar';
+
+  /// 节拍器 - 拍号分母
+  static const String metronomeBeatUnit = 'metronome_beat_unit';
+
+  /// 节拍器 - 主题索引
+  static const String metronomeThemeIndex = 'metronome_theme_index';
+
+  /// 乐谱播放器 - 播放速度（0.5, 0.75, 1.0, 1.25, 1.5）
+  static const String sheetMusicPlaybackSpeed = 'sheet_music_playback_speed';
+
+  /// 乐谱播放器 - 显示模式（jianpu/staff/both）
+  static const String sheetMusicDisplayMode = 'sheet_music_display_mode';
+
+  /// 乐谱播放器 - 自动播放
+  static const String sheetMusicAutoPlay = 'sheet_music_auto_play';
+
+  /// 乐谱播放器 - 循环播放
+  static const String sheetMusicLoopPlay = 'sheet_music_loop_play';
+
+  // ========== 全局音频设置 ==========
+  /// 钢琴音效开关
+  static const String audioPianoEnabled = 'audio_piano_enabled';
+
+  /// 效果音开关
+  static const String audioEffectsEnabled = 'audio_effects_enabled';
+
+  /// 节拍器音效开关
+  static const String audioMetronomeEnabled = 'audio_metronome_enabled';
+
+  /// 主音量（0.0-1.0）
+  static const String audioMasterVolume = 'audio_master_volume';
 }

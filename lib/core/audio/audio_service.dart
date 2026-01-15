@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
+import '../settings/settings_service.dart';
 import '../utils/logger_util.dart';
 import '../../features/tools/sheet_music/models/enums.dart';
 
@@ -60,6 +61,18 @@ class AudioService extends GetxService {
   /// 主音量 (0.0-1.0)
   double _masterVolume = 1.0;
 
+  /// 钢琴音效开关
+  bool _pianoEnabled = true;
+
+  /// 效果音开关
+  bool _effectsEnabled = true;
+
+  /// 节拍器音效开关
+  bool _metronomeEnabled = true;
+
+  /// 设置服务（用于持久化）
+  SettingsService? _settingsService;
+
   /// 设置右手音量
   void setRightHandVolume(double volume) {
     _rightHandVolume = volume.clamp(0.0, 1.0);
@@ -90,6 +103,9 @@ class AudioService extends GetxService {
 
       // 预加载效果音
       await _preloadEffectSounds();
+
+      // 预热音频系统（播放一个静音音符以消除首次播放延迟）
+      await _warmupAudioSystem();
 
       _isInitialized = true;
       LoggerUtil.info('音频服务初始化完成 (AudioPlayers, 预加载音符: ${_pianoPlayerPools.length})');
@@ -173,6 +189,35 @@ class AudioService extends GetxService {
     }
 
     LoggerUtil.info('效果音预加载完成 (${_effectPlayers.length} 个)');
+  }
+
+  /// 预热音频系统
+  ///
+  /// 播放一个静音音符以消除首次播放延迟
+  Future<void> _warmupAudioSystem() async {
+    try {
+      // 使用中央C（MIDI 60）进行预热
+      const warmupMidi = 60;
+
+      if (!_pianoPlayerPools.containsKey(warmupMidi)) {
+        LoggerUtil.debug('预热音符未在预加载范围内');
+        return;
+      }
+
+      final player = _pianoPlayerPools[warmupMidi]!.first;
+
+      // 播放一个极低音量的音符（几乎听不见）
+      await player.setVolume(0.01);
+      await player.play(AssetSource('audio/piano/note_$warmupMidi.mp3'));
+
+      // 立即停止
+      await Future.delayed(const Duration(milliseconds: 50));
+      await player.stop();
+
+      LoggerUtil.info('音频系统预热完成');
+    } catch (e) {
+      LoggerUtil.debug('音频系统预热失败（不影响使用）: $e');
+    }
   }
 
   /// 延迟加载单个钢琴音符（如果未预加载）

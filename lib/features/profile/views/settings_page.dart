@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:html' as html;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -155,9 +159,7 @@ class SettingsPage extends StatelessWidget {
   }
 
   Widget _buildSoundCard(BuildContext context, bool isDark) {
-    // 使用本地状态管理声音设置
-    final soundEnabled = true.obs;
-    final effectEnabled = true.obs;
+    final profileController = Get.find<ProfileController>();
 
     return Container(
       decoration: BoxDecoration(
@@ -178,8 +180,8 @@ class SettingsPage extends StatelessWidget {
                 icon: Icons.piano,
                 title: '钢琴音效',
                 subtitle: '弹奏钢琴时播放声音',
-                value: soundEnabled.value,
-                onChanged: (value) => soundEnabled.value = value,
+                value: profileController.pianoSoundEnabled.value,
+                onChanged: (value) => profileController.togglePianoSound(value),
               )),
           const Divider(height: 1, indent: 56),
           Obx(() => _buildSwitchTile(
@@ -187,8 +189,8 @@ class SettingsPage extends StatelessWidget {
                 icon: Icons.music_note,
                 title: '效果音',
                 subtitle: '正确/错误提示音',
-                value: effectEnabled.value,
-                onChanged: (value) => effectEnabled.value = value,
+                value: profileController.effectSoundEnabled.value,
+                onChanged: (value) => profileController.toggleEffectSound(value),
               )),
         ],
       ),
@@ -215,7 +217,7 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.backup,
             title: '导出数据',
             subtitle: '将学习数据导出为文件',
-            onTap: () => _showComingSoon(context),
+            onTap: () => _exportData(context),
           ),
           const Divider(height: 1, indent: 56),
           _buildTile(
@@ -223,7 +225,7 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.restore,
             title: '导入数据',
             subtitle: '从文件恢复学习数据',
-            onTap: () => _showComingSoon(context),
+            onTap: () => _importData(context),
           ),
           const Divider(height: 1, indent: 56),
           _buildTile(
@@ -384,11 +386,74 @@ class SettingsPage extends StatelessWidget {
   }
 
   void _showThemeColorPicker(BuildContext context) {
-    Get.snackbar(
-      '提示',
-      '主题色切换功能开发中...',
-      snackPosition: SnackPosition.BOTTOM,
-      margin: const EdgeInsets.all(20),
+    final themeController = Get.find<ThemeController>();
+
+    Get.dialog(
+      AlertDialog(
+        title: const Text('选择主题色'),
+        content: SizedBox(
+          width: 300,
+          child: Obx(() => Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: List.generate(
+                  ThemeController.themeColors.length,
+                  (index) {
+                    final color = ThemeController.themeColors[index];
+                    final name = ThemeController.themeColorNames[index];
+                    final isSelected = themeController.themeColorIndex.value == index;
+
+                    return GestureDetector(
+                      onTap: () {
+                        themeController.setThemeColor(index);
+                        Get.back();
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(12),
+                              border: isSelected
+                                  ? Border.all(color: Colors.white, width: 3)
+                                  : null,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: isSelected
+                                ? const Icon(Icons.check, color: Colors.white, size: 32)
+                                : null,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              )),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('取消'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -399,6 +464,112 @@ class SettingsPage extends StatelessWidget {
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(20),
     );
+  }
+
+  /// 导出数据
+  Future<void> _exportData(BuildContext context) async {
+    try {
+      final profileController = Get.find<ProfileController>();
+      final data = await profileController.exportAllData();
+      final jsonString = jsonEncode(data);
+
+      if (kIsWeb) {
+        // Web平台：创建下载链接
+        final bytes = utf8.encode(jsonString);
+        final blob = html.Blob([bytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'musiclab_data_$timestamp.json')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+
+        Get.snackbar(
+          '导出成功',
+          '数据已导出',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        // 移动平台：TODO
+        Get.snackbar(
+          '提示',
+          '移动平台导出功能待实现',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        '导出失败',
+        '发生错误: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// 导入数据
+  Future<void> _importData(BuildContext context) async {
+    if (kIsWeb) {
+      // Web平台：使用文件选择器
+      final input = html.FileUploadInputElement()..accept = '.json';
+      input.click();
+
+      input.onChange.listen((e) async {
+        final files = input.files;
+        if (files == null || files.isEmpty) return;
+
+        final file = files[0];
+        final reader = html.FileReader();
+
+        reader.onLoadEnd.listen((e) async {
+          try {
+            final content = reader.result as String;
+            final data = jsonDecode(content) as Map<String, dynamic>;
+
+            final profileController = Get.find<ProfileController>();
+            final success = await profileController.importData(data);
+
+            if (success) {
+              Get.snackbar(
+                '导入成功',
+                '数据已恢复',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.green,
+                colorText: Colors.white,
+              );
+            } else {
+              Get.snackbar(
+                '导入失败',
+                '数据格式不正确',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.red,
+                colorText: Colors.white,
+              );
+            }
+          } catch (e) {
+            Get.snackbar(
+              '导入失败',
+              '无法解析文件: $e',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+          }
+        });
+
+        reader.readAsText(file);
+      });
+    } else {
+      // 移动平台：TODO
+      Get.snackbar(
+        '提示',
+        '移动平台导入功能待实现',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   void _showClearDataDialog(BuildContext context) {

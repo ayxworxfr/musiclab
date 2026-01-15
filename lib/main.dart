@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'app/app.dart';
-import 'core/storage/storage_service.dart';
 import 'core/audio/audio_service.dart';
+import 'core/settings/settings_service.dart';
+import 'core/storage/storage_service.dart';
 import 'core/utils/logger_util.dart';
+import 'features/tools/sheet_music/services/sheet_storage_service.dart';
 
 /// 应用入口
 void main() async {
@@ -40,6 +42,14 @@ Future<void> _initServices() async {
   // 初始化存储服务
   await Get.putAsync<StorageService>(() => StorageService().init());
   LoggerUtil.info('存储服务初始化完成');
+
+  // 初始化设置服务（依赖StorageService）
+  Get.put<SettingsService>(SettingsService());
+  LoggerUtil.info('设置服务初始化完成');
+
+  // 初始化乐谱存储服务（依赖StorageService）
+  Get.put<SheetStorageService>(SheetStorageService());
+  LoggerUtil.info('乐谱存储服务初始化完成');
 
   // 初始化音频服务
   await Get.putAsync<AudioService>(() => AudioService().init());

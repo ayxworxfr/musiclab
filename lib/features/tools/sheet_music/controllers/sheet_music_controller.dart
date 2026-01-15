@@ -6,12 +6,15 @@ import 'package:get/get.dart';
 import '../../../../core/utils/logger_util.dart';
 import '../models/score.dart';
 import '../models/enums.dart';
+import '../services/sheet_storage_service.dart';
 import '../utils/score_converter.dart';
 
 /// ═══════════════════════════════════════════════════════════════
 /// 乐谱库控制器 (新版)
 /// ═══════════════════════════════════════════════════════════════
 class SheetMusicController extends GetxController {
+  /// 乐谱存储服务
+  final SheetStorageService _storageService = Get.find<SheetStorageService>();
   /// 乐谱列表
   final scores = <Score>[].obs;
 
@@ -40,25 +43,38 @@ class SheetMusicController extends GetxController {
   Future<void> _loadScores() async {
     isLoading.value = true;
     try {
-      // 先加载索引文件
-      final indexJson = await rootBundle.loadString('assets/data/sheets/sheets_index.json');
-      final indexData = json.decode(indexJson) as Map<String, dynamic>;
-      final sheetsList = indexData['sheets'] as List;
-
-      // 加载每个乐谱文件
       final loadedScores = <Score>[];
-      for (final item in sheetsList) {
-        try {
-          final filename = item['filename'] as String;
-          final sheetJson = await rootBundle.loadString('assets/data/sheets/$filename');
-          final sheetData = json.decode(sheetJson) as Map<String, dynamic>;
-          
-          // 使用转换器从旧格式转换
-          final score = ScoreConverter.fromLegacyJson(sheetData);
-          loadedScores.add(score);
-        } catch (e) {
-          LoggerUtil.error('加载乐谱失败: ${item['filename']}', e);
+
+      // 1. 加载系统预制乐谱
+      try {
+        final indexJson = await rootBundle.loadString('assets/data/sheets/sheets_index.json');
+        final indexData = json.decode(indexJson) as Map<String, dynamic>;
+        final sheetsList = indexData['sheets'] as List;
+
+        for (final item in sheetsList) {
+          try {
+            final filename = item['filename'] as String;
+            final sheetJson = await rootBundle.loadString('assets/data/sheets/$filename');
+            final sheetData = json.decode(sheetJson) as Map<String, dynamic>;
+
+            // 使用转换器从旧格式转换，确保 isBuiltIn = true
+            final score = ScoreConverter.fromLegacyJson(sheetData);
+            loadedScores.add(score);
+          } catch (e) {
+            LoggerUtil.error('加载乐谱失败: ${item['filename']}', e);
+          }
         }
+      } catch (e) {
+        LoggerUtil.error('加载系统乐谱失败', e);
+      }
+
+      // 2. 加载用户自定义乐谱
+      try {
+        final userScores = await _storageService.getUserSheets();
+        loadedScores.addAll(userScores);
+        LoggerUtil.info('加载用户乐谱: ${userScores.length} 个');
+      } catch (e) {
+        LoggerUtil.error('加载用户乐谱失败', e);
       }
 
       scores.assignAll(loadedScores);
@@ -117,6 +133,62 @@ class SheetMusicController extends GetxController {
       }
       _updateFilteredScores();
     }
+  }
+
+  /// 保存用户乐谱
+  Future<bool> saveUserScore(Score score) async {
+    try {
+      // 确保 isBuiltIn = false
+      final userScore = score.copyWith(isBuiltIn: false);
+      await _storageService.saveUserSheet(userScore);
+
+      // 更新列表
+      final index = scores.indexWhere((s) => s.id == userScore.id);
+      if (index != -1) {
+        scores[index] = userScore;
+      } else {
+        scores.add(userScore);
+      }
+      _updateFilteredScores();
+
+      LoggerUtil.info('保存用户乐谱成功: ${userScore.title}');
+      return true;
+    } catch (e) {
+      LoggerUtil.error('保存用户乐谱失败', e);
+      return false;
+    }
+  }
+
+  /// 删除用户乐谱（保护系统预制乐谱）
+  Future<bool> deleteScore(Score score) async {
+    // 保护系统预制乐谱
+    if (score.isBuiltIn) {
+      LoggerUtil.warning('无法删除系统预制乐谱: ${score.title}');
+      Get.snackbar('提示', '系统预制乐谱无法删除');
+      return false;
+    }
+
+    try {
+      await _storageService.deleteUserSheet(score.id);
+
+      // 从列表中移除
+      scores.removeWhere((s) => s.id == score.id);
+      if (selectedScore.value?.id == score.id) {
+        selectedScore.value = null;
+      }
+      _updateFilteredScores();
+
+      LoggerUtil.info('删除用户乐谱成功: ${score.title}');
+      return true;
+    } catch (e) {
+      LoggerUtil.error('删除用户乐谱失败', e);
+      return false;
+    }
+  }
+
+  /// 导出乐谱为 JSON 字符串
+  String exportScore(Score score) {
+    return _storageService.exportSheetToJson(score);
   }
 
   /// 获取示例乐谱（只保留小星星和卡农）

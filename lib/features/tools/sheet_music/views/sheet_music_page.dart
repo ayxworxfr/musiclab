@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:html' as html;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -292,13 +296,36 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                   ),
                 ),
 
-                // 收藏按钮
-                IconButton(
-                  icon: Icon(
-                    score.isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: score.isFavorite ? AppColors.error : Colors.grey,
-                  ),
-                  onPressed: () => controller.toggleFavorite(score),
+                // 操作按钮
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 导出按钮
+                    IconButton(
+                      icon: const Icon(Icons.download, size: 20),
+                      color: Colors.grey,
+                      tooltip: '导出',
+                      onPressed: () => _exportScore(context, score),
+                    ),
+                    // 删除按钮（仅用户乐谱）
+                    if (!score.isBuiltIn)
+                      IconButton(
+                        icon: const Icon(Icons.delete, size: 20),
+                        color: Colors.grey,
+                        tooltip: '删除',
+                        onPressed: () => _deleteScore(context, score),
+                      ),
+                    // 收藏按钮
+                    IconButton(
+                      icon: Icon(
+                        score.isFavorite ? Icons.favorite : Icons.favorite_border,
+                        size: 20,
+                        color: score.isFavorite ? AppColors.error : Colors.grey,
+                      ),
+                      tooltip: '收藏',
+                      onPressed: () => controller.toggleFavorite(score),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -320,6 +347,75 @@ class SheetMusicPage extends GetView<SheetMusicController> {
         );
       }),
     );
+  }
+
+  /// 删除乐谱
+  Future<void> _deleteScore(BuildContext context, Score score) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text('确定要删除《${score.title}》吗？此操作无法撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await controller.deleteScore(score);
+      if (success && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('删除成功')),
+        );
+      }
+    }
+  }
+
+  /// 导出乐谱
+  Future<void> _exportScore(BuildContext context, Score score) async {
+    try {
+      final jsonString = controller.exportScore(score);
+
+      // 在 Web 平台，创建下载链接
+      if (kIsWeb) {
+        final bytes = utf8.encode(jsonString);
+        final blob = html.Blob([bytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', '${score.title}.json')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('《${score.title}》已导出')),
+          );
+        }
+      } else {
+        // 移动平台使用分享功能
+        // TODO: 实现移动平台的文件分享
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('移动平台导出功能待实现')),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('导出失败: $e')),
+        );
+      }
+    }
   }
 
   /// 获取分类颜色

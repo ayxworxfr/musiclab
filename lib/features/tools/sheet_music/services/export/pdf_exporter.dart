@@ -5,37 +5,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import '../../constants/smufl_glyphs.dart';
 import '../../models/score.dart';
 import '../../models/enums.dart';
-
-/// SMuFL 符号 Unicode 映射
-class SmuflSymbols {
-  // 音符
-  static const quarterNote = '\uE1D5';
-  static const halfNote = '\uE1D3';
-  static const wholeNote = '\uE1D2';
-  static const eighthNote = '\uE1D7';
-  static const sixteenthNote = '\uE1D9';
-
-  // 休止符
-  static const quarterRest = '\uE4E5';
-  static const halfRest = '\uE4E3';
-  static const wholeRest = '\uE4E2';
-  static const eighthRest = '\uE4E7';
-  static const sixteenthRest = '\uE4E9';
-
-  // 谱号
-  static const trebleClef = '\uE050';
-  static const bassClef = '\uE062';
-
-  // 变音记号
-  static const sharp = '\uE262';
-  static const flat = '\uE260';
-  static const natural = '\uE261';
-
-  // 附点
-  static const dot = '\uE1E7';
-}
 
 /// PDF 导出器（重写版本）
 class PdfExporter {
@@ -400,11 +372,11 @@ class PdfExporter {
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
-              top: clef == Clef.treble 
+              top: clef == Clef.treble
                   ? staffY + lineSpacing * 1.5 - 55 // 高音谱号向上大幅调整（字体基准点补偿）
                   : staffY + lineSpacing * 3 - 15, // 低音谱号居中在第四线
               child: pw.Text(
-                clef == Clef.treble ? SmuflSymbols.trebleClef : SmuflSymbols.bassClef,
+                clef == Clef.treble ? SMuFLGlyphs.gClef : SMuFLGlyphs.fClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
               ),
             ),
@@ -466,20 +438,7 @@ class PdfExporter {
 
           // 绘制升降号
           if (note.accidental != Accidental.none && _smuflFont != null) {
-            String accidentalSymbol;
-            switch (note.accidental) {
-              case Accidental.sharp:
-                accidentalSymbol = SmuflSymbols.sharp;
-                break;
-              case Accidental.flat:
-                accidentalSymbol = SmuflSymbols.flat;
-                break;
-              case Accidental.natural:
-                accidentalSymbol = SmuflSymbols.natural;
-                break;
-              default:
-                accidentalSymbol = '';
-            }
+            final accidentalSymbol = SMuFLGlyphs.getAccidental(note.accidental.name);
 
             if (accidentalSymbol.isNotEmpty) {
               final accidentalFontSize = 16.0;
@@ -527,20 +486,7 @@ class PdfExporter {
 
           // 绘制升降号
           if (note.accidental != Accidental.none && _smuflFont != null) {
-            String accidentalSymbol;
-            switch (note.accidental) {
-              case Accidental.sharp:
-                accidentalSymbol = SmuflSymbols.sharp;
-                break;
-              case Accidental.flat:
-                accidentalSymbol = SmuflSymbols.flat;
-                break;
-              case Accidental.natural:
-                accidentalSymbol = SmuflSymbols.natural;
-                break;
-              default:
-                accidentalSymbol = '';
-            }
+            final accidentalSymbol = SMuFLGlyphs.getAccidental(note.accidental.name);
 
             if (accidentalSymbol.isNotEmpty) {
               final accidentalFontSize = 16.0;
@@ -690,19 +636,18 @@ class PdfExporter {
     String noteSymbol;
     switch (note.duration) {
       case NoteDuration.whole:
-        noteSymbol = SmuflSymbols.wholeNote;
+        noteSymbol = SMuFLGlyphs.noteheadWhole;
         break;
       case NoteDuration.half:
-        noteSymbol = SmuflSymbols.halfNote;
+        noteSymbol = SMuFLGlyphs.noteheadHalf;
         break;
       case NoteDuration.eighth:
-        noteSymbol = SmuflSymbols.eighthNote;
-        break;
       case NoteDuration.sixteenth:
-        noteSymbol = SmuflSymbols.sixteenthNote;
+      case NoteDuration.thirtySecond:
+        noteSymbol = SMuFLGlyphs.noteheadBlack;
         break;
       default:
-        noteSymbol = SmuflSymbols.quarterNote;
+        noteSymbol = SMuFLGlyphs.noteheadBlack; // 四分音符使用实心符头
     }
 
     return pw.Text(

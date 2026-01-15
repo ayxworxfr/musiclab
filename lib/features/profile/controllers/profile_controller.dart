@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../../core/audio/audio_service.dart';
+import '../../../core/settings/settings_service.dart';
 import '../models/achievement_model.dart';
 import '../models/learning_stats_model.dart';
 import '../repositories/profile_repository.dart';
@@ -7,6 +9,8 @@ import '../repositories/profile_repository.dart';
 /// 个人中心控制器
 class ProfileController extends GetxController {
   final ProfileRepository _repository = Get.find<ProfileRepository>();
+  final SettingsService _settingsService = Get.find<SettingsService>();
+  final AudioService _audioService = Get.find<AudioService>();
 
   /// 学习统计数据
   final stats = Rx<LearningStats?>(null);
@@ -20,10 +24,17 @@ class ProfileController extends GetxController {
   /// 加载状态
   final isLoading = false.obs;
 
+  /// 钢琴音效开关
+  final pianoSoundEnabled = true.obs;
+
+  /// 效果音开关
+  final effectSoundEnabled = true.obs;
+
   @override
   void onInit() {
     super.onInit();
     loadData();
+    _loadAudioSettings();
   }
 
   /// 加载数据
@@ -102,6 +113,61 @@ class ProfileController extends GetxController {
   /// 获取成就解锁百分比
   double get achievementProgress =>
       totalAchievements > 0 ? unlockedCount / totalAchievements : 0;
+
+  /// 加载音效设置
+  void _loadAudioSettings() {
+    pianoSoundEnabled.value = _settingsService.getAudioPianoEnabled();
+    effectSoundEnabled.value = _settingsService.getAudioEffectsEnabled();
+  }
+
+  /// 切换钢琴音效
+  Future<void> togglePianoSound(bool enabled) async {
+    pianoSoundEnabled.value = enabled;
+    await _settingsService.setAudioPianoEnabled(enabled);
+    // TODO: 在 AudioService 中实现实际的音效控制
+  }
+
+  /// 切换效果音
+  Future<void> toggleEffectSound(bool enabled) async {
+    effectSoundEnabled.value = enabled;
+    await _settingsService.setAudioEffectsEnabled(enabled);
+    // TODO: 在 AudioService 中实现实际的音效控制
+  }
+
+  /// 导出所有数据
+  Future<Map<String, dynamic>> exportAllData() async {
+    final exportData = <String, dynamic>{};
+
+    // 导出学习统计
+    if (stats.value != null) {
+      exportData['learning_stats'] = stats.value!.toJson();
+    }
+
+    // 导出成就数据
+    exportData['achievements'] = achievements.map((a) => a.toJson()).toList();
+
+    // 导出时间戳
+    exportData['export_time'] = DateTime.now().toIso8601String();
+    exportData['version'] = '1.0';
+
+    return exportData;
+  }
+
+  /// 导入数据
+  Future<bool> importData(Map<String, dynamic> data) async {
+    try {
+      // TODO: 实现数据导入逻辑
+      // 1. 验证数据格式
+      // 2. 导入学习统计
+      // 3. 导入成就数据
+      // 4. 刷新界面
+
+      await loadData();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
   /// 清除所有数据
   Future<void> clearAllData() async {

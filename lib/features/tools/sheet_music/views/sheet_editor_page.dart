@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../controllers/sheet_editor_controller.dart';
+import '../controllers/sheet_music_controller.dart';
 import '../controllers/sheet_player_controller.dart';
 import '../models/sheet_model.dart';
 import '../services/sheet_import_service.dart';
@@ -782,21 +783,46 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
   }
 
   /// 保存乐谱
-  void _saveSheet() {
+  Future<void> _saveSheet() async {
     final sheet = _editorController.currentSheet.value;
     if (sheet == null) return;
 
-    // TODO: 保存到本地存储
+    try {
+      // 转换为 Score 格式
+      final score = ScoreConverter.fromSheetModel(sheet);
 
-    _editorController.hasUnsavedChanges.value = false;
+      // 获取 SheetMusicController 并保存
+      final sheetMusicController = Get.find<SheetMusicController>();
+      final success = await sheetMusicController.saveUserScore(score);
 
-    Get.snackbar(
-      '保存成功',
-      '乐谱已保存',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
+      if (success) {
+        _editorController.hasUnsavedChanges.value = false;
+
+        Get.snackbar(
+          '保存成功',
+          '乐谱已保存到乐谱库',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          '保存失败',
+          '无法保存乐谱，请重试',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        '保存失败',
+        '发生错误: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   /// 导出为简谱文本

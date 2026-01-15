@@ -5,11 +5,14 @@ import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
+import '../../../../core/settings/settings_service.dart';
 import '../painters/metronome_painter.dart';
 
 /// 节拍器控制器（优化版）
-class MetronomeController extends GetxController with GetTickerProviderStateMixin {
+class MetronomeController extends GetxController
+    with GetTickerProviderStateMixin {
   late final AudioService _audioService;
+  late final SettingsService _settingsService;
 
   /// BPM（每分钟节拍数）
   final bpm = 120.obs;
@@ -49,7 +52,6 @@ class MetronomeController extends GetxController with GetTickerProviderStateMixi
   /// 动画控制器
   Ticker? _ticker;
   double _targetAngle = 1.0;
-  double _animationProgress = 0.0;
 
   /// 每拍间隔（微秒）
   int get _beatIntervalMicros => (60000000 / bpm.value).round();
@@ -60,7 +62,27 @@ class MetronomeController extends GetxController with GetTickerProviderStateMixi
   void onInit() {
     super.onInit();
     _audioService = Get.find<AudioService>();
+    _settingsService = Get.find<SettingsService>();
+    _loadSettings();
     _initAnimation();
+    _setupListeners();
+  }
+
+  /// 加载保存的设置
+  void _loadSettings() {
+    bpm.value = _settingsService.getMetronomeBpm();
+    beatsPerMeasure.value = _settingsService.getMetronomeBeatsPerBar();
+    themeIndex.value = _settingsService.getMetronomeThemeIndex();
+  }
+
+  /// 设置监听器，自动保存设置
+  void _setupListeners() {
+    ever(bpm, (value) => _settingsService.setMetronomeBpm(value));
+    ever(
+      beatsPerMeasure,
+      (value) => _settingsService.setMetronomeBeatsPerBar(value),
+    );
+    ever(themeIndex, (value) => _settingsService.setMetronomeThemeIndex(value));
   }
 
   void _initAnimation() {
@@ -80,10 +102,11 @@ class MetronomeController extends GetxController with GetTickerProviderStateMixi
     }
 
     // 计算摆锤动画
-    final timeSinceLastBeat = _stopwatch.elapsedMicroseconds - 
+    final timeSinceLastBeat =
+        _stopwatch.elapsedMicroseconds -
         (_nextBeatTimeMicros - _beatIntervalMicros);
     final progress = (timeSinceLastBeat / _beatIntervalMicros).clamp(0.0, 1.0);
-    
+
     // 使用正弦函数实现平滑摆动
     // 从一边摆到另一边
     final angle = math.cos(progress * math.pi) * _targetAngle;

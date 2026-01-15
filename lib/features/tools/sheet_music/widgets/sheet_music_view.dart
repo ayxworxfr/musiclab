@@ -690,18 +690,18 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     // 获取可视区域高度
     final viewportHeight = _scoreScrollController.position.viewportDimension;
 
-    // 计算目标滚动位置（让当前播放的音符显示在屏幕中上部，约1/3处）
-    final targetScroll = (noteY - viewportHeight * 0.35).clamp(
+    // 计算目标滚动位置（让当前播放的音符显示在屏幕顶部，约10%处）
+    final targetScroll = (noteY - viewportHeight * 0.1).clamp(
       0.0,
       _scoreScrollController.position.maxScrollExtent,
     );
 
     // 只有当目标位置与当前位置差距较大时才滚动（避免频繁小幅滚动）
     final currentScroll = _scoreScrollController.offset;
-    if ((targetScroll - currentScroll).abs() > viewportHeight * 0.15) {
+    if ((targetScroll - currentScroll).abs() > viewportHeight * 0.1) {
       _scoreScrollController.animateTo(
         targetScroll,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 180),
         curve: Curves.easeInOut,
       );
     }
