@@ -14,25 +14,34 @@ class SheetStorageService extends GetxService {
 
   /// 保存用户乐谱
   Future<void> saveUserSheet(Score score) async {
+    print('🎵 [SheetStorage] 开始保存乐谱: ${score.id} - ${score.title}');
+
     // 获取现有乐谱列表
     final sheets = await getUserSheets();
+    print('🎵 [SheetStorage] 当前已有 ${sheets.length} 条乐谱');
 
     // 检查是否已存在（根据ID）
     final existingIndex = sheets.indexWhere((s) => s.id == score.id);
 
     if (existingIndex >= 0) {
       // 更新现有乐谱
+      print('🎵 [SheetStorage] 更新现有乐谱，索引: $existingIndex');
       sheets[existingIndex] = score;
     } else {
       // 添加新乐谱
+      print('🎵 [SheetStorage] 添加新乐谱');
       sheets.add(score);
     }
 
+    print('🎵 [SheetStorage] 准备保存 ${sheets.length} 条乐谱');
+
     // 保存到存储
     await _saveSheetsList(sheets);
+    print('🎵 [SheetStorage] 乐谱已保存到存储');
 
     // 更新最近打开列表
     await _addToRecentSheets(score.id);
+    print('🎵 [SheetStorage] 已更新最近打开列表');
   }
 
   /// 删除用户乐谱
@@ -48,13 +57,27 @@ class SheetStorageService extends GetxService {
   /// 获取所有用户乐谱
   Future<List<Score>> getUserSheets() async {
     try {
+      print('🎵 [SheetStorage] 开始读取用户乐谱');
       final data = _storage.getCacheData<List<dynamic>>(StorageKeys.userSheets);
-      if (data == null) return [];
 
-      return data
-          .map((json) => Score.fromJson(json as Map<String, dynamic>))
+      if (data == null) {
+        print('🎵 [SheetStorage] 存储中没有数据，返回空列表');
+        return [];
+      }
+
+      print('🎵 [SheetStorage] 从存储中读取到 ${data.length} 条原始数据');
+
+      final sheets = data
+          .map((json) {
+            final map = json as Map;
+            return Score.fromJson(Map<String, dynamic>.from(map));
+          })
           .toList();
+
+      print('🎵 [SheetStorage] 成功解析 ${sheets.length} 条乐谱');
+      return sheets;
     } catch (e) {
+      print('❌ [SheetStorage] 读取乐谱时出错: $e');
       return [];
     }
   }

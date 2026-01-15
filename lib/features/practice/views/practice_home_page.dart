@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../app/app.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/enums/practice_type.dart';
@@ -15,13 +16,47 @@ class PracticeHomePage extends StatefulWidget {
   State<PracticeHomePage> createState() => _PracticeHomePageState();
 }
 
-class _PracticeHomePageState extends State<PracticeHomePage> {
+class _PracticeHomePageState extends State<PracticeHomePage>
+    with WidgetsBindingObserver, RouteAware {
   PracticeStats? _todayStats;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadTodayStats();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 注册路由监听
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 当应用从后台恢复到前台时，重新加载数据
+    if (state == AppLifecycleState.resumed) {
+      _loadTodayStats();
+    }
+  }
+
+  @override
+  void didPopNext() {
+    // 当从其他页面返回到此页面时，重新加载数据
+    print('🔄 [PracticeHomePage] 从其他页面返回，重新加载数据');
     _loadTodayStats();
   }
 

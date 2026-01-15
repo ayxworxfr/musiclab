@@ -9,6 +9,9 @@ import '../core/theme/app_theme.dart';
 import '../shared/constants/app_constants.dart';
 import '../shared/translations/app_translations.dart';
 
+/// 全局路由观察者
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 /// 应用根组件
 class App extends StatelessWidget {
   const App({super.key});
@@ -57,6 +60,9 @@ class App extends StatelessWidget {
           scrollBehavior: const MaterialScrollBehavior().copyWith(
             scrollbars: true,
           ),
+
+          // 路由观察者
+          navigatorObservers: [routeObserver],
         );
       },
     );

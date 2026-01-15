@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/utils/font_loader_service.dart';
 import '../models/score.dart';
 import '../layout/layout_engine.dart';
 import '../layout/layout_result.dart';
@@ -70,11 +71,35 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   // Header的GlobalKey用于精确获取高度
   final GlobalKey _headerKey = GlobalKey();
 
+  // 字体加载状态
+  bool _fontsReady = false;
+
   @override
   void initState() {
     super.initState();
     _currentMode = widget.initialMode;
     _initPlaybackController();
+    _ensureFontsLoaded();
+  }
+
+  /// 确保字体已加载（Web 平台）
+  Future<void> _ensureFontsLoaded() async {
+    try {
+      final fontLoaderService = Get.find<FontLoaderService>();
+      await fontLoaderService.waitForFont('Bravura');
+      if (mounted) {
+        setState(() {
+          _fontsReady = true;
+        });
+      }
+    } catch (e) {
+      // 如果服务未注册或加载失败，仍然允许渲染
+      if (mounted) {
+        setState(() {
+          _fontsReady = true;
+        });
+      }
+    }
   }
 
   @override
@@ -282,6 +307,15 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   Widget _buildScoreArea(BoxConstraints constraints) {
     if (_layout == null || _playbackController == null) {
       return const SizedBox(height: 200);
+    }
+
+    // 如果字体未加载完成，显示加载提示（仅 Web 平台）
+    if (!_fontsReady) {
+      return Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(),
+      );
     }
 
     return GestureDetector(

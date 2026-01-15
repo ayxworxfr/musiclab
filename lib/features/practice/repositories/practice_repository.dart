@@ -108,9 +108,12 @@ class PracticeRepositoryImpl implements PracticeRepository {
 
   @override
   Future<PracticeStats> getTodayStats() async {
+    print('📊 [PracticeRepository] 开始获取今日统计');
     final todayRecords = await getTodayRecords();
+    print('📊 [PracticeRepository] 今日共有 ${todayRecords.length} 条记录');
 
     if (todayRecords.isEmpty) {
+      print('📊 [PracticeRepository] 今日无记录，返回空统计');
       return PracticeStats.empty();
     }
 
@@ -124,12 +127,14 @@ class PracticeRepositoryImpl implements PracticeRepository {
       totalSeconds += record.durationSeconds;
     }
 
-    return PracticeStats(
+    final stats = PracticeStats(
       totalSessions: todayRecords.length,
       totalQuestions: totalQuestions,
       totalCorrect: totalCorrect,
       totalSeconds: totalSeconds,
     );
+    print('📊 [PracticeRepository] 今日统计: 题数=$totalQuestions, 正确=$totalCorrect, 时长=$totalSeconds秒');
+    return stats;
   }
 
   @override

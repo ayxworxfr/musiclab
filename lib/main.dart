@@ -7,6 +7,7 @@ import 'core/audio/audio_service.dart';
 import 'core/settings/settings_service.dart';
 import 'core/storage/storage_service.dart';
 import 'core/utils/logger_util.dart';
+import 'core/utils/font_loader_service.dart';
 import 'features/tools/sheet_music/services/sheet_storage_service.dart';
 
 /// 应用入口
@@ -38,6 +39,13 @@ void main() async {
 /// 初始化服务
 Future<void> _initServices() async {
   LoggerUtil.info('开始初始化服务...');
+
+  // 初始化字体加载服务（Web 平台需要预加载字体）
+  final fontLoaderService = FontLoaderService();
+  fontLoaderService.preloadFontsInHtml(); // 在 HTML 中添加预加载链接
+  await fontLoaderService.initFonts(); // 加载字体
+  Get.put<FontLoaderService>(fontLoaderService, permanent: true);
+  LoggerUtil.info('字体加载服务初始化完成');
 
   // 初始化存储服务
   await Get.putAsync<StorageService>(() => StorageService().init());

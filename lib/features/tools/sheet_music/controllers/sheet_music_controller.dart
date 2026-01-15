@@ -39,6 +39,19 @@ class SheetMusicController extends GetxController {
     _loadScores();
   }
 
+  @override
+  void onReady() {
+    super.onReady();
+    // 页面准备好后，确保数据是最新的
+    refreshScores();
+  }
+
+  /// 刷新乐谱列表（公共方法）
+  Future<void> refreshScores() async {
+    print('🔄 [SheetMusicController] 刷新乐谱列表');
+    await _loadScores();
+  }
+
   /// 加载乐谱数据
   Future<void> _loadScores() async {
     isLoading.value = true;
