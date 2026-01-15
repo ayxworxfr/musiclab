@@ -124,14 +124,14 @@ class ProfileController extends GetxController {
   Future<void> togglePianoSound(bool enabled) async {
     pianoSoundEnabled.value = enabled;
     await _settingsService.setAudioPianoEnabled(enabled);
-    // TODO: 在 AudioService 中实现实际的音效控制
+    _audioService.setPianoEnabled(enabled);
   }
 
   /// 切换效果音
   Future<void> toggleEffectSound(bool enabled) async {
     effectSoundEnabled.value = enabled;
     await _settingsService.setAudioEffectsEnabled(enabled);
-    // TODO: 在 AudioService 中实现实际的音效控制
+    _audioService.setEffectsEnabled(enabled);
   }
 
   /// 导出所有数据

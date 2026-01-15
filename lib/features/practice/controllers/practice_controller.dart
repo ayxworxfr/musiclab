@@ -235,6 +235,20 @@ class PracticeController extends GetxController {
     final record = getPracticeRecord();
     await _repository.savePracticeRecord(record);
 
+    // 更新学习统计
+    try {
+      final profileController = Get.find<dynamic>();
+      if (profileController != null && profileController.runtimeType.toString() == 'ProfileController') {
+        await profileController.recordPractice(
+          total: questions.length,
+          correct: correctCount,
+        );
+        await profileController.recordLearningDuration(totalSeconds.value);
+      }
+    } catch (e) {
+      LoggerUtil.warning('更新学习统计失败', e);
+    }
+
     LoggerUtil.info(
       '练习完成: 正确 $correctCount/${questions.length}, '
       '正确率 ${(accuracy * 100).toStringAsFixed(1)}%, '

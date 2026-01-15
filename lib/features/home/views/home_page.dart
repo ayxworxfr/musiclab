@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/constants/app_constants.dart';
 import '../../course/controllers/course_controller.dart';
 import '../../course/models/course_model.dart';
+import '../controllers/home_controller.dart';
 
 /// 首页
 class HomePage extends StatelessWidget {
@@ -275,72 +276,86 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildDailyTasks(BuildContext context, bool isDark) {
-    final tasks = [
-      {'title': '完成1节课程', 'done': false, 'icon': Icons.menu_book},
-      {'title': '练习10道题', 'done': false, 'icon': Icons.quiz},
-      {'title': '使用虚拟钢琴', 'done': false, 'icon': Icons.piano},
-    ];
+    return GetX<HomeController>(
+      builder: (controller) {
+        final tasks = [
+          {
+            'title': '完成1节课程',
+            'done': controller.todayCompletedLesson.value,
+            'icon': Icons.menu_book
+          },
+          {
+            'title': '练习10道题',
+            'done': controller.todayCompletedPractice.value,
+            'icon': Icons.quiz
+          },
+          {
+            'title': '使用虚拟钢琴',
+            'done': controller.todayUsedPiano.value,
+            'icon': Icons.piano
+          },
+        ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '📋 今日任务',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '📋 今日任务',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
-            ],
-          ),
-          child: Column(
-            children: tasks.asMap().entries.map((entry) {
-              final index = entry.key;
-              final task = entry.value;
-              final isLast = index == tasks.length - 1;
-              return Column(
-                children: [
-                  ListTile(
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: task['done'] == true
-                            ? AppColors.success.withValues(alpha: 0.1)
-                            : AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        task['icon'] as IconData,
-                        color: task['done'] == true ? AppColors.success : AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
-                    title: Text(
-                      task['title'] as String,
-                      style: TextStyle(
-                        decoration: task['done'] == true ? TextDecoration.lineThrough : null,
-                        color: task['done'] == true
-                            ? (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary)
-                            : Theme.of(context).textTheme.bodyLarge?.color,
-                      ),
-                    ),
-                    trailing: task['done'] == true
-                        ? const Icon(Icons.check_circle, color: AppColors.success)
-                        : Icon(Icons.circle_outlined, color: Colors.grey.shade400),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
+                ],
+              ),
+              child: Column(
+                children: tasks.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final task = entry.value;
+                  final isLast = index == tasks.length - 1;
+                  return Column(
+                    children: [
+                      ListTile(
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: task['done'] == true
+                                ? AppColors.success.withValues(alpha: 0.1)
+                                : AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            task['icon'] as IconData,
+                            color: task['done'] == true ? AppColors.success : AppColors.primary,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          task['title'] as String,
+                          style: TextStyle(
+                            decoration: task['done'] == true ? TextDecoration.lineThrough : null,
+                            color: task['done'] == true
+                                ? (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary)
+                                : Theme.of(context).textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                        trailing: task['done'] == true
+                            ? const Icon(Icons.check_circle, color: AppColors.success)
+                            : Icon(Icons.circle_outlined, color: Colors.grey.shade400),
+                      ),
                   if (!isLast) const Divider(height: 1, indent: 72),
                 ],
               );
@@ -348,6 +363,8 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ],
+    );
+      },
     );
   }
 

@@ -88,12 +88,38 @@ class AudioService extends GetxService {
     _masterVolume = volume.clamp(0.0, 1.0);
   }
 
+  /// 设置钢琴音效开关
+  void setPianoEnabled(bool enabled) {
+    _pianoEnabled = enabled;
+  }
+
+  /// 设置效果音开关
+  void setEffectsEnabled(bool enabled) {
+    _effectsEnabled = enabled;
+  }
+
+  /// 设置节拍器音效开关
+  void setMetronomeEnabled(bool enabled) {
+    _metronomeEnabled = enabled;
+  }
+
   /// 初始化音频服务
   Future<AudioService> init() async {
     if (_isInitialized) return this;
 
     try {
       LoggerUtil.info('开始初始化音频服务...');
+
+      // 加载音频设置
+      try {
+        _settingsService = Get.find<SettingsService>();
+        _pianoEnabled = _settingsService!.getAudioPianoEnabled();
+        _effectsEnabled = _settingsService!.getAudioEffectsEnabled();
+        _metronomeEnabled = _settingsService!.getAudioMetronomeEnabled();
+        _masterVolume = _settingsService!.getAudioMasterVolume();
+      } catch (e) {
+        LoggerUtil.warning('加载音频设置失败，使用默认值', e);
+      }
 
       // 预加载常用音域的钢琴音
       await _preloadPianoSounds();
@@ -270,6 +296,11 @@ class AudioService extends GetxService {
       return;
     }
 
+    // 检查钢琴音效是否已启用
+    if (!_pianoEnabled) {
+      return;
+    }
+
     // 验证 MIDI 范围
     if (midiNumber < pianoMidiMin || midiNumber > pianoMidiMax) {
       LoggerUtil.warning('MIDI 编号超出范围: $midiNumber');
@@ -405,6 +436,9 @@ class AudioService extends GetxService {
   Future<void> playMetronomeClick({bool isStrong = false}) async {
     if (kIsWeb && !_userInteracted) return;
 
+    // 检查节拍器音效是否已启用
+    if (!_metronomeEnabled) return;
+
     final players = isStrong ? _metronomeStrongPlayers : _metronomeWeakPlayers;
 
     if (players.isEmpty) {
@@ -440,6 +474,9 @@ class AudioService extends GetxService {
   /// [type] 效果音类型：correct, wrong, complete
   Future<void> playEffect(String type) async {
     if (kIsWeb && !_userInteracted) return;
+
+    // 检查效果音是否已启用
+    if (!_effectsEnabled) return;
 
     var player = _effectPlayers[type];
 
