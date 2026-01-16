@@ -265,7 +265,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
   Widget _buildLyricInput() {
     return Obx(() {
       final sheet = _editorController.currentSheet.value;
-      final measureIndex = _editorController.selectedMeasureIndex.value;
+      final measureIndex = _editorController.selectedMeasureIndex;
       final noteIndex = _editorController.selectedNoteIndex.value;
 
       // 检测选中音符是否变化，如果变化则更新输入框内容
@@ -275,18 +275,21 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
         // 获取当前选中音符的歌词
         String? currentLyric;
-        if (sheet != null && sheet.tracks.isNotEmpty) {
-          final track = sheet.tracks.first;
-          if (measureIndex < track.measures.length) {
+        if (sheet != null && noteIndex >= 0) {
+          // 使用当前选中的轨道，而不是第一个轨道
+          final track = _editorController.currentTrack;
+          if (track != null && measureIndex >= 0 && measureIndex < track.measures.length) {
             final measure = track.measures[measureIndex];
             // 从 beats 中查找对应的音符
             var remainingNoteIndex = noteIndex;
             for (final beat in measure.beats) {
-              if (remainingNoteIndex < beat.notes.length) {
+              if (remainingNoteIndex >= 0 && remainingNoteIndex < beat.notes.length) {
                 currentLyric = beat.notes[remainingNoteIndex].lyric;
                 break;
               }
               remainingNoteIndex -= beat.notes.length;
+              // 如果remainingNoteIndex变成负数，说明找不到对应的音符
+              if (remainingNoteIndex < 0) break;
             }
           }
         }

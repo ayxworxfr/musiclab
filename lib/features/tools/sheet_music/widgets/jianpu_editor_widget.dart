@@ -217,7 +217,7 @@ class JianpuEditorWidget extends StatelessWidget {
     bool isDark,
   ) {
     return Obx(() {
-      final isSelected = controller.selectedMeasureIndex.value == measureIndex;
+      final isSelected = controller.selectedMeasureIndex == measureIndex;
 
       return GestureDetector(
         onTap: () => controller.selectMeasure(measureIndex),
@@ -297,7 +297,7 @@ class JianpuEditorWidget extends StatelessWidget {
   ) {
     return Obx(() {
       final isSelected =
-          controller.selectedMeasureIndex.value == measureIndex &&
+          controller.selectedMeasureIndex == measureIndex &&
           controller.selectedNoteIndex.value == noteIndex;
       final noteColor = isSelected
           ? Colors.white

@@ -202,7 +202,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 return Obx(() {
                   final isSelected = controller.selectedTrackIndex.value == originalIndex;
                   return GestureDetector(
-                    onTap: () => controller.selectedTrackIndex.value = originalIndex,
+                    onTap: () => controller.selectTrack(originalIndex),
                     child: Container(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 4,
@@ -234,13 +234,16 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                             color: isSelected ? Colors.white : Colors.grey[700],
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            track.name,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isSelected ? Colors.white : Colors.grey[700],
-                              height: 1.2,
+                          Flexible(
+                            child: Text(
+                              track.name,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: isSelected ? Colors.white : Colors.grey[700],
+                                height: 1.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -269,7 +272,12 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     final track = controller.currentTrack;
     if (track == null) return const SizedBox();
 
-    final jianpuView = JianpuView(score, trackIndex: controller.selectedTrackIndex.value);
+    final trackIndex = controller.selectedTrackIndex.value;
+    if (trackIndex < 0 || trackIndex >= score.tracks.length) {
+      return const SizedBox();
+    }
+
+    final jianpuView = JianpuView(score, trackIndex: trackIndex);
     final measures = jianpuView.getMeasures();
 
     if (measures.isEmpty) {
@@ -356,7 +364,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     bool isDark,
   ) {
     return Obx(() {
-      final isSelected = controller.selectedMeasureIndex.value == measureIndex;
+      final isSelected = controller.selectedMeasureIndex == measureIndex;
 
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -448,7 +456,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         controller.selectMeasure(measureIndex);
-        controller.selectedBeatIndex.value = 0;
+        controller.selectedBeatIndex = 0.0;
       },
       child: Container(
         height: 80,
@@ -514,7 +522,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   ) {
     return Obx(() {
       final isSelected =
-          controller.selectedMeasureIndex.value == measureIndex &&
+          controller.selectedMeasureIndex == measureIndex &&
           controller.selectedJianpuNoteIndex.value == noteIndex;
 
       return GestureDetector(
@@ -530,8 +538,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
             // 确保使用正确的轨道索引
             controller.selectNote(measureIndex, beatIndex, noteIndexInBeat);
             // 验证选择是否成功后再删除
-            if (controller.selectedMeasureIndex.value == measureIndex &&
-                controller.selectedBeatIndex.value == beatIndex &&
+            if (controller.selectedMeasureIndex == measureIndex &&
+                controller.selectedBeatIndex.floor() == beatIndex &&
                 controller.selectedNoteIndex.value == noteIndexInBeat) {
               controller.deleteSelectedNote();
             }
