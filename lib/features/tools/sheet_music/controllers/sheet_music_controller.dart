@@ -60,14 +60,14 @@ class SheetMusicController extends GetxController {
 
       // 1. 加载系统预制乐谱
       try {
-        final indexJson = await rootBundle.loadString('data/sheets/sheets_index.json');
+        final indexJson = await rootBundle.loadString('assets/data/sheets/sheets_index.json');
         final indexData = json.decode(indexJson) as Map<String, dynamic>;
         final sheetsList = indexData['sheets'] as List;
 
         for (final item in sheetsList) {
           try {
             final filename = item['filename'] as String;
-            final sheetJson = await rootBundle.loadString('data/sheets/$filename');
+            final sheetJson = await rootBundle.loadString('assets/data/sheets/$filename');
             final sheetData = json.decode(sheetJson) as Map<String, dynamic>;
 
             // 使用转换器从旧格式转换，确保 isBuiltIn = true
