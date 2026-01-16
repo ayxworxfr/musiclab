@@ -1,13 +1,14 @@
 {
   "id": "sheet_001",
   "title": "小星星（钢琴）",
-  "difficulty": 1,
-  "category": "folk",
+  "composer": "民谣",
   "metadata": {
-    "composer": "民谣",
     "key": "C",
-    "timeSignature": "4/4",
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
     "tempo": 90,
+    "difficulty": 1,
+    "category": "folk",
     "description": "经典儿歌，适合初学者练习"
   },
   "tracks": [
@@ -16,141 +17,646 @@
       "name": "右手",
       "clef": "treble",
       "hand": "right",
+      "instrument": "piano",
       "measures": [
         {
           "number": 1,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter", "lyric": "一"}]},
-            {"index": 1, "notes": [{"pitch": 72, "duration": "quarter", "lyric": "闪"}]},
-            {"index": 2, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "一"}]},
-            {"index": 3, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "闪"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter",
+                  "lyric": "一"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter",
+                  "lyric": "闪"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "一"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "闪"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 2,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 81, "duration": "quarter", "lyric": "亮"}]},
-            {"index": 1, "notes": [{"pitch": 81, "duration": "quarter", "lyric": "晶"}]},
-            {"index": 2, "notes": [{"pitch": 79, "duration": "half", "lyric": "晶"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 81,
+                  "duration": "quarter",
+                  "lyric": "亮"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 81,
+                  "duration": "quarter",
+                  "lyric": "晶"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "half",
+                  "lyric": "晶"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 3,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "满"}]},
-            {"index": 1, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "天"}]},
-            {"index": 2, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "都"}]},
-            {"index": 3, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "是"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "满"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "天"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "都"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "是"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 4,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 74, "duration": "quarter", "lyric": "小"}]},
-            {"index": 1, "notes": [{"pitch": 74, "duration": "quarter", "lyric": "星"}]},
-            {"index": 2, "notes": [{"pitch": 72, "duration": "half", "lyric": "星"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 74,
+                  "duration": "quarter",
+                  "lyric": "小"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 74,
+                  "duration": "quarter",
+                  "lyric": "星"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "half",
+                  "lyric": "星"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 5,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "挂"}]},
-            {"index": 1, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "在"}]},
-            {"index": 2, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "天"}]},
-            {"index": 3, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "上"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "挂"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "在"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "天"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "上"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 6,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "放"}]},
-            {"index": 1, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "光"}]},
-            {"index": 2, "notes": [{"pitch": 74, "duration": "half", "lyric": "明"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "放"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "光"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 74,
+                  "duration": "half",
+                  "lyric": "明"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 7,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "好"}]},
-            {"index": 1, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "像"}]},
-            {"index": 2, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "许"}]},
-            {"index": 3, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "多"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "好"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "像"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "许"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "多"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 8,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "小"}]},
-            {"index": 1, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "眼"}]},
-            {"index": 2, "notes": [{"pitch": 74, "duration": "half", "lyric": "睛"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "小"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "眼"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 74,
+                  "duration": "half",
+                  "lyric": "睛"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 9,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter", "lyric": "一"}]},
-            {"index": 1, "notes": [{"pitch": 72, "duration": "quarter", "lyric": "闪"}]},
-            {"index": 2, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "一"}]},
-            {"index": 3, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "闪"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter",
+                  "lyric": "一"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter",
+                  "lyric": "闪"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "一"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "闪"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 10,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 81, "duration": "quarter", "lyric": "亮"}]},
-            {"index": 1, "notes": [{"pitch": 81, "duration": "quarter", "lyric": "晶"}]},
-            {"index": 2, "notes": [{"pitch": 79, "duration": "half", "lyric": "晶"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 81,
+                  "duration": "quarter",
+                  "lyric": "亮"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 81,
+                  "duration": "quarter",
+                  "lyric": "晶"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "half",
+                  "lyric": "晶"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 11,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "满"}]},
-            {"index": 1, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "天"}]},
-            {"index": 2, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "都"}]},
-            {"index": 3, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "是"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "满"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "天"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "都"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "是"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 12,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 74, "duration": "quarter", "lyric": "小"}]},
-            {"index": 1, "notes": [{"pitch": 74, "duration": "quarter", "lyric": "星"}]},
-            {"index": 2, "notes": [{"pitch": 72, "duration": "half", "lyric": "星"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 74,
+                  "duration": "quarter",
+                  "lyric": "小"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 74,
+                  "duration": "quarter",
+                  "lyric": "星"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "half",
+                  "lyric": "星"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 13,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "挂"}]},
-            {"index": 1, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "在"}]},
-            {"index": 2, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "天"}]},
-            {"index": 3, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "上"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "挂"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "在"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "天"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "上"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 14,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "放"}]},
-            {"index": 1, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "光"}]},
-            {"index": 2, "notes": [{"pitch": 74, "duration": "half", "lyric": "明"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "放"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "光"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 74,
+                  "duration": "half",
+                  "lyric": "明"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 15,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "好"}]},
-            {"index": 1, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "像"}]},
-            {"index": 2, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "许"}]},
-            {"index": 3, "notes": [{"pitch": 77, "duration": "quarter", "lyric": "多"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "好"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 79,
+                  "duration": "quarter",
+                  "lyric": "像"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "许"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 77,
+                  "duration": "quarter",
+                  "lyric": "多"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 16,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "小"}]},
-            {"index": 1, "notes": [{"pitch": 76, "duration": "quarter", "lyric": "眼"}]},
-            {"index": 2, "notes": [{"pitch": 74, "duration": "half", "lyric": "睛"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "小"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 76,
+                  "duration": "quarter",
+                  "lyric": "眼"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 74,
+                  "duration": "half",
+                  "lyric": "睛"
+                }
+              ]
+            }
           ]
         }
       ]
@@ -160,133 +666,518 @@
       "name": "左手",
       "clef": "bass",
       "hand": "left",
+      "instrument": "piano",
       "measures": [
         {
           "number": 1,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 36, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 48, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 52, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 52,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 2,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 36, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 48, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 52, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 52,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 3,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 53, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 57, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 53,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 57,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 4,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 36, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 48, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 52, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 52,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 5,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 43, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 55, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 59, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 55,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 59,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 6,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 53, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 57, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 53,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 57,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 7,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 43, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 55, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 59, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 55,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 59,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 8,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 53, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 57, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 53,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 57,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 9,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 36, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 48, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 52, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 52,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 10,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 36, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 48, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 52, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 52,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 11,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 53, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 57, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 53,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 57,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 12,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 36, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 48, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 52, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 52,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 13,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 43, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 55, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 59, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 55,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 59,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 14,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 53, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 57, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 53,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 57,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 15,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 43, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 55, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 59, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 55,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 59,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 16,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 53, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 57, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 53,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 57,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         }
       ]

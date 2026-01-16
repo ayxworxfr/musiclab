@@ -1,13 +1,14 @@
 {
   "id": "sheet_002",
   "title": "C大调卡农",
-  "difficulty": 3,
-  "category": "classical",
+  "composer": "帕赫贝尔",
   "metadata": {
-    "composer": "帕赫贝尔",
     "key": "C",
-    "timeSignature": "4/4",
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
     "tempo": 60,
+    "difficulty": 3,
+    "category": "classical",
     "description": "巴洛克时期最著名的室内乐作品之一（C大调改编版）"
   },
   "tracks": [
@@ -16,289 +17,1282 @@
       "name": "右手",
       "clef": "treble",
       "hand": "right",
+      "instrument": "piano",
       "measures": [
         {
           "number": 1,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 71, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 71, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 2,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 3,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 64, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 4,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 5,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 64, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 6,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 62, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 64, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 62,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 7,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 71, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 8,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 71, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 9,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 10,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 11,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 71, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 71, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 12,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 13,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 64, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 14,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 62, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 60, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 62,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 60,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 15,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 62, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 62,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 16,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 72, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 17,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 71, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 71, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 18,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 19,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 64, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 20,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 21,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 64, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 22,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 62, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 64, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 62,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 23,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 71, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 24,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 71, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 25,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 26,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 27,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 71, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 71, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 71,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 28,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 67, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 29,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 64, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 30,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 62, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 60, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 62,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 60,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 31,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 62, "duration": "quarter"}]},
-            {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-            {"index": 2, "notes": [{"pitch": 65, "duration": "quarter"}]},
-            {"index": 3, "notes": [{"pitch": 67, "duration": "quarter"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 62,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 64,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 65,
+                  "duration": "quarter"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 67,
+                  "duration": "quarter"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 32,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 69, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 72, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 69,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 72,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         }
       ]
@@ -308,243 +1302,996 @@
       "name": "左手",
       "clef": "bass",
       "hand": "left",
+      "instrument": "piano",
       "measures": [
         {
           "number": 1,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 36, "duration": "eighth"}, {"pitch": 48, "duration": "eighth"}]},
-            {"index": 1, "notes": [{"pitch": 52, "duration": "eighth"}, {"pitch": 55, "duration": "eighth"}]},
-            {"index": 2, "notes": [{"pitch": 31, "duration": "eighth"}, {"pitch": 43, "duration": "eighth"}]},
-            {"index": 3, "notes": [{"pitch": 47, "duration": "eighth"}, {"pitch": 50, "duration": "eighth"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 48,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 52,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 55,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 31,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 43,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 47,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 50,
+                  "duration": "eighth"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 2,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 33, "duration": "eighth"}, {"pitch": 45, "duration": "eighth"}]},
-            {"index": 1, "notes": [{"pitch": 48, "duration": "eighth"}, {"pitch": 52, "duration": "eighth"}]},
-            {"index": 2, "notes": [{"pitch": 28, "duration": "eighth"}, {"pitch": 40, "duration": "eighth"}]},
-            {"index": 3, "notes": [{"pitch": 44, "duration": "eighth"}, {"pitch": 47, "duration": "eighth"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 33,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 45,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 52,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 28,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 40,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 44,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 47,
+                  "duration": "eighth"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 3,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 29, "duration": "eighth"}, {"pitch": 41, "duration": "eighth"}]},
-            {"index": 1, "notes": [{"pitch": 45, "duration": "eighth"}, {"pitch": 48, "duration": "eighth"}]},
-            {"index": 2, "notes": [{"pitch": 24, "duration": "eighth"}, {"pitch": 36, "duration": "eighth"}]},
-            {"index": 3, "notes": [{"pitch": 40, "duration": "eighth"}, {"pitch": 43, "duration": "eighth"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 29,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 41,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 48,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 24,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 36,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 43,
+                  "duration": "eighth"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 4,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 29, "duration": "eighth"}, {"pitch": 41, "duration": "eighth"}]},
-            {"index": 1, "notes": [{"pitch": 44, "duration": "eighth"}, {"pitch": 47, "duration": "eighth"}]},
-            {"index": 2, "notes": [{"pitch": 31, "duration": "eighth"}, {"pitch": 43, "duration": "eighth"}]},
-            {"index": 3, "notes": [{"pitch": 47, "duration": "eighth"}, {"pitch": 50, "duration": "eighth"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 29,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 41,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 44,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 47,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 31,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 43,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 47,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 50,
+                  "duration": "eighth"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 5,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 33, "duration": "eighth"}, {"pitch": 45, "duration": "eighth"}]},
-            {"index": 1, "notes": [{"pitch": 48, "duration": "eighth"}, {"pitch": 52, "duration": "eighth"}]},
-            {"index": 2, "notes": [{"pitch": 28, "duration": "eighth"}, {"pitch": 40, "duration": "eighth"}]},
-            {"index": 3, "notes": [{"pitch": 44, "duration": "eighth"}, {"pitch": 47, "duration": "eighth"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 33,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 45,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 52,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 28,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 40,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 44,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 47,
+                  "duration": "eighth"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 6,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 29, "duration": "eighth"}, {"pitch": 41, "duration": "eighth"}]},
-            {"index": 1, "notes": [{"pitch": 45, "duration": "eighth"}, {"pitch": 48, "duration": "eighth"}]},
-            {"index": 2, "notes": [{"pitch": 24, "duration": "eighth"}, {"pitch": 36, "duration": "eighth"}]},
-            {"index": 3, "notes": [{"pitch": 40, "duration": "eighth"}, {"pitch": 43, "duration": "eighth"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 29,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 41,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 48,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 24,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 36,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 43,
+                  "duration": "eighth"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 7,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 33, "duration": "eighth"}, {"pitch": 45, "duration": "eighth"}]},
-            {"index": 1, "notes": [{"pitch": 48, "duration": "eighth"}, {"pitch": 52, "duration": "eighth"}]},
-            {"index": 2, "notes": [{"pitch": 28, "duration": "eighth"}, {"pitch": 40, "duration": "eighth"}]},
-            {"index": 3, "notes": [{"pitch": 44, "duration": "eighth"}, {"pitch": 47, "duration": "eighth"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 33,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 45,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 52,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 28,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 40,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 44,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 47,
+                  "duration": "eighth"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 8,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 31, "duration": "eighth"}, {"pitch": 43, "duration": "eighth"}]},
-            {"index": 1, "notes": [{"pitch": 47, "duration": "eighth"}, {"pitch": 50, "duration": "eighth"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "eighth"}, {"pitch": 48, "duration": "eighth"}]},
-            {"index": 3, "notes": [{"pitch": 52, "duration": "eighth"}, {"pitch": 55, "duration": "eighth"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 31,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 43,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {
+                  "pitch": 47,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 50,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 48,
+                  "duration": "eighth"
+                }
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {
+                  "pitch": 52,
+                  "duration": "eighth"
+                },
+                {
+                  "pitch": 55,
+                  "duration": "eighth"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 9,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 10,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 11,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 48, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 43, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 12,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 13,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 14,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 15,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 16,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 48, "duration": "whole"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "whole"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 17,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 48, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 43, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 18,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 19,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 20,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 43, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 21,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 22,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 23,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 24,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 48, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 43, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 25,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 26,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 27,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 48, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 43, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 43,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 28,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 29,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 30,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 41, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 36, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 41,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 36,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 31,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 45, "duration": "half"}]},
-            {"index": 2, "notes": [{"pitch": 40, "duration": "half"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 45,
+                  "duration": "half"
+                }
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {
+                  "pitch": 40,
+                  "duration": "half"
+                }
+              ]
+            }
           ]
         },
         {
           "number": 32,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 48, "duration": "whole"}]}
+            {
+              "index": 0,
+              "notes": [
+                {
+                  "pitch": 48,
+                  "duration": "whole"
+                }
+              ]
+            }
           ]
         }
       ]
