@@ -3,28 +3,27 @@ import 'dart:async';
 import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
-import '../../../../core/utils/music_utils.dart';
-import '../models/sheet_model.dart';
+import '../models/score.dart';
 
 /// 乐谱播放控制器
 class SheetPlayerController extends GetxController {
   final AudioService _audioService = Get.find<AudioService>();
 
   /// 当前乐谱
-  final currentSheet = Rxn<SheetModel>();
+  final currentScore = Rxn<Score>();
 
   /// 播放状态
   final playbackState = Rx<SheetPlaybackState>(const SheetPlaybackState());
-  
+
   /// 节拍器开关
   final metronomeEnabled = false.obs;
 
   /// 播放定时器
   Timer? _playTimer;
-  
+
   /// 节拍器定时器
   Timer? _metronomeTimer;
-  
+
   /// 上一次节拍号（用于检测新拍）
   int _lastBeatNumber = -1;
 
@@ -44,46 +43,100 @@ class SheetPlayerController extends GetxController {
   }
 
   /// 加载乐谱
-  void loadSheet(SheetModel sheet) {
+  void loadScore(Score score) {
     stop();
-    currentSheet.value = sheet;
+    currentScore.value = score;
     _buildPlayableNotes();
     playbackState.value = SheetPlaybackState(
-      totalDuration: sheet.totalDuration,
+      totalDuration: _calculateTotalDuration(score),
     );
+  }
+
+  /// 计算总时长
+  double _calculateTotalDuration(Score score) {
+    if (score.tracks.isEmpty) return 0.0;
+
+    final secondsPerBeat = 60.0 / score.metadata.tempo;
+    var totalBeats = 0.0;
+
+    for (final track in score.tracks) {
+      var trackBeats = 0.0;
+      for (final measure in track.measures) {
+        for (final beat in measure.beats) {
+          trackBeats += beat.totalBeats;
+        }
+      }
+      if (trackBeats > totalBeats) {
+        totalBeats = trackBeats;
+      }
+    }
+
+    return totalBeats * secondsPerBeat;
   }
 
   /// 构建可播放音符列表
   void _buildPlayableNotes() {
     _playableNotes.clear();
-    final sheet = currentSheet.value;
-    if (sheet == null) return;
+    final score = currentScore.value;
+    if (score == null || score.tracks.isEmpty) return;
 
     double currentTime = 0;
-    final secondsPerBeat = 60.0 / sheet.metadata.tempo;
+    final secondsPerBeat = 60.0 / score.metadata.tempo;
 
-    for (var mIdx = 0; mIdx < sheet.measures.length; mIdx++) {
-      final measure = sheet.measures[mIdx];
-      for (var nIdx = 0; nIdx < measure.notes.length; nIdx++) {
-        final note = measure.notes[nIdx];
-        final duration = note.actualBeats * secondsPerBeat;
+    for (final track in score.tracks) {
+      currentTime = 0;
+      for (var mIdx = 0; mIdx < track.measures.length; mIdx++) {
+        final measure = track.measures[mIdx];
+        for (var bIdx = 0; bIdx < measure.beats.length; bIdx++) {
+          final beat = measure.beats[bIdx];
+          final beatDuration = beat.totalBeats * secondsPerBeat;
 
-        _playableNotes.add(_PlayableNote(
-          measureIndex: mIdx,
-          noteIndex: nIdx,
-          note: note,
-          startTime: currentTime,
-          duration: duration,
-        ));
+          for (var nIdx = 0; nIdx < beat.notes.length; nIdx++) {
+            final note = beat.notes[nIdx];
 
-        currentTime += duration;
+            if (beat.isChord && note.duration.beamCount == 0) {
+              _playableNotes.add(
+                _PlayableNote(
+                  measureIndex: mIdx,
+                  beatIndex: bIdx,
+                  noteIndex: nIdx,
+                  note: note,
+                  startTime: currentTime,
+                  duration: beatDuration,
+                ),
+              );
+            } else {
+              final noteDuration = note.actualBeats * secondsPerBeat;
+              _playableNotes.add(
+                _PlayableNote(
+                  measureIndex: mIdx,
+                  beatIndex: bIdx,
+                  noteIndex: nIdx,
+                  note: note,
+                  startTime: currentTime,
+                  duration: noteDuration,
+                ),
+              );
+              if (!beat.isChord || note.duration.beamCount > 0) {
+                currentTime += noteDuration;
+              }
+            }
+          }
+
+          if (beat.isChord &&
+              beat.notes.isNotEmpty &&
+              beat.notes.first.duration.beamCount == 0) {
+            currentTime += beatDuration;
+          }
+        }
       }
     }
+
+    _playableNotes.sort((a, b) => a.startTime.compareTo(b.startTime));
   }
 
   /// 播放/暂停
   void togglePlay() {
-    // 标记用户已交互（Web端需要）
     _audioService.markUserInteracted();
 
     if (playbackState.value.isPlaying) {
@@ -95,14 +148,12 @@ class SheetPlayerController extends GetxController {
 
   /// 开始播放
   void play() {
-    if (currentSheet.value == null || _playableNotes.isEmpty) return;
+    if (currentScore.value == null || _playableNotes.isEmpty) return;
 
-    // 标记用户已交互（Web端需要）
     _audioService.markUserInteracted();
 
     playbackState.value = playbackState.value.copyWith(isPlaying: true);
 
-    // 如果已经播放完毕，从头开始
     if (_currentPlayIndex >= _playableNotes.length) {
       _currentPlayIndex = 0;
       playbackState.value = playbackState.value.copyWith(
@@ -136,9 +187,7 @@ class SheetPlayerController extends GetxController {
   void _scheduleNextNote() {
     if (!playbackState.value.isPlaying) return;
     if (_currentPlayIndex >= _playableNotes.length) {
-      // 播放完毕
       if (playbackState.value.isLooping) {
-        // 循环播放
         _currentPlayIndex = 0;
         playbackState.value = playbackState.value.copyWith(
           currentTime: 0,
@@ -147,7 +196,6 @@ class SheetPlayerController extends GetxController {
         );
         _scheduleNextNote();
       } else {
-        // 更新进度到100%后再暂停
         playbackState.value = playbackState.value.copyWith(
           currentTime: playbackState.value.totalDuration,
         );
@@ -159,22 +207,18 @@ class SheetPlayerController extends GetxController {
     final playable = _playableNotes[_currentPlayIndex];
     _playNote(playable);
 
-    // 更新播放时间
     _currentPlayTime = playable.startTime;
 
-    // 检查节拍器
     if (metronomeEnabled.value) {
       _checkMetronome();
     }
 
-    // 更新状态
     playbackState.value = playbackState.value.copyWith(
       currentMeasureIndex: playable.measureIndex,
       currentNoteIndex: playable.noteIndex,
       currentTime: playable.startTime,
     );
 
-    // 计算下一个音符的延迟
     final adjustedDuration =
         playable.duration / playbackState.value.playbackSpeed;
 
@@ -190,25 +234,11 @@ class SheetPlayerController extends GetxController {
   void _playNote(_PlayableNote playable) {
     if (playable.note.isRest) return;
 
-    final sheet = currentSheet.value;
-    if (sheet == null) return;
-
-    // 将简谱音符转换为MIDI
-    // jianpuToMidi 参数: degree (1-7), octave (偏移), key (调号)
-    final midi = MusicUtils.jianpuToMidi(
-      playable.note.degree,
-      playable.note.octave,
-      sheet.metadata.key,
-    );
-
-    if (midi != null) {
-      _audioService.playPianoNote(midi);
-    }
+    _audioService.playPianoNote(playable.note.pitch);
   }
 
   /// 跳转到指定位置
   void seekTo(int measureIndex, int noteIndex) {
-    // 找到对应的播放索引
     for (var i = 0; i < _playableNotes.length; i++) {
       final p = _playableNotes[i];
       if (p.measureIndex == measureIndex && p.noteIndex == noteIndex) {
@@ -219,7 +249,6 @@ class SheetPlayerController extends GetxController {
           currentTime: p.startTime,
         );
 
-        // 如果正在播放，立即播放新位置
         if (playbackState.value.isPlaying) {
           _playTimer?.cancel();
           _scheduleNextNote();
@@ -232,13 +261,12 @@ class SheetPlayerController extends GetxController {
   /// 根据进度跳转（进度值 0.0-1.0）
   void seekToProgress(double progress) {
     if (_playableNotes.isEmpty) return;
-    
+
     final targetTime = progress * playbackState.value.totalDuration;
-    
-    // 找到最接近目标时间的音符
+
     int closestIndex = 0;
     double minDiff = double.infinity;
-    
+
     for (var i = 0; i < _playableNotes.length; i++) {
       final diff = (targetTime - _playableNotes[i].startTime).abs();
       if (diff < minDiff) {
@@ -246,8 +274,7 @@ class SheetPlayerController extends GetxController {
         closestIndex = i;
       }
     }
-    
-    // 跳转到找到的音符
+
     final playable = _playableNotes[closestIndex];
     seekTo(playable.measureIndex, playable.noteIndex);
   }
@@ -258,7 +285,7 @@ class SheetPlayerController extends GetxController {
       playbackSpeed: speed.clamp(0.5, 2.0),
     );
   }
-  
+
   /// 设置播放速度（简写）
   void setSpeed(double speed) {
     setPlaybackSpeed(speed);
@@ -289,33 +316,32 @@ class SheetPlayerController extends GetxController {
 
   /// 下一小节
   void nextMeasure() {
-    final sheet = currentSheet.value;
-    if (sheet == null) return;
+    final score = currentScore.value;
+    if (score == null || score.tracks.isEmpty) return;
 
     final currentMeasure = playbackState.value.currentMeasureIndex;
-    if (currentMeasure < sheet.measures.length - 1) {
+    final maxMeasures = score.tracks
+        .map((t) => t.measures.length)
+        .reduce((a, b) => a > b ? a : b);
+    if (currentMeasure < maxMeasures - 1) {
       seekTo(currentMeasure + 1, 0);
     }
   }
 
   /// 播放指定音符（预览）
   void playNotePreview(int measureIndex, int noteIndex) {
-    final sheet = currentSheet.value;
-    if (sheet == null) return;
+    final score = currentScore.value;
+    if (score == null || score.tracks.isEmpty) return;
 
-    if (measureIndex < sheet.measures.length) {
-      final measure = sheet.measures[measureIndex];
-      if (noteIndex < measure.notes.length) {
-        final note = measure.notes[noteIndex];
-        if (!note.isRest) {
-          // jianpuToMidi 参数: degree (1-7), octave (偏移), key (调号)
-          final midi = MusicUtils.jianpuToMidi(
-            note.degree,
-            note.octave,
-            sheet.metadata.key,
-          );
-          if (midi != null) {
-            _audioService.playPianoNote(midi);
+    for (final track in score.tracks) {
+      if (measureIndex < track.measures.length) {
+        final measure = track.measures[measureIndex];
+        if (noteIndex < measure.beats.length) {
+          final beat = measure.beats[noteIndex];
+          for (final note in beat.notes) {
+            if (!note.isRest) {
+              _audioService.playPianoNote(note.pitch);
+            }
           }
         }
       }
@@ -324,20 +350,18 @@ class SheetPlayerController extends GetxController {
 
   /// 检查并播放节拍器
   void _checkMetronome() {
-    final sheet = currentSheet.value;
-    if (sheet == null) return;
+    final score = currentScore.value;
+    if (score == null) return;
 
-    final beatsPerMeasure = sheet.metadata.beatsPerMeasure;
-    final tempo = sheet.metadata.tempo;
+    final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    final tempo = score.metadata.tempo;
     final beatDuration = 60.0 / tempo;
     final totalBeats = _currentPlayTime / beatDuration;
     final currentBeatNumber = totalBeats.floor();
 
-    // 检测是否进入新的一拍
     if (currentBeatNumber != _lastBeatNumber && currentBeatNumber >= 0) {
       _lastBeatNumber = currentBeatNumber;
 
-      // 判断是否为强拍（小节第一拍）
       final beatInMeasure = currentBeatNumber % beatsPerMeasure;
       final isStrong = beatInMeasure == 0;
 
@@ -349,13 +373,15 @@ class SheetPlayerController extends GetxController {
 /// 可播放音符（内部类）
 class _PlayableNote {
   final int measureIndex;
+  final int beatIndex;
   final int noteIndex;
-  final SheetNote note;
+  final Note note;
   final double startTime;
   final double duration;
 
   const _PlayableNote({
     required this.measureIndex,
+    required this.beatIndex,
     required this.noteIndex,
     required this.note,
     required this.startTime,
@@ -363,3 +389,54 @@ class _PlayableNote {
   });
 }
 
+/// 播放状态
+class SheetPlaybackState {
+  final bool isPlaying;
+  final bool isLooping;
+  final int currentMeasureIndex;
+  final int currentNoteIndex;
+  final double currentTime;
+  final double totalDuration;
+  final double playbackSpeed;
+  final int? loopStartMeasure;
+  final int? loopEndMeasure;
+
+  const SheetPlaybackState({
+    this.isPlaying = false,
+    this.isLooping = false,
+    this.currentMeasureIndex = 0,
+    this.currentNoteIndex = 0,
+    this.currentTime = 0.0,
+    this.totalDuration = 0.0,
+    this.playbackSpeed = 1.0,
+    this.loopStartMeasure,
+    this.loopEndMeasure,
+  });
+
+  SheetPlaybackState copyWith({
+    bool? isPlaying,
+    bool? isLooping,
+    int? currentMeasureIndex,
+    int? currentNoteIndex,
+    double? currentTime,
+    double? totalDuration,
+    double? playbackSpeed,
+    int? loopStartMeasure,
+    int? loopEndMeasure,
+  }) {
+    return SheetPlaybackState(
+      isPlaying: isPlaying ?? this.isPlaying,
+      isLooping: isLooping ?? this.isLooping,
+      currentMeasureIndex: currentMeasureIndex ?? this.currentMeasureIndex,
+      currentNoteIndex: currentNoteIndex ?? this.currentNoteIndex,
+      currentTime: currentTime ?? this.currentTime,
+      totalDuration: totalDuration ?? this.totalDuration,
+      playbackSpeed: playbackSpeed ?? this.playbackSpeed,
+      loopStartMeasure: loopStartMeasure ?? this.loopStartMeasure,
+      loopEndMeasure: loopEndMeasure ?? this.loopEndMeasure,
+    );
+  }
+
+  double get progress =>
+      totalDuration > 0 ? (currentTime / totalDuration).clamp(0.0, 1.0) : 0.0;
+}

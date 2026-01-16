@@ -1,27 +1,31 @@
-import '../models/sheet_model.dart';
+import 'dart:typed_data';
+
+import '../models/score.dart';
 import 'parsers/jianpu_text_parser.dart';
 import 'parsers/json_sheet_parser.dart';
-import 'parsers/musicxml_parser.dart';
+import 'parsers/midi_parser.dart';
+import 'parsers/musicxml_parser_v2.dart';
 
 export 'parsers/jianpu_text_parser.dart';
 export 'parsers/json_sheet_parser.dart';
-export 'parsers/musicxml_parser.dart';
+export 'parsers/midi_parser.dart';
+export 'parsers/musicxml_parser_v2.dart';
 
 /// 导入结果
 class ImportResult {
   final bool success;
-  final SheetModel? sheet;
+  final Score? score;
   final String? errorMessage;
   final List<String> warnings;
 
-  const ImportResult.success(this.sheet, {this.warnings = const []})
-      : success = true,
-        errorMessage = null;
+  const ImportResult.success(this.score, {this.warnings = const []})
+    : success = true,
+      errorMessage = null;
 
   const ImportResult.failure(this.errorMessage)
-      : success = false,
-        sheet = null,
-        warnings = const [];
+    : success = false,
+      score = null,
+      warnings = const [];
 }
 
 /// 导入格式枚举
@@ -33,7 +37,10 @@ enum ImportFormat {
   json('JSON', '.json', 'application/json'),
 
   /// MusicXML 格式
-  musicXml('MusicXML', '.musicxml', 'application/xml');
+  musicXml('MusicXML', '.musicxml', 'application/xml'),
+
+  /// MIDI 格式
+  midi('MIDI', '.mid', 'audio/midi');
 
   final String displayName;
   final String extension;
@@ -53,6 +60,9 @@ enum ImportFormat {
       case 'xml':
       case 'mxl':
         return ImportFormat.musicXml;
+      case 'mid':
+      case 'midi':
+        return ImportFormat.midi;
       default:
         return null;
     }
@@ -79,8 +89,18 @@ class SheetImportService {
   SheetImportService() {
     // 注册所有解析器
     _registerParser(JianpuTextParser());
-    _registerParser(JsonSheetParser());
-    _registerParser(MusicXmlParser());
+    _registerParser(JsonScoreParser());
+    _registerParser(MusicXmlParserV2());
+    _registerParser(MidiParser());
+  }
+
+  /// 导入 MIDI 字节数据
+  ImportResult importMidiBytes(Uint8List bytes) {
+    final parser = _parsers[ImportFormat.midi];
+    if (parser is MidiParser) {
+      return parser.parseBytes(bytes);
+    }
+    return const ImportResult.failure('MIDI 解析器未注册');
   }
 
   void _registerParser(SheetParser parser) {
@@ -122,4 +142,3 @@ class SheetImportService {
   /// 获取支持的格式列表
   List<ImportFormat> get supportedFormats => _parsers.keys.toList();
 }
-

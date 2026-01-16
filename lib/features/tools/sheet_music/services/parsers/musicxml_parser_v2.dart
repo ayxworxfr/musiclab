@@ -1,0 +1,623 @@
+import 'package:xml/xml.dart';
+
+import '../../models/enums.dart';
+import '../../models/score.dart';
+import '../sheet_import_service.dart';
+
+/// MusicXML 格式解析器 v2
+///
+/// 完整支持：
+/// - 多轨道解析
+/// - 和弦识别
+/// - 力度、踏板、装饰音
+/// - 三连音
+/// - 左右手自动识别
+///
+/// 基于 MusicXML 3.1 标准
+class MusicXmlParserV2 implements SheetParser {
+  @override
+  ImportFormat get format => ImportFormat.musicXml;
+
+  @override
+  bool validate(String content) {
+    try {
+      final trimmed = content.trim();
+      if (!trimmed.startsWith('<?xml') && !trimmed.startsWith('<')) {
+        return false;
+      }
+
+      final doc = XmlDocument.parse(trimmed);
+      final root = doc.rootElement;
+
+      return root.name.local == 'score-partwise' ||
+          root.name.local == 'score-timewise';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  ImportResult parse(String content) {
+    try {
+      final doc = XmlDocument.parse(content.trim());
+      final root = doc.rootElement;
+      final warnings = <String>[];
+
+      if (root.name.local != 'score-partwise') {
+        return const ImportResult.failure('暂不支持 score-timewise 格式');
+      }
+
+      final workInfo = _parseWorkInfo(root, warnings);
+      final attributes = _parseAttributes(root, warnings);
+      final tracks = _parseTracks(root, attributes, warnings);
+
+      if (tracks.isEmpty) {
+        return const ImportResult.failure('未找到有效的音轨');
+      }
+
+      final score = Score(
+        id: 'imported_${DateTime.now().millisecondsSinceEpoch}',
+        title: workInfo['title'] ?? '导入的乐谱',
+        subtitle: workInfo['subtitle'],
+        composer: workInfo['composer'],
+        arranger: workInfo['arranger'],
+        metadata: ScoreMetadata(
+          key: attributes['key'] ?? MusicKey.C,
+          beatsPerMeasure: attributes['beatsPerMeasure'] ?? 4,
+          beatUnit: attributes['beatUnit'] ?? 4,
+          tempo: attributes['tempo'] ?? 120,
+          tempoText: attributes['tempoText'],
+          difficulty: 1,
+          category: ScoreCategory.classical,
+        ),
+        tracks: tracks,
+        isBuiltIn: false,
+      );
+
+      return ImportResult.success(score, warnings: warnings);
+    } on XmlParserException catch (e) {
+      return ImportResult.failure('XML 格式错误: ${e.message}');
+    } catch (e) {
+      return ImportResult.failure('解析错误: $e');
+    }
+  }
+
+  /// 解析作品信息
+  Map<String, String?> _parseWorkInfo(
+      XmlElement root, List<String> warnings) {
+    final info = <String, String?>{};
+
+    final workTitle = root.findAllElements('work-title').firstOrNull;
+    if (workTitle != null) {
+      info['title'] = workTitle.innerText.trim();
+    }
+
+    if (info['title'] == null) {
+      final movementTitle = root.findAllElements('movement-title').firstOrNull;
+      if (movementTitle != null) {
+        info['title'] = movementTitle.innerText.trim();
+      }
+    }
+
+    for (final creator in root.findAllElements('creator')) {
+      final type = creator.getAttribute('type');
+      if (type == 'composer' || type == null) {
+        info['composer'] = creator.innerText.trim();
+      } else if (type == 'arranger') {
+        info['arranger'] = creator.innerText.trim();
+      }
+    }
+
+    return info;
+  }
+
+  /// 解析乐谱属性
+  Map<String, dynamic> _parseAttributes(
+      XmlElement root, List<String> warnings) {
+    final attrs = <String, dynamic>{
+      'key': MusicKey.C,
+      'beatsPerMeasure': 4,
+      'beatUnit': 4,
+      'tempo': 120,
+      'divisions': 1,
+    };
+
+    final attributes = root.findAllElements('attributes').firstOrNull;
+    if (attributes != null) {
+      final divisions = attributes.findElements('divisions').firstOrNull;
+      if (divisions != null) {
+        attrs['divisions'] = int.tryParse(divisions.innerText) ?? 1;
+      }
+
+      final key = attributes.findElements('key').firstOrNull;
+      if (key != null) {
+        final fifths = key.findElements('fifths').firstOrNull;
+        if (fifths != null) {
+          attrs['key'] = _fifthsToKey(int.tryParse(fifths.innerText) ?? 0);
+        }
+      }
+
+      final time = attributes.findElements('time').firstOrNull;
+      if (time != null) {
+        final beats = time.findElements('beats').firstOrNull?.innerText ?? '4';
+        final beatType =
+            time.findElements('beat-type').firstOrNull?.innerText ?? '4';
+        attrs['beatsPerMeasure'] = int.tryParse(beats) ?? 4;
+        attrs['beatUnit'] = int.tryParse(beatType) ?? 4;
+      }
+    }
+
+    final sound = root.findAllElements('sound').firstOrNull;
+    if (sound != null) {
+      final tempo = sound.getAttribute('tempo');
+      if (tempo != null) {
+        attrs['tempo'] = int.tryParse(tempo) ?? 120;
+      }
+    }
+
+    return attrs;
+  }
+
+  /// 五度圈转调号
+  MusicKey _fifthsToKey(int fifths) {
+    const keyMap = {
+      -7: MusicKey.Db,
+      -6: MusicKey.Ab,
+      -5: MusicKey.Eb,
+      -4: MusicKey.Bb,
+      -3: MusicKey.Eb,
+      -2: MusicKey.Bb,
+      -1: MusicKey.F,
+      0: MusicKey.C,
+      1: MusicKey.G,
+      2: MusicKey.D,
+      3: MusicKey.A,
+      4: MusicKey.E,
+      5: MusicKey.B,
+      6: MusicKey.Fs,
+      7: MusicKey.Fs,
+    };
+    return keyMap[fifths] ?? MusicKey.C;
+  }
+
+  /// 解析所有轨道
+  List<Track> _parseTracks(
+    XmlElement root,
+    Map<String, dynamic> attributes,
+    List<String> warnings,
+  ) {
+    final tracks = <Track>[];
+    final divisions = attributes['divisions'] as int;
+    var trackIndex = 0;
+
+    for (final partElement in root.findElements('part')) {
+      trackIndex++;
+      final partId = partElement.getAttribute('id') ?? 'part_$trackIndex';
+
+      final clef = _findClef(partElement);
+      final measures = _parseMeasures(partElement, divisions, warnings);
+
+      if (measures.isEmpty) {
+        warnings.add('轨道 $partId 无有效音符，已跳过');
+        continue;
+      }
+
+      final hand = _identifyHand(measures, clef);
+
+      tracks.add(Track(
+        id: partId,
+        name: _getPartName(root, partId) ?? '轨道 $trackIndex',
+        clef: clef,
+        hand: hand,
+        measures: measures,
+        instrument: Instrument.piano,
+      ));
+    }
+
+    return tracks;
+  }
+
+  /// 查找谱号
+  Clef _findClef(XmlElement partElement) {
+    final clefElement = partElement.findAllElements('clef').firstOrNull;
+    if (clefElement != null) {
+      final sign = clefElement.findElements('sign').firstOrNull?.innerText;
+      if (sign == 'G') return Clef.treble;
+      if (sign == 'F') return Clef.bass;
+      if (sign == 'C') return Clef.alto;
+    }
+    return Clef.treble;
+  }
+
+  /// 获取声部名称
+  String? _getPartName(XmlElement root, String partId) {
+    final partList = root.findElements('part-list').firstOrNull;
+    if (partList != null) {
+      for (final scorePart in partList.findElements('score-part')) {
+        if (scorePart.getAttribute('id') == partId) {
+          final partName = scorePart.findElements('part-name').firstOrNull;
+          if (partName != null) {
+            return partName.innerText.trim();
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /// 识别左右手
+  Hand? _identifyHand(List<Measure> measures, Clef clef) {
+    if (measures.isEmpty) return null;
+
+    final allPitches = measures
+        .expand((m) => m.beats)
+        .expand((b) => b.notes)
+        .where((n) => !n.isRest)
+        .map((n) => n.pitch)
+        .toList();
+
+    if (allPitches.isEmpty) return null;
+
+    final avgPitch = allPitches.reduce((a, b) => a + b) / allPitches.length;
+
+    if (clef == Clef.treble) {
+      return avgPitch >= 60 ? Hand.right : Hand.left;
+    } else if (clef == Clef.bass) {
+      return avgPitch < 60 ? Hand.left : Hand.right;
+    }
+
+    return null;
+  }
+
+  /// 解析所有小节
+  List<Measure> _parseMeasures(
+    XmlElement partElement,
+    int divisions,
+    List<String> warnings,
+  ) {
+    final measures = <Measure>[];
+    var measureNumber = 0;
+
+    for (final measureElement in partElement.findElements('measure')) {
+      measureNumber++;
+
+      final dynamics = _parseDynamics(measureElement);
+      final pedal = _parsePedal(measureElement);
+      final repeatSign = _parseRepeat(measureElement);
+      final ending = _parseEnding(measureElement);
+
+      final beats = _parseMeasureBeats(measureElement, divisions, warnings);
+
+      if (beats.isNotEmpty) {
+        measures.add(Measure(
+          number: measureNumber,
+          beats: beats,
+          dynamics: dynamics,
+          pedal: pedal,
+          repeatSign: repeatSign,
+          ending: ending,
+        ));
+      }
+    }
+
+    return measures;
+  }
+
+  /// 解析小节中的拍
+  List<Beat> _parseMeasureBeats(
+    XmlElement measureElement,
+    int divisions,
+    List<String> warnings,
+  ) {
+    final noteElements = measureElement.findElements('note').toList();
+    if (noteElements.isEmpty) return [];
+
+    final beats = <Beat>[];
+    var beatIndex = 0;
+    var currentPosition = 0;
+
+    var i = 0;
+    while (i < noteElements.length) {
+      final noteElement = noteElements[i];
+      final isChord = noteElement.findElements('chord').isNotEmpty;
+
+      if (!isChord) {
+        final duration =
+            int.tryParse(noteElement
+                    .findElements('duration')
+                    .firstOrNull
+                    ?.innerText ??
+                '0') ??
+            0;
+        final beatPosition = (currentPosition / divisions).floor();
+
+        if (beatPosition != beatIndex) {
+          beatIndex = beatPosition;
+        }
+
+        currentPosition += duration;
+      }
+
+      final chordNotes = <Note>[];
+      final tuplet = _parseTuplet(noteElement);
+
+      chordNotes.add(_parseNote(noteElement, divisions));
+      i++;
+
+      while (i < noteElements.length &&
+          noteElements[i].findElements('chord').isNotEmpty) {
+        chordNotes.add(_parseNote(noteElements[i], divisions));
+        i++;
+      }
+
+      beats.add(Beat(
+        index: beatIndex,
+        notes: chordNotes,
+        tuplet: tuplet,
+      ));
+    }
+
+    return beats;
+  }
+
+  /// 解析三连音
+  Tuplet? _parseTuplet(XmlElement noteElement) {
+    final timeModification =
+        noteElement.findElements('time-modification').firstOrNull;
+    if (timeModification != null) {
+      final actualNotes = int.tryParse(
+              timeModification.findElements('actual-notes').firstOrNull?.innerText ??
+                  '0') ??
+          0;
+      final normalNotes = int.tryParse(
+              timeModification.findElements('normal-notes').firstOrNull?.innerText ??
+                  '0') ??
+          0;
+
+      if (actualNotes > 0 && normalNotes > 0) {
+        return Tuplet(
+          actual: actualNotes,
+          normal: normalNotes,
+          displayText: actualNotes.toString(),
+        );
+      }
+    }
+    return null;
+  }
+
+  /// 解析音符
+  Note _parseNote(XmlElement noteElement, int divisions) {
+    final isRest = noteElement.findElements('rest').isNotEmpty;
+
+    final durationValue = int.tryParse(
+            noteElement.findElements('duration').firstOrNull?.innerText ??
+                '0') ??
+        0;
+    final beats = durationValue / divisions;
+    final duration = _beatsToDuration(beats);
+    final dots = noteElement.findElements('dot').length;
+
+    if (isRest) {
+      return Note(pitch: 0, duration: duration, dots: dots);
+    }
+
+    final pitch = noteElement.findElements('pitch').firstOrNull;
+    if (pitch == null) {
+      return Note(pitch: 0, duration: duration, dots: dots);
+    }
+
+    final step = pitch.findElements('step').firstOrNull?.innerText ?? 'C';
+    final octave =
+        int.tryParse(pitch.findElements('octave').firstOrNull?.innerText ??
+                '4') ??
+            4;
+    final alter =
+        int.tryParse(pitch.findElements('alter').firstOrNull?.innerText ??
+                '0') ??
+            0;
+
+    final midiPitch = _convertToMidi(step, octave, alter);
+
+    final accidental = _parseAccidental(noteElement, alter);
+    final articulation = _parseArticulation(noteElement);
+    final ornament = _parseOrnament(noteElement);
+    final lyric = _parseLyric(noteElement);
+    final tieStart = _hasTie(noteElement, 'start');
+    final tieEnd = _hasTie(noteElement, 'stop');
+
+    return Note(
+      pitch: midiPitch,
+      duration: duration,
+      accidental: accidental,
+      dots: dots,
+      lyric: lyric,
+      articulation: articulation,
+      ornament: ornament,
+      tieStart: tieStart,
+      tieEnd: tieEnd,
+    );
+  }
+
+  /// 转换为 MIDI 音高
+  int _convertToMidi(String step, int octave, int alter) {
+    const stepToMidi = {
+      'C': 0,
+      'D': 2,
+      'E': 4,
+      'F': 5,
+      'G': 7,
+      'A': 9,
+      'B': 11,
+    };
+
+    final baseMidi = stepToMidi[step]! + (octave + 1) * 12;
+    return baseMidi + alter;
+  }
+
+  /// 拍数转时值
+  NoteDuration _beatsToDuration(double beats) {
+    if (beats >= 3.5) return NoteDuration.whole;
+    if (beats >= 1.75) return NoteDuration.half;
+    if (beats >= 0.875) return NoteDuration.quarter;
+    if (beats >= 0.4375) return NoteDuration.eighth;
+    if (beats >= 0.21875) return NoteDuration.sixteenth;
+    return NoteDuration.thirtySecond;
+  }
+
+  /// 解析变音记号
+  Accidental _parseAccidental(XmlElement noteElement, int alter) {
+    final accidentalElement =
+        noteElement.findElements('accidental').firstOrNull;
+    if (accidentalElement != null) {
+      final type = accidentalElement.innerText.trim();
+      if (type == 'sharp') return Accidental.sharp;
+      if (type == 'flat') return Accidental.flat;
+      if (type == 'natural') return Accidental.natural;
+      if (type == 'double-sharp') return Accidental.doubleSharp;
+      if (type == 'flat-flat') return Accidental.doubleFlat;
+    }
+
+    if (alter > 0) {
+      return alter >= 2 ? Accidental.doubleSharp : Accidental.sharp;
+    } else if (alter < 0) {
+      return alter <= -2 ? Accidental.doubleFlat : Accidental.flat;
+    }
+
+    return Accidental.none;
+  }
+
+  /// 解析奏法
+  Articulation _parseArticulation(XmlElement noteElement) {
+    final articulations = noteElement.findElements('articulations').firstOrNull;
+    if (articulations != null) {
+      if (articulations.findElements('staccato').isNotEmpty) {
+        return Articulation.staccato;
+      }
+      if (articulations.findElements('accent').isNotEmpty) {
+        return Articulation.accent;
+      }
+      if (articulations.findElements('tenuto').isNotEmpty) {
+        return Articulation.tenuto;
+      }
+    }
+    return Articulation.none;
+  }
+
+  /// 解析装饰音
+  Ornament _parseOrnament(XmlElement noteElement) {
+    final ornaments = noteElement.findElements('ornaments').firstOrNull;
+    if (ornaments != null) {
+      if (ornaments.findElements('trill-mark').isNotEmpty) {
+        return Ornament.trill;
+      }
+      if (ornaments.findElements('turn').isNotEmpty) {
+        return Ornament.turn;
+      }
+      if (ornaments.findElements('mordent').isNotEmpty) {
+        return Ornament.mordent;
+      }
+      if (ornaments.findElements('inverted-mordent').isNotEmpty) {
+        return Ornament.invertedMordent;
+      }
+    }
+
+    final graceElement = noteElement.findElements('grace').firstOrNull;
+    if (graceElement != null) {
+      final slash = graceElement.getAttribute('slash');
+      if (slash == 'yes') {
+        return Ornament.acciaccatura;
+      }
+      return Ornament.appoggiatura;
+    }
+
+    return Ornament.none;
+  }
+
+  /// 解析歌词
+  String? _parseLyric(XmlElement noteElement) {
+    final lyricElement = noteElement.findElements('lyric').firstOrNull;
+    if (lyricElement != null) {
+      final text = lyricElement.findElements('text').firstOrNull;
+      if (text != null) {
+        return text.innerText.trim();
+      }
+    }
+    return null;
+  }
+
+  /// 检查连音线
+  bool _hasTie(XmlElement noteElement, String type) {
+    for (final tie in noteElement.findElements('tie')) {
+      if (tie.getAttribute('type') == type) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// 解析力度
+  Dynamics? _parseDynamics(XmlElement measureElement) {
+    final direction = measureElement.findElements('direction').firstOrNull;
+    if (direction != null) {
+      final dynamicsElement =
+          direction.findElements('dynamics').firstOrNull;
+      if (dynamicsElement != null) {
+        if (dynamicsElement.findElements('ppp').isNotEmpty) {
+          return Dynamics.ppp;
+        }
+        if (dynamicsElement.findElements('pp').isNotEmpty) return Dynamics.pp;
+        if (dynamicsElement.findElements('p').isNotEmpty) return Dynamics.p;
+        if (dynamicsElement.findElements('mp').isNotEmpty) return Dynamics.mp;
+        if (dynamicsElement.findElements('mf').isNotEmpty) return Dynamics.mf;
+        if (dynamicsElement.findElements('f').isNotEmpty) return Dynamics.f;
+        if (dynamicsElement.findElements('ff').isNotEmpty) return Dynamics.ff;
+        if (dynamicsElement.findElements('fff').isNotEmpty) {
+          return Dynamics.fff;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// 解析踏板
+  PedalMark? _parsePedal(XmlElement measureElement) {
+    final direction = measureElement.findElements('direction').firstOrNull;
+    if (direction != null) {
+      final pedal = direction.findElements('pedal').firstOrNull;
+      if (pedal != null) {
+        final type = pedal.getAttribute('type');
+        if (type == 'start') return PedalMark.start;
+        if (type == 'stop') return PedalMark.end;
+        if (type == 'change') return PedalMark.change;
+      }
+    }
+    return null;
+  }
+
+  /// 解析反复记号
+  RepeatSign? _parseRepeat(XmlElement measureElement) {
+    final barline = measureElement.findElements('barline').firstOrNull;
+    if (barline != null) {
+      final repeat = barline.findElements('repeat').firstOrNull;
+      if (repeat != null) {
+        final direction = repeat.getAttribute('direction');
+        if (direction == 'forward') return RepeatSign.start;
+        if (direction == 'backward') return RepeatSign.end;
+      }
+    }
+    return null;
+  }
+
+  /// 解析房子记号
+  int? _parseEnding(XmlElement measureElement) {
+    final barline = measureElement.findElements('barline').firstOrNull;
+    if (barline != null) {
+      final ending = barline.findElements('ending').firstOrNull;
+      if (ending != null) {
+        final number = ending.getAttribute('number');
+        return int.tryParse(number ?? '');
+      }
+    }
+    return null;
+  }
+}
