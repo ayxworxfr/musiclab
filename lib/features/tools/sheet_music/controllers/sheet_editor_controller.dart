@@ -305,7 +305,44 @@ class SheetEditorController extends GetxController {
 
   /// 删除选中的音符
   void deleteSelectedNote() {
-    if (selectedNoteIndex.value < 0) return;
+    if (selectedNoteIndex.value < 0) {
+      // 如果没有选中音符，尝试删除当前拍的所有音符
+      final beat = currentBeat;
+      if (beat != null && beat.notes.isNotEmpty) {
+        // 删除整个拍
+        final score = currentScore.value;
+        if (score == null) return;
+
+        final trackIndex = selectedTrackIndex.value;
+        if (trackIndex >= score.tracks.length) return;
+
+        final track = score.tracks[trackIndex];
+        final measureIndex = selectedMeasureIndex.value;
+        if (measureIndex >= track.measures.length) return;
+
+        final measure = track.measures[measureIndex];
+        final beatIndex = selectedBeatIndex.value;
+        
+        final updatedBeats = List<Beat>.from(measure.beats);
+        updatedBeats.removeWhere((b) => b.index == beatIndex);
+
+        // 更新小节
+        final updatedMeasure = measure.copyWith(beats: updatedBeats);
+        final updatedMeasures = List<Measure>.from(track.measures);
+        updatedMeasures[measureIndex] = updatedMeasure;
+
+        // 更新轨道
+        final updatedTrack = track.copyWith(measures: updatedMeasures);
+        final updatedTracks = List<Track>.from(score.tracks);
+        updatedTracks[trackIndex] = updatedTrack;
+
+        // 更新乐谱
+        currentScore.value = score.copyWith(tracks: updatedTracks);
+        hasUnsavedChanges.value = true;
+        selectedNoteIndex.value = -1;
+      }
+      return;
+    }
 
     final score = currentScore.value;
     if (score == null) return;
@@ -315,7 +352,7 @@ class SheetEditorController extends GetxController {
 
     final track = score.tracks[trackIndex];
     final measureIndex = selectedMeasureIndex.value;
-    if (measureIndex >= track.measures.length) return;
+    if (measureIndex < 0 || measureIndex >= track.measures.length) return;
 
     final measure = track.measures[measureIndex];
     final beatIndex = selectedBeatIndex.value;
@@ -324,7 +361,10 @@ class SheetEditorController extends GetxController {
     if (beat == null) return;
 
     final noteIndex = selectedNoteIndex.value;
-    if (noteIndex >= beat.notes.length) return;
+    if (noteIndex < 0 || noteIndex >= beat.notes.length) {
+      selectedNoteIndex.value = -1;
+      return;
+    }
 
     // 删除音符
     final updatedNotes = List<Note>.from(beat.notes);
@@ -428,16 +468,45 @@ class SheetEditorController extends GetxController {
     final score = currentScore.value;
     if (score == null) return;
 
-    final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    final track = currentTrack;
+    if (track == null) return;
 
-    if (selectedBeatIndex.value < beatsPerMeasure - 1) {
-      selectedBeatIndex.value++;
+    final measureIndex = selectedMeasureIndex.value;
+    if (measureIndex >= track.measures.length) return;
+
+    final measure = track.measures[measureIndex];
+    final currentBeatIndex = selectedBeatIndex.value;
+    
+    // 计算当前音符的时值（如果有选中的音符）
+    double beatIncrement = 1.0; // 默认移动一个整拍
+    if (selectedNoteIndex.value >= 0) {
+      final beat = measure.beats.firstWhereOrNull((b) => b.index == currentBeatIndex);
+      if (beat != null && beat.notes.isNotEmpty) {
+        final note = beat.notes[selectedNoteIndex.value.clamp(0, beat.notes.length - 1)];
+        // 根据音符时值计算应该移动多少拍
+        beatIncrement = note.actualBeats;
+      }
+    } else {
+      // 如果没有选中的音符，检查当前 beat 中最后一个音符的时值
+      final beat = measure.beats.firstWhereOrNull((b) => b.index == currentBeatIndex);
+      if (beat != null && beat.notes.isNotEmpty) {
+        final lastNote = beat.notes.last;
+        beatIncrement = lastNote.actualBeats;
+      }
+    }
+
+    final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    // 计算下一个 beatIndex（使用浮点数计算，然后取整）
+    final nextBeatIndexFloat = currentBeatIndex + beatIncrement;
+    final nextBeatIndex = nextBeatIndexFloat.floor();
+    
+    // 检查是否超出小节范围
+    if (nextBeatIndex < beatsPerMeasure) {
+      selectedBeatIndex.value = nextBeatIndex;
     } else {
       // 移动到下一小节
       selectedBeatIndex.value = 0;
-      final track = currentTrack;
-      if (track != null &&
-          selectedMeasureIndex.value < track.measures.length - 1) {
+      if (selectedMeasureIndex.value < track.measures.length - 1) {
         selectedMeasureIndex.value++;
       }
     }
@@ -467,6 +536,63 @@ class SheetEditorController extends GetxController {
     selectedMeasureIndex.value = measureIndex;
     selectedBeatIndex.value = beatIndex;
     selectedNoteIndex.value = noteIndex;
+  }
+
+  /// 从 JianpuNote 索引找到对应的 Beat 和 Note 索引
+  /// 返回 (beatIndex, noteIndexInBeat)，如果找不到返回 null
+  (int, int)? findBeatAndNoteIndex(int measureIndex, int jianpuNoteIndex) {
+    final score = currentScore.value;
+    if (score == null) return null;
+
+    final trackIndex = selectedTrackIndex.value;
+    if (trackIndex >= score.tracks.length) return null;
+
+    final track = score.tracks[trackIndex];
+    if (measureIndex >= track.measures.length) return null;
+
+    final measure = track.measures[measureIndex];
+    
+    // 按 beat.index 排序，确保顺序正确
+    final sortedBeats = List<Beat>.from(measure.beats);
+    sortedBeats.sort((a, b) => a.index.compareTo(b.index));
+    
+    // 遍历 beats，累计音符索引
+    int currentNoteIndex = 0;
+    for (final beat in sortedBeats) {
+      if (beat.notes.isEmpty) continue;
+      
+      // 检查是否在这个 beat 中
+      if (beat.isChord) {
+        // 和弦：每个音符都算一个，按音高排序
+        final sortedNotes = List<Note>.from(beat.notes);
+        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
+        final noteCount = sortedNotes.length;
+        
+        if (jianpuNoteIndex >= currentNoteIndex && 
+            jianpuNoteIndex < currentNoteIndex + noteCount) {
+          final noteIndexInBeat = jianpuNoteIndex - currentNoteIndex;
+          // 找到原始 beat 中对应的音符索引
+          final targetNote = sortedNotes[noteIndexInBeat];
+          final originalIndex = beat.notes.indexOf(targetNote);
+          return (beat.index, originalIndex >= 0 ? originalIndex : 0);
+        }
+        currentNoteIndex += noteCount;
+      } else {
+        // 单音：按音高排序后取第一个
+        final sortedNotes = List<Note>.from(beat.notes);
+        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
+        
+        if (jianpuNoteIndex == currentNoteIndex) {
+          // 找到原始 beat 中对应的音符索引
+          final targetNote = sortedNotes.first;
+          final originalIndex = beat.notes.indexOf(targetNote);
+          return (beat.index, originalIndex >= 0 ? originalIndex : 0);
+        }
+        currentNoteIndex++;
+      }
+    }
+    
+    return null;
   }
 
   /// 添加小节（同步所有轨道）

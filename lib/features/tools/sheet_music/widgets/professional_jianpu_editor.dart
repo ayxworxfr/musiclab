@@ -117,27 +117,30 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           Expanded(
             child: Center(
               child: Obx(() => SegmentedButton<EditorMode>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: EditorMode.select,
-                        label: Text('选择'),
-                        icon: Icon(Icons.touch_app, size: 18),
+                        label: const Text('选择', style: TextStyle(fontSize: 12)),
+                        icon: const Icon(Icons.touch_app, size: 18),
                       ),
                       ButtonSegment(
                         value: EditorMode.input,
-                        label: Text('输入'),
-                        icon: Icon(Icons.edit, size: 18),
+                        label: const Text('输入', style: TextStyle(fontSize: 12)),
+                        icon: const Icon(Icons.edit, size: 18),
                       ),
                       ButtonSegment(
                         value: EditorMode.erase,
-                        label: Text('删除'),
-                        icon: Icon(Icons.delete_outline, size: 18),
+                        label: const Text('删除', style: TextStyle(fontSize: 12)),
+                        icon: const Icon(Icons.delete_outline, size: 18),
                       ),
                     ],
                     selected: {controller.editorMode.value},
                     onSelectionChanged: (Set<EditorMode> newSelection) {
                       controller.editorMode.value = newSelection.first;
                     },
+                    style: SegmentedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
                   )),
             ),
           ),
@@ -171,7 +174,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     });
 
     return Container(
-      height: 48,
+      height: 56,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         border: Border(
@@ -180,11 +183,11 @@ class ProfessionalJianpuEditor extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               '编辑轨道:',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
           Expanded(
@@ -202,11 +205,11 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     child: Container(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 4,
-                        vertical: 8,
+                        vertical: 10,
                       ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 8,
+                        vertical: 10,
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
@@ -236,6 +239,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               color: isSelected ? Colors.white : Colors.grey[700],
+                              height: 1.2,
                             ),
                           ),
                         ],
@@ -514,11 +518,17 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
       return GestureDetector(
         onTap: () {
+          // 从 JianpuNote 索引找到对应的 Beat 和 Note 索引
+          final beatAndNote = controller.findBeatAndNoteIndex(measureIndex, noteIndex);
+          if (beatAndNote == null) return;
+          
+          final (beatIndex, noteIndexInBeat) = beatAndNote;
+          
           if (controller.editorMode.value == EditorMode.erase) {
-            controller.selectNote(measureIndex, 0, noteIndex);
+            controller.selectNote(measureIndex, beatIndex, noteIndexInBeat);
             controller.deleteSelectedNote();
           } else {
-            controller.selectNote(measureIndex, 0, noteIndex);
+            controller.selectNote(measureIndex, beatIndex, noteIndexInBeat);
           }
         },
         child: Container(

@@ -58,14 +58,23 @@ class JianpuView {
   List<JianpuNote> _convertBeatsToNotes(List<Beat> beats) {
     final notes = <JianpuNote>[];
 
-    for (final beat in beats) {
+    // 按 beat.index 排序，确保顺序正确
+    final sortedBeats = List<Beat>.from(beats);
+    sortedBeats.sort((a, b) => a.index.compareTo(b.index));
+
+    for (final beat in sortedBeats) {
       if (beat.notes.isEmpty) continue;
 
       if (beat.isChord) {
-        notes.addAll(beat.notes.map((note) => _convertNote(note, beat.tuplet)));
+        // 和弦：按音高排序后添加
+        final sortedNotes = List<Note>.from(beat.notes);
+        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
+        notes.addAll(sortedNotes.map((note) => _convertNote(note, beat.tuplet)));
       } else {
-        final note = beat.notes.first;
-        notes.add(_convertNote(note, beat.tuplet));
+        // 单音：按音高排序后取第一个（如果是多个音符，按音高排序）
+        final sortedNotes = List<Note>.from(beat.notes);
+        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
+        notes.add(_convertNote(sortedNotes.first, beat.tuplet));
       }
     }
 

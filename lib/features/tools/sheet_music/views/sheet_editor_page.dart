@@ -873,8 +873,14 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
       // 直接使用 Score 格式
       final score = sheet;
 
-      // 获取 SheetMusicController 并保存
-      final sheetMusicController = Get.find<SheetMusicController>();
+      // 获取或注册 SheetMusicController
+      SheetMusicController sheetMusicController;
+      if (Get.isRegistered<SheetMusicController>()) {
+        sheetMusicController = Get.find<SheetMusicController>();
+      } else {
+        sheetMusicController = Get.put(SheetMusicController());
+      }
+
       final success = await sheetMusicController.saveUserScore(score);
 
       if (success) {
@@ -908,9 +914,19 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
   }
 
   /// 导出为简谱文本
-  void _exportAsText() {
-    // TODO: 实现简谱文本导出
-    final text = '简谱导出功能待实现';
+  void _exportAsText() async {
+    final sheet = _editorController.currentSheet.value;
+    if (sheet == null) return;
+
+    final exportService = SheetExportService();
+    final result = await exportService.export(sheet, ExportFormat.jianpuText);
+
+    if (!result.success) {
+      Get.snackbar('导出失败', result.errorMessage ?? '未知错误');
+      return;
+    }
+
+    final text = result.text ?? '';
 
     showDialog(
       context: context,
