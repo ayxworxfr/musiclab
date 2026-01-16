@@ -36,13 +36,6 @@
       "category": "pop"
     },
     {
-      "id": "sheet_006",
-      "filename": "fur_elise.json",
-      "title": "致爱丽丝",
-      "difficulty": 3,
-      "category": "classical"
-    },
-    {
       "id": "sheet_007",
       "filename": "ode_to_joy.json",
       "title": "欢乐颂",
@@ -54,13 +47,6 @@
       "filename": "flower_dance.json",
       "title": "Flower Dance",
       "difficulty": 3,
-      "category": "pop"
-    },
-    {
-      "id": "sheet_009",
-      "filename": "castle_in_the_sky.json",
-      "title": "天空之城",
-      "difficulty": 2,
       "category": "pop"
     },
     {
@@ -76,17 +62,10 @@
       "title": "虫儿飞",
       "difficulty": 1,
       "category": "folk"
-    },
-    {
-      "id": "sheet_012",
-      "filename": "maple.json",
-      "title": "枫",
-      "difficulty": 3,
-      "category": "pop"
     }
   ],
   "metadata": {
-    "total": 12,
+    "total": 9,
     "lastUpdated": "2026-01-13",
     "categories": {
       "folk": 5,
