@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/smufl_glyphs.dart';
@@ -193,11 +194,17 @@ class GrandStaffPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    // 修复高音谱号位置：应该居中在第二线（G4）
-    // 低音谱号居中在第四线（F3）
-    final y = clef == Clef.treble
-        ? staffY + config.lineSpacing * 1.5 - textPainter.height * 0.35
-        : staffY + config.lineSpacing - textPainter.height * 0.3;
+    // 谱号位置计算：
+    // - staffY 是第一线的Y坐标
+    // - 高音谱号（G谱号）应该居中在第二线（G线）：staffY + lineSpacing
+    // - 低音谱号（F谱号）应该居中在第四线（F线）：staffY + 3 * lineSpacing
+    // Bravura 字体的谱号符号基准点在底部，需要调整Y坐标使谱号中心对齐到目标线
+    final targetLineY = clef == Clef.treble
+        ? staffY + config.lineSpacing  // 第二线
+        : staffY + 3 * config.lineSpacing;  // 第四线
+    
+    // 将谱号中心对齐到目标线（字体高度的一半作为偏移）
+    final y = targetLineY - textPainter.height * 0.5;
 
     textPainter.paint(canvas, Offset(x, y));
   }
@@ -679,17 +686,32 @@ class GrandStaffPainter extends CustomPainter {
     final measureLayout = layout.measureLayouts[measureIndex];
     if (measureLayout == null) return;
 
+    // 找到当前小节所在的行
+    final lineIndex = measureLayout.lineIndex;
+    final line = layout.lines.firstWhereOrNull((l) => l.lineIndex == lineIndex);
+    if (line == null) return;
+
     final progress =
         (currentTime % (totalDuration / score.measureCount)) /
         (totalDuration / score.measureCount);
 
     final x = measureLayout.x + progress * measureLayout.width;
 
-    final paint = Paint()
-      ..color = config.theme.playingColor.withValues(alpha: 0.3)
-      ..strokeWidth = 3;
+    // 计算播放指示线的Y范围
+    // 如果是大谱表，应该贯穿高音谱表和低音谱表
+    final trebleY = layout.trebleStaffY + lineIndex * config.lineHeight;
+    final bassY = layout.bassStaffY + lineIndex * config.lineHeight;
+    
+    final startY = trebleY;
+    final endY = score.isGrandStaff
+        ? bassY + 4 * config.lineSpacing
+        : trebleY + 4 * config.lineSpacing;
 
-    canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    final paint = Paint()
+      ..color = config.theme.playingColor.withValues(alpha: 0.4)
+      ..strokeWidth = 2.5;
+
+    canvas.drawLine(Offset(x, startY), Offset(x, endY), paint);
   }
 
   @override

@@ -173,9 +173,10 @@ class SheetExportService {
     // 音级（根据调号计算）
     buffer.write(note.getJianpuDegree(key));
 
-    // 八度
-    if (note.octaveOffset > 0) buffer.write("'" * note.octaveOffset);
-    if (note.octaveOffset < 0) buffer.write(',' * (-note.octaveOffset));
+    // 八度（根据调号计算）
+    final octaveOffset = note.getOctaveOffset(key);
+    if (octaveOffset > 0) buffer.write("'" * octaveOffset);
+    if (octaveOffset < 0) buffer.write(',' * (-octaveOffset));
 
     // 时值
     if (note.duration == NoteDuration.eighth) buffer.write('_');
