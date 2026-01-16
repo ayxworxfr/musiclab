@@ -413,8 +413,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
     if (!_showPlaybackBar.value) {
       // 展开播放栏时加载乐谱
-      // TODO: 修复播放器控制器以支持 Score 模型
-      // _playerController.loadScore(sheet);
+      _playerController.loadScore(sheet);
     } else {
       // 收起播放栏时停止播放
       _playerController.stop();

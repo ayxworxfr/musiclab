@@ -55,26 +55,21 @@ class JianpuView {
   }
 
   /// 将 Beat 列表转换为简谱音符列表
+  /// 完全按照用户输入顺序显示，不做任何排序
   List<JianpuNote> _convertBeatsToNotes(List<Beat> beats) {
     final notes = <JianpuNote>[];
 
-    // 按 beat.index 排序，确保顺序正确
+    // 按 beat.index 排序，确保按拍子顺序显示（这是必要的，因为beat.index表示时间位置）
     final sortedBeats = List<Beat>.from(beats);
     sortedBeats.sort((a, b) => a.index.compareTo(b.index));
 
+    // 遍历每个拍，按用户输入顺序添加音符
     for (final beat in sortedBeats) {
       if (beat.notes.isEmpty) continue;
 
-      if (beat.isChord) {
-        // 和弦：按音高排序后添加
-        final sortedNotes = List<Note>.from(beat.notes);
-        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
-        notes.addAll(sortedNotes.map((note) => _convertNote(note, beat.tuplet)));
-      } else {
-        // 单音：按音高排序后取第一个（如果是多个音符，按音高排序）
-        final sortedNotes = List<Note>.from(beat.notes);
-        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
-        notes.add(_convertNote(sortedNotes.first, beat.tuplet));
+      // 完全按照用户输入顺序添加，不做任何排序
+      for (final note in beat.notes) {
+        notes.add(_convertNote(note, beat.tuplet));
       }
     }
 

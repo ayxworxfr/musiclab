@@ -120,17 +120,17 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     segments: [
                       ButtonSegment(
                         value: EditorMode.select,
-                        label: const Text('选择', style: TextStyle(fontSize: 12)),
+                        label: const Text('选择'),
                         icon: const Icon(Icons.touch_app, size: 18),
                       ),
                       ButtonSegment(
                         value: EditorMode.input,
-                        label: const Text('输入', style: TextStyle(fontSize: 12)),
+                        label: const Text('输入'),
                         icon: const Icon(Icons.edit, size: 18),
                       ),
                       ButtonSegment(
                         value: EditorMode.erase,
-                        label: const Text('删除', style: TextStyle(fontSize: 12)),
+                        label: const Text('删除'),
                         icon: const Icon(Icons.delete_outline, size: 18),
                       ),
                     ],
@@ -139,7 +139,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                       controller.editorMode.value = newSelection.first;
                     },
                     style: SegmentedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      textStyle: const TextStyle(fontSize: 13),
                     ),
                   )),
             ),
@@ -711,9 +712,6 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
             // 音符键盘
             _buildNoteKeyboard(context),
-
-            // 歌词输入
-            _buildLyricInput(context),
           ],
         ),
       ),

@@ -464,6 +464,7 @@ class SheetEditorController extends GetxController {
   }
 
   /// 移动到下一拍
+  /// 根据音符时值和拍号（如4/4）计算下一个位置
   void moveToNextBeat() {
     final score = currentScore.value;
     if (score == null) return;
@@ -476,13 +477,15 @@ class SheetEditorController extends GetxController {
 
     final measure = track.measures[measureIndex];
     final currentBeatIndex = selectedBeatIndex.value;
+    final beatsPerMeasure = score.metadata.beatsPerMeasure;
     
     // 计算当前音符的时值（如果有选中的音符）
     double beatIncrement = 1.0; // 默认移动一个整拍
     if (selectedNoteIndex.value >= 0) {
       final beat = measure.beats.firstWhereOrNull((b) => b.index == currentBeatIndex);
       if (beat != null && beat.notes.isNotEmpty) {
-        final note = beat.notes[selectedNoteIndex.value.clamp(0, beat.notes.length - 1)];
+        final noteIndex = selectedNoteIndex.value.clamp(0, beat.notes.length - 1);
+        final note = beat.notes[noteIndex];
         // 根据音符时值计算应该移动多少拍
         beatIncrement = note.actualBeats;
       }
@@ -495,7 +498,6 @@ class SheetEditorController extends GetxController {
       }
     }
 
-    final beatsPerMeasure = score.metadata.beatsPerMeasure;
     // 计算下一个 beatIndex（使用浮点数计算，然后取整）
     final nextBeatIndexFloat = currentBeatIndex + beatIncrement;
     final nextBeatIndex = nextBeatIndexFloat.floor();
@@ -508,6 +510,9 @@ class SheetEditorController extends GetxController {
       selectedBeatIndex.value = 0;
       if (selectedMeasureIndex.value < track.measures.length - 1) {
         selectedMeasureIndex.value++;
+      } else {
+        // 如果已经是最后一个小节，添加新小节
+        addMeasure();
       }
     }
 
@@ -540,6 +545,7 @@ class SheetEditorController extends GetxController {
 
   /// 从 JianpuNote 索引找到对应的 Beat 和 Note 索引
   /// 返回 (beatIndex, noteIndexInBeat)，如果找不到返回 null
+  /// 完全按照用户输入顺序计算，不做任何排序
   (int, int)? findBeatAndNoteIndex(int measureIndex, int jianpuNoteIndex) {
     final score = currentScore.value;
     if (score == null) return null;
@@ -552,44 +558,26 @@ class SheetEditorController extends GetxController {
 
     final measure = track.measures[measureIndex];
     
-    // 按 beat.index 排序，确保顺序正确
+    // 按 beat.index 排序，确保按时间顺序遍历（这是必要的）
     final sortedBeats = List<Beat>.from(measure.beats);
     sortedBeats.sort((a, b) => a.index.compareTo(b.index));
     
-    // 遍历 beats，累计音符索引
+    // 遍历 beats，累计音符索引（完全按照用户输入顺序）
     int currentNoteIndex = 0;
     for (final beat in sortedBeats) {
       if (beat.notes.isEmpty) continue;
       
       // 检查是否在这个 beat 中
-      if (beat.isChord) {
-        // 和弦：每个音符都算一个，按音高排序
-        final sortedNotes = List<Note>.from(beat.notes);
-        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
-        final noteCount = sortedNotes.length;
-        
-        if (jianpuNoteIndex >= currentNoteIndex && 
-            jianpuNoteIndex < currentNoteIndex + noteCount) {
-          final noteIndexInBeat = jianpuNoteIndex - currentNoteIndex;
-          // 找到原始 beat 中对应的音符索引
-          final targetNote = sortedNotes[noteIndexInBeat];
-          final originalIndex = beat.notes.indexOf(targetNote);
-          return (beat.index, originalIndex >= 0 ? originalIndex : 0);
-        }
-        currentNoteIndex += noteCount;
-      } else {
-        // 单音：按音高排序后取第一个
-        final sortedNotes = List<Note>.from(beat.notes);
-        sortedNotes.sort((a, b) => a.pitch.compareTo(b.pitch));
-        
-        if (jianpuNoteIndex == currentNoteIndex) {
-          // 找到原始 beat 中对应的音符索引
-          final targetNote = sortedNotes.first;
-          final originalIndex = beat.notes.indexOf(targetNote);
-          return (beat.index, originalIndex >= 0 ? originalIndex : 0);
-        }
-        currentNoteIndex++;
+      final noteCount = beat.notes.length;
+      
+      if (jianpuNoteIndex >= currentNoteIndex && 
+          jianpuNoteIndex < currentNoteIndex + noteCount) {
+        // 找到对应的音符索引（在beat中的索引）
+        final noteIndexInBeat = jianpuNoteIndex - currentNoteIndex;
+        return (beat.index, noteIndexInBeat);
       }
+      
+      currentNoteIndex += noteCount;
     }
     
     return null;
