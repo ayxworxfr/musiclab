@@ -757,28 +757,87 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   /// 滚动乐谱到当前播放位置
   /// 核心逻辑：让播放音符所在的行滚动到可视区域的顶部（第一行）
   void _scrollToCurrentPlayPosition(double currentTime) {
-    if (!_scoreScrollController.hasClients || _layout == null) return;
+    if (!_scoreScrollController.hasClients) return;
 
-    // 1. 找到当前时间对应的音符
-    final currentNote = _findNoteAtTime(currentTime);
-    if (currentNote == null) return;
-
-    // 2. 找到该音符所在的行
-    final currentLine = _findLineForMeasure(currentNote.measureIndex);
-    if (currentLine == null) return;
-
-    // 3. 获取header的实际高度（用于计算行的绝对位置）
+    // 获取header的实际高度
     final headerHeight = _getHeaderHeight();
 
-    // 4. 计算目标滚动位置
-    // 行的Y坐标是相对于乐谱内容区域的起始位置
-    // 要让这一行显示在可视区域顶部，滚动位置 = header高度 + 行的Y坐标
-    final targetScroll = (headerHeight + currentLine.y).clamp(
+    double targetScroll = 0.0;
+
+    if (_currentMode == NotationMode.staff && _layout != null) {
+      // 五线谱模式：使用 LayoutResult 中的行信息
+      final currentNote = _findNoteAtTime(currentTime);
+      if (currentNote == null) return;
+
+      final currentLine = _findLineForMeasure(currentNote.measureIndex);
+      if (currentLine == null) return;
+
+      targetScroll = headerHeight + currentLine.y;
+    } else {
+      // 简谱模式：需要手动计算行位置
+      final totalDuration = widget.score.totalDuration;
+      if (totalDuration <= 0) return;
+
+      // 计算当前播放进度
+      final progress = (currentTime / totalDuration).clamp(0.0, 1.0);
+      final measureIndex = (progress * widget.score.measureCount).floor().clamp(0, widget.score.measureCount - 1);
+
+      // 使用与 JianpuPainter 相同的布局计算逻辑
+      final contentWidth = _scoreScrollController.position.viewportDimension - 
+          widget.config.padding.left - widget.config.padding.right;
+      final beatsPerMeasure = widget.score.metadata.beatsPerMeasure;
+      
+      // 计算每行小节数（与 JianpuPainter 保持一致）
+      const minBeatWidth = 25.0;
+      const minMeasuresPerLine = 2;
+      const maxMeasuresPerLine = 6;
+      final minMeasureWidth = minBeatWidth * beatsPerMeasure;
+      int measuresPerLine = (contentWidth / minMeasureWidth).floor();
+      
+      // 检查音符密度
+      int maxNotesInChord = 1;
+      for (final track in widget.score.tracks) {
+        for (final measure in track.measures) {
+          for (final beat in measure.beats) {
+            if (beat.notes.length > maxNotesInChord) {
+              maxNotesInChord = beat.notes.length;
+            }
+          }
+        }
+      }
+      if (maxNotesInChord > 3) {
+        measuresPerLine = (measuresPerLine * 0.75).floor();
+      }
+      measuresPerLine = measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
+
+      // 计算行号
+      final lineIndex = measureIndex ~/ measuresPerLine;
+      
+      // 计算轨道高度（与 JianpuPainter 保持一致）
+      final trackCount = widget.score.tracks.length;
+      final double trackHeight;
+      if (maxNotesInChord <= 2) {
+        trackHeight = 45.0;
+      } else if (maxNotesInChord <= 4) {
+        trackHeight = 55.0;
+      } else {
+        trackHeight = 65.0 + (maxNotesInChord - 4) * 8;
+      }
+      final lineSpacing = 20.0;
+      final lineHeight = trackCount * trackHeight + lineSpacing;
+      
+      // 计算目标滚动位置
+      final lineY = widget.config.padding.top + lineIndex * lineHeight;
+      targetScroll = headerHeight + lineY;
+    }
+
+    // 限制在有效范围内
+    targetScroll = targetScroll.clamp(
       0.0,
       _scoreScrollController.position.maxScrollExtent,
     );
 
-    // 5. 只有当目标位置与当前位置差距较大时才滚动（避免频繁小幅滚动）
+    // 只有当目标位置与当前位置差距较大时才滚动（避免频繁小幅滚动）
     final currentScroll = _scoreScrollController.offset;
     if ((targetScroll - currentScroll).abs() > 30) {
       _scoreScrollController.animateTo(

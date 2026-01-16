@@ -281,19 +281,46 @@ class MidiParser implements SheetParser {
     var beatUnit = 4;
     var key = MusicKey.C;
 
+    // 收集所有元数据事件并按时间排序
+    final tempoEvents = <_MidiEvent>[];
+    final timeSignatureEvents = <_MidiEvent>[];
+    final keySignatureEvents = <_MidiEvent>[];
+
     for (final track in tracks) {
       for (final event in track.events) {
-        if (event.type == _MidiEventType.tempo && event.time == 0) {
-          tempo = event.value ?? 120;
-        }
-        if (event.type == _MidiEventType.timeSignature && event.time == 0) {
-          beatsPerMeasure = event.value ?? 4;
-          beatUnit = event.value2 ?? 4;
-        }
-        if (event.type == _MidiEventType.keySignature && event.time == 0) {
-          key = _midiKeyToMusicKey(event.value ?? 0, event.value2 == 1);
+        if (event.type == _MidiEventType.tempo) {
+          tempoEvents.add(event);
+        } else if (event.type == _MidiEventType.timeSignature) {
+          timeSignatureEvents.add(event);
+        } else if (event.type == _MidiEventType.keySignature) {
+          keySignatureEvents.add(event);
         }
       }
+    }
+
+    // 找到第一个（时间最早的）tempo 事件
+    if (tempoEvents.isNotEmpty) {
+      tempoEvents.sort((a, b) => a.time.compareTo(b.time));
+      tempo = tempoEvents.first.value ?? 120;
+      warnings.add('检测到速度: ${tempo} BPM');
+    }
+
+    // 找到第一个拍号事件
+    if (timeSignatureEvents.isNotEmpty) {
+      timeSignatureEvents.sort((a, b) => a.time.compareTo(b.time));
+      beatsPerMeasure = timeSignatureEvents.first.value ?? 4;
+      beatUnit = timeSignatureEvents.first.value2 ?? 4;
+      warnings.add('检测到拍号: $beatsPerMeasure/$beatUnit');
+    }
+
+    // 找到第一个调号事件
+    if (keySignatureEvents.isNotEmpty) {
+      keySignatureEvents.sort((a, b) => a.time.compareTo(b.time));
+      key = _midiKeyToMusicKey(
+        keySignatureEvents.first.value ?? 0,
+        keySignatureEvents.first.value2 == 1,
+      );
+      warnings.add('检测到调号: ${key.displayName}');
     }
 
     final scoreTracks = <Track>[];
@@ -428,14 +455,20 @@ class MidiParser implements SheetParser {
     int ppq,
     int beatsPerMeasure,
   ) {
+    // 使用更精确的量化算法：量化到最近的 1/4 拍
+    final quantizationGrid = ppq ~/ 4; // 每1/4拍的tick数
     final beatMap = <int, List<Note>>{};
 
     for (final note in notes) {
       final relativeTime = note.startTime - measureStart;
-      final beatIndex = (relativeTime / ppq).floor();
+      
+      // 量化到最近的1/4拍
+      final quantizedTime = ((relativeTime + quantizationGrid ~/ 2) ~/ quantizationGrid) * quantizationGrid;
+      final beatIndex = (quantizedTime / ppq).floor();
 
       if (beatIndex < 0 || beatIndex >= beatsPerMeasure) continue;
 
+      // 计算时值（基于实际持续时间）
       final duration = _ticksToDuration(note.duration, ppq);
 
       final scoreNote = Note(
