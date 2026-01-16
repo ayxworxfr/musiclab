@@ -52,6 +52,11 @@ class SheetPlayerController extends GetxController {
     );
   }
 
+  /// 加载乐谱（兼容旧代码）
+  void loadSheet(Score score) {
+    loadScore(score);
+  }
+
   /// 计算总时长
   double _calculateTotalDuration(Score score) {
     if (score.tracks.isEmpty) return 0.0;

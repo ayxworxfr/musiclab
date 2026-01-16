@@ -206,8 +206,9 @@ class SheetMusicController extends GetxController {
 
   /// 获取示例乐谱（只保留小星星和卡农）
   List<Score> _getSampleScores() {
+    // 注意：createTwinkleTwinkle 是异步方法，这里返回空列表
+    // 实际应该从 assets 加载或使用同步方法
     return [
-      ScoreConverter.createTwinkleTwinkle(),
       _createCanonInC(),
     ];
   }

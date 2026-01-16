@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/utils/music_utils.dart';
+import '../models/score.dart';
 import '../models/enums.dart';
 import '../painters/piano_keyboard_painter.dart';
 import '../painters/render_config.dart';
@@ -15,7 +16,7 @@ import 'staff_notation_widget.dart';
 /// 带钢琴键盘的乐谱播放组件
 class SheetWithPianoWidget extends StatelessWidget {
   /// 乐谱数据
-  final SheetModel sheet;
+  final Score sheet;
 
   /// 播放控制器
   final SheetPlayerController controller;
@@ -160,16 +161,12 @@ class SheetWithPianoWidget extends StatelessWidget {
   }
 
   /// 构建当前音符信息
-  Widget _buildCurrentNoteInfo(BuildContext context, SheetNote? note) {
+  Widget _buildCurrentNoteInfo(BuildContext context, Note? note) {
     if (note == null) {
       return const SizedBox(height: 40);
     }
 
-    final midi = MusicUtils.jianpuToMidi(
-      note.degree,
-      note.octave,
-      sheet.metadata.key,
-    );
+    final midi = note.pitch;
 
     return Container(
       height: 40,
@@ -192,23 +189,13 @@ class SheetWithPianoWidget extends StatelessWidget {
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 Text(
-                  note.displayString,
+                  MusicUtils.midiToNoteName(note.pitch),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.blue,
                   ),
                 ),
-                if (note.octave > 0)
-                  Text(
-                    '̇' * note.octave,
-                    style: const TextStyle(fontSize: 18, color: Colors.blue),
-                  ),
-                if (note.octave < 0)
-                  Text(
-                    '̣' * (-note.octave),
-                    style: const TextStyle(fontSize: 18, color: Colors.blue),
-                  ),
               ],
             ),
           ),
@@ -267,11 +254,21 @@ class SheetWithPianoWidget extends StatelessWidget {
   }
 
   /// 获取当前音符
-  SheetNote? _getCurrentNote(SheetPlaybackState state) {
-    if (state.currentMeasureIndex < sheet.measures.length) {
-      final measure = sheet.measures[state.currentMeasureIndex];
-      if (state.currentNoteIndex < measure.notes.length) {
-        return measure.notes[state.currentNoteIndex];
+  Note? _getCurrentNote(SheetPlaybackState state) {
+    if (sheet.tracks.isEmpty) return null;
+    final track = sheet.tracks.first;
+    if (state.currentMeasureIndex < track.measures.length) {
+      final measure = track.measures[state.currentMeasureIndex];
+      // 遍历 beats 找到对应的音符
+      var noteIndex = 0;
+      for (final beat in measure.beats) {
+        if (noteIndex + beat.notes.length > state.currentNoteIndex) {
+          final idx = state.currentNoteIndex - noteIndex;
+          if (idx < beat.notes.length) {
+            return beat.notes[idx];
+          }
+        }
+        noteIndex += beat.notes.length;
       }
     }
     return null;
@@ -284,11 +281,7 @@ class SheetWithPianoWidget extends StatelessWidget {
     final note = _getCurrentNote(state);
     if (note == null || note.isRest) return null;
 
-    return MusicUtils.jianpuToMidi(
-      note.degree,
-      note.octave,
-      sheet.metadata.key,
-    );
+    return note.pitch;
   }
 }
 
@@ -398,7 +391,7 @@ class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
 
 /// 乐谱播放页面（完整版，包含乐谱+钢琴+控制栏）
 class SheetPlayerPage extends StatefulWidget {
-  final SheetModel sheet;
+  final Score sheet;
 
   const SheetPlayerPage({super.key, required this.sheet});
 
@@ -415,7 +408,7 @@ class _SheetPlayerPageState extends State<SheetPlayerPage> {
   void initState() {
     super.initState();
     _controller = Get.put(SheetPlayerController());
-    _controller.loadSheet(widget.sheet);
+    _controller.loadScore(widget.sheet);
   }
 
   @override

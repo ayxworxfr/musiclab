@@ -6,6 +6,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../controllers/sheet_editor_controller.dart';
 import '../controllers/sheet_music_controller.dart';
 import '../controllers/sheet_player_controller.dart';
+import '../models/score.dart';
+import '../models/enums.dart';
 
 import '../services/sheet_import_service.dart';
 import '../services/export/sheet_export_service.dart';
@@ -49,9 +51,9 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     _playerController = Get.put(SheetPlayerController());
 
     // 检查是否有传入的乐谱参数
-    final sheet = Get.arguments as SheetModel?;
-    if (sheet != null) {
-      _editorController.loadSheet(sheet);
+    final score = Get.arguments as Score?;
+    if (score != null) {
+      _editorController.loadScore(score);
     } else {
       _editorController.createNewSheet();
     }
@@ -270,11 +272,20 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
         // 获取当前选中音符的歌词
         String? currentLyric;
-        if (sheet != null &&
-            measureIndex < sheet.measures.length &&
-            noteIndex >= 0 &&
-            noteIndex < sheet.measures[measureIndex].notes.length) {
-          currentLyric = sheet.measures[measureIndex].notes[noteIndex].lyric;
+        if (sheet != null && sheet.tracks.isNotEmpty) {
+          final track = sheet.tracks.first;
+          if (measureIndex < track.measures.length) {
+            final measure = track.measures[measureIndex];
+            // 从 beats 中查找对应的音符
+            var remainingNoteIndex = noteIndex;
+            for (final beat in measure.beats) {
+              if (remainingNoteIndex < beat.notes.length) {
+                currentLyric = beat.notes[remainingNoteIndex].lyric;
+                break;
+              }
+              remainingNoteIndex -= beat.notes.length;
+            }
+          }
         }
 
         // 使用 addPostFrameCallback 避免在 build 过程中修改
@@ -399,7 +410,8 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
     if (!_showPlaybackBar.value) {
       // 展开播放栏时加载乐谱
-      _playerController.loadSheet(sheet);
+      // TODO: 修复播放器控制器以支持 Score 模型
+      // _playerController.loadScore(sheet);
     } else {
       // 收起播放栏时停止播放
       _playerController.stop();
@@ -502,7 +514,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
                               ),
                             ),
                             Text(
-                              '小节 ${state.currentMeasureIndex + 1} / ${_editorController.currentSheet.value?.measures.length ?? 0}',
+                              '小节 ${state.currentMeasureIndex + 1} / ${_editorController.currentTrack?.measures.length ?? 0}',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors.grey.shade600,
@@ -745,8 +757,8 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
         // 在 Obx 直接作用域内读取，确保能监听变化
         final isJianpu = _previewMode.value == 'jianpu';
 
-        // 转换为 Score 以便使用 Canvas 渲染
-        final score = ScoreConverter.fromSheetModel(sheet);
+        // 直接使用 Score
+        final score = sheet;
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final config = RenderConfig(
           theme: isDark ? RenderTheme.dark() : const RenderTheme(),
@@ -757,16 +769,30 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
         final highlightedIndices = <int>{};
         if (state.isPlaying) {
           // 简单的索引计算：按顺序累加
+          // 计算高亮音符索引（通过 tracks 和 measures）
           var noteIndex = 0;
-          for (
-            var m = 0;
-            m < state.currentMeasureIndex && m < sheet.measures.length;
-            m++
-          ) {
-            noteIndex += sheet.measures[m].notes.length;
-          }
-          if (state.currentMeasureIndex < sheet.measures.length) {
-            noteIndex += state.currentNoteIndex;
+          if (sheet.tracks.isNotEmpty) {
+            final track = sheet.tracks.first;
+            for (var m = 0; m < state.currentMeasureIndex && m < track.measures.length; m++) {
+              final measure = track.measures[m];
+              for (final beat in measure.beats) {
+                noteIndex += beat.notes.length;
+              }
+            }
+            if (state.currentMeasureIndex < track.measures.length) {
+              final measure = track.measures[state.currentMeasureIndex];
+              // 计算到当前音符的索引
+              // SheetPlaybackState 只有 currentNoteIndex，需要遍历 beats 计算
+              var remainingNoteIndex = state.currentNoteIndex;
+              for (final beat in measure.beats) {
+                if (remainingNoteIndex < beat.notes.length) {
+                  noteIndex += remainingNoteIndex;
+                  break;
+                }
+                noteIndex += beat.notes.length;
+                remainingNoteIndex -= beat.notes.length;
+              }
+            }
           }
           highlightedIndices.add(noteIndex);
         }
@@ -841,8 +867,8 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     if (sheet == null) return;
 
     try {
-      // 转换为 Score 格式
-      final score = ScoreConverter.fromSheetModel(sheet);
+      // 直接使用 Score 格式
+      final score = sheet;
 
       // 获取 SheetMusicController 并保存
       final sheetMusicController = Get.find<SheetMusicController>();
@@ -880,7 +906,8 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
   /// 导出为简谱文本
   void _exportAsText() {
-    final text = _editorController.exportToJianpuText();
+    // TODO: 实现简谱文本导出
+    final text = '简谱导出功能待实现';
 
     showDialog(
       context: context,
@@ -919,12 +946,19 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
   }
 
   /// 导出为 JSON
-  void _exportAsJson() {
+  Future<void> _exportAsJson() async {
     final sheet = _editorController.currentSheet.value;
     if (sheet == null) return;
 
-    final exporter = JsonSheetExporter();
-    final json = exporter.export(sheet);
+    final exportService = SheetExportService();
+    final result = await exportService.export(sheet, ExportFormat.json);
+    
+    if (!result.success) {
+      Get.snackbar('导出失败', result.errorMessage ?? '未知错误');
+      return;
+    }
+    
+    final json = result.text ?? '';
 
     showDialog(
       context: context,
@@ -1058,8 +1092,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
             onPressed: () {
               _editorController.createNewSheet(
                 title: titleController.text,
-                key: selectedKey,
-                timeSignature: selectedTimeSignature,
+                key: MusicKey.fromString(selectedKey),
                 tempo: int.tryParse(tempoController.text) ?? 120,
               );
               Navigator.pop(context);

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../models/score.dart';
+import '../models/jianpu_view.dart';
+import '../models/enums.dart';
+
 /// 简谱渲染配置
 class JianpuStyle {
   /// 音符字体大小
@@ -81,7 +85,7 @@ class JianpuStyle {
 /// 简谱乐谱渲染组件
 class JianpuNotationWidget extends StatelessWidget {
   /// 乐谱数据
-  final SheetModel sheet;
+  final Score sheet;
 
   /// 渲染样式
   final JianpuStyle style;
@@ -106,9 +110,13 @@ class JianpuNotationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 使用 JianpuView 转换 Score 为简谱视图
+    final jianpuView = JianpuView(sheet, trackIndex: 0);
+    final measures = jianpuView.getMeasures();
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final lines = _layoutMeasures(constraints.maxWidth);
+        final lines = _layoutMeasures(measures, constraints.maxWidth);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,7 +125,7 @@ class JianpuNotationWidget extends StatelessWidget {
             _buildHeader(context),
             const SizedBox(height: 16),
             // 乐谱内容
-            ...lines.map((line) => _buildLine(context, line)),
+            ...lines.map((line) => _buildLine(context, line, measures)),
           ],
         );
       },
@@ -151,17 +159,17 @@ class JianpuNotationWidget extends StatelessWidget {
           // 调号和拍号
           Row(
             children: [
-              _buildInfoChip('1 = ${sheet.metadata.key}'),
+              _buildInfoChip('1 = ${sheet.metadata.key.displayName}'),
               const SizedBox(width: 12),
               _buildInfoChip(sheet.metadata.timeSignature),
               const SizedBox(width: 12),
               _buildInfoChip('♩= ${sheet.metadata.tempo}'),
             ],
           ),
-          if (sheet.metadata.composer != null) ...[
+          if (sheet.composer != null) ...[
             const SizedBox(height: 4),
             Text(
-              '作曲：${sheet.metadata.composer}',
+              '作曲：${sheet.composer}',
               style: TextStyle(
                 fontSize: style.lyricFontSize,
                 color: Colors.grey[600],
@@ -185,14 +193,14 @@ class JianpuNotationWidget extends StatelessWidget {
   }
 
   /// 将小节布局成多行
-  List<List<int>> _layoutMeasures(double maxWidth) {
+  List<List<int>> _layoutMeasures(List<JianpuMeasure> measures, double maxWidth) {
     final lines = <List<int>>[];
     var currentLine = <int>[];
     var currentWidth = 0.0;
     const padding = 32.0;
 
-    for (var i = 0; i < sheet.measures.length; i++) {
-      final measure = sheet.measures[i];
+    for (var i = 0; i < measures.length; i++) {
+      final measure = measures[i];
       final measureWidth = _calculateMeasureWidth(measure);
 
       if (currentWidth + measureWidth > maxWidth - padding &&
@@ -214,7 +222,7 @@ class JianpuNotationWidget extends StatelessWidget {
   }
 
   /// 计算小节宽度
-  double _calculateMeasureWidth(SheetMeasure measure) {
+  double _calculateMeasureWidth(JianpuMeasure measure) {
     var width = 16.0; // 小节线宽度 + 边距
     for (final note in measure.notes) {
       // 基础宽度（数字 + padding）
@@ -228,10 +236,10 @@ class JianpuNotationWidget extends StatelessWidget {
   }
 
   /// 构建一行乐谱
-  Widget _buildLine(BuildContext context, List<int> measureIndices) {
+  Widget _buildLine(BuildContext context, List<int> measureIndices, List<JianpuMeasure> measures) {
     if (measureIndices.isEmpty) return const SizedBox.shrink();
 
-    final firstMeasureNumber = sheet.measures[measureIndices.first].number;
+    final firstMeasureNumber = measures[measureIndices.first].number;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -248,15 +256,14 @@ class JianpuNotationWidget extends StatelessWidget {
               ),
             ),
           // 小节内容
-          ...measureIndices.map((i) => _buildMeasure(context, i)),
+          ...measureIndices.map((i) => _buildMeasure(context, i, measures[i])),
         ],
       ),
     );
   }
 
   /// 构建单个小节
-  Widget _buildMeasure(BuildContext context, int measureIndex) {
-    final measure = sheet.measures[measureIndex];
+  Widget _buildMeasure(BuildContext context, int measureIndex, JianpuMeasure measure) {
     final isHighlighted = measureIndex == highlightMeasureIndex;
 
     return Row(
@@ -357,7 +364,7 @@ class JianpuNotationWidget extends StatelessWidget {
   /// 构建单个音符
   Widget _buildNote(
     BuildContext context,
-    SheetNote note,
+    JianpuNote note,
     int measureIndex,
     int noteIndex,
     bool isHighlighted,
@@ -385,12 +392,12 @@ class JianpuNotationWidget extends StatelessWidget {
             // 高音点占位区（固定高度保证对齐）- 休止符不显示
             SizedBox(
               height: dotSize + 4,
-              child: (!note.isRest && note.octave > 0)
+              child: (!note.isRest && note.octaveOffset > 0)
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
-                        note.octave,
+                        note.octaveOffset,
                         (_) => Container(
                           width: dotSize,
                           height: dotSize,
@@ -487,12 +494,12 @@ class JianpuNotationWidget extends StatelessWidget {
             // 低音点占位区（固定高度保证对齐）- 休止符不显示
             SizedBox(
               height: dotSize + 4,
-              child: (!note.isRest && note.octave < 0)
+              child: (!note.isRest && note.octaveOffset < 0)
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
-                        -note.octave,
+                        -note.octaveOffset,
                         (_) => Container(
                           width: dotSize,
                           height: dotSize,
@@ -538,7 +545,7 @@ class JianpuNotationWidget extends StatelessWidget {
 /// 简谱单行渲染组件（用于单行显示）
 class JianpuLineWidget extends StatelessWidget {
   /// 音符列表
-  final List<SheetNote> notes;
+  final List<JianpuNote> notes;
 
   /// 渲染样式
   final JianpuStyle style;
@@ -574,7 +581,7 @@ class JianpuLineWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSingleNote(SheetNote note, int index, bool isHighlighted) {
+  Widget _buildSingleNote(JianpuNote note, int index, bool isHighlighted) {
     final noteColor = isHighlighted ? style.highlightColor : style.noteColor;
 
     return GestureDetector(
@@ -588,8 +595,8 @@ class JianpuLineWidget extends StatelessWidget {
             // 高音点占位区（固定高度保证对齐）- 休止符不显示
             SizedBox(
               height: 10,
-              child: (!note.isRest && note.octave > 0)
-                  ? _buildOctaveDots(note.octave, noteColor)
+              child: (!note.isRest && note.octaveOffset > 0)
+                  ? _buildOctaveDots(note.octaveOffset, noteColor)
                   : null,
             ),
             // 音符（休止符只显示0，不显示变音记号）
@@ -624,8 +631,8 @@ class JianpuLineWidget extends StatelessWidget {
             // 低音点占位区（固定高度保证对齐）- 休止符不显示
             SizedBox(
               height: 10,
-              child: (!note.isRest && note.octave < 0)
-                  ? _buildOctaveDots(-note.octave, noteColor)
+              child: (!note.isRest && note.octaveOffset < 0)
+                  ? _buildOctaveDots(-note.octaveOffset, noteColor)
                   : null,
             ),
           ],

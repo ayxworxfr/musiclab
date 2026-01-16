@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../models/score.dart';
+import '../models/jianpu_view.dart';
+import '../models/enums.dart';
 import 'jianpu_notation_widget.dart';
 import 'staff_notation_widget.dart';
 
@@ -24,7 +27,7 @@ enum DualNotationMode {
 /// 双谱对照显示组件
 class DualNotationWidget extends StatelessWidget {
   /// 乐谱数据
-  final SheetModel sheet;
+  final Score sheet;
 
   /// 显示模式
   final DualNotationMode mode;
@@ -202,15 +205,15 @@ class DualNotationWidget extends StatelessWidget {
             sheet.title,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          if (sheet.metadata.composer != null)
+          if (sheet.composer != null)
             Text(
-              '作曲：${sheet.metadata.composer}',
+              '作曲：${sheet.composer}',
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
           const SizedBox(height: 8),
           Row(
             children: [
-              _buildInfoChip('1 = ${sheet.metadata.key}'),
+              _buildInfoChip('1 = ${sheet.metadata.key.displayName}'),
               const SizedBox(width: 8),
               _buildInfoChip(sheet.metadata.timeSignature),
               const SizedBox(width: 8),
@@ -236,7 +239,7 @@ class DualNotationWidget extends StatelessWidget {
 
 /// 紧凑版简谱（用于双谱对照，不显示标题）
 class _CompactJianpuWidget extends StatelessWidget {
-  final SheetModel sheet;
+  final Score sheet;
   final JianpuStyle style;
   final int? highlightMeasureIndex;
   final int? highlightNoteIndex;
@@ -269,8 +272,12 @@ class _CompactJianpuWidget extends StatelessWidget {
     var currentLine = <int>[];
     var currentWidth = 0.0;
 
-    for (var i = 0; i < sheet.measures.length; i++) {
-      final measure = sheet.measures[i];
+    if (sheet.tracks.isEmpty) return lines;
+    final jianpuView = JianpuView(sheet, trackIndex: 0);
+    final measures = jianpuView.getMeasures();
+
+    for (var i = 0; i < measures.length; i++) {
+      final measure = measures[i];
       final measureWidth = _calculateMeasureWidth(measure);
 
       if (currentWidth + measureWidth > maxWidth - 32 &&
@@ -291,7 +298,7 @@ class _CompactJianpuWidget extends StatelessWidget {
     return lines;
   }
 
-  double _calculateMeasureWidth(SheetMeasure measure) {
+  double _calculateMeasureWidth(JianpuMeasure measure) {
     var width = 20.0;
     for (final note in measure.notes) {
       width += style.noteSpacing;
@@ -301,17 +308,18 @@ class _CompactJianpuWidget extends StatelessWidget {
   }
 
   Widget _buildLine(BuildContext context, List<int> measureIndices) {
+    final jianpuView = JianpuView(sheet, trackIndex: 0);
+    final measures = jianpuView.getMeasures();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: measureIndices.map((i) => _buildMeasure(context, i)).toList(),
+        children: measureIndices.map((i) => _buildMeasure(context, i, measures[i])).toList(),
       ),
     );
   }
 
-  Widget _buildMeasure(BuildContext context, int measureIndex) {
-    final measure = sheet.measures[measureIndex];
+  Widget _buildMeasure(BuildContext context, int measureIndex, JianpuMeasure measure) {
     final isHighlighted = measureIndex == highlightMeasureIndex;
 
     return Row(
@@ -337,7 +345,7 @@ class _CompactJianpuWidget extends StatelessWidget {
   }
 
   Widget _buildNote(
-    SheetNote note,
+    JianpuNote note,
     int measureIndex,
     int noteIndex,
     bool isHighlighted,
@@ -356,8 +364,8 @@ class _CompactJianpuWidget extends StatelessWidget {
             // 高音点
             SizedBox(
               height: 10,
-              child: note.octave > 0
-                  ? _buildOctaveDots(note.octave, noteColor)
+              child: note.octaveOffset > 0
+                  ? _buildOctaveDots(note.octaveOffset, noteColor)
                   : null,
             ),
             // 音符
@@ -418,8 +426,8 @@ class _CompactJianpuWidget extends StatelessWidget {
             // 低音点
             SizedBox(
               height: 10,
-              child: note.octave < 0
-                  ? _buildOctaveDots(-note.octave, noteColor)
+              child: note.octaveOffset < 0
+                  ? _buildOctaveDots(-note.octaveOffset, noteColor)
                   : null,
             ),
             // 歌词

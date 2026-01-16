@@ -203,12 +203,12 @@ class _SheetImportPageState extends State<SheetImportPage>
               ),
             ],
           ),
-          if (result.success && result.sheet != null) ...[
+          if (result.success && result.score != null) ...[
             const SizedBox(height: 8),
-            Text('标题: ${result.sheet!.title}'),
-            Text('调号: ${result.sheet!.metadata.key}'),
-            Text('拍号: ${result.sheet!.metadata.timeSignature}'),
-            Text('小节数: ${result.sheet!.measureCount}'),
+            Text('标题: ${result.score!.title}'),
+            Text('调号: ${result.score!.metadata.key.displayName}'),
+            Text('拍号: ${result.score!.metadata.timeSignature}'),
+            Text('小节数: ${result.score!.measureCount}'),
           ],
           if (!result.success && result.errorMessage != null) ...[
             const SizedBox(height: 8),
@@ -331,11 +331,11 @@ class _SheetImportPageState extends State<SheetImportPage>
 
   /// 导入乐谱
   Future<void> _importSheet() async {
-    if (_result?.sheet == null) return;
+    if (_result?.score == null) return;
 
     try {
-      // 转换为 Score 格式
-      final score = ScoreConverter.fromSheetModel(_result!.sheet!);
+      // 直接使用 Score 格式
+      final score = _result!.score!;
 
       // 保存到存储
       final sheetMusicController = Get.find<SheetMusicController>();
@@ -345,7 +345,7 @@ class _SheetImportPageState extends State<SheetImportPage>
         Get.back();
         Get.snackbar(
           '导入成功',
-          '乐谱"${_result!.sheet!.title}"已添加到乐谱库',
+          '乐谱"${score.title}"已添加到乐谱库',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
@@ -362,7 +362,7 @@ class _SheetImportPageState extends State<SheetImportPage>
     } catch (e) {
       Get.snackbar(
         '导入失败',
-        '转换乐谱格式时出错: $e',
+        '保存乐谱时出错: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,

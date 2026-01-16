@@ -46,18 +46,19 @@ class _SheetMusicPageState extends State<SheetMusicPage> {
     _loadScore();
   }
 
-  void _loadScore() {
+  Future<void> _loadScore() async {
     // 尝试从路由参数获取乐谱ID
     final args = Get.arguments as Map<String, dynamic>?;
     final scoreId = args?['scoreId'] as String?;
 
     if (scoreId != null) {
       // 加载指定乐谱
-      _loadScoreById(scoreId);
+      await _loadScoreById(scoreId);
     } else {
       // 加载默认示例
+      final score = await ScoreConverter.createTwinkleTwinkle();
       setState(() {
-        _currentScore = ScoreConverter.createTwinkleTwinkle();
+        _currentScore = score;
       });
     }
   }
@@ -65,8 +66,9 @@ class _SheetMusicPageState extends State<SheetMusicPage> {
   Future<void> _loadScoreById(String id) async {
     // 这里可以从控制器或文件加载
     // 暂时使用示例
+    final score = await ScoreConverter.createTwinkleTwinkle();
     setState(() {
-      _currentScore = ScoreConverter.createTwinkleTwinkle();
+      _currentScore = score;
     });
   }
 
@@ -80,7 +82,6 @@ class _SheetMusicPageState extends State<SheetMusicPage> {
           : SheetMusicView(
               score: _currentScore!,
               config: _config,
-              showJianpu: _showJianpu,
               showFingering: _showFingering,
               showLyrics: _showLyrics,
               showPiano: _showPiano,
@@ -233,17 +234,22 @@ class _SheetMusicPageState extends State<SheetMusicPage> {
     });
   }
 
-  void _onSampleChanged(String value) {
-    setState(() {
-      switch (value) {
-        case 'twinkle':
-          _currentScore = ScoreConverter.createTwinkleTwinkle();
-          break;
-        case 'piano_example':
-          _currentScore = ScoreConverter.createPianoExample();
-          break;
-      }
-    });
+  Future<void> _onSampleChanged(String value) async {
+    Score? newScore;
+    switch (value) {
+      case 'twinkle':
+        newScore = await ScoreConverter.createTwinkleTwinkle();
+        break;
+      case 'piano_example':
+        // TODO: 实现钢琴示例
+        newScore = await ScoreConverter.createTwinkleTwinkle();
+        break;
+    }
+    if (newScore != null) {
+      setState(() {
+        _currentScore = newScore;
+      });
+    }
   }
 
   void _onNoteTap(note) {

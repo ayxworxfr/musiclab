@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/music_utils.dart';
+import '../models/score.dart';
+import '../models/enums.dart';
 
 /// 五线谱渲染配置
 class StaffStyle {
@@ -48,7 +50,7 @@ class StaffStyle {
 /// 五线谱乐谱渲染组件
 class StaffNotationWidget extends StatelessWidget {
   /// 乐谱数据
-  final SheetModel sheet;
+  final Score sheet;
 
   /// 渲染样式
   final StaffStyle style;
@@ -104,15 +106,15 @@ class StaffNotationWidget extends StatelessWidget {
             sheet.title,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          if (sheet.metadata.composer != null)
+          if (sheet.composer != null)
             Text(
-              '作曲：${sheet.metadata.composer}',
+              '作曲：${sheet.composer}',
               style: TextStyle(fontSize: 14, color: style.lyricColor),
             ),
           const SizedBox(height: 8),
           Row(
             children: [
-              _buildInfoChip('${sheet.metadata.key}大调'),
+              _buildInfoChip('${sheet.metadata.key.displayName}大调'),
               const SizedBox(width: 8),
               _buildInfoChip(sheet.metadata.timeSignature),
               const SizedBox(width: 8),
@@ -167,8 +169,11 @@ class StaffNotationWidget extends StatelessWidget {
     var currentLine = <int>[];
     var currentWidth = 80.0; // 谱号宽度
 
-    for (var i = 0; i < sheet.measures.length; i++) {
-      final measure = sheet.measures[i];
+    if (sheet.tracks.isEmpty) return lines;
+    final track = sheet.tracks.first;
+
+    for (var i = 0; i < track.measures.length; i++) {
+      final measure = track.measures[i];
       final measureWidth = _estimateMeasureWidth(measure);
 
       if (currentWidth + measureWidth > maxWidth - 32 &&
@@ -190,10 +195,12 @@ class StaffNotationWidget extends StatelessWidget {
   }
 
   /// 估算小节宽度
-  double _estimateMeasureWidth(SheetMeasure measure) {
+  double _estimateMeasureWidth(Measure measure) {
     double width = 20; // 小节线
-    for (final note in measure.notes) {
-      width += 30 * note.actualBeats; // 根据时值分配宽度
+    for (final beat in measure.beats) {
+      for (final note in beat.notes) {
+        width += 30 * note.duration.beats; // 根据时值分配宽度
+      }
     }
     return width.clamp(60.0, 200.0);
   }
@@ -201,7 +208,7 @@ class StaffNotationWidget extends StatelessWidget {
 
 /// 单行五线谱
 class _StaffLine extends StatelessWidget {
-  final SheetModel sheet;
+  final Score sheet;
   final List<int> measureIndices;
   final StaffStyle style;
   final String clef;
@@ -258,7 +265,7 @@ class _StaffLine extends StatelessWidget {
 
 /// 五线谱绘制器
 class _StaffLinePainter extends CustomPainter {
-  final SheetModel sheet;
+  final Score sheet;
   final List<int> measureIndices;
   final StaffStyle style;
   final String clef;
@@ -308,9 +315,11 @@ class _StaffLinePainter extends CustomPainter {
     final measureWidth = remainingWidth / measureCount;
 
     // 绘制小节
+    if (sheet.tracks.isEmpty) return;
+    final track = sheet.tracks.first;
     for (var i = 0; i < measureIndices.length; i++) {
       final measureIndex = measureIndices[i];
-      final measure = sheet.measures[measureIndex];
+      final measure = track.measures[measureIndex];
       final measureX = currentX + i * measureWidth;
 
       _drawMeasure(
@@ -380,8 +389,8 @@ class _StaffLinePainter extends CustomPainter {
     double lineSpacing,
   ) {
     final key = sheet.metadata.key;
-    final sharps = _getSharpCount(key);
-    final flats = _getFlatCount(key);
+    final sharps = _getSharpCount(key.name);
+    final flats = _getFlatCount(key.name);
 
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
@@ -484,7 +493,7 @@ class _StaffLinePainter extends CustomPainter {
   /// 绘制小节
   void _drawMeasure(
     Canvas canvas,
-    SheetMeasure measure,
+    Measure measure,
     int measureIndex,
     double startX,
     double width,
@@ -494,25 +503,31 @@ class _StaffLinePainter extends CustomPainter {
     final isHighlightedMeasure = measureIndex == highlightMeasureIndex;
 
     // 计算音符位置
-    final totalBeats = measure.notes.fold(0.0, (sum, n) => sum + n.actualBeats);
+    double totalBeats = 0.0;
+    for (final beat in measure.beats) {
+      totalBeats += beat.totalBeats;
+    }
     double currentX = startX + 10;
     final noteAreaWidth = width - 20;
 
-    for (var i = 0; i < measure.notes.length; i++) {
-      final note = measure.notes[i];
-      final noteWidth = (note.actualBeats / totalBeats) * noteAreaWidth;
-      final isHighlighted = isHighlightedMeasure && i == highlightNoteIndex;
+    var noteIndex = 0;
+    for (final beat in measure.beats) {
+      for (final note in beat.notes) {
+        final noteWidth = (note.duration.beats / totalBeats) * noteAreaWidth;
+        final isHighlighted = isHighlightedMeasure && noteIndex == highlightNoteIndex;
 
-      _drawNote(
-        canvas,
-        note,
-        currentX + noteWidth / 2,
-        startY,
-        lineSpacing,
-        isHighlighted,
-      );
+        _drawNote(
+          canvas,
+          note,
+          currentX + noteWidth / 2,
+          startY,
+          lineSpacing,
+          isHighlighted,
+        );
 
-      currentX += noteWidth;
+        currentX += noteWidth;
+        noteIndex++;
+      }
     }
 
     // 绘制小节线
@@ -535,7 +550,7 @@ class _StaffLinePainter extends CustomPainter {
   /// 绘制音符
   void _drawNote(
     Canvas canvas,
-    SheetNote note,
+    Note note,
     double x,
     double startY,
     double lineSpacing,
@@ -546,13 +561,8 @@ class _StaffLinePainter extends CustomPainter {
       return;
     }
 
-    // 将简谱转换为MIDI
-    final midi = MusicUtils.jianpuToMidi(
-      note.degree,
-      note.octave,
-      sheet.metadata.key,
-    );
-    if (midi == null) return;
+    // 直接使用 MIDI pitch
+    final midi = note.pitch;
 
     // 计算音符在五线谱上的位置
     // position = 0 是第一线（E4），每增加1向上移动半个 lineSpacing
@@ -598,7 +608,7 @@ class _StaffLinePainter extends CustomPainter {
     canvas.restore();
 
     // 绘制附点
-    if (note.isDotted) {
+    if (note.dots > 0) {
       canvas.drawCircle(
         Offset(x + noteRadius * 1.8, y),
         lineSpacing * 0.15,
@@ -804,7 +814,7 @@ class _StaffLinePainter extends CustomPainter {
   /// 绘制休止符
   void _drawRest(
     Canvas canvas,
-    SheetNote note,
+    Note note,
     double x,
     double startY,
     double lineSpacing,

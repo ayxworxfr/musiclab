@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
+import 'package:flutter/services.dart';
 
 import '../models/enums.dart';
 import '../models/score.dart';
@@ -387,6 +390,67 @@ class ScoreConverter {
       articulation: articulation,
       tieStart: json['tieStart'] as bool? ?? false,
       tieEnd: json['tieEnd'] as bool? ?? false,
+    );
+  }
+
+  /// 创建小星星示例乐谱
+  /// 从 assets/data/sheets/twinkle_twinkle.json 加载
+  static Future<Score> createTwinkleTwinkle() async {
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/data/sheets/twinkle_twinkle.json',
+      );
+      final jsonData = json.decode(jsonString) as Map<String, dynamic>;
+      return fromLegacyJson(jsonData);
+    } catch (e) {
+      // 如果加载失败，返回一个简单的示例
+      return _createSimpleTwinkleTwinkle();
+    }
+  }
+
+  /// 创建简单的小星星示例（备用方案）
+  static Score _createSimpleTwinkleTwinkle() {
+    return Score(
+      id: 'twinkle_twinkle',
+      title: '小星星',
+      composer: '民谣',
+      metadata: const ScoreMetadata(
+        key: MusicKey.C,
+        beatsPerMeasure: 4,
+        beatUnit: 4,
+        tempo: 90,
+        difficulty: 1,
+        category: ScoreCategory.children,
+      ),
+      tracks: [
+        Track(
+          id: 'right',
+          name: '右手',
+          clef: Clef.treble,
+          hand: Hand.right,
+          instrument: Instrument.piano,
+          measures: [
+            Measure(
+              number: 1,
+              beats: [
+                Beat(index: 0, notes: [Note(pitch: 72, duration: NoteDuration.quarter)]),
+                Beat(index: 1, notes: [Note(pitch: 72, duration: NoteDuration.quarter)]),
+                Beat(index: 2, notes: [Note(pitch: 79, duration: NoteDuration.quarter)]),
+                Beat(index: 3, notes: [Note(pitch: 79, duration: NoteDuration.quarter)]),
+              ],
+            ),
+            Measure(
+              number: 2,
+              beats: [
+                Beat(index: 0, notes: [Note(pitch: 81, duration: NoteDuration.quarter)]),
+                Beat(index: 1, notes: [Note(pitch: 81, duration: NoteDuration.quarter)]),
+                Beat(index: 2, notes: [Note(pitch: 79, duration: NoteDuration.half)]),
+              ],
+            ),
+          ],
+        ),
+      ],
+      isBuiltIn: true,
     );
   }
 }
