@@ -31,6 +31,12 @@ class Note {
   /// 连音线结束
   final bool tieEnd;
 
+  /// 装饰音
+  final Ornament ornament;
+
+  /// 力度 (音符级别，可覆盖小节力度)
+  final Dynamics? dynamics;
+
   const Note({
     required this.pitch,
     this.duration = NoteDuration.quarter,
@@ -41,12 +47,14 @@ class Note {
     this.articulation = Articulation.none,
     this.tieStart = false,
     this.tieEnd = false,
+    this.ornament = Ornament.none,
+    this.dynamics,
   });
 
   /// 是否为休止符
   bool get isRest => pitch == 0;
 
-  /// 实际拍数（考虑附点）
+  /// 实际拍数（考虑附点，不考虑三连音）
   double get actualBeats {
     var beats = duration.beats;
     var dotValue = beats / 2;
@@ -71,21 +79,21 @@ class Note {
     // 计算相对于调号主音的半音数
     // 例如：F调的主音是F(5)，C调的主音是C(0)
     final keyTonicMap = {
-      MusicKey.C: 0,   // C
-      MusicKey.G: 7,   // G
-      MusicKey.D: 2,   // D
-      MusicKey.A: 9,   // A
-      MusicKey.E: 4,   // E
-      MusicKey.B: 11,  // B
-      MusicKey.Fs: 6,  // F#
-      MusicKey.F: 5,   // F
+      MusicKey.C: 0, // C
+      MusicKey.G: 7, // G
+      MusicKey.D: 2, // D
+      MusicKey.A: 9, // A
+      MusicKey.E: 4, // E
+      MusicKey.B: 11, // B
+      MusicKey.Fs: 6, // F#
+      MusicKey.F: 5, // F
       MusicKey.Bb: 10, // Bb
-      MusicKey.Eb: 3,  // Eb
-      MusicKey.Ab: 8,  // Ab
-      MusicKey.Db: 1,  // Db
-      MusicKey.Am: 9,  // A (小调)
-      MusicKey.Em: 4,  // E (小调)
-      MusicKey.Dm: 2,  // D (小调)
+      MusicKey.Eb: 3, // Eb
+      MusicKey.Ab: 8, // Ab
+      MusicKey.Db: 1, // Db
+      MusicKey.Am: 9, // A (小调)
+      MusicKey.Em: 4, // E (小调)
+      MusicKey.Dm: 2, // D (小调)
     };
 
     final tonic = keyTonicMap[key] ?? 0;
@@ -105,21 +113,21 @@ class Note {
 
     // 调号主音的MIDI值映射（基准为第4八度）
     final keyTonicMidiMap = {
-      MusicKey.C: 60,   // C4
-      MusicKey.G: 67,   // G4
-      MusicKey.D: 62,   // D4
-      MusicKey.A: 69,   // A4
-      MusicKey.E: 64,   // E4
-      MusicKey.B: 71,   // B4
-      MusicKey.Fs: 66,  // F#4
-      MusicKey.F: 65,   // F4
-      MusicKey.Bb: 70,  // Bb4
-      MusicKey.Eb: 63,  // Eb4
-      MusicKey.Ab: 68,  // Ab4
-      MusicKey.Db: 61,  // Db4
-      MusicKey.Am: 69,  // A4 (小调)
-      MusicKey.Em: 64,  // E4 (小调)
-      MusicKey.Dm: 62,  // D4 (小调)
+      MusicKey.C: 60, // C4
+      MusicKey.G: 67, // G4
+      MusicKey.D: 62, // D4
+      MusicKey.A: 69, // A4
+      MusicKey.E: 64, // E4
+      MusicKey.B: 71, // B4
+      MusicKey.Fs: 66, // F#4
+      MusicKey.F: 65, // F4
+      MusicKey.Bb: 70, // Bb4
+      MusicKey.Eb: 63, // Eb4
+      MusicKey.Ab: 68, // Ab4
+      MusicKey.Db: 61, // Db4
+      MusicKey.Am: 69, // A4 (小调)
+      MusicKey.Em: 64, // E4 (小调)
+      MusicKey.Dm: 62, // D4 (小调)
     };
 
     final tonicMidi = keyTonicMidiMap[key] ?? 60;
@@ -146,7 +154,20 @@ class Note {
   /// 获取音名 (C, D, E...)
   String get noteName {
     if (isRest) return 'R';
-    const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const names = [
+      'C',
+      'C#',
+      'D',
+      'D#',
+      'E',
+      'F',
+      'F#',
+      'G',
+      'G#',
+      'A',
+      'A#',
+      'B',
+    ];
     return names[pitch % 12];
   }
 
@@ -172,6 +193,12 @@ class Note {
           : Articulation.none,
       tieStart: json['tieStart'] as bool? ?? false,
       tieEnd: json['tieEnd'] as bool? ?? false,
+      ornament: json['ornament'] != null
+          ? Ornament.values.byName(json['ornament'] as String)
+          : Ornament.none,
+      dynamics: json['dynamics'] != null
+          ? Dynamics.values.byName(json['dynamics'] as String)
+          : null,
     );
   }
 
@@ -186,6 +213,8 @@ class Note {
       if (articulation != Articulation.none) 'articulation': articulation.name,
       if (tieStart) 'tieStart': tieStart,
       if (tieEnd) 'tieEnd': tieEnd,
+      if (ornament != Ornament.none) 'ornament': ornament.name,
+      if (dynamics != null) 'dynamics': dynamics!.name,
     };
   }
 
@@ -199,6 +228,8 @@ class Note {
     Articulation? articulation,
     bool? tieStart,
     bool? tieEnd,
+    Ornament? ornament,
+    Dynamics? dynamics,
   }) {
     return Note(
       pitch: pitch ?? this.pitch,
@@ -210,6 +241,8 @@ class Note {
       articulation: articulation ?? this.articulation,
       tieStart: tieStart ?? this.tieStart,
       tieEnd: tieEnd ?? this.tieEnd,
+      ornament: ornament ?? this.ornament,
+      dynamics: dynamics ?? this.dynamics,
     );
   }
 }
@@ -224,24 +257,38 @@ class Beat {
   /// 音符列表（可以多个音符形成和弦）
   final List<Note> notes;
 
-  const Beat({
-    required this.index,
-    required this.notes,
-  });
+  /// 三连音标记
+  final Tuplet? tuplet;
+
+  const Beat({required this.index, required this.notes, this.tuplet});
 
   /// 是否为休止
   bool get isRest => notes.isEmpty || notes.every((n) => n.isRest);
 
-  /// 获取该拍总时值
-  double get totalBeats => notes.isEmpty ? 1.0 : notes.first.actualBeats;
+  /// 是否为和弦
+  bool get isChord => notes.length > 1;
+
+  /// 获取该拍总时值（考虑三连音）
+  double get totalBeats {
+    if (notes.isEmpty) return 1.0;
+    final baseBeats = notes.first.actualBeats;
+    if (tuplet != null) {
+      return baseBeats * tuplet!.timeMultiplier;
+    }
+    return baseBeats;
+  }
 
   factory Beat.fromJson(Map<String, dynamic> json) {
     return Beat(
       index: json['index'] as int? ?? 0,
-      notes: (json['notes'] as List<dynamic>?)
+      notes:
+          (json['notes'] as List<dynamic>?)
               ?.map((e) => Note.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      tuplet: json['tuplet'] != null
+          ? Tuplet.fromJson(json['tuplet'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -249,6 +296,7 @@ class Beat {
     return {
       'index': index,
       'notes': notes.map((e) => e.toJson()).toList(),
+      if (tuplet != null) 'tuplet': tuplet!.toJson(),
     };
   }
 }
@@ -275,6 +323,12 @@ class Measure {
   /// 踏板记号
   final PedalMark? pedal;
 
+  /// 速度变化 (BPM)
+  final int? tempoChange;
+
+  /// 表情记号
+  final Expression? expression;
+
   const Measure({
     required this.number,
     required this.beats,
@@ -282,6 +336,8 @@ class Measure {
     this.ending,
     this.dynamics,
     this.pedal,
+    this.tempoChange,
+    this.expression,
   });
 
   /// 获取所有音符（扁平化）
@@ -293,7 +349,8 @@ class Measure {
   factory Measure.fromJson(Map<String, dynamic> json) {
     return Measure(
       number: json['number'] as int? ?? 1,
-      beats: (json['beats'] as List<dynamic>?)
+      beats:
+          (json['beats'] as List<dynamic>?)
               ?.map((e) => Beat.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -307,6 +364,10 @@ class Measure {
       pedal: json['pedal'] != null
           ? PedalMark.values.byName(json['pedal'] as String)
           : null,
+      tempoChange: json['tempoChange'] as int?,
+      expression: json['expression'] != null
+          ? Expression.values.byName(json['expression'] as String)
+          : null,
     );
   }
 
@@ -318,6 +379,8 @@ class Measure {
       if (ending != null) 'ending': ending,
       if (dynamics != null) 'dynamics': dynamics!.name,
       if (pedal != null) 'pedal': pedal!.name,
+      if (tempoChange != null) 'tempoChange': tempoChange,
+      if (expression != null) 'expression': expression!.name,
     };
   }
 }
@@ -380,7 +443,7 @@ class Track {
         return Clef.treble;
       }
     }
-    
+
     // 兼容旧数据：可能存储的是中文名称（'钢琴'）或枚举名称（'piano'）
     Instrument parseInstrument(dynamic instrumentValue) {
       if (instrumentValue == null) return Instrument.piano;
@@ -399,7 +462,7 @@ class Track {
         return Instrument.piano;
       }
     }
-    
+
     return Track(
       id: json['id'] as String? ?? 'track_1',
       name: json['name'] as String? ?? '轨道',
@@ -407,7 +470,8 @@ class Track {
       hand: json['hand'] != null
           ? Hand.values.byName(json['hand'] as String)
           : null,
-      measures: (json['measures'] as List<dynamic>?)
+      measures:
+          (json['measures'] as List<dynamic>?)
               ?.map((e) => Measure.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -513,7 +577,7 @@ class ScoreMetadata {
         return ScoreCategory.children;
       }
     }
-    
+
     return ScoreMetadata(
       key: json['key'] != null
           ? MusicKey.fromString(json['key'] as String)
@@ -622,7 +686,8 @@ class Score {
       metadata: json['metadata'] != null
           ? ScoreMetadata.fromJson(json['metadata'] as Map<String, dynamic>)
           : const ScoreMetadata(),
-      tracks: (json['tracks'] as List<dynamic>?)
+      tracks:
+          (json['tracks'] as List<dynamic>?)
               ?.map((e) => Track.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -673,4 +738,3 @@ class Score {
     );
   }
 }
-

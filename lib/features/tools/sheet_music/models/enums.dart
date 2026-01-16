@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// ═══════════════════════════════════════════════════════════════
@@ -175,11 +176,7 @@ enum PedalMark {
 /// ═══════════════════════════════════════════════════════════════
 /// 反复记号
 /// ═══════════════════════════════════════════════════════════════
-enum RepeatSign {
-  start,
-  end,
-  both;
-}
+enum RepeatSign { start, end, both }
 
 /// ═══════════════════════════════════════════════════════════════
 /// 乐曲分类
@@ -208,3 +205,122 @@ enum Instrument {
   const Instrument(this.name);
 }
 
+/// ═══════════════════════════════════════════════════════════════
+/// 三连音/连音符
+/// ═══════════════════════════════════════════════════════════════
+@immutable
+class Tuplet {
+  /// 实际音符数量 (例如三连音为3)
+  final int actual;
+
+  /// 正常占用的拍数 (例如三连音占2拍的位置)
+  final int normal;
+
+  /// 显示文本 (例如 "3")
+  final String? displayText;
+
+  const Tuplet({required this.actual, required this.normal, this.displayText});
+
+  /// 时值倍数 (例如三连音: 2/3 = 0.6667)
+  double get timeMultiplier => normal / actual;
+
+  /// 常用三连音 (3 in the time of 2)
+  static const triplet = Tuplet(actual: 3, normal: 2, displayText: '3');
+
+  /// 五连音 (5 in the time of 4)
+  static const quintuplet = Tuplet(actual: 5, normal: 4, displayText: '5');
+
+  /// 六连音 (6 in the time of 4)
+  static const sextuplet = Tuplet(actual: 6, normal: 4, displayText: '6');
+
+  /// 七连音 (7 in the time of 4)
+  static const septuplet = Tuplet(actual: 7, normal: 4, displayText: '7');
+
+  factory Tuplet.fromJson(Map<String, dynamic> json) {
+    return Tuplet(
+      actual: json['actual'] as int,
+      normal: json['normal'] as int,
+      displayText: json['displayText'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'actual': actual,
+      'normal': normal,
+      if (displayText != null) 'displayText': displayText,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Tuplet &&
+          runtimeType == other.runtimeType &&
+          actual == other.actual &&
+          normal == other.normal;
+
+  @override
+  int get hashCode => actual.hashCode ^ normal.hashCode;
+
+  @override
+  String toString() => 'Tuplet($actual:$normal)';
+}
+
+/// ═══════════════════════════════════════════════════════════════
+/// 装饰音类型
+/// ═══════════════════════════════════════════════════════════════
+enum Ornament {
+  /// 无装饰音
+  none(''),
+
+  /// 倚音 (Appoggiatura)
+  appoggiatura('𝄒'),
+
+  /// 短倚音 (Acciaccatura)
+  acciaccatura('𝄓'),
+
+  /// 颤音 (Trill)
+  trill('tr'),
+
+  /// 回音 (Turn)
+  turn('𝄵'),
+
+  /// 波音 (Mordent)
+  mordent('𝄩'),
+
+  /// 逆波音 (Inverted Mordent)
+  invertedMordent('𝄪');
+
+  final String symbol;
+  const Ornament(this.symbol);
+}
+
+/// ═══════════════════════════════════════════════════════════════
+/// 表情记号类型
+/// ═══════════════════════════════════════════════════════════════
+enum Expression {
+  /// 无表情记号
+  none(''),
+
+  /// 渐强 (Crescendo)
+  crescendo('cresc.'),
+
+  /// 渐弱 (Diminuendo/Decrescendo)
+  diminuendo('dim.'),
+
+  /// 突强 (Forte-piano)
+  fortePiano('fp'),
+
+  /// 渐快 (Accelerando)
+  accelerando('accel.'),
+
+  /// 渐慢 (Ritardando)
+  ritardando('rit.'),
+
+  /// 回原速 (A tempo)
+  aTempo('a tempo');
+
+  final String text;
+  const Expression(this.text);
+}
