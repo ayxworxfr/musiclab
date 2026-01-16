@@ -158,7 +158,7 @@ class PdfExporter {
         final end = (i + measuresPerLine).clamp(0, track.measures.length);
         final lineMeasures = track.measures.sublist(i, end);
 
-        widgets.add(_buildJianpuLine(lineMeasures, beatsPerMeasure, contentWidth, score.metadata.key));
+        widgets.add(_buildJianpuLine(lineMeasures, beatsPerMeasure, contentWidth, score.metadata.key, track.clef));
         widgets.add(pw.SizedBox(height: 8));
       }
     }
@@ -167,34 +167,47 @@ class PdfExporter {
   }
 
   /// 构建简谱行
-  pw.Widget _buildJianpuLine(List<Measure> measures, int beatsPerMeasure, double contentWidth, MusicKey key) {
+  pw.Widget _buildJianpuLine(List<Measure> measures, int beatsPerMeasure, double contentWidth, MusicKey key, Clef clef) {
     if (measures.isEmpty) return pw.SizedBox();
 
     final measureWidth = _safeDivide(contentWidth, measures.length.toDouble(), 100.0);
 
     return pw.Row(
-      children: measures.map((measure) {
-        return pw.Container(
-          width: measureWidth,
-          child: pw.Row(
-            children: [
-              pw.Expanded(
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-                  children: List.generate(beatsPerMeasure, (beatIndex) {
-                    final beat = measure.beats.firstWhere(
-                      (b) => b.index == beatIndex,
-                      orElse: () => Beat(index: beatIndex, notes: []),
-                    );
-                    return _buildJianpuBeat(beat, key);
-                  }),
-                ),
-              ),
-              pw.Container(width: 1, height: 30, color: PdfColors.black),
-            ],
+      children: [
+        // 在行首添加谱号
+        if (_smuflFont != null)
+          pw.Container(
+            width: 30,
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              clef == Clef.treble ? SMuFLGlyphs.gClef : SMuFLGlyphs.fClef,
+              style: pw.TextStyle(font: _smuflFont, fontSize: 24),
+            ),
           ),
-        );
-      }).toList(),
+        // 小节
+        ...measures.map((measure) {
+          return pw.Container(
+            width: measureWidth,
+            child: pw.Row(
+              children: [
+                pw.Expanded(
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                    children: List.generate(beatsPerMeasure, (beatIndex) {
+                      final beat = measure.beats.firstWhere(
+                        (b) => b.index == beatIndex,
+                        orElse: () => Beat(index: beatIndex, notes: []),
+                      );
+                      return _buildJianpuBeat(beat, key);
+                    }),
+                  ),
+                ),
+                pw.Container(width: 1, height: 30, color: PdfColors.black),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
     );
   }
 
@@ -322,20 +335,143 @@ class PdfExporter {
       return widgets;
     }
 
-    for (final track in score.tracks) {
-      if (track.measures.isEmpty) continue;
-
+    // 如果是大谱表，需要将高音和低音轨道绘制在一起
+    if (score.isGrandStaff && score.tracks.length >= 2) {
+      final trebleTrack = score.tracks[0]; // 高音轨道
+      final bassTrack = score.tracks[1]; // 低音轨道
+      
       // 简化版：每行2个小节
-      for (var i = 0; i < track.measures.length; i += 2) {
-        final end = (i + 2).clamp(0, track.measures.length);
-        final lineMeasures = track.measures.sublist(i, end);
+      final maxMeasures = trebleTrack.measures.length > bassTrack.measures.length
+          ? trebleTrack.measures.length
+          : bassTrack.measures.length;
+      
+      for (var i = 0; i < maxMeasures; i += 2) {
+        final end = (i + 2).clamp(0, maxMeasures);
+        final trebleMeasures = i < trebleTrack.measures.length
+            ? trebleTrack.measures.sublist(i, end.clamp(0, trebleTrack.measures.length))
+            : <Measure>[];
+        final bassMeasures = i < bassTrack.measures.length
+            ? bassTrack.measures.sublist(i, end.clamp(0, bassTrack.measures.length))
+            : <Measure>[];
 
-        widgets.add(_buildStaffLine(lineMeasures, track.clef));
+        widgets.add(_buildGrandStaffLine(trebleMeasures, bassMeasures));
         widgets.add(pw.SizedBox(height: 20));
+      }
+    } else {
+      // 单轨道，按原来的方式处理
+      for (final track in score.tracks) {
+        if (track.measures.isEmpty) continue;
+
+        // 简化版：每行2个小节
+        for (var i = 0; i < track.measures.length; i += 2) {
+          final end = (i + 2).clamp(0, track.measures.length);
+          final lineMeasures = track.measures.sublist(i, end);
+
+          widgets.add(_buildStaffLine(lineMeasures, track.clef));
+          widgets.add(pw.SizedBox(height: 20));
+        }
       }
     }
 
     return widgets;
+  }
+
+  /// 构建大谱表行（高音+低音）
+  pw.Widget _buildGrandStaffLine(List<Measure> trebleMeasures, List<Measure> bassMeasures) {
+    if (trebleMeasures.isEmpty && bassMeasures.isEmpty) return pw.SizedBox();
+    
+    // 计算五线谱总宽度
+    final maxMeasures = trebleMeasures.length > bassMeasures.length
+        ? trebleMeasures.length
+        : bassMeasures.length;
+    final staffWidth = 50.0 + maxMeasures * 200.0;
+
+    // 五线谱参数
+    final trebleY = 30.0; // 高音谱表第五线
+    final lineSpacing = 8.0;
+    final staffHeight = 4 * lineSpacing;
+    final staffGap = 50.0; // 高低音谱表间距
+    final bassY = trebleY + staffHeight + staffGap; // 低音谱表第五线
+    
+    return pw.Container(
+      height: 200, // 容器高度，包含两个谱表
+      child: pw.Stack(
+        children: [
+          // 高音谱表五线
+          ...List.generate(5, (i) {
+            final y = trebleY + i * lineSpacing;
+            return pw.Positioned(
+              left: 0,
+              top: y,
+              child: pw.Container(
+                width: staffWidth,
+                height: 0.5,
+                color: PdfColors.black,
+              ),
+            );
+          }),
+          // 低音谱表五线
+          ...List.generate(5, (i) {
+            final y = bassY + i * lineSpacing;
+            return pw.Positioned(
+              left: 0,
+              top: y,
+              child: pw.Container(
+                width: staffWidth,
+                height: 0.5,
+                color: PdfColors.black,
+              ),
+            );
+          }),
+          // 高音谱号
+          if (_smuflFont != null)
+            pw.Positioned(
+              left: 5,
+              top: trebleY + lineSpacing * 1.5 - 55,
+              child: pw.Text(
+                SMuFLGlyphs.gClef,
+                style: pw.TextStyle(font: _smuflFont, fontSize: 40),
+              ),
+            ),
+          // 低音谱号
+          if (_smuflFont != null)
+            pw.Positioned(
+              left: 5,
+              top: bassY + lineSpacing * 3 - 15,
+              child: pw.Text(
+                SMuFLGlyphs.fClef,
+                style: pw.TextStyle(font: _smuflFont, fontSize: 40),
+              ),
+            ),
+          // 高音谱表音符
+          ...List.generate(trebleMeasures.length, (measureIndex) {
+            final measure = trebleMeasures[measureIndex];
+            final measureX = 50.0 + measureIndex * 200.0;
+            return _buildMeasureNotes(measure, measureX, Clef.treble);
+          }),
+          // 低音谱表音符
+          ...List.generate(bassMeasures.length, (measureIndex) {
+            final measure = bassMeasures[measureIndex];
+            final measureX = 50.0 + measureIndex * 200.0;
+            return _buildMeasureNotes(measure, measureX, Clef.bass, bassY: bassY);
+          }),
+          // 小节线（贯穿两个谱表）
+          ...List.generate(maxMeasures + 1, (i) {
+            final x = 50.0 + i * 200.0;
+            final isFirstOrLast = i == 0 || i == maxMeasures;
+            return pw.Positioned(
+              left: x,
+              top: trebleY,
+              child: pw.Container(
+                width: isFirstOrLast ? 2 : 1,
+                height: bassY + staffHeight - trebleY,
+                color: PdfColors.black,
+              ),
+            );
+          }),
+        ],
+      ),
+    );
   }
 
   /// 构建五线谱行
@@ -406,7 +542,7 @@ class PdfExporter {
   }
 
   /// 构建小节内的音符
-  pw.Widget _buildMeasureNotes(Measure measure, double measureX, Clef clef) {
+  pw.Widget _buildMeasureNotes(Measure measure, double measureX, Clef clef, {double? bassY}) {
     final widgets = <pw.Widget>[];
 
     if (measure.beats.isEmpty) return pw.SizedBox();
@@ -434,7 +570,7 @@ class PdfExporter {
           if (note.isRest) continue;
 
           final noteX = beatX + noteIndex * horizontalSpacing;
-          final noteY = _getNoteY(note.pitch, clef);
+          final noteY = _getNoteY(note.pitch, clef, bassY: bassY);
 
           // 绘制升降号
           if (note.accidental != Accidental.none && _smuflFont != null) {
@@ -482,7 +618,7 @@ class PdfExporter {
           if (note.isRest) continue;
 
           final noteX = beatX;
-          final noteY = _getNoteY(note.pitch, clef);
+          final noteY = _getNoteY(note.pitch, clef, bassY: bassY);
 
           // 绘制升降号
           if (note.accidental != Accidental.none && _smuflFont != null) {
@@ -528,9 +664,10 @@ class PdfExporter {
   }
 
   /// 计算音符Y坐标（参考Canvas绘制逻辑）
-  double _getNoteY(int pitch, Clef clef) {
+  double _getNoteY(int pitch, Clef clef, {double? bassY}) {
     // 五线谱参数（与_buildStaffLine中的参数保持一致）
-    final staffY = 30.0; // 第五线（最上面）的Y坐标，对应Canvas的startY
+    // 如果指定了 bassY，说明是大谱表，使用 bassY 作为低音谱表的基准
+    final staffY = bassY ?? 30.0; // 第五线（最上面）的Y坐标，对应Canvas的startY
     final lineSpacing = 8.0; // 必须与五线绘制时的间距一致
     
     // 使用与Canvas相同的计算方式

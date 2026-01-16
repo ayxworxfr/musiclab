@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/music/jianpu_note_text.dart';
 import '../controllers/sheet_editor_controller.dart';
+import '../controllers/sheet_player_controller.dart';
 import '../models/score.dart';
 import '../models/jianpu_view.dart';
 import '../models/enums.dart';
@@ -17,10 +18,12 @@ import '../models/enums.dart';
 /// - 完整的编辑功能（音符、和弦、时值、修饰符）
 class ProfessionalJianpuEditor extends StatelessWidget {
   final SheetEditorController controller;
+  final bool isPreviewMode;
 
   const ProfessionalJianpuEditor({
     super.key,
     required this.controller,
+    this.isPreviewMode = false,
   });
 
   @override
@@ -47,11 +50,11 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
       return Column(
         children: [
-          // 顶部工具栏
-          _buildTopToolbar(context, score, isDark),
+          // 顶部工具栏（预览模式下隐藏）
+          if (!isPreviewMode) _buildTopToolbar(context, score, isDark),
 
-          // 轨道选择器（如果是多轨道）
-          if (score.tracks.length > 1) _buildTrackSelector(context, score),
+          // 轨道选择器（如果是多轨道，且非预览模式）
+          if (score.tracks.length > 1 && !isPreviewMode) _buildTrackSelector(context, score),
 
           // 乐谱编辑区域
           Expanded(
@@ -64,8 +67,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
             ),
           ),
 
-          // 底部输入面板
-          _buildInputPanel(context, isDark),
+          // 底部输入面板（预览模式下隐藏）
+          if (!isPreviewMode) _buildInputPanel(context, isDark),
         ],
       );
     });
@@ -234,16 +237,13 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                             color: isSelected ? Colors.white : Colors.grey[700],
                           ),
                           const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              track.name,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: isSelected ? Colors.white : Colors.grey[700],
-                                height: 1.2,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                          Text(
+                            track.name,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: isSelected ? Colors.white : Colors.grey[700],
+                              height: 1.2,
                             ),
                           ),
                         ],
@@ -520,10 +520,33 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     int noteIndex,
     bool isDark,
   ) {
+    // 尝试获取播放控制器
+    final playerController = Get.isRegistered<SheetPlayerController>()
+        ? Get.find<SheetPlayerController>()
+        : null;
+
     return Obx(() {
-      final isSelected =
-          controller.selectedMeasureIndex == measureIndex &&
-          controller.selectedJianpuNoteIndex.value == noteIndex;
+      // 判断是否高亮：优先使用播放状态，其次使用编辑器选中状态
+      bool isSelected;
+      if (playerController != null && playerController.playbackState.value.isPlaying) {
+        // 播放模式：检查是否在当前播放的小节中
+        final playbackState = playerController.playbackState.value;
+        final beatAndNote = controller.findBeatAndNoteIndex(measureIndex, noteIndex);
+
+        if (beatAndNote != null) {
+          final (beatIndex, _) = beatAndNote;
+          // 简化判断：只要在同一小节的同一拍即高亮
+          isSelected = playbackState.currentMeasureIndex == measureIndex &&
+                       _isCurrentBeat(playbackState, beatIndex);
+        } else {
+          isSelected = false;
+        }
+      } else {
+        // 编辑模式：根据编辑器选中状态高亮
+        isSelected =
+            controller.selectedMeasureIndex == measureIndex &&
+            controller.selectedJianpuNoteIndex.value == noteIndex;
+      }
 
       return GestureDetector(
         onTap: () {
@@ -596,23 +619,14 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                       ),
                     ),
 
-                  // 数字
-                  note.isRest
-                      ? Text(
-                          '0',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : Colors.black87,
-                          ),
-                        )
-                      : JianpuNoteText(
-                          number: note.degree.toString(),
-                          octaveOffset: 0, // 已经在上面显示了
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : Colors.black87,
-                        ),
+                  // 数字（休止符也使用 JianpuNoteText 保持样式一致）
+                  JianpuNoteText(
+                    number: note.isRest ? '0' : note.degree.toString(),
+                    octaveOffset: 0, // 已经在上面显示了
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : Colors.black87,
+                  ),
 
                   // 附点
                   if (!note.isRest && note.isDotted)
@@ -711,23 +725,26 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 时值选择
-            _buildDurationSelector(context),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 时值选择
+              _buildDurationSelector(context),
 
-            const Divider(height: 1),
+              const Divider(height: 1),
 
-            // 修饰符和八度
-            _buildModifiersRow(context),
+              // 修饰符和八度
+              _buildModifiersRow(context),
 
-            const Divider(height: 1),
+              const Divider(height: 1),
 
-            // 音符键盘
-            _buildNoteKeyboard(context),
-          ],
+              // 音符键盘
+              _buildNoteKeyboard(context),
+            ],
+          ),
         ),
       ),
     );
@@ -1168,6 +1185,34 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   String _getNoteName(int degree) {
     const names = ['', 'Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'];
     return names[degree];
+  }
+
+  /// 判断指定的beat是否是当前播放的beat
+  bool _isCurrentBeat(SheetPlaybackState playbackState, int beatIndex) {
+    final score = controller.currentScore.value;
+    if (score == null) return false;
+
+    final trackIndex = controller.selectedTrackIndex.value;
+    if (trackIndex >= score.tracks.length) return false;
+
+    final track = score.tracks[trackIndex];
+    final measureIndex = playbackState.currentMeasureIndex;
+    if (measureIndex >= track.measures.length) return false;
+
+    final measure = track.measures[measureIndex];
+
+    // 根据currentNoteIndex找到对应的beat
+    var noteCount = 0;
+    for (final beat in measure.beats) {
+      final beatNoteCount = beat.notes.length;
+      if (playbackState.currentNoteIndex >= noteCount &&
+          playbackState.currentNoteIndex < noteCount + beatNoteCount) {
+        return beat.index == beatIndex;
+      }
+      noteCount += beatNoteCount;
+    }
+
+    return false;
   }
 }
 
