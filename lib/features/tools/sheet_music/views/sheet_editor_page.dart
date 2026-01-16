@@ -12,6 +12,7 @@ import '../models/enums.dart';
 import '../services/sheet_import_service.dart';
 import '../services/export/sheet_export_service.dart';
 import '../widgets/jianpu_editor_widget.dart';
+import '../widgets/professional_jianpu_editor.dart';
 import '../utils/score_converter.dart';
 import '../layout/layout_engine.dart';
 import '../painters/render_config.dart';
@@ -87,7 +88,9 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
                   : const SizedBox.shrink(),
             ),
             // 编辑区域
-            Expanded(child: JianpuEditorWidget(controller: _editorController)),
+            Expanded(
+              child: ProfessionalJianpuEditor(controller: _editorController),
+            ),
           ],
         ),
         bottomNavigationBar: _buildBottomBar(context),
