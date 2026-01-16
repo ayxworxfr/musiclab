@@ -78,7 +78,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
             child: Obx(() {
               final isLoading = controller.isLoading.value;
               final scores = controller.filteredScores.toList();
-              
+
               if (isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -98,7 +98,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                         '暂无乐谱',
                         style: TextStyle(
                           fontSize: 16,
-                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -129,7 +131,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Obx(() {
         final currentCategory = controller.currentCategory.value;
-        
+
         return ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -142,23 +144,34 @@ class SheetMusicPage extends GetView<SheetMusicController> {
               onTap: () => controller.setCategory(category),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey.shade400,
+                    color: isSelected
+                        ? AppColors.primary
+                        : Colors.grey.shade400,
                   ),
                 ),
                 child: Center(
                   child: Text(
-                    category == null ? '全部' : '${category.emoji} ${category.label}',
+                    category == null
+                        ? '全部'
+                        : '${category.emoji} ${category.label}',
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       color: isSelected
                           ? Colors.white
-                          : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
+                          : (isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary),
                     ),
                   ),
                 ),
@@ -190,7 +203,10 @@ class SheetMusicPage extends GetView<SheetMusicController> {
         child: InkWell(
           onTap: () async {
             controller.selectScore(score);
-            await Get.toNamed(AppRoutes.sheetDetail, arguments: {'scoreId': score.id});
+            await Get.toNamed(
+              AppRoutes.sheetDetail,
+              arguments: {'scoreId': score.id},
+            );
             // 返回后刷新列表（可能编辑或删除了乐谱）
             controller.refreshScores();
           },
@@ -204,7 +220,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: _getCategoryColor(score.metadata.category).withValues(alpha: 0.1),
+                    color: _getCategoryColor(
+                      score.metadata.category,
+                    ).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -229,14 +247,19 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.color,
                               ),
                             ),
                           ),
                           // 大谱表标识
                           if (score.isGrandStaff)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
@@ -254,7 +277,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                           score.composer!,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       const SizedBox(height: 8),
@@ -268,7 +293,10 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                           _buildDifficultyStars(score.metadata.difficulty),
                           // 调号
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.grey.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
@@ -277,13 +305,18 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               score.metadata.key.displayName,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                                color: isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondary,
                               ),
                             ),
                           ),
                           // BPM
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.grey.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
@@ -292,7 +325,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               '♩=${score.metadata.tempo}',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                                color: isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondary,
                               ),
                             ),
                           ),
@@ -324,7 +359,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                     // 收藏按钮
                     IconButton(
                       icon: Icon(
-                        score.isFavorite ? Icons.favorite : Icons.favorite_border,
+                        score.isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
                         size: 20,
                         color: score.isFavorite ? AppColors.error : Colors.grey,
                       ),
@@ -379,9 +416,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     if (confirmed == true) {
       final success = await controller.deleteScore(score);
       if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('删除成功')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('删除成功')));
       }
     }
   }
@@ -399,24 +436,24 @@ class SheetMusicPage extends GetView<SheetMusicController> {
         );
 
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('《${score.title}》已导出')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('《${score.title}》已导出')));
         }
       } else {
         // 移动平台使用分享功能
         // TODO: 实现移动平台的文件分享
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('移动平台导出功能待实现')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('移动平台导出功能待实现')));
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('导出失败: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('导出失败: $e')));
       }
     }
   }
@@ -437,7 +474,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     showDialog(
       context: context,
       builder: (context) {
-        final textController = TextEditingController(text: controller.searchQuery.value);
+        final textController = TextEditingController(
+          text: controller.searchQuery.value,
+        );
         return AlertDialog(
           title: const Text('搜索乐谱'),
           content: TextField(

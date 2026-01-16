@@ -6,12 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:printing/printing.dart';
 
-import '../../models/score.dart';
-import '../../models/sheet_model.dart' hide NoteDuration, Accidental, Articulation, Dynamics;
 import '../../models/enums.dart';
-import '../../utils/score_converter.dart';
-import 'pdf_exporter.dart';
+import '../../models/score.dart';
 import 'midi_exporter.dart';
+import 'pdf_exporter.dart';
 
 export 'pdf_exporter.dart';
 export 'midi_exporter.dart';
@@ -38,7 +36,12 @@ enum ExportFormat {
   final String mimeType;
   final IconData icon;
 
-  const ExportFormat(this.displayName, this.extension, this.mimeType, this.icon);
+  const ExportFormat(
+    this.displayName,
+    this.extension,
+    this.mimeType,
+    this.icon,
+  );
 }
 
 /// 导出结果
@@ -49,18 +52,15 @@ class ExportResult {
   final String? errorMessage;
   final String filename;
 
-  const ExportResult.success({
-    this.data,
-    this.text,
-    required this.filename,
-  })  : success = true,
-        errorMessage = null;
+  const ExportResult.success({this.data, this.text, required this.filename})
+    : success = true,
+      errorMessage = null;
 
   const ExportResult.failure(this.errorMessage)
-      : success = false,
-        data = null,
-        text = null,
-        filename = '';
+    : success = false,
+      data = null,
+      text = null,
+      filename = '';
 }
 
 /// 乐谱导出服务
@@ -69,21 +69,8 @@ class SheetExportService {
   final _midiExporter = MidiExporter();
 
   /// 导出乐谱
-  Future<ExportResult> export(
-    dynamic sheet, // SheetModel 或 Score
-    ExportFormat format,
-  ) async {
+  Future<ExportResult> export(Score score, ExportFormat format) async {
     try {
-      // 统一转换为 Score
-      Score score;
-      if (sheet is Score) {
-        score = sheet;
-      } else if (sheet is SheetModel) {
-        score = ScoreConverter.fromSheetModel(sheet);
-      } else {
-        return const ExportResult.failure('不支持的乐谱类型');
-      }
-
       final filename = '${score.title}${format.extension}';
 
       switch (format) {
@@ -139,7 +126,9 @@ class SheetExportService {
         final lyrics = <String>[];
 
         for (var beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
-          final beatsAtIndex = measure.beats.where((b) => b.index == beatIndex).toList();
+          final beatsAtIndex = measure.beats
+              .where((b) => b.index == beatIndex)
+              .toList();
 
           if (beatsAtIndex.isEmpty) {
             noteStrs.add('-');
@@ -150,7 +139,11 @@ class SheetExportService {
               noteStrs.add('-');
               lyrics.add('');
             } else {
-              noteStrs.add(notes.map((n) => _noteToJianpuString(n, score.metadata.key)).join('/'));
+              noteStrs.add(
+                notes
+                    .map((n) => _noteToJianpuString(n, score.metadata.key))
+                    .join('/'),
+              );
               lyrics.add(notes.map((n) => n.lyric ?? '').join());
             }
           }
@@ -211,7 +204,7 @@ class SheetExportService {
   /// 显示导出选项对话框
   Future<void> showExportDialog(
     BuildContext context,
-    dynamic sheet, {
+    Score score, {
     String? title,
   }) async {
     final selectedFormat = await showModalBottomSheet<ExportFormat>(
@@ -226,13 +219,11 @@ class SheetExportService {
 
     // 显示加载中
     Get.dialog(
-      const Center(
-        child: CircularProgressIndicator(),
-      ),
+      const Center(child: CircularProgressIndicator()),
       barrierDismissible: false,
     );
 
-    final result = await export(sheet, selectedFormat);
+    final result = await export(score, selectedFormat);
 
     Get.back(); // 关闭加载
 
@@ -253,11 +244,20 @@ class SheetExportService {
       _showTextExportResult(context, result.text!, result.filename);
     } else if (result.data != null) {
       // 二进制格式：提供分享/保存
-      _showBinaryExportResult(context, result.data!, result.filename, selectedFormat);
+      _showBinaryExportResult(
+        context,
+        result.data!,
+        result.filename,
+        selectedFormat,
+      );
     }
   }
 
-  void _showTextExportResult(BuildContext context, String text, String filename) {
+  void _showTextExportResult(
+    BuildContext context,
+    String text,
+    String filename,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -308,11 +308,7 @@ class SheetExportService {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              format.icon,
-              size: 64,
-              color: Theme.of(context).primaryColor,
-            ),
+            Icon(format.icon, size: 64, color: Theme.of(context).primaryColor),
             const SizedBox(height: 16),
             Text('文件大小: ${_formatFileSize(data.length)}'),
             const SizedBox(height: 8),
@@ -324,15 +320,13 @@ class SheetExportService {
             onPressed: () => Navigator.pop(context),
             child: const Text('关闭'),
           ),
-          if (format == ExportFormat.pdfJianpu || format == ExportFormat.pdfStaff)
+          if (format == ExportFormat.pdfJianpu ||
+              format == ExportFormat.pdfStaff)
             ElevatedButton.icon(
               onPressed: () async {
                 Navigator.pop(context);
                 // 使用已经生成的 PDF 数据进行打印预览
-                await Printing.layoutPdf(
-                  onLayout: (_) => data,
-                  name: filename,
-                );
+                await Printing.layoutPdf(onLayout: (_) => data, name: filename);
               },
               icon: const Icon(Icons.print, size: 18),
               label: const Text('打印预览'),
@@ -341,10 +335,7 @@ class SheetExportService {
             onPressed: () async {
               Navigator.pop(context);
               // 分享已生成的 PDF 数据
-              await Printing.sharePdf(
-                bytes: data,
-                filename: filename,
-              );
+              await Printing.sharePdf(bytes: data, filename: filename);
             },
             icon: const Icon(Icons.share, size: 18),
             label: const Text('分享'),
@@ -389,17 +380,16 @@ class _ExportOptionsSheet extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               title ?? '选择导出格式',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: ExportFormat.values.map((format) => _buildFormatTile(context, format)).toList(),
+                  children: ExportFormat.values
+                      .map((format) => _buildFormatTile(context, format))
+                      .toList(),
                 ),
               ),
             ),

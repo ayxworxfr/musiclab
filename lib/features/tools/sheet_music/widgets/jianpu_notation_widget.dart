@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../models/sheet_model.dart';
-
 /// 简谱渲染配置
 class JianpuStyle {
   /// 音符字体大小
@@ -182,10 +180,7 @@ class JianpuNotationWidget extends StatelessWidget {
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: style.lyricFontSize),
-      ),
+      child: Text(text, style: TextStyle(fontSize: style.lyricFontSize)),
     );
   }
 
@@ -235,9 +230,9 @@ class JianpuNotationWidget extends StatelessWidget {
   /// 构建一行乐谱
   Widget _buildLine(BuildContext context, List<int> measureIndices) {
     if (measureIndices.isEmpty) return const SizedBox.shrink();
-    
+
     final firstMeasureNumber = sheet.measures[measureIndices.first].number;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -249,10 +244,7 @@ class JianpuNotationWidget extends StatelessWidget {
               width: 24,
               child: Text(
                 '$firstMeasureNumber',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
           // 小节内容
@@ -272,14 +264,13 @@ class JianpuNotationWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // 反复开始记号
-        if (measure.hasRepeatStart)
-          _buildRepeatSign(isStart: true),
+        if (measure.hasRepeatStart) _buildRepeatSign(isStart: true),
         // 音符
         ...measure.notes.asMap().entries.map((entry) {
           final noteIndex = entry.key;
           final note = entry.value;
-          final noteHighlighted = isHighlighted &&
-              noteIndex == highlightNoteIndex;
+          final noteHighlighted =
+              isHighlighted && noteIndex == highlightNoteIndex;
           return _buildNote(
             context,
             note,
@@ -289,8 +280,7 @@ class JianpuNotationWidget extends StatelessWidget {
           );
         }),
         // 反复结束记号
-        if (measure.hasRepeatEnd)
-          _buildRepeatSign(isStart: false),
+        if (measure.hasRepeatEnd) _buildRepeatSign(isStart: false),
         // 小节线
         _buildBarLine(),
       ],
@@ -464,7 +454,9 @@ class JianpuNotationWidget extends StatelessWidget {
                         (i) => Container(
                           width: 12,
                           height: 2,
-                          margin: EdgeInsets.only(right: i < dashCount - 1 ? 4 : 0),
+                          margin: EdgeInsets.only(
+                            right: i < dashCount - 1 ? 4 : 0,
+                          ),
                           color: noteColor,
                         ),
                       ),
@@ -474,8 +466,8 @@ class JianpuNotationWidget extends StatelessWidget {
             ),
             // 下划线占位区（固定高度保证对齐）
             SizedBox(
-              height: note.duration.underlineCount > 0 
-                  ? (note.duration.underlineCount * 4.0) 
+              height: note.duration.underlineCount > 0
+                  ? (note.duration.underlineCount * 4.0)
                   : 4,
               child: note.duration.underlineCount > 0
                   ? Column(
@@ -611,8 +603,8 @@ class JianpuLineWidget extends StatelessWidget {
             ),
             // 下划线占位区（固定高度保证对齐）
             SizedBox(
-              height: note.duration.underlineCount > 0 
-                  ? (note.duration.underlineCount * 4.0) 
+              height: note.duration.underlineCount > 0
+                  ? (note.duration.underlineCount * 4.0)
                   : 4,
               child: note.duration.underlineCount > 0
                   ? Column(
@@ -651,13 +643,9 @@ class JianpuLineWidget extends StatelessWidget {
           width: 3,
           height: 3,
           margin: const EdgeInsets.symmetric(horizontal: 1),
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
       ),
     );
   }
 }
-

@@ -43,7 +43,7 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
     super.initState();
     _controller = Get.find<SheetMusicController>();
     _loadScore();
-    
+
     // 确保 PlaybackController 已注册
     if (!Get.isRegistered<PlaybackController>()) {
       Get.put(PlaybackController());
@@ -61,9 +61,11 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
       // 尝试从参数获取
       final args = Get.arguments as Map<String, dynamic>?;
       final scoreId = args?['scoreId'] as String?;
-      
+
       if (scoreId != null) {
-        final found = _controller.scores.firstWhereOrNull((s) => s.id == scoreId);
+        final found = _controller.scores.firstWhereOrNull(
+          (s) => s.id == scoreId,
+        );
         if (found != null) {
           setState(() {
             _currentScore = found;
@@ -86,10 +88,7 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
               children: [
                 const Text(
                   '显示设置',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
 
@@ -159,10 +158,7 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
                 const Divider(),
                 const Text(
                   '主题',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -209,7 +205,9 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
         actions: [
           IconButton(
             icon: Icon(
-              _currentScore!.isFavorite ? Icons.favorite : Icons.favorite_border,
+              _currentScore!.isFavorite
+                  ? Icons.favorite
+                  : Icons.favorite_border,
               color: _currentScore!.isFavorite ? Colors.red : null,
             ),
             onPressed: () {
@@ -223,7 +221,9 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
         ],
       ),
       body: SheetMusicView(
-        key: ValueKey('${_currentScore!.id}_${_notationMode.name}_$_selectedThemeIndex'),
+        key: ValueKey(
+          '${_currentScore!.id}_${_notationMode.name}_$_selectedThemeIndex',
+        ),
         score: _currentScore!,
         config: _config,
         initialMode: _notationMode,

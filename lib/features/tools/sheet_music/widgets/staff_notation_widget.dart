@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/music_utils.dart';
-import '../models/sheet_model.dart';
 
 /// 五线谱渲染配置
 class StaffStyle {
@@ -103,18 +102,12 @@ class StaffNotationWidget extends StatelessWidget {
         children: [
           Text(
             sheet.title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           if (sheet.metadata.composer != null)
             Text(
               '作曲：${sheet.metadata.composer}',
-              style: TextStyle(
-                fontSize: 14,
-                color: style.lyricColor,
-              ),
+              style: TextStyle(fontSize: 14, color: style.lyricColor),
             ),
           const SizedBox(height: 8),
           Row(
@@ -138,10 +131,7 @@ class StaffNotationWidget extends StatelessWidget {
         color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 12),
-      ),
+      child: Text(text, style: const TextStyle(fontSize: 12)),
     );
   }
 
@@ -181,7 +171,8 @@ class StaffNotationWidget extends StatelessWidget {
       final measure = sheet.measures[i];
       final measureWidth = _estimateMeasureWidth(measure);
 
-      if (currentWidth + measureWidth > maxWidth - 32 && currentLine.isNotEmpty) {
+      if (currentWidth + measureWidth > maxWidth - 32 &&
+          currentLine.isNotEmpty) {
         lines.add(currentLine);
         currentLine = [i];
         currentWidth = 80.0 + measureWidth;
@@ -339,18 +330,19 @@ class _StaffLinePainter extends CustomPainter {
   }
 
   /// 绘制五条线
-  void _drawStaffLines(Canvas canvas, Size size, double startY, double lineSpacing) {
+  void _drawStaffLines(
+    Canvas canvas,
+    Size size,
+    double startY,
+    double lineSpacing,
+  ) {
     final paint = Paint()
       ..color = style.lineColor
       ..strokeWidth = 1.0;
 
     for (int i = 0; i < 5; i++) {
       final y = startY + i * lineSpacing;
-      canvas.drawLine(
-        Offset(10, y),
-        Offset(size.width - 10, y),
-        paint,
-      );
+      canvas.drawLine(Offset(10, y), Offset(size.width - 10, y), paint);
     }
   }
 
@@ -360,7 +352,7 @@ class _StaffLinePainter extends CustomPainter {
       text: TextSpan(
         text: clef == 'treble' ? '𝄞' : '𝄢',
         style: TextStyle(
-          fontSize: lineSpacing * 5,  // 缩小一点
+          fontSize: lineSpacing * 5, // 缩小一点
           color: style.lineColor,
           fontFamily: 'Bravura', // 音乐字体，如果没有则使用系统字体
         ),
@@ -373,20 +365,25 @@ class _StaffLinePainter extends CustomPainter {
     // 低音谱号：中心点在第四线（F线，从上往下第二条线 = startY + 1 * lineSpacing）
     // 根据字体特性调整，使谱号中心对齐到正确的线上
     final y = clef == 'treble'
-        ? startY - lineSpacing * 0.8  // 高音谱号从顶部往下延伸
+        ? startY -
+              lineSpacing *
+                  0.8 // 高音谱号从顶部往下延伸
         : startY + lineSpacing * 0.2;
     textPainter.paint(canvas, Offset(x, y));
   }
 
   /// 绘制调号
-  double _drawKeySignature(Canvas canvas, double x, double startY, double lineSpacing) {
+  double _drawKeySignature(
+    Canvas canvas,
+    double x,
+    double startY,
+    double lineSpacing,
+  ) {
     final key = sheet.metadata.key;
     final sharps = _getSharpCount(key);
     final flats = _getFlatCount(key);
 
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     if (sharps > 0) {
       // 升号位置（F C G D A E B）
@@ -396,10 +393,7 @@ class _StaffLinePainter extends CustomPainter {
         final y = startY + (4 - pos) * (lineSpacing / 2);
         textPainter.text = TextSpan(
           text: '♯',
-          style: TextStyle(
-            fontSize: lineSpacing * 2,
-            color: style.lineColor,
-          ),
+          style: TextStyle(fontSize: lineSpacing * 2, color: style.lineColor),
         );
         textPainter.layout();
         textPainter.paint(canvas, Offset(x + i * 8, y - lineSpacing));
@@ -413,10 +407,7 @@ class _StaffLinePainter extends CustomPainter {
         final y = startY + (4 - pos) * (lineSpacing / 2);
         textPainter.text = TextSpan(
           text: '♭',
-          style: TextStyle(
-            fontSize: lineSpacing * 2,
-            color: style.lineColor,
-          ),
+          style: TextStyle(fontSize: lineSpacing * 2, color: style.lineColor),
         );
         textPainter.layout();
         textPainter.paint(canvas, Offset(x + i * 8, y - lineSpacing));
@@ -428,23 +419,42 @@ class _StaffLinePainter extends CustomPainter {
   }
 
   int _getSharpCount(String key) {
-    const sharpKeys = {'G': 1, 'D': 2, 'A': 3, 'E': 4, 'B': 5, 'F#': 6, 'C#': 7};
+    const sharpKeys = {
+      'G': 1,
+      'D': 2,
+      'A': 3,
+      'E': 4,
+      'B': 5,
+      'F#': 6,
+      'C#': 7,
+    };
     return sharpKeys[key] ?? 0;
   }
 
   int _getFlatCount(String key) {
-    const flatKeys = {'F': 1, 'Bb': 2, 'Eb': 3, 'Ab': 4, 'Db': 5, 'Gb': 6, 'Cb': 7};
+    const flatKeys = {
+      'F': 1,
+      'Bb': 2,
+      'Eb': 3,
+      'Ab': 4,
+      'Db': 5,
+      'Gb': 6,
+      'Cb': 7,
+    };
     return flatKeys[key] ?? 0;
   }
 
   /// 绘制拍号
-  void _drawTimeSignature(Canvas canvas, double x, double startY, double lineSpacing) {
+  void _drawTimeSignature(
+    Canvas canvas,
+    double x,
+    double startY,
+    double lineSpacing,
+  ) {
     final parts = sheet.metadata.timeSignature.split('/');
     if (parts.length != 2) return;
 
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     // 上方数字
     textPainter.text = TextSpan(
@@ -513,10 +523,7 @@ class _StaffLinePainter extends CustomPainter {
       final textPainter = TextPainter(
         text: TextSpan(
           text: '${measureIndex + 1}',
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey,
-          ),
+          style: TextStyle(fontSize: 10, color: Colors.grey),
         ),
         textDirection: TextDirection.ltr,
       );
@@ -549,7 +556,10 @@ class _StaffLinePainter extends CustomPainter {
 
     // 计算音符在五线谱上的位置
     // position = 0 是第一线（E4），每增加1向上移动半个 lineSpacing
-    final position = MusicUtils.getStaffPosition(midi, isTrebleClef: clef == 'treble');
+    final position = MusicUtils.getStaffPosition(
+      midi,
+      isTrebleClef: clef == 'treble',
+    );
     // 第一线的 Y 坐标（五线谱最下面那条线）
     final firstLineY = startY + 4 * lineSpacing;
     // 向上移动 position 个半格（position 正数向上，Y 减小）
@@ -564,7 +574,8 @@ class _StaffLinePainter extends CustomPainter {
     // 绘制音符头
     final notePaint = Paint()..color = color;
 
-    if (note.duration == NoteDuration.whole || note.duration == NoteDuration.half) {
+    if (note.duration == NoteDuration.whole ||
+        note.duration == NoteDuration.half) {
       // 空心音符
       notePaint.style = PaintingStyle.stroke;
       notePaint.strokeWidth = 2;
@@ -602,12 +613,28 @@ class _StaffLinePainter extends CustomPainter {
 
     // 绘制符尾（八分及更短）
     if (note.duration.underlineCount > 0) {
-      _drawFlags(canvas, x, y, lineSpacing, position, noteRadius, note.duration.underlineCount, color);
+      _drawFlags(
+        canvas,
+        x,
+        y,
+        lineSpacing,
+        position,
+        noteRadius,
+        note.duration.underlineCount,
+        color,
+      );
     }
 
     // 绘制变音记号
     if (note.accidental != Accidental.none) {
-      _drawAccidental(canvas, x - noteRadius * 2, y, lineSpacing, note.accidental, color);
+      _drawAccidental(
+        canvas,
+        x - noteRadius * 2,
+        y,
+        lineSpacing,
+        note.accidental,
+        color,
+      );
     }
 
     // 绘制歌词
@@ -615,10 +642,7 @@ class _StaffLinePainter extends CustomPainter {
       final textPainter = TextPainter(
         text: TextSpan(
           text: note.lyric!,
-          style: TextStyle(
-            fontSize: 11,
-            color: style.lyricColor,
-          ),
+          style: TextStyle(fontSize: 11, color: style.lyricColor),
         ),
         textDirection: TextDirection.ltr,
       );
@@ -766,15 +790,15 @@ class _StaffLinePainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: accidental.displaySymbol,
-        style: TextStyle(
-          fontSize: lineSpacing * 1.8,
-          color: color,
-        ),
+        style: TextStyle(fontSize: lineSpacing * 1.8, color: color),
       ),
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
-    textPainter.paint(canvas, Offset(x - textPainter.width, y - lineSpacing * 0.8));
+    textPainter.paint(
+      canvas,
+      Offset(x - textPainter.width, y - lineSpacing * 0.8),
+    );
   }
 
   /// 绘制休止符
@@ -787,9 +811,7 @@ class _StaffLinePainter extends CustomPainter {
     bool isHighlighted,
   ) {
     final color = isHighlighted ? style.highlightColor : style.noteColor;
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-    );
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     String restSymbol;
     double yOffset = 0;
@@ -822,10 +844,7 @@ class _StaffLinePainter extends CustomPainter {
 
     textPainter.text = TextSpan(
       text: restSymbol,
-      style: TextStyle(
-        fontSize: lineSpacing * 3,
-        color: color,
-      ),
+      style: TextStyle(fontSize: lineSpacing * 3, color: color),
     );
     textPainter.layout();
     textPainter.paint(
@@ -835,7 +854,13 @@ class _StaffLinePainter extends CustomPainter {
   }
 
   /// 绘制小节线
-  void _drawBarLine(Canvas canvas, double x, double startY, double lineSpacing, {bool isDouble = false}) {
+  void _drawBarLine(
+    Canvas canvas,
+    double x,
+    double startY,
+    double lineSpacing, {
+    bool isDouble = false,
+  }) {
     final paint = Paint()
       ..color = style.lineColor
       ..strokeWidth = isDouble ? 2.0 : 1.0;
@@ -864,4 +889,3 @@ class _StaffLinePainter extends CustomPainter {
         oldDelegate.measureIndices != measureIndices;
   }
 }
-

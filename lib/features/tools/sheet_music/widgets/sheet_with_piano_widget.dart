@@ -7,7 +7,7 @@ import '../models/enums.dart';
 import '../painters/piano_keyboard_painter.dart';
 import '../painters/render_config.dart';
 import '../controllers/sheet_player_controller.dart';
-import '../models/sheet_model.dart';
+
 import 'dual_notation_widget.dart';
 import 'jianpu_notation_widget.dart';
 import 'staff_notation_widget.dart';
@@ -187,7 +187,10 @@ class SheetWithPianoWidget extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('简谱: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text(
+                  '简谱: ',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
                 Text(
                   note.displayString,
                   style: const TextStyle(
@@ -223,7 +226,10 @@ class SheetWithPianoWidget extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('音名: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text(
+                    '音名: ',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                   Text(
                     MusicUtils.midiToNoteName(midi),
                     style: const TextStyle(
@@ -303,7 +309,8 @@ class _InteractivePianoKeyboard extends StatefulWidget {
   });
 
   @override
-  State<_InteractivePianoKeyboard> createState() => _InteractivePianoKeyboardState();
+  State<_InteractivePianoKeyboard> createState() =>
+      _InteractivePianoKeyboardState();
 }
 
 class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
@@ -338,8 +345,10 @@ class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
           );
 
           return GestureDetector(
-            onTapDown: (details) => _handleTap(details.localPosition, constraints, painter),
-            onPanUpdate: (details) => _handlePan(details.localPosition, constraints, painter),
+            onTapDown: (details) =>
+                _handleTap(details.localPosition, constraints, painter),
+            onPanUpdate: (details) =>
+                _handlePan(details.localPosition, constraints, painter),
             onPanEnd: (_) => _lastPlayedMidi = null,
             onTapUp: (_) => _lastPlayedMidi = null,
             child: CustomPaint(
@@ -352,8 +361,15 @@ class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
     );
   }
 
-  void _handleTap(Offset position, BoxConstraints constraints, PianoKeyboardPainter painter) {
-    final midi = painter.findKeyAtPosition(position, Size(constraints.maxWidth, widget.config.pianoHeight));
+  void _handleTap(
+    Offset position,
+    BoxConstraints constraints,
+    PianoKeyboardPainter painter,
+  ) {
+    final midi = painter.findKeyAtPosition(
+      position,
+      Size(constraints.maxWidth, widget.config.pianoHeight),
+    );
     if (midi != null && midi != _lastPlayedMidi) {
       _lastPlayedMidi = midi;
       _audioService.markUserInteracted();
@@ -362,8 +378,15 @@ class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
     }
   }
 
-  void _handlePan(Offset position, BoxConstraints constraints, PianoKeyboardPainter painter) {
-    final midi = painter.findKeyAtPosition(position, Size(constraints.maxWidth, widget.config.pianoHeight));
+  void _handlePan(
+    Offset position,
+    BoxConstraints constraints,
+    PianoKeyboardPainter painter,
+  ) {
+    final midi = painter.findKeyAtPosition(
+      position,
+      Size(constraints.maxWidth, widget.config.pianoHeight),
+    );
     if (midi != null && midi != _lastPlayedMidi) {
       _lastPlayedMidi = midi;
       _audioService.markUserInteracted();
@@ -446,7 +469,10 @@ class _SheetPlayerPageState extends State<SheetPlayerPage> {
     );
   }
 
-  PopupMenuItem<DualNotationMode> _buildModeItem(DualNotationMode mode, String label) {
+  PopupMenuItem<DualNotationMode> _buildModeItem(
+    DualNotationMode mode,
+    String label,
+  ) {
     return PopupMenuItem(
       value: mode,
       child: Row(
@@ -513,10 +539,7 @@ class _SheetPlayerPageState extends State<SheetPlayerPage> {
               final isLooping = _controller.playbackState.value.isLooping;
               return IconButton(
                 onPressed: () => _controller.toggleLoop(),
-                icon: Icon(
-                  Icons.repeat,
-                  color: isLooping ? Colors.blue : null,
-                ),
+                icon: Icon(Icons.repeat, color: isLooping ? Colors.blue : null),
               );
             }),
           ],
@@ -537,7 +560,10 @@ class _SheetPlayerPageState extends State<SheetPlayerPage> {
             children: [
               const Padding(
                 padding: EdgeInsets.all(16),
-                child: Text('播放速度', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(
+                  '播放速度',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
               ...speeds.map((speed) {
                 final isSelected = currentSpeed == speed;

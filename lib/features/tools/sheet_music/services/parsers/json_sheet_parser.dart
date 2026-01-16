@@ -166,7 +166,7 @@ class JsonScoreExporter {
       'duration': n['duration'],
     };
 
-    if (n['dots'] != null && n['dots'] > 0) result['dots'] = n['dots'];
+    if (n['dots'] != null && (n['dots'] as int) > 0) result['dots'] = n['dots'];
     if (n['accidental'] != null && n['accidental'] != 'none') {
       result['accidental'] = n['accidental'];
     }

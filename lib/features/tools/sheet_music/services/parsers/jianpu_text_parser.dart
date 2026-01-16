@@ -50,9 +50,9 @@ class JianpuTextParser implements SheetParser {
       final warnings = <String>[];
 
       final metadata = _parseMetadata(lines);
-      final key = MusicKey.fromString(metadata['key'] ?? 'C');
-      final beatsPerMeasure = metadata['beatsPerMeasure'] ?? 4;
-      final beatUnit = metadata['beatUnit'] ?? 4;
+      final key = MusicKey.fromString(metadata['key'] as String? ?? 'C');
+      final beatsPerMeasure = metadata['beatsPerMeasure'] as int? ?? 4;
+      final beatUnit = metadata['beatUnit'] as int? ?? 4;
 
       final contentLines = _extractContentLines(lines);
       final noteLines = <String>[];
@@ -95,13 +95,13 @@ class JianpuTextParser implements SheetParser {
 
       final score = Score(
         id: 'imported_${DateTime.now().millisecondsSinceEpoch}',
-        title: metadata['title'] ?? '导入的乐谱',
-        composer: metadata['composer'],
+        title: metadata['title'] as String? ?? '导入的乐谱',
+        composer: metadata['composer'] as String?,
         metadata: ScoreMetadata(
           key: key,
           beatsPerMeasure: beatsPerMeasure,
           beatUnit: beatUnit,
-          tempo: int.tryParse(metadata['tempo'] ?? '120') ?? 120,
+          tempo: int.tryParse(metadata['tempo'] as String? ?? '120') ?? 120,
           difficulty: 1,
           category: ScoreCategory.folk,
         ),
@@ -360,6 +360,6 @@ class JianpuTextParser implements SheetParser {
     final keyOffset = key.tonicSemitone;
     final basePitch = 60 + keyOffset;
 
-    return basePitch + octave * 12 + baseSemitone - keyOffset;
+    return (basePitch + octave * 12 + baseSemitone - keyOffset).round();
   }
 }

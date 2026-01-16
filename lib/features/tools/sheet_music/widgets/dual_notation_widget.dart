@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../models/sheet_model.dart';
 import 'jianpu_notation_widget.dart';
 import 'staff_notation_widget.dart';
 
@@ -201,18 +200,12 @@ class DualNotationWidget extends StatelessWidget {
         children: [
           Text(
             sheet.title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           if (sheet.metadata.composer != null)
             Text(
               '作曲：${sheet.metadata.composer}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
           const SizedBox(height: 8),
           Row(
@@ -236,10 +229,7 @@ class DualNotationWidget extends StatelessWidget {
         color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 12),
-      ),
+      child: Text(text, style: const TextStyle(fontSize: 12)),
     );
   }
 }
@@ -283,7 +273,8 @@ class _CompactJianpuWidget extends StatelessWidget {
       final measure = sheet.measures[i];
       final measureWidth = _calculateMeasureWidth(measure);
 
-      if (currentWidth + measureWidth > maxWidth - 32 && currentLine.isNotEmpty) {
+      if (currentWidth + measureWidth > maxWidth - 32 &&
+          currentLine.isNotEmpty) {
         lines.add(currentLine);
         currentLine = [i];
         currentWidth = measureWidth;
@@ -330,7 +321,8 @@ class _CompactJianpuWidget extends StatelessWidget {
         ...measure.notes.asMap().entries.map((entry) {
           final noteIndex = entry.key;
           final note = entry.value;
-          final noteHighlighted = isHighlighted && noteIndex == highlightNoteIndex;
+          final noteHighlighted =
+              isHighlighted && noteIndex == highlightNoteIndex;
           return _buildNote(note, measureIndex, noteIndex, noteHighlighted);
         }),
         // 小节线
@@ -344,13 +336,20 @@ class _CompactJianpuWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildNote(SheetNote note, int measureIndex, int noteIndex, bool isHighlighted) {
+  Widget _buildNote(
+    SheetNote note,
+    int measureIndex,
+    int noteIndex,
+    bool isHighlighted,
+  ) {
     final noteColor = isHighlighted ? style.highlightColor : style.noteColor;
 
     return GestureDetector(
       onTap: () => onNoteTap?.call(measureIndex, noteIndex),
       child: Container(
-        width: style.noteSpacing + note.duration.dashCount * style.noteSpacing * 0.6,
+        width:
+            style.noteSpacing +
+            note.duration.dashCount * style.noteSpacing * 0.6,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -369,7 +368,10 @@ class _CompactJianpuWidget extends StatelessWidget {
                 if (note.accidental != Accidental.none)
                   Text(
                     note.accidental.displaySymbol,
-                    style: TextStyle(fontSize: style.noteFontSize * 0.6, color: noteColor),
+                    style: TextStyle(
+                      fontSize: style.noteFontSize * 0.6,
+                      color: noteColor,
+                    ),
                   ),
                 Text(
                   note.isRest ? '0' : '${note.degree}',
@@ -384,7 +386,10 @@ class _CompactJianpuWidget extends StatelessWidget {
                     width: 4,
                     height: 4,
                     margin: const EdgeInsets.only(left: 2),
-                    decoration: BoxDecoration(color: noteColor, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: noteColor,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ...List.generate(
                   note.duration.dashCount,
@@ -423,7 +428,10 @@ class _CompactJianpuWidget extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   note.lyric!,
-                  style: TextStyle(fontSize: style.lyricFontSize, color: style.lyricColor),
+                  style: TextStyle(
+                    fontSize: style.lyricFontSize,
+                    color: style.lyricColor,
+                  ),
                 ),
               ),
           ],
@@ -496,4 +504,3 @@ extension StaffStyleCopyWith on StaffStyle {
     );
   }
 }
-

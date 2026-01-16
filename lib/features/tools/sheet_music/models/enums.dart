@@ -63,28 +63,34 @@ enum NoteDuration {
 /// 调号
 /// ═══════════════════════════════════════════════════════════════
 enum MusicKey {
-  C(0, 'C大调'),
-  G(1, 'G大调'),
-  D(2, 'D大调'),
-  A(3, 'A大调'),
-  E(4, 'E大调'),
-  B(5, 'B大调'),
-  Fs(6, 'F#大调'),
-  F(-1, 'F大调'),
-  Bb(-2, 'Bb大调'),
-  Eb(-3, 'Eb大调'),
-  Ab(-4, 'Ab大调'),
-  Db(-5, 'Db大调'),
+  C(0, 'C大调', 0),
+  G(1, 'G大调', 7),
+  D(2, 'D大调', 2),
+  A(3, 'A大调', 9),
+  E(4, 'E大调', 4),
+  B(5, 'B大调', 11),
+  Fs(6, 'F#大调', 6),
+  F(-1, 'F大调', 5),
+  Bb(-2, 'Bb大调', 10),
+  Eb(-3, 'Eb大调', 3),
+  Ab(-4, 'Ab大调', 8),
+  Db(-5, 'Db大调', 1),
   // 小调
-  Am(0, 'A小调', isMinor: true),
-  Em(1, 'E小调', isMinor: true),
-  Dm(-1, 'D小调', isMinor: true);
+  Am(0, 'A小调', 9, isMinor: true),
+  Em(1, 'E小调', 4, isMinor: true),
+  Dm(-1, 'D小调', 2, isMinor: true);
 
   final int sharpsOrFlats;
   final String displayName;
+  final int tonicSemitone; // MIDI offset from C (0-11)
   final bool isMinor;
 
-  const MusicKey(this.sharpsOrFlats, this.displayName, {this.isMinor = false});
+  const MusicKey(
+    this.sharpsOrFlats,
+    this.displayName,
+    this.tonicSemitone, {
+    this.isMinor = false,
+  });
 
   bool get hasSharps => sharpsOrFlats > 0;
   bool get hasFlats => sharpsOrFlats < 0;

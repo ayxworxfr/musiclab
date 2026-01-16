@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../models/sheet_model.dart';
+
 import '../models/score.dart';
 import '../controllers/sheet_music_controller.dart';
 import '../services/sheet_import_service.dart';
@@ -153,10 +153,7 @@ class _SheetImportPageState extends State<SheetImportPage>
               maxLines: null,
               expands: true,
               textAlignVertical: TextAlignVertical.top,
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 14,
-              ),
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,
                 border: const OutlineInputBorder(),
@@ -223,7 +220,9 @@ class _SheetImportPageState extends State<SheetImportPage>
           if (result.warnings.isNotEmpty) ...[
             const SizedBox(height: 8),
             const Text('警告:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...result.warnings.map((w) => Text('• $w', style: const TextStyle(fontSize: 12))),
+            ...result.warnings.map(
+              (w) => Text('• $w', style: const TextStyle(fontSize: 12)),
+            ),
           ],
         ],
       ),
@@ -334,11 +333,11 @@ class _SheetImportPageState extends State<SheetImportPage>
     try {
       // 转换为 Score 格式
       final score = ScoreConverter.fromSheetModel(_result!.sheet!);
-      
+
       // 保存到存储
       final sheetMusicController = Get.find<SheetMusicController>();
       final success = await sheetMusicController.saveUserScore(score);
-      
+
       if (success) {
         Get.back();
         Get.snackbar(
@@ -392,9 +391,7 @@ class _SheetImportPageState extends State<SheetImportPage>
                 const SizedBox(height: 20),
 
                 // 简谱文本
-                _buildHelpSection(
-                  '简谱文本格式',
-                  '''
+                _buildHelpSection('简谱文本格式', '''
 • 1-7: 音符（do re mi fa sol la si）
 • 0: 休止符
 • -: 延长一拍
@@ -407,15 +404,12 @@ class _SheetImportPageState extends State<SheetImportPage>
 • .: 附点，如 5.
 • |: 小节线
 
-头部可包含：标题、作曲、调号、拍号、速度''',
-                ),
+头部可包含：标题、作曲、调号、拍号、速度'''),
 
                 const SizedBox(height: 16),
 
                 // JSON
-                _buildHelpSection(
-                  'JSON 格式',
-                  '''
+                _buildHelpSection('JSON 格式', '''
 标准的 JSON 格式，包含：
 • title: 标题
 • metadata: 调号、拍号、速度等
@@ -423,23 +417,19 @@ class _SheetImportPageState extends State<SheetImportPage>
   - notes: 音符数组
     - degree: 音级 (1-7, 0休止符)
     - octave: 八度偏移
-    - duration: 时值''',
-                ),
+    - duration: 时值'''),
 
                 const SizedBox(height: 16),
 
                 // MusicXML
-                _buildHelpSection(
-                  'MusicXML 格式',
-                  '''
+                _buildHelpSection('MusicXML 格式', '''
 支持从专业音乐软件导出的 MusicXML：
 • MuseScore（免费）
 • Finale
 • Sibelius
 • Dorico
 
-导出时选择 "MusicXML" 或 ".musicxml" 格式。''',
-                ),
+导出时选择 "MusicXML" 或 ".musicxml" 格式。'''),
 
                 const SizedBox(height: 32),
               ],
@@ -575,4 +565,3 @@ const _musicXmlExample = '''<?xml version="1.0" encoding="UTF-8"?>
     </measure>
   </part>
 </score-partwise>''';
-
