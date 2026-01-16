@@ -162,6 +162,14 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
   /// 轨道选择器
   Widget _buildTrackSelector(BuildContext context, Score score) {
+    // 按左右手排序：左手在前，右手在后
+    final sortedTracks = List<Track>.from(score.tracks);
+    sortedTracks.sort((a, b) {
+      if (a.hand == Hand.left && b.hand == Hand.right) return -1;
+      if (a.hand == Hand.right && b.hand == Hand.left) return 1;
+      return 0;
+    });
+
     return Container(
       height: 48,
       decoration: BoxDecoration(
@@ -182,56 +190,58 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           Expanded(
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: score.tracks.length,
+              itemCount: sortedTracks.length,
               itemBuilder: (context, index) {
-                final track = score.tracks[index];
+                final track = sortedTracks[index];
+                // 找到原始索引
+                final originalIndex = score.tracks.indexOf(track);
                 return Obx(() {
-                  final isSelected = controller.selectedTrackIndex.value == index;
+                  final isSelected = controller.selectedTrackIndex.value == originalIndex;
                   return GestureDetector(
-                      onTap: () => controller.selectedTrackIndex.value = index,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 8,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
+                    onTap: () => controller.selectedTrackIndex.value = originalIndex,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 8,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary
+                            : Colors.grey.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
                           color: isSelected
                               ? AppColors.primary
-                              : Colors.grey.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.primary
-                                : Colors.grey.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              track.hand == Hand.right
-                                  ? Icons.piano
-                                  : Icons.piano_outlined,
-                              size: 16,
-                              color: isSelected ? Colors.white : Colors.grey[700],
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              track.name,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: isSelected ? Colors.white : Colors.grey[700],
-                              ),
-                            ),
-                          ],
+                              : Colors.grey.withValues(alpha: 0.3),
                         ),
                       ),
-                    );
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            track.hand == Hand.right
+                                ? Icons.piano
+                                : Icons.piano_outlined,
+                            size: 16,
+                            color: isSelected ? Colors.white : Colors.grey[700],
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            track.name,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: isSelected ? Colors.white : Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 });
               },
             ),
@@ -659,6 +669,9 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   /// 底部输入面板
   Widget _buildInputPanel(BuildContext context, bool isDark) {
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.4, // 限制最大高度
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         border: Border(
@@ -672,25 +685,27 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 时值选择
-          _buildDurationSelector(context),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 时值选择
+            _buildDurationSelector(context),
 
-          const Divider(height: 1),
+            const Divider(height: 1),
 
-          // 修饰符和八度
-          _buildModifiersRow(context),
+            // 修饰符和八度
+            _buildModifiersRow(context),
 
-          const Divider(height: 1),
+            const Divider(height: 1),
 
-          // 音符键盘
-          _buildNoteKeyboard(context),
+            // 音符键盘
+            _buildNoteKeyboard(context),
 
-          // 歌词输入
-          _buildLyricInput(context),
-        ],
+            // 歌词输入
+            _buildLyricInput(context),
+          ],
+        ),
       ),
     );
   }
@@ -942,8 +957,6 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     return Obx(() {
       final octave = controller.selectedOctave.value;
       final accidental = controller.selectedAccidental.value;
-      final duration = controller.selectedDuration.value;
-      final isDotted = controller.isDotted.value;
 
       return GestureDetector(
         onTap: () {
@@ -1012,6 +1025,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (degree == 0)
                 Text(
@@ -1037,6 +1051,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                   fontSize: 10,
                   color: Colors.grey[600],
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -1062,6 +1078,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         ),
         child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.close, size: 24, color: Colors.red),
             SizedBox(height: 4),
@@ -1072,6 +1089,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 color: Colors.red,
                 fontWeight: FontWeight.w500,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
