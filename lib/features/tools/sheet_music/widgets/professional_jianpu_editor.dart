@@ -515,7 +515,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     return Obx(() {
       final isSelected =
           controller.selectedMeasureIndex.value == measureIndex &&
-          controller.selectedNoteIndex.value == noteIndex;
+          controller.selectedJianpuNoteIndex.value == noteIndex;
 
       return GestureDetector(
         onTap: () {
@@ -526,8 +526,15 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           final (beatIndex, noteIndexInBeat) = beatAndNote;
           
           if (controller.editorMode.value == EditorMode.erase) {
+            // 删除模式：先选择音符，然后删除
+            // 确保使用正确的轨道索引
             controller.selectNote(measureIndex, beatIndex, noteIndexInBeat);
-            controller.deleteSelectedNote();
+            // 验证选择是否成功后再删除
+            if (controller.selectedMeasureIndex.value == measureIndex &&
+                controller.selectedBeatIndex.value == beatIndex &&
+                controller.selectedNoteIndex.value == noteIndexInBeat) {
+              controller.deleteSelectedNote();
+            }
           } else {
             controller.selectNote(measureIndex, beatIndex, noteIndexInBeat);
           }
