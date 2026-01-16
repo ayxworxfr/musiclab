@@ -125,11 +125,8 @@ class ScoreConverter {
     }
 
     Instrument instrument = Instrument.piano;
-    if (instrumentStr == 'violin') {
-      instrument = Instrument.violin;
-    } else if (instrumentStr == 'guitar') {
-      instrument = Instrument.guitar;
-    }
+    // 目前只支持钢琴类型，其他乐器统一使用钢琴
+    // TODO: 未来可以扩展 Instrument 枚举支持更多乐器
 
     return Track(
       id: json['id'] as String? ?? 'track',

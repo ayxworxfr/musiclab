@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/music/jianpu_note_text.dart';
 import '../controllers/sheet_editor_controller.dart';
+import '../models/score.dart';
+import '../models/jianpu_view.dart';
+import '../models/enums.dart';
 
 /// 简谱编辑器组件
 class JianpuEditorWidget extends StatelessWidget {
@@ -107,10 +110,12 @@ class JianpuEditorWidget extends StatelessWidget {
           // 删除小节
           Obx(() {
             final sheet = controller.currentSheet.value;
+            final track = controller.currentTrack;
+            final canDelete = sheet != null &&
+                track != null &&
+                track.measures.length > 1;
             return TextButton.icon(
-              onPressed: sheet != null && sheet.measures.length > 1
-                  ? controller.deleteCurrentMeasure
-                  : null,
+              onPressed: canDelete ? controller.deleteCurrentMeasure : null,
               icon: const Icon(Icons.remove, size: 18),
               label: const Text('删除小节'),
             );
@@ -121,19 +126,23 @@ class JianpuEditorWidget extends StatelessWidget {
   }
 
   /// 乐谱内容
-  Widget _buildSheetContent(BuildContext context, SheetModel sheet) {
+  Widget _buildSheetContent(BuildContext context, Score score) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    // 使用 JianpuView 转换 Score 为简谱视图
+    final jianpuView = JianpuView(score, trackIndex: controller.selectedTrackIndex.value);
+    final measures = jianpuView.getMeasures();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 乐谱信息
-        _buildSheetInfo(context, sheet),
+        _buildSheetInfo(context, score),
         const SizedBox(height: 16),
 
         // 小节列表
-        ...sheet.measures.asMap().entries.map((entry) {
+        ...measures.asMap().entries.map((entry) {
           final index = entry.key;
           final measure = entry.value;
           return _buildMeasure(context, index, measure, isDark);
@@ -143,7 +152,7 @@ class JianpuEditorWidget extends StatelessWidget {
   }
 
   /// 乐谱信息
-  Widget _buildSheetInfo(BuildContext context, SheetModel sheet) {
+  Widget _buildSheetInfo(BuildContext context, Score score) {
     return GestureDetector(
       onTap: () => _showMetadataDialog(context),
       child: Container(
@@ -160,7 +169,7 @@ class JianpuEditorWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    sheet.title,
+                    score.title,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -169,11 +178,11 @@ class JianpuEditorWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      _buildInfoChip('1 = ${sheet.metadata.key}'),
+                      _buildInfoChip('1 = ${score.metadata.key.displayName}'),
                       const SizedBox(width: 8),
-                      _buildInfoChip(sheet.metadata.timeSignature),
+                      _buildInfoChip(score.metadata.timeSignature),
                       const SizedBox(width: 8),
-                      _buildInfoChip('♩= ${sheet.metadata.tempo}'),
+                      _buildInfoChip('♩= ${score.metadata.tempo}'),
                     ],
                   ),
                 ],
@@ -204,7 +213,7 @@ class JianpuEditorWidget extends StatelessWidget {
   Widget _buildMeasure(
     BuildContext context,
     int measureIndex,
-    SheetMeasure measure,
+    JianpuMeasure measure,
     bool isDark,
   ) {
     return Obx(() {
@@ -267,7 +276,7 @@ class JianpuEditorWidget extends StatelessWidget {
   }
 
   /// 音符列表
-  Widget _buildNotes(List<SheetNote> notes, int measureIndex, bool isDark) {
+  Widget _buildNotes(List<JianpuNote> notes, int measureIndex, bool isDark) {
     return Wrap(
       spacing: 4,
       runSpacing: 8,
@@ -281,7 +290,7 @@ class JianpuEditorWidget extends StatelessWidget {
 
   /// 单个音符
   Widget _buildNote(
-    SheetNote note,
+    JianpuNote note,
     int measureIndex,
     int noteIndex,
     bool isDark,
@@ -300,10 +309,13 @@ class JianpuEditorWidget extends StatelessWidget {
       return GestureDetector(
         onTap: () {
           if (controller.editorMode.value == EditorMode.erase) {
-            controller.selectNote(measureIndex, noteIndex);
+            // 需要找到对应的 beatIndex
+            final beatIndex = 0; // TODO: 从 note 找到对应的 beatIndex
+            controller.selectNote(measureIndex, beatIndex, noteIndex);
             controller.deleteSelectedNote();
           } else {
-            controller.selectNote(measureIndex, noteIndex);
+            final beatIndex = 0; // TODO: 从 note 找到对应的 beatIndex
+            controller.selectNote(measureIndex, beatIndex, noteIndex);
           }
         },
         child: Container(
@@ -324,8 +336,8 @@ class JianpuEditorWidget extends StatelessWidget {
               // 高音点占位区（固定高度保证对齐）- 休止符不显示
               SizedBox(
                 height: 12,
-                child: (!note.isRest && note.octave > 0)
-                    ? _buildOctaveDots(note.octave, isSelected)
+                child: (!note.isRest && note.octaveOffset > 0)
+                    ? _buildOctaveDots(note.octaveOffset, isSelected)
                     : null,
               ),
 
@@ -389,8 +401,8 @@ class JianpuEditorWidget extends StatelessWidget {
               // 低音点占位区（固定高度保证对齐）- 休止符不显示
               SizedBox(
                 height: 12,
-                child: (!note.isRest && note.octave < 0)
-                    ? _buildOctaveDots(-note.octave, isSelected)
+                child: (!note.isRest && note.octaveOffset < 0)
+                    ? _buildOctaveDots(-note.octaveOffset, isSelected)
                     : null,
               ),
 
@@ -779,7 +791,11 @@ class JianpuEditorWidget extends StatelessWidget {
     double fontSize = 22,
   }) {
     return GestureDetector(
-      onTap: () => controller.addNote(degree),
+      onTap: () {
+        // 将简谱 degree + octave 转换为 MIDI pitch
+        final pitch = _degreeToMidiPitch(degree, octave);
+        controller.addNote(pitch);
+      },
       child: Container(
         width: keyWidth,
         height: keyHeight,
@@ -863,6 +879,50 @@ class JianpuEditorWidget extends StatelessWidget {
     return names[degree];
   }
 
+  /// 将简谱 degree + octave 转换为 MIDI pitch
+  /// degree: 1-7 (简谱数字), 0 表示休止符
+  /// octave: 八度偏移 (-2 到 2)
+  int _degreeToMidiPitch(int degree, int octave) {
+    if (degree == 0) return 0; // 休止符
+
+    final score = controller.currentScore.value;
+    if (score == null) return 60; // 默认 C4
+
+    final key = score.metadata.key;
+    
+    // 简谱度数到半音的映射（C调）
+    const degreeToSemitone = [0, 0, 2, 4, 5, 7, 9, 11]; // 0, 1, 2, 3, 4, 5, 6, 7
+    final semitone = degreeToSemitone[degree.clamp(0, 7)];
+    
+    // 调号主音的 MIDI 值（基准为第4八度）
+    final keyTonicMidiMap = {
+      MusicKey.C: 60, // C4
+      MusicKey.G: 67, // G4
+      MusicKey.D: 62, // D4
+      MusicKey.A: 69, // A4
+      MusicKey.E: 64, // E4
+      MusicKey.B: 71, // B4
+      MusicKey.Fs: 66, // F#4
+      MusicKey.F: 65, // F4
+      MusicKey.Bb: 70, // Bb4
+      MusicKey.Eb: 63, // Eb4
+      MusicKey.Ab: 68, // Ab4
+      MusicKey.Db: 61, // Db4
+      MusicKey.Am: 69, // A4 (小调)
+      MusicKey.Em: 64, // E4 (小调)
+      MusicKey.Dm: 62, // D4 (小调)
+    };
+    
+    final tonicMidi = keyTonicMidiMap[key] ?? 60;
+    
+    // 计算 MIDI pitch
+    // 基础音高 = 主音 + 度数偏移 + 八度偏移
+    final pitch = tonicMidi + semitone + octave * 12;
+    
+    // 限制在有效范围内 (21-108)
+    return pitch.clamp(21, 108);
+  }
+
   /// 显示元数据编辑对话框
   void _showMetadataDialog(BuildContext context) {
     final sheet = controller.currentSheet.value;
@@ -870,12 +930,12 @@ class JianpuEditorWidget extends StatelessWidget {
 
     final titleController = TextEditingController(text: sheet.title);
     final composerController = TextEditingController(
-      text: sheet.metadata.composer ?? '',
+      text: sheet.composer ?? '',
     );
     final tempoController = TextEditingController(
       text: '${sheet.metadata.tempo}',
     );
-    var selectedKey = sheet.metadata.key;
+    var selectedKey = sheet.metadata.key.name;
     var selectedTimeSignature = sheet.metadata.timeSignature;
 
     showDialog(

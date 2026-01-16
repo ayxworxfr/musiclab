@@ -289,6 +289,9 @@ class _SheetImportPageState extends State<SheetImportPage>
       case ImportFormat.musicXml:
         _xmlController.text = _musicXmlExample;
         break;
+      case ImportFormat.midi:
+        // MIDI 格式不支持文本输入，需要通过文件选择
+        break;
     }
   }
 

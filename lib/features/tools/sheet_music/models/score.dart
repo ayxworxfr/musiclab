@@ -299,6 +299,19 @@ class Beat {
       if (tuplet != null) 'tuplet': tuplet!.toJson(),
     };
   }
+
+  /// Copy with
+  Beat copyWith({
+    int? index,
+    List<Note>? notes,
+    Tuplet? tuplet,
+  }) {
+    return Beat(
+      index: index ?? this.index,
+      notes: notes ?? this.notes,
+      tuplet: tuplet ?? this.tuplet,
+    );
+  }
 }
 
 /// ═══════════════════════════════════════════════════════════════
@@ -382,6 +395,29 @@ class Measure {
       if (tempoChange != null) 'tempoChange': tempoChange,
       if (expression != null) 'expression': expression!.name,
     };
+  }
+
+  /// Copy with
+  Measure copyWith({
+    int? number,
+    List<Beat>? beats,
+    RepeatSign? repeatSign,
+    int? ending,
+    Dynamics? dynamics,
+    PedalMark? pedal,
+    int? tempoChange,
+    Expression? expression,
+  }) {
+    return Measure(
+      number: number ?? this.number,
+      beats: beats ?? this.beats,
+      repeatSign: repeatSign ?? this.repeatSign,
+      ending: ending ?? this.ending,
+      dynamics: dynamics ?? this.dynamics,
+      pedal: pedal ?? this.pedal,
+      tempoChange: tempoChange ?? this.tempoChange,
+      expression: expression ?? this.expression,
+    );
   }
 }
 
@@ -603,6 +639,29 @@ class ScoreMetadata {
       'category': category.name,
       if (tags.isNotEmpty) 'tags': tags,
     };
+  }
+
+  /// Copy with
+  ScoreMetadata copyWith({
+    MusicKey? key,
+    int? beatsPerMeasure,
+    int? beatUnit,
+    int? tempo,
+    String? tempoText,
+    int? difficulty,
+    ScoreCategory? category,
+    List<String>? tags,
+  }) {
+    return ScoreMetadata(
+      key: key ?? this.key,
+      beatsPerMeasure: beatsPerMeasure ?? this.beatsPerMeasure,
+      beatUnit: beatUnit ?? this.beatUnit,
+      tempo: tempo ?? this.tempo,
+      tempoText: tempoText ?? this.tempoText,
+      difficulty: difficulty ?? this.difficulty,
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+    );
   }
 }
 
