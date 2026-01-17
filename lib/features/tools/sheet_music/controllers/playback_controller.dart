@@ -156,6 +156,12 @@ class PlaybackController extends GetxController {
     _scheduledNotes.sort((a, b) => a.startTime.compareTo(b.startTime));
   }
 
+  /// 重新构建播放时间表（公共方法，用于速度变化时）
+  void rebuildSchedule() {
+    _buildSchedule();
+    update();
+  }
+
   /// 设置播放模式
   void setPlayMode(PlayMode mode) {
     playMode.value = mode;
@@ -224,12 +230,21 @@ class PlaybackController extends GetxController {
     update();
   }
 
+  /// 获取总时长（考虑临时速度调整和倍速）
+  double getTotalDuration() {
+    if (_score == null) return 0.0;
+    // 使用 baseTempo 而不是 metadata.tempo，因为可能被临时修改
+    final totalBeats = _score!.measureCount * _score!.metadata.beatsPerMeasure;
+    final secondsPerBeat = 60.0 / baseTempo.value;
+    return (totalBeats * secondsPerBeat) / speedMultiplier.value;
+  }
+
   /// 跳转到指定时间
   void seekTo(double time) {
     final wasPlaying = isPlaying.value;
     pause();
 
-    final totalDuration = _score != null ? _score!.totalDuration / speedMultiplier.value : 0.0;
+    final totalDuration = getTotalDuration();
     currentTime.value = time.clamp(0, totalDuration);
     _scheduledNoteIndex = _findNoteIndexAtTime(currentTime.value * speedMultiplier.value);
 
@@ -252,7 +267,8 @@ class PlaybackController extends GetxController {
   void seekToMeasure(int measureIndex) {
     if (_score == null) return;
 
-    final measureDuration = (_score!.totalDuration / speedMultiplier.value) / _score!.measureCount;
+    final totalDuration = getTotalDuration();
+    final measureDuration = totalDuration / _score!.measureCount;
     seekTo(measureIndex * measureDuration);
   }
 
@@ -311,7 +327,8 @@ class PlaybackController extends GetxController {
     currentTime.value += delta;
 
     // 检查是否到达结尾或循环终点
-    final totalDuration = _score != null ? _score!.totalDuration / speedMultiplier.value : 0.0;
+    // 使用 baseTempo 计算总时长（考虑临时速度调整）
+    final totalDuration = getTotalDuration();
     if (loopEnabled.value) {
       final loopEndTime =
           (loopEndMeasure.value + 1) * totalDuration / _score!.measureCount;

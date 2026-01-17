@@ -694,6 +694,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           // 更新播放控制器的速度
                           if (_playbackController != null) {
                             _playbackController!.baseTempo.value = tempo;
+                            // 重新构建时间表以应用新速度
+                            _playbackController!.rebuildSchedule();
                           }
                           setState(() {});
                           Navigator.pop(context);
@@ -1322,7 +1324,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           final metronomeEnabled = controller.metronomeEnabled.value;
           final speedMultiplier = controller.speedMultiplier.value;
           final currentMeasure = controller.currentMeasureIndex.value;
-          final totalDuration = widget.score.totalDuration / speedMultiplier;
+          // 使用播放控制器的总时长计算方法（考虑临时速度调整）
+          final totalDuration = controller.getTotalDuration();
 
           return Column(
             mainAxisSize: MainAxisSize.min,
