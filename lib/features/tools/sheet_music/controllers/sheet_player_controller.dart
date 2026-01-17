@@ -164,6 +164,7 @@ class SheetPlayerController extends GetxController {
       playbackState.value = playbackState.value.copyWith(
         currentTime: 0,
         currentMeasureIndex: 0,
+        currentBeatIndex: 0,
         currentNoteIndex: 0,
       );
     }
@@ -197,6 +198,7 @@ class SheetPlayerController extends GetxController {
         playbackState.value = playbackState.value.copyWith(
           currentTime: 0,
           currentMeasureIndex: 0,
+          currentBeatIndex: 0,
           currentNoteIndex: 0,
         );
         _scheduleNextNote();
@@ -220,6 +222,7 @@ class SheetPlayerController extends GetxController {
 
     playbackState.value = playbackState.value.copyWith(
       currentMeasureIndex: playable.measureIndex,
+      currentBeatIndex: playable.beatIndex,  // 添加 beatIndex
       currentNoteIndex: playable.noteIndex,
       currentTime: playable.startTime,
     );
@@ -250,6 +253,7 @@ class SheetPlayerController extends GetxController {
         _currentPlayIndex = i;
         playbackState.value = playbackState.value.copyWith(
           currentMeasureIndex: measureIndex,
+          currentBeatIndex: p.beatIndex,
           currentNoteIndex: noteIndex,
           currentTime: p.startTime,
         );
@@ -399,6 +403,7 @@ class SheetPlaybackState {
   final bool isPlaying;
   final bool isLooping;
   final int currentMeasureIndex;
+  final int currentBeatIndex;  // 添加 beat 索引
   final int currentNoteIndex;
   final double currentTime;
   final double totalDuration;
@@ -410,6 +415,7 @@ class SheetPlaybackState {
     this.isPlaying = false,
     this.isLooping = false,
     this.currentMeasureIndex = 0,
+    this.currentBeatIndex = 0,  // 添加默认值
     this.currentNoteIndex = 0,
     this.currentTime = 0.0,
     this.totalDuration = 0.0,
@@ -422,6 +428,7 @@ class SheetPlaybackState {
     bool? isPlaying,
     bool? isLooping,
     int? currentMeasureIndex,
+    int? currentBeatIndex,  // 添加参数
     int? currentNoteIndex,
     double? currentTime,
     double? totalDuration,
@@ -433,6 +440,7 @@ class SheetPlaybackState {
       isPlaying: isPlaying ?? this.isPlaying,
       isLooping: isLooping ?? this.isLooping,
       currentMeasureIndex: currentMeasureIndex ?? this.currentMeasureIndex,
+      currentBeatIndex: currentBeatIndex ?? this.currentBeatIndex,  // 添加复制
       currentNoteIndex: currentNoteIndex ?? this.currentNoteIndex,
       currentTime: currentTime ?? this.currentTime,
       totalDuration: totalDuration ?? this.totalDuration,

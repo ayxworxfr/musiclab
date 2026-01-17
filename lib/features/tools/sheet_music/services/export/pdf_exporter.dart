@@ -427,7 +427,7 @@ class PdfExporter {
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
-              top: trebleY + lineSpacing * 1.5 - 55,
+              top: trebleY - lineSpacing * 1.5 - 55,
               child: pw.Text(
                 SMuFLGlyphs.gClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
@@ -437,7 +437,7 @@ class PdfExporter {
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
-              top: bassY + lineSpacing * 3 - 15,
+              top: bassY - lineSpacing * 5 - 18, // 低音谱号中心在第二三线之间
               child: pw.Text(
                 SMuFLGlyphs.fClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),

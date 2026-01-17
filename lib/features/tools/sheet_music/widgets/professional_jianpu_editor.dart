@@ -1189,30 +1189,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
   /// 判断指定的beat是否是当前播放的beat
   bool _isCurrentBeat(SheetPlaybackState playbackState, int beatIndex) {
-    final score = controller.currentScore.value;
-    if (score == null) return false;
-
-    final trackIndex = controller.selectedTrackIndex.value;
-    if (trackIndex >= score.tracks.length) return false;
-
-    final track = score.tracks[trackIndex];
-    final measureIndex = playbackState.currentMeasureIndex;
-    if (measureIndex >= track.measures.length) return false;
-
-    final measure = track.measures[measureIndex];
-
-    // 根据currentNoteIndex找到对应的beat
-    var noteCount = 0;
-    for (final beat in measure.beats) {
-      final beatNoteCount = beat.notes.length;
-      if (playbackState.currentNoteIndex >= noteCount &&
-          playbackState.currentNoteIndex < noteCount + beatNoteCount) {
-        return beat.index == beatIndex;
-      }
-      noteCount += beatNoteCount;
-    }
-
-    return false;
+    // 直接比较 beatIndex
+    return playbackState.currentBeatIndex == beatIndex;
   }
 }
 
