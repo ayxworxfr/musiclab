@@ -241,7 +241,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                     children: [
                       Row(
                         children: [
-                          Flexible(
+                          Expanded(
                             child: Text(
                               score.title,
                               style: TextStyle(
@@ -253,7 +253,6 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              softWrap: false,
                             ),
                           ),
                           // 大谱表标识
@@ -261,17 +260,17 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                             Padding(
                               padding: const EdgeInsets.only(left: 8),
                               child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                '🎹 钢琴',
-                                style: TextStyle(fontSize: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  '🎹 钢琴',
+                                  style: TextStyle(fontSize: 10),
                                 ),
                               ),
                             ),
@@ -347,21 +346,48 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 导出按钮
-                    IconButton(
-                      icon: const Icon(Icons.download, size: 20),
-                      color: Colors.grey,
-                      tooltip: '导出',
-                      onPressed: () => _exportScore(context, score),
-                    ),
-                    // 删除按钮（仅用户乐谱）
-                    if (!score.isBuiltIn)
-                      IconButton(
-                        icon: const Icon(Icons.delete, size: 20),
+                    // 更多按钮（导出和删除功能）
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: 20,
                         color: Colors.grey,
-                        tooltip: '删除',
-                        onPressed: () => _deleteScore(context, score),
                       ),
+                      tooltip: '更多操作',
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'export':
+                            _exportScore(context, score);
+                            break;
+                          case 'delete':
+                            _deleteScore(context, score);
+                            break;
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'export',
+                          child: Row(
+                            children: [
+                              Icon(Icons.download, size: 18),
+                              SizedBox(width: 8),
+                              Text('导出'),
+                            ],
+                          ),
+                        ),
+                        if (!score.isBuiltIn)
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete, size: 18, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text('删除', style: TextStyle(color: Colors.red)),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                     // 收藏按钮
                     IconButton(
                       icon: Icon(
@@ -372,6 +398,11 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                         color: score.isFavorite ? AppColors.error : Colors.grey,
                       ),
                       tooltip: '收藏',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 40,
+                        minHeight: 40,
+                      ),
                       onPressed: () => controller.toggleFavorite(score),
                     ),
                   ],

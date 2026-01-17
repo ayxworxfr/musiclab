@@ -133,11 +133,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
           // 中间：编辑模式切换（可滚动）
           Expanded(
-            child: Center(
-              child: Obx(() {
-                if (isMobile) {
-                  // 移动端：使用可滚动的横向布局
-                  return SingleChildScrollView(
+            child: isMobile
+                ? SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -164,39 +161,36 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                         ),
                       ],
                     ),
-                  );
-                } else {
-                  // 桌面端：使用 SegmentedButton
-                  return SegmentedButton<EditorMode>(
-                    segments: [
-                      ButtonSegment(
-                        value: EditorMode.select,
-                        label: const Text('选择'),
-                        icon: const Icon(Icons.touch_app, size: 18),
-                      ),
-                      ButtonSegment(
-                        value: EditorMode.input,
-                        label: const Text('输入'),
-                        icon: const Icon(Icons.edit, size: 18),
-                      ),
-                      ButtonSegment(
-                        value: EditorMode.erase,
-                        label: const Text('删除'),
-                        icon: const Icon(Icons.delete_outline, size: 18),
-                      ),
-                    ],
-                    selected: {controller.editorMode.value},
-                    onSelectionChanged: (Set<EditorMode> newSelection) {
-                      controller.editorMode.value = newSelection.first;
-                    },
-                    style: SegmentedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      textStyle: const TextStyle(fontSize: 13),
-                    ),
-                  );
-                }
-              }),
-            ),
+                  )
+                : Center(
+                    child: Obx(() => SegmentedButton<EditorMode>(
+                          segments: [
+                            ButtonSegment(
+                              value: EditorMode.select,
+                              label: const Text('选择'),
+                              icon: const Icon(Icons.touch_app, size: 18),
+                            ),
+                            ButtonSegment(
+                              value: EditorMode.input,
+                              label: const Text('输入'),
+                              icon: const Icon(Icons.edit, size: 18),
+                            ),
+                            ButtonSegment(
+                              value: EditorMode.erase,
+                              label: const Text('删除'),
+                              icon: const Icon(Icons.delete_outline, size: 18),
+                            ),
+                          ],
+                          selected: {controller.editorMode.value},
+                          onSelectionChanged: (Set<EditorMode> newSelection) {
+                            controller.editorMode.value = newSelection.first;
+                          },
+                          style: SegmentedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            textStyle: const TextStyle(fontSize: 13),
+                          ),
+                        )),
+                  ),
           ),
 
           // 右侧：乐谱信息（移动端隐藏或使用更紧凑的布局）
@@ -862,10 +856,12 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   /// 时值选择器
   Widget _buildDurationSelector(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Obx(() => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: SelectedDuration.values.map((duration) {
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Obx(() => SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: SelectedDuration.values.map((duration) {
               final isSelected =
                   controller.selectedDuration.value == duration;
               return GestureDetector(
@@ -913,6 +909,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 ),
               );
             }).toList(),
+            ),
           )),
     );
   }
@@ -920,10 +917,12 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   /// 修饰符行
   Widget _buildModifiersRow(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
           // 附点
           Obx(() => _buildModifierButton(
                 icon: Icons.circle,
@@ -1011,7 +1010,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                   ),
                 ],
               )),
-        ],
+          ],
+        ),
       ),
     );
   }

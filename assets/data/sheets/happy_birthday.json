@@ -26,12 +26,12 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 67,
                   "duration": "eighth",
                   "lyric": "祝"
                 },
                 {
-                  "pitch": 60,
+                  "pitch": 67,
                   "duration": "eighth",
                   "lyric": "你"
                 }
@@ -41,7 +41,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 69,
                   "duration": "quarter",
                   "lyric": "生"
                 }
@@ -51,7 +51,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "日"
                 }
@@ -66,7 +66,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 72,
                   "duration": "quarter",
                   "lyric": "快"
                 }
@@ -76,7 +76,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 71,
                   "duration": "half",
                   "lyric": "乐"
                 }
@@ -91,12 +91,12 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 67,
                   "duration": "eighth",
                   "lyric": "祝"
                 },
                 {
-                  "pitch": 60,
+                  "pitch": 67,
                   "duration": "eighth",
                   "lyric": "你"
                 }
@@ -106,7 +106,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 69,
                   "duration": "quarter",
                   "lyric": "生"
                 }
@@ -116,7 +116,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "日"
                 }
@@ -131,7 +131,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 67,
+                  "pitch": 74,
                   "duration": "quarter",
                   "lyric": "快"
                 }
@@ -141,7 +141,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 72,
                   "duration": "half",
                   "lyric": "乐"
                 }
@@ -156,12 +156,12 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 67,
                   "duration": "eighth",
                   "lyric": "祝"
                 },
                 {
-                  "pitch": 60,
+                  "pitch": 67,
                   "duration": "eighth",
                   "lyric": "你"
                 }
@@ -171,7 +171,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 72,
+                  "pitch": 79,
                   "duration": "quarter",
                   "lyric": "生"
                 }
@@ -181,7 +181,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 69,
+                  "pitch": 76,
                   "duration": "quarter",
                   "lyric": "日"
                 }
@@ -196,7 +196,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 72,
                   "duration": "quarter",
                   "lyric": "快"
                 }
@@ -206,7 +206,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 71,
                   "duration": "quarter",
                   "lyric": "乐"
                 }
@@ -216,9 +216,9 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 69,
                   "duration": "quarter",
-                  "lyric": "祝"
+                  "lyric": ""
                 }
               ]
             }
@@ -231,8 +231,13 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 70,
-                  "duration": "quarter",
+                  "pitch": 77,
+                  "duration": "eighth",
+                  "lyric": "祝"
+                },
+                {
+                  "pitch": 77,
+                  "duration": "eighth",
                   "lyric": "你"
                 }
               ]
@@ -241,7 +246,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 70,
+                  "pitch": 76,
                   "duration": "quarter",
                   "lyric": "生"
                 }
@@ -251,7 +256,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 69,
+                  "pitch": 72,
                   "duration": "quarter",
                   "lyric": "日"
                 }
@@ -266,7 +271,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 74,
                   "duration": "quarter",
                   "lyric": "快"
                 }
@@ -276,99 +281,9 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 67,
-                  "duration": "quarter",
-                  "lyric": "乐"
-                }
-              ]
-            },
-            {
-              "index": 2,
-              "notes": [
-                {
-                  "pitch": 65,
-                  "duration": "quarter",
-                  "lyric": "祝"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "number": 9,
-          "beats": [
-            {
-              "index": 0,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "你"
-                }
-              ]
-            },
-            {
-              "index": 1,
-              "notes": [
-                {
-                  "pitch": 60,
+                  "pitch": 72,
                   "duration": "half",
-                  "lyric": "生"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "number": 10,
-          "beats": [
-            {
-              "index": 0,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "quarter",
-                  "lyric": "日"
-                }
-              ]
-            },
-            {
-              "index": 1,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "half",
-                  "lyric": "快"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "number": 11,
-          "beats": [
-            {
-              "index": 0,
-              "notes": [
-                {
-                  "pitch": 65,
-                  "duration": "whole",
                   "lyric": "乐"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "number": 12,
-          "beats": [
-            {
-              "index": 0,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "whole",
-                  "lyric": ""
                 }
               ]
             }
@@ -422,7 +337,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -431,7 +346,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -440,7 +355,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -486,7 +401,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -495,7 +410,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -504,7 +419,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -550,7 +465,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -559,7 +474,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -568,7 +483,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
@@ -582,7 +497,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -591,7 +506,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -600,7 +515,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -614,127 +529,17 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 55,
                   "duration": "quarter"
                 }
               ]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            },
-            {
-              "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "number": 9,
-          "beats": [
-            {
-              "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            },
-            {
-              "index": 1,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            },
-            {
-              "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "number": 10,
-          "beats": [
-            {
-              "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            },
-            {
-              "index": 1,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            },
-            {
-              "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "number": 11,
-          "beats": [
-            {
-              "index": 0,
               "notes": [
                 {
                   "pitch": 48,
                   "duration": "half"
-                }
-              ]
-            },
-            {
-              "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "quarter"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "number": 12,
-          "beats": [
-            {
-              "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "whole"
                 }
               ]
             }
