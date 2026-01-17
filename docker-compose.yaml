@@ -11,6 +11,9 @@ services:
       # Flutter 中国镜像
       - PUB_HOSTED_URL=https://pub.flutter-io.cn
       - FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+      # 禁用文件监视和分析
+      - NO_WATCH=true
+      - FLUTTER_DISABLE_ANALYTICS=true
       # Gradle 配置
       - GRADLE_OPTS=-Dorg.gradle.daemon=false
     # 添加 --android-skip-build-dependency-validation 和 --no-track-widget-creation
