@@ -96,6 +96,58 @@ enum MusicKey {
   bool get hasFlats => sharpsOrFlats < 0;
   int get signatureCount => sharpsOrFlats.abs();
 
+  /// 从简谱度数转换为 MIDI 音高
+  ///
+  /// [degree] 简谱度数 (1-7)
+  /// [octave] 八度偏移 (-2 到 +2，0 表示中音区)
+  /// [accidental] 临时变音记号
+  ///
+  /// 返回 MIDI 音高 (21-108)
+  int pitchFromDegree(int degree, int octave, [Accidental accidental = Accidental.none]) {
+    if (degree < 1 || degree > 7) {
+      throw ArgumentError('Degree must be between 1 and 7');
+    }
+
+    // 大调音阶的半音模式：全全半全全全半
+    // 1->2: 2半音, 2->3: 2半音, 3->4: 1半音, 4->5: 2半音, 5->6: 2半音, 6->7: 2半音, 7->1: 1半音
+    const majorScaleSemitones = [0, 2, 4, 5, 7, 9, 11]; // 相对于主音的半音数
+
+    // 计算基准音高 (C4 = MIDI 60)
+    final basePitch = 60; // C4
+
+    // 计算相对于 C 的半音数
+    final semitoneFromC = (tonicSemitone + majorScaleSemitones[degree - 1]) % 12;
+
+    // 计算实际八度
+    // 如果度数 + 主音超过一个八度，需要向上调整
+    final octaveAdjust = (tonicSemitone + majorScaleSemitones[degree - 1]) ~/ 12;
+
+    // 计算最终音高
+    var pitch = basePitch + semitoneFromC + (octave + octaveAdjust) * 12;
+
+    // 应用临时变音记号
+    switch (accidental) {
+      case Accidental.sharp:
+        pitch += 1;
+        break;
+      case Accidental.flat:
+        pitch -= 1;
+        break;
+      case Accidental.doubleSharp:
+        pitch += 2;
+        break;
+      case Accidental.doubleFlat:
+        pitch -= 2;
+        break;
+      case Accidental.natural:
+      case Accidental.none:
+        break;
+    }
+
+    // 限制在有效范围内 (MIDI 21-108)
+    return pitch.clamp(21, 108);
+  }
+
   /// 从字符串解析
   static MusicKey fromString(String s) {
     final normalized = s.replaceAll('大调', '').replaceAll('小调', '').trim();
