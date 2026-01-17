@@ -1,0 +1,125 @@
+{
+  "id": "practice_chord_progression_beginner",
+  "title": "基础和弦进行练习（入门）",
+  "composer": "练习曲",
+  "metadata": {
+    "key": "C",
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
+    "tempo": 100,
+    "difficulty": 2,
+    "category": "practice",
+    "description": "C大调I-IV-V-I和弦进行，最基础的和声练习"
+  },
+  "tracks": [
+    {
+      "id": "right_hand",
+      "name": "右手",
+      "clef": "treble",
+      "hand": "right",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 60, "duration": "whole"},
+                {"pitch": 64, "duration": "whole"},
+                {"pitch": 67, "duration": "whole"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 65, "duration": "whole"},
+                {"pitch": 69, "duration": "whole"},
+                {"pitch": 72, "duration": "whole"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 67, "duration": "whole"},
+                {"pitch": 71, "duration": "whole"},
+                {"pitch": 74, "duration": "whole"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 60, "duration": "whole"},
+                {"pitch": 64, "duration": "whole"},
+                {"pitch": 67, "duration": "whole"}
+              ]
+            }
+          ]
+        }
+      ],
+      "instrument": "piano"
+    },
+    {
+      "id": "left_hand",
+      "name": "左手",
+      "clef": "bass",
+      "hand": "left",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [{"pitch": 48, "duration": "whole"}]
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [{"pitch": 53, "duration": "whole"}]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [{"pitch": 55, "duration": "whole"}]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [{"pitch": 48, "duration": "whole"}]
+            }
+          ]
+        }
+      ],
+      "instrument": "piano"
+    }
+  ],
+  "isFavorite": false,
+  "isBuiltIn": true
+}
+

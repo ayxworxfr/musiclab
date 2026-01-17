@@ -1,0 +1,112 @@
+{
+  "id": "practice_scale_f_major_beginner",
+  "title": "F大调音阶练习（入门）",
+  "composer": "练习曲",
+  "metadata": {
+    "key": "F",
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
+    "tempo": 100,
+    "difficulty": 1,
+    "category": "practice",
+    "description": "F大调音阶上下行练习，包含一个降号（Bb）"
+  },
+  "tracks": [
+    {
+      "id": "right_hand",
+      "name": "右手",
+      "clef": "treble",
+      "hand": "right",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [{"pitch": 65, "duration": "quarter"}]
+            },
+            {
+              "index": 1,
+              "notes": [{"pitch": 67, "duration": "quarter"}]
+            },
+            {
+              "index": 2,
+              "notes": [{"pitch": 69, "duration": "quarter"}]
+            },
+            {
+              "index": 3,
+              "notes": [{"pitch": 70, "duration": "quarter"}]
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [{"pitch": 72, "duration": "quarter"}]
+            },
+            {
+              "index": 1,
+              "notes": [{"pitch": 74, "duration": "quarter"}]
+            },
+            {
+              "index": 2,
+              "notes": [{"pitch": 76, "duration": "quarter"}]
+            },
+            {
+              "index": 3,
+              "notes": [{"pitch": 77, "duration": "quarter"}]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [{"pitch": 77, "duration": "quarter"}]
+            },
+            {
+              "index": 1,
+              "notes": [{"pitch": 76, "duration": "quarter"}]
+            },
+            {
+              "index": 2,
+              "notes": [{"pitch": 74, "duration": "quarter"}]
+            },
+            {
+              "index": 3,
+              "notes": [{"pitch": 72, "duration": "quarter"}]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [{"pitch": 70, "duration": "quarter"}]
+            },
+            {
+              "index": 1,
+              "notes": [{"pitch": 69, "duration": "quarter"}]
+            },
+            {
+              "index": 2,
+              "notes": [{"pitch": 67, "duration": "quarter"}]
+            },
+            {
+              "index": 3,
+              "notes": [{"pitch": 65, "duration": "quarter"}]
+            }
+          ]
+        }
+      ],
+      "instrument": "piano"
+    }
+  ],
+  "isFavorite": false,
+  "isBuiltIn": true
+}
+

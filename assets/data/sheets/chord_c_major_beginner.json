@@ -1,0 +1,86 @@
+{
+  "id": "practice_chord_c_major_beginner",
+  "title": "C大调主和弦练习（入门）",
+  "composer": "练习曲",
+  "metadata": {
+    "key": "C",
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
+    "tempo": 100,
+    "difficulty": 1,
+    "category": "practice",
+    "description": "C大调主三和弦（C-E-G）分解练习，训练和弦手型"
+  },
+  "tracks": [
+    {
+      "id": "right_hand",
+      "name": "右手",
+      "clef": "treble",
+      "hand": "right",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 60, "duration": "quarter"},
+                {"pitch": 64, "duration": "quarter"},
+                {"pitch": 67, "duration": "quarter"}
+              ]
+            },
+            {
+              "index": 1,
+              "notes": [
+                {"pitch": 60, "duration": "quarter"},
+                {"pitch": 64, "duration": "quarter"},
+                {"pitch": 67, "duration": "quarter"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 60, "duration": "quarter"},
+                {"pitch": 64, "duration": "quarter"},
+                {"pitch": 67, "duration": "quarter"}
+              ]
+            },
+            {
+              "index": 3,
+              "notes": [
+                {"pitch": 60, "duration": "quarter"},
+                {"pitch": 64, "duration": "quarter"},
+                {"pitch": 67, "duration": "quarter"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 60, "duration": "half"},
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 60, "duration": "half"},
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"}
+              ]
+            }
+          ]
+        }
+      ],
+      "instrument": "piano"
+    }
+  ],
+  "isFavorite": false,
+  "isBuiltIn": true
+}
+

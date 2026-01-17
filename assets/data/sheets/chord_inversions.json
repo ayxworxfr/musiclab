@@ -1,0 +1,112 @@
+{
+  "id": "practice_chord_inversions",
+  "title": "三和弦转位练习（进阶）",
+  "composer": "练习曲",
+  "metadata": {
+    "key": "C",
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
+    "tempo": 100,
+    "difficulty": 3,
+    "category": "practice",
+    "description": "C大调主三和弦的原位、第一转位、第二转位练习"
+  },
+  "tracks": [
+    {
+      "id": "right_hand",
+      "name": "右手",
+      "clef": "treble",
+      "hand": "right",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 60, "duration": "half"},
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 60, "duration": "half"},
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 72, "duration": "half"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 72, "duration": "half"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 72, "duration": "half"},
+                {"pitch": 76, "duration": "half"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 72, "duration": "half"},
+                {"pitch": 76, "duration": "half"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 60, "duration": "half"},
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 60, "duration": "half"},
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"}
+              ]
+            }
+          ]
+        }
+      ],
+      "instrument": "piano"
+    }
+  ],
+  "isFavorite": false,
+  "isBuiltIn": true
+}
+

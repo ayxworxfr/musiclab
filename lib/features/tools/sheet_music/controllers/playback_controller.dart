@@ -320,6 +320,9 @@ class PlaybackController extends GetxController {
             loopStartMeasure.value * totalDuration / _score!.measureCount;
         currentTime.value = loopStartTime;
         _scheduledNoteIndex = _findNoteIndexAtTime(loopStartTime * speedMultiplier.value);
+        // 清除所有高亮，避免最后一个音符一直高亮
+        highlightedNoteIndices.clear();
+        highlightedPianoKeys.clear();
       }
     } else if (currentTime.value >= totalDuration) {
       stop();

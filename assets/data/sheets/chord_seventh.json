@@ -1,0 +1,110 @@
+{
+  "id": "practice_chord_seventh",
+  "title": "七和弦练习（进阶）",
+  "composer": "练习曲",
+  "metadata": {
+    "key": "C",
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
+    "tempo": 100,
+    "difficulty": 4,
+    "category": "practice",
+    "description": "C大调属七和弦（C7）练习，包含四个音的和弦手型"
+  },
+  "tracks": [
+    {
+      "id": "right_hand",
+      "name": "右手",
+      "clef": "treble",
+      "hand": "right",
+      "measures": [
+        {
+          "number": 1,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 71, "duration": "half"},
+                {"pitch": 74, "duration": "half"},
+                {"pitch": 77, "duration": "half"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 71, "duration": "half"},
+                {"pitch": 74, "duration": "half"},
+                {"pitch": 77, "duration": "half"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 60, "duration": "half"},
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 71, "duration": "half"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 60, "duration": "half"},
+                {"pitch": 64, "duration": "half"},
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 71, "duration": "half"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 71, "duration": "half"},
+                {"pitch": 74, "duration": "half"},
+                {"pitch": 77, "duration": "half"}
+              ]
+            },
+            {
+              "index": 2,
+              "notes": [
+                {"pitch": 67, "duration": "half"},
+                {"pitch": 71, "duration": "half"},
+                {"pitch": 74, "duration": "half"},
+                {"pitch": 77, "duration": "half"}
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "beats": [
+            {
+              "index": 0,
+              "notes": [
+                {"pitch": 60, "duration": "whole"},
+                {"pitch": 64, "duration": "whole"},
+                {"pitch": 67, "duration": "whole"}
+              ]
+            }
+          ]
+        }
+      ],
+      "instrument": "piano"
+    }
+  ],
+  "isFavorite": false,
+  "isBuiltIn": true
+}
+

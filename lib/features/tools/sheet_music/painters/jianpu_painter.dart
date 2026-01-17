@@ -15,6 +15,7 @@ class JianpuPainter extends CustomPainter {
   final double currentTime;
   final Set<int> highlightedNoteIndices;
   final bool showLyrics;
+  final MusicKey? overrideKey; // 临时调号（不修改原始内容）
 
   JianpuPainter({
     required this.score,
@@ -23,6 +24,7 @@ class JianpuPainter extends CustomPainter {
     this.currentTime = 0,
     this.highlightedNoteIndices = const {},
     this.showLyrics = true,
+    this.overrideKey,
   });
 
   @override
@@ -415,9 +417,10 @@ class JianpuPainter extends CustomPainter {
       return;
     }
 
-    // 根据调号计算简谱度数
-    final degree = note.getJianpuDegree(score.metadata.key);
-    final octaveOffset = note.getOctaveOffset(score.metadata.key);
+    // 根据调号计算简谱度数（使用临时调号或原始调号）
+    final key = overrideKey ?? score.metadata.key;
+    final degree = note.getJianpuDegree(key);
+    final octaveOffset = note.getOctaveOffset(key);
 
     // 颜色：根据手来区分
     Color color;

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../core/utils/font_loader_service.dart';
 import '../models/score.dart';
+import '../models/enums.dart';
 import '../layout/layout_engine.dart';
 import '../layout/layout_result.dart';
 import '../painters/render_config.dart';
@@ -77,6 +78,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
   // 字体加载状态
   bool _fontsReady = false;
+
+  // 临时播放设置（不修改原始内容）
+  MusicKey? _overrideKey; // 临时调号
+  int? _overrideBeatsPerMeasure; // 临时拍数
+  int? _overrideTempo; // 临时速度
 
   @override
   void initState() {
@@ -233,17 +239,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildInfoChip(
-                  widget.score.metadata.key.displayName,
-                  Icons.music_note,
-                ),
+                _buildKeyChip(),
                 const SizedBox(width: 12),
-                _buildInfoChip(
-                  widget.score.metadata.timeSignature,
-                  Icons.access_time,
-                ),
+                _buildTimeSignatureChip(),
                 const SizedBox(width: 12),
-                _buildInfoChip('♩=${widget.score.metadata.tempo}', Icons.speed),
+                _buildTempoChip(),
                 const SizedBox(width: 12),
                 // 五线谱/简谱切换按钮
                 _buildModeToggle(),
@@ -322,6 +322,401 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     );
   }
 
+  /// 调号按钮（可点击修改）
+  Widget _buildKeyChip() {
+    final currentKey = _overrideKey ?? widget.score.metadata.key;
+    final isModified = _overrideKey != null;
+    
+    return GestureDetector(
+      onTap: () => _showKeyPicker(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isModified
+              ? widget.config.theme.rightHandColor.withValues(alpha: 0.2)
+              : widget.config.theme.rightHandColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: isModified
+              ? Border.all(
+                  color: widget.config.theme.rightHandColor,
+                  width: 1.5,
+                )
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.music_note,
+              size: 14,
+              color: widget.config.theme.rightHandColor,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              currentKey.displayName,
+              style: TextStyle(
+                fontSize: 12,
+                color: widget.config.theme.rightHandColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (isModified) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.edit,
+                size: 10,
+                color: widget.config.theme.rightHandColor,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 拍数按钮（可点击修改）
+  Widget _buildTimeSignatureChip() {
+    final currentBeats = _overrideBeatsPerMeasure ?? widget.score.metadata.beatsPerMeasure;
+    final beatUnit = widget.score.metadata.beatUnit;
+    final isModified = _overrideBeatsPerMeasure != null;
+    
+    return GestureDetector(
+      onTap: () => _showTimeSignaturePicker(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isModified
+              ? widget.config.theme.rightHandColor.withValues(alpha: 0.2)
+              : widget.config.theme.rightHandColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: isModified
+              ? Border.all(
+                  color: widget.config.theme.rightHandColor,
+                  width: 1.5,
+                )
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.access_time,
+              size: 14,
+              color: widget.config.theme.rightHandColor,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '$currentBeats/$beatUnit',
+              style: TextStyle(
+                fontSize: 12,
+                color: widget.config.theme.rightHandColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (isModified) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.edit,
+                size: 10,
+                color: widget.config.theme.rightHandColor,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 速度按钮（可点击修改）
+  Widget _buildTempoChip() {
+    final currentTempo = _overrideTempo ?? widget.score.metadata.tempo;
+    final isModified = _overrideTempo != null;
+    
+    return GestureDetector(
+      onTap: () => _showTempoPicker(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isModified
+              ? widget.config.theme.rightHandColor.withValues(alpha: 0.2)
+              : widget.config.theme.rightHandColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: isModified
+              ? Border.all(
+                  color: widget.config.theme.rightHandColor,
+                  width: 1.5,
+                )
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.speed,
+              size: 14,
+              color: widget.config.theme.rightHandColor,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '♩=$currentTempo',
+              style: TextStyle(
+                fontSize: 12,
+                color: widget.config.theme.rightHandColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (isModified) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.edit,
+                size: 10,
+                color: widget.config.theme.rightHandColor,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 显示调号选择器
+  void _showKeyPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final currentKey = _overrideKey ?? widget.score.metadata.key;
+          
+          return Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '选择调号',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    if (_overrideKey != null)
+                      TextButton(
+                        onPressed: () {
+                          setModalState(() {
+                            _overrideKey = null;
+                          });
+                          setState(() {});
+                          Navigator.pop(context);
+                        },
+                        child: const Text('重置'),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: MusicKey.values.map((key) {
+                    final isSelected = key == currentKey;
+                    return ChoiceChip(
+                      label: Text(key.displayName),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          setModalState(() {
+                            _overrideKey = key;
+                          });
+                          setState(() {});
+                          Navigator.pop(context);
+                        }
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 显示拍数选择器
+  void _showTimeSignaturePicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final currentBeats = _overrideBeatsPerMeasure ?? widget.score.metadata.beatsPerMeasure;
+          final beatUnit = widget.score.metadata.beatUnit;
+          
+          return Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '选择拍数',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    if (_overrideBeatsPerMeasure != null)
+                      TextButton(
+                        onPressed: () {
+                          setModalState(() {
+                            _overrideBeatsPerMeasure = null;
+                          });
+                          setState(() {});
+                          Navigator.pop(context);
+                        },
+                        child: const Text('重置'),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [2, 3, 4, 6, 8, 9, 12].map((beats) {
+                    final isSelected = beats == currentBeats;
+                    return ChoiceChip(
+                      label: Text('$beats/$beatUnit'),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          setModalState(() {
+                            _overrideBeatsPerMeasure = beats;
+                          });
+                          // 更新播放控制器的节拍器设置
+                          if (_playbackController != null) {
+                            // 这里需要更新播放控制器的节拍器设置
+                            // 但不会修改原始乐谱内容
+                          }
+                          setState(() {});
+                          Navigator.pop(context);
+                        }
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 显示速度选择器
+  void _showTempoPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final currentTempo = _overrideTempo ?? widget.score.metadata.tempo;
+          final tempoController = TextEditingController(text: currentTempo.toString());
+          
+          return Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '设置速度 (BPM)',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    if (_overrideTempo != null)
+                      TextButton(
+                        onPressed: () {
+                          setModalState(() {
+                            _overrideTempo = null;
+                          });
+                          setState(() {});
+                          Navigator.pop(context);
+                        },
+                        child: const Text('重置'),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: tempoController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: '速度 (BPM)',
+                    hintText: '请输入 40-200 之间的数字',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [60, 80, 100, 120, 140, 160, 180].map((tempo) {
+                    final isSelected = tempo == currentTempo;
+                    return ChoiceChip(
+                      label: Text('$tempo'),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          tempoController.text = tempo.toString();
+                        }
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('取消'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        final tempo = int.tryParse(tempoController.text);
+                        if (tempo != null && tempo >= 40 && tempo <= 200) {
+                          setModalState(() {
+                            _overrideTempo = tempo;
+                          });
+                          // 更新播放控制器的速度
+                          if (_playbackController != null) {
+                            _playbackController!.baseTempo.value = tempo;
+                          }
+                          setState(() {});
+                          Navigator.pop(context);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('请输入 40-200 之间的数字'),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('确定'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildScoreArea(BoxConstraints constraints) {
     if (_layout == null || _playbackController == null) {
       return const SizedBox(height: 200);
@@ -378,6 +773,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 currentTime: currentTime * controller.speedMultiplier.value,
                 highlightedNoteIndices: highlightedIndices,
                 showLyrics: widget.showLyrics,
+                overrideKey: _overrideKey, // 使用临时调号
               ),
             );
           }
