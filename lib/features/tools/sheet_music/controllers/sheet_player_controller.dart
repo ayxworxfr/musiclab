@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
+import '../models/enums.dart';
 import '../models/score.dart';
 
 /// 乐谱播放控制器
@@ -61,7 +62,6 @@ class SheetPlayerController extends GetxController {
   double _calculateTotalDuration(Score score) {
     if (score.tracks.isEmpty) return 0.0;
 
-    final secondsPerBeat = 60.0 / score.metadata.tempo;
     var totalBeats = 0.0;
 
     for (final track in score.tracks) {
@@ -76,6 +76,7 @@ class SheetPlayerController extends GetxController {
       }
     }
 
+    final secondsPerBeat = 60.0 / score.metadata.tempo;
     return totalBeats * secondsPerBeat;
   }
 
@@ -85,16 +86,22 @@ class SheetPlayerController extends GetxController {
     final score = currentScore.value;
     if (score == null || score.tracks.isEmpty) return;
 
-    double currentTime = 0;
     final secondsPerBeat = 60.0 / score.metadata.tempo;
 
+    // 为每个轨道单独计算音符时间，然后合并
     for (final track in score.tracks) {
-      currentTime = 0;
+      double currentTime = 0;  // 每个轨道独立计时
+
       for (var mIdx = 0; mIdx < track.measures.length; mIdx++) {
         final measure = track.measures[mIdx];
+
+        // 支持小节内速度变化
+        final currentTempo = measure.tempoChange ?? score.metadata.tempo;
+        final currentSecondsPerBeat = 60.0 / currentTempo;
+
         for (var bIdx = 0; bIdx < measure.beats.length; bIdx++) {
           final beat = measure.beats[bIdx];
-          final beatDuration = beat.totalBeats * secondsPerBeat;
+          final beatDuration = beat.totalBeats * currentSecondsPerBeat;
 
           for (var nIdx = 0; nIdx < beat.notes.length; nIdx++) {
             final note = beat.notes[nIdx];
@@ -103,23 +110,25 @@ class SheetPlayerController extends GetxController {
               _playableNotes.add(
                 _PlayableNote(
                   measureIndex: mIdx,
-                  beatIndex: beat.index,  // 使用 beat.index 而不是循环索引
+                  beatIndex: beat.index,
                   noteIndex: nIdx,
                   note: note,
                   startTime: currentTime,
                   duration: beatDuration,
+                  hand: track.hand,  // 添加手标记
                 ),
               );
             } else {
-              final noteDuration = note.actualBeats * secondsPerBeat;
+              final noteDuration = note.actualBeats * currentSecondsPerBeat;
               _playableNotes.add(
                 _PlayableNote(
                   measureIndex: mIdx,
-                  beatIndex: beat.index,  // 使用 beat.index 而不是循环索引
+                  beatIndex: beat.index,
                   noteIndex: nIdx,
                   note: note,
                   startTime: currentTime,
                   duration: noteDuration,
+                  hand: track.hand,  // 添加手标记
                 ),
               );
               if (!beat.isChord || note.duration.beamCount > 0) {
@@ -137,7 +146,17 @@ class SheetPlayerController extends GetxController {
       }
     }
 
-    _playableNotes.sort((a, b) => a.startTime.compareTo(b.startTime));
+    // 按时间排序，时间相同的按轨道排序（确保同时发声的音符相邻）
+    _playableNotes.sort((a, b) {
+      final timeDiff = a.startTime.compareTo(b.startTime);
+      if (timeDiff != 0) return timeDiff;
+      // 时间相同，按手排序（右手优先）
+      if (a.hand != b.hand) {
+        if (a.hand == Hand.right) return -1;
+        if (b.hand == Hand.right) return 1;
+      }
+      return 0;
+    });
   }
 
   /// 播放/暂停
@@ -212,6 +231,8 @@ class SheetPlayerController extends GetxController {
     }
 
     final playable = _playableNotes[_currentPlayIndex];
+
+    // 播放当前音符（可能有多个同时发声的音符）
     _playNote(playable);
 
     _currentPlayTime = playable.startTime;
@@ -222,18 +243,32 @@ class SheetPlayerController extends GetxController {
 
     playbackState.value = playbackState.value.copyWith(
       currentMeasureIndex: playable.measureIndex,
-      currentBeatIndex: playable.beatIndex,  // 添加 beatIndex
+      currentBeatIndex: playable.beatIndex,
       currentNoteIndex: playable.noteIndex,
       currentTime: playable.startTime,
     );
 
-    final adjustedDuration =
-        playable.duration / playbackState.value.playbackSpeed;
-
     _currentPlayIndex++;
 
+    // 计算到下一个音符的实际时间差（而不是当前音符的时长）
+    double waitTime;
+    if (_currentPlayIndex < _playableNotes.length) {
+      final nextPlayable = _playableNotes[_currentPlayIndex];
+      final timeDiff = nextPlayable.startTime - playable.startTime;
+      waitTime = timeDiff / playbackState.value.playbackSpeed;
+
+      // 如果下一个音符与当前音符同时发声（时间差<1ms），立即播放
+      if (waitTime < 0.001) {
+        _scheduleNextNote();
+        return;
+      }
+    } else {
+      // 最后一个音符，等待其完整时长
+      waitTime = playable.duration / playbackState.value.playbackSpeed;
+    }
+
     _playTimer = Timer(
-      Duration(milliseconds: (adjustedDuration * 1000).round()),
+      Duration(milliseconds: (waitTime * 1000).round()),
       _scheduleNextNote,
     );
   }
@@ -242,7 +277,8 @@ class SheetPlayerController extends GetxController {
   void _playNote(_PlayableNote playable) {
     if (playable.note.isRest) return;
 
-    _audioService.playPianoNote(playable.note.pitch);
+    // 传递手标记给音频服务，用于左右手音量控制
+    _audioService.playPianoNote(playable.note.pitch, hand: playable.hand);
   }
 
   /// 跳转到指定位置
@@ -387,6 +423,7 @@ class _PlayableNote {
   final Note note;
   final double startTime;
   final double duration;
+  final Hand? hand;  // 添加手标记，用于排序和播放
 
   const _PlayableNote({
     required this.measureIndex,
@@ -395,6 +432,7 @@ class _PlayableNote {
     required this.note,
     required this.startTime,
     required this.duration,
+    this.hand,
   });
 }
 
