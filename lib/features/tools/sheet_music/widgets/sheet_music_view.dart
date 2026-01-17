@@ -66,6 +66,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   // 乐谱滚动控制器
   final ScrollController _scoreScrollController = ScrollController();
 
+  // 用户是否正在拖动滚动
+  bool _isUserScrolling = false;
+
   // 底部固定区域高度（钢琴 + 控制区）
   double _bottomFixedHeight = 0.0;
 
@@ -151,10 +154,21 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           children: [
             // 可滚动的乐谱区域
             Expanded(
-              child: SingleChildScrollView(
-                controller: _scoreScrollController,
-                child: Column(
-                  children: [_buildHeader(), _buildScoreArea(constraints)],
+              child: Listener(
+                onPointerDown: (_) => _isUserScrolling = true,
+                onPointerUp: (_) {
+                  // 延迟一点再设置为 false，确保滚动惯性完成
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      _isUserScrolling = false;
+                    }
+                  });
+                },
+                child: SingleChildScrollView(
+                  controller: _scoreScrollController,
+                  child: Column(
+                    children: [_buildHeader(), _buildScoreArea(constraints)],
+                  ),
                 ),
               ),
             ),
@@ -755,9 +769,12 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   }
 
   /// 滚动乐谱到当前播放位置
-  /// 核心逻辑：让播放音符所在的行滚动到可视区域的顶部（第一行）
+  /// 核心逻辑：让播放音符所在的行滚动到可视区域，确保能看到最高音符
   void _scrollToCurrentPlayPosition(double currentTime) {
     if (!_scoreScrollController.hasClients) return;
+
+    // 如果用户正在拖动，不要自动滚动
+    if (_isUserScrolling) return;
 
     // 获取header的实际高度
     final headerHeight = _getHeaderHeight();
@@ -772,7 +789,19 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       final currentLine = _findLineForMeasure(currentNote.measureIndex);
       if (currentLine == null) return;
 
-      targetScroll = headerHeight + currentLine.y;
+      // 找到当前行中最高音符的Y坐标（最小的Y值）
+      double minY = currentLine.y;
+      for (final note in _layout!.noteLayouts) {
+        if (currentLine.measureIndices.contains(note.measureIndex)) {
+          if (note.y < minY) {
+            minY = note.y;
+          }
+        }
+      }
+
+      // 向上留一些边距，确保最高音符可见
+      const topMargin = 20.0;
+      targetScroll = headerHeight + minY - topMargin;
     } else {
       // 简谱模式：需要手动计算行位置
       final totalDuration = widget.score.totalDuration;
@@ -783,17 +812,17 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       final measureIndex = (progress * widget.score.measureCount).floor().clamp(0, widget.score.measureCount - 1);
 
       // 使用与 JianpuPainter 相同的布局计算逻辑
-      final contentWidth = _scoreScrollController.position.viewportDimension - 
+      final contentWidth = _scoreScrollController.position.viewportDimension -
           widget.config.padding.left - widget.config.padding.right;
       final beatsPerMeasure = widget.score.metadata.beatsPerMeasure;
-      
+
       // 计算每行小节数（与 JianpuPainter 保持一致）
       const minBeatWidth = 25.0;
       const minMeasuresPerLine = 2;
       const maxMeasuresPerLine = 6;
       final minMeasureWidth = minBeatWidth * beatsPerMeasure;
       int measuresPerLine = (contentWidth / minMeasureWidth).floor();
-      
+
       // 检查音符密度
       int maxNotesInChord = 1;
       for (final track in widget.score.tracks) {
@@ -812,7 +841,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
       // 计算行号
       final lineIndex = measureIndex ~/ measuresPerLine;
-      
+
       // 计算轨道高度（与 JianpuPainter 保持一致）
       final trackCount = widget.score.tracks.length;
       final double trackHeight;
@@ -825,10 +854,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       }
       final lineSpacing = 20.0;
       final lineHeight = trackCount * trackHeight + lineSpacing;
-      
-      // 计算目标滚动位置
+
+      // 计算目标滚动位置，向上留一些边距
       final lineY = widget.config.padding.top + lineIndex * lineHeight;
-      targetScroll = headerHeight + lineY;
+      const topMargin = 10.0;
+      targetScroll = headerHeight + lineY - topMargin;
     }
 
     // 限制在有效范围内

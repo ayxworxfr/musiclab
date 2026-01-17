@@ -208,6 +208,14 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
             ),
             const PopupMenuDivider(),
             const PopupMenuItem(
+              value: 'settings',
+              child: ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('乐谱配置'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+            const PopupMenuItem(
               value: 'new',
               child: ListTile(
                 leading: Icon(Icons.add),
@@ -351,6 +359,9 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
         break;
       case 'export_midi':
         _exportAsMidi();
+        break;
+      case 'settings':
+        _showSettingsDialog();
         break;
       case 'new':
         _createNewSheet();
@@ -1116,6 +1127,105 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
             child: const Text('创建'),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 显示乐谱配置对话框
+  void _showSettingsDialog() {
+    final sheet = _editorController.currentSheet.value;
+    if (sheet == null) return;
+
+    final titleController = TextEditingController(text: sheet.title);
+    final composerController = TextEditingController(text: sheet.composer ?? '');
+    var selectedKey = sheet.metadata.key.name;
+    var selectedTimeSignature = sheet.metadata.timeSignature;
+    final tempoController = TextEditingController(text: sheet.metadata.tempo.toString());
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('乐谱配置'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: '标题',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: composerController,
+                    decoration: const InputDecoration(
+                      labelText: '作曲',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedKey,
+                    decoration: const InputDecoration(
+                      labelText: '调号',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: ['C', 'G', 'D', 'A', 'E', 'B', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Fs', 'Am', 'Em', 'Dm']
+                        .map(
+                          (k) => DropdownMenuItem(value: k, child: Text(k)),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => selectedKey = v ?? 'C'),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: selectedTimeSignature,
+                    decoration: const InputDecoration(
+                      labelText: '拍号',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: ['4/4', '3/4', '2/4', '6/8', '2/2', '3/8', '6/4']
+                        .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                        .toList(),
+                    onChanged: (v) => setState(() => selectedTimeSignature = v ?? '4/4'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: tempoController,
+                    decoration: const InputDecoration(
+                      labelText: '速度 (BPM)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('取消'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  _editorController.updateMetadata(
+                    title: titleController.text,
+                    composer: composerController.text.isEmpty ? null : composerController.text,
+                    key: selectedKey,
+                    timeSignature: selectedTimeSignature,
+                    tempo: int.tryParse(tempoController.text) ?? 120,
+                  );
+                  Navigator.pop(context);
+                },
+                child: const Text('保存'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -103,7 +103,7 @@ class SheetPlayerController extends GetxController {
               _playableNotes.add(
                 _PlayableNote(
                   measureIndex: mIdx,
-                  beatIndex: bIdx,
+                  beatIndex: beat.index,  // 使用 beat.index 而不是循环索引
                   noteIndex: nIdx,
                   note: note,
                   startTime: currentTime,
@@ -115,7 +115,7 @@ class SheetPlayerController extends GetxController {
               _playableNotes.add(
                 _PlayableNote(
                   measureIndex: mIdx,
-                  beatIndex: bIdx,
+                  beatIndex: beat.index,  // 使用 beat.index 而不是循环索引
                   noteIndex: nIdx,
                   note: note,
                   startTime: currentTime,
