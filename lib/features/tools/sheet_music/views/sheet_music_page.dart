@@ -241,7 +241,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                     children: [
                       Row(
                         children: [
-                          Expanded(
+                          Flexible(
                             child: Text(
                               score.title,
                               style: TextStyle(
@@ -253,11 +253,14 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
+                              softWrap: false,
                             ),
                           ),
                           // 大谱表标识
                           if (score.isGrandStaff)
-                            Container(
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 6,
                                 vertical: 2,
@@ -269,6 +272,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               child: const Text(
                                 '🎹 钢琴',
                                 style: TextStyle(fontSize: 10),
+                                ),
                               ),
                             ),
                         ],

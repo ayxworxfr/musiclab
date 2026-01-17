@@ -565,199 +565,202 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
           const SizedBox(height: 8),
 
-          // 第二行：播放控制 + 速度 + 节拍器
-          Row(
-            children: [
-              // 播放控制
-              IconButton(
-                onPressed: () => _playerController.previousMeasure(),
-                icon: const Icon(Icons.skip_previous, size: 20),
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-              ),
-              Obx(() {
-                final isPlaying =
-                    _playerController.playbackState.value.isPlaying;
-                return Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    onPressed: () => _playerController.togglePlay(),
-                    icon: Icon(
-                      isPlaying ? Icons.pause : Icons.play_arrow,
-                      color: Colors.white,
-                      size: 24,
+          // 第二行：播放控制 + 速度 + 节拍器（可滚动）
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // 播放控制
+                IconButton(
+                  onPressed: () => _playerController.previousMeasure(),
+                  icon: const Icon(Icons.skip_previous, size: 20),
+                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                ),
+                Obx(() {
+                  final isPlaying =
+                      _playerController.playbackState.value.isPlaying;
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 40,
-                    ),
-                  ),
-                );
-              }),
-              IconButton(
-                onPressed: () => _playerController.nextMeasure(),
-                icon: const Icon(Icons.skip_next, size: 20),
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-              ),
-
-              const SizedBox(width: 16),
-
-              // 速度控制
-              Obx(() {
-                final speed =
-                    _playerController.playbackState.value.playbackSpeed;
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () => _playerController.setSpeed(
-                        (speed - 0.25).clamp(0.25, 2.0),
+                    child: IconButton(
+                      onPressed: () => _playerController.togglePlay(),
+                      icon: Icon(
+                        isPlaying ? Icons.pause : Icons.play_arrow,
+                        color: Colors.white,
+                        size: 24,
                       ),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
+                      constraints: const BoxConstraints(
+                        minWidth: 40,
+                        minHeight: 40,
+                      ),
+                    ),
+                  );
+                }),
+                IconButton(
+                  onPressed: () => _playerController.nextMeasure(),
+                  icon: const Icon(Icons.skip_next, size: 20),
+                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                ),
+
+                const SizedBox(width: 16),
+
+                // 速度控制
+                Obx(() {
+                  final speed =
+                      _playerController.playbackState.value.playbackSpeed;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () => _playerController.setSpeed(
+                          (speed - 0.25).clamp(0.25, 2.0),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Icon(Icons.remove, size: 16),
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Icon(Icons.remove, size: 16),
+                        child: Text(
+                          '${(speed * 100).toInt()}%',
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      GestureDetector(
+                        onTap: () => _playerController.setSpeed(
+                          (speed + 0.25).clamp(0.25, 2.0),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Icon(Icons.add, size: 16),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+
+                const SizedBox(width: 16),
+
+                // 节拍器开关
+                Obx(() {
+                  final metronomeEnabled =
+                      _playerController.metronomeEnabled.value;
+                  return GestureDetector(
+                    onTap: () {
+                      _playerController.metronomeEnabled.value =
+                          !metronomeEnabled;
+                    },
+                    child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 12,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        '${(speed * 100).toInt()}%',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => _playerController.setSpeed(
-                        (speed + 0.25).clamp(0.25, 2.0),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Icon(Icons.add, size: 16),
-                      ),
-                    ),
-                  ],
-                );
-              }),
-
-              const Spacer(),
-
-              // 节拍器开关
-              Obx(() {
-                final metronomeEnabled =
-                    _playerController.metronomeEnabled.value;
-                return GestureDetector(
-                  onTap: () {
-                    _playerController.metronomeEnabled.value =
-                        !metronomeEnabled;
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: metronomeEnabled
-                          ? AppColors.primary.withValues(alpha: 0.15)
-                          : Colors.grey.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
                         color: metronomeEnabled
-                            ? AppColors.primary.withValues(alpha: 0.5)
-                            : Colors.transparent,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.timer,
-                          size: 16,
+                            ? AppColors.primary.withValues(alpha: 0.15)
+                            : Colors.grey.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
                           color: metronomeEnabled
-                              ? AppColors.primary
-                              : Colors.grey,
+                              ? AppColors.primary.withValues(alpha: 0.5)
+                              : Colors.transparent,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '节拍器',
-                          style: TextStyle(
-                            fontSize: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.timer,
+                            size: 16,
                             color: metronomeEnabled
                                 ? AppColors.primary
                                 : Colors.grey,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-
-              const SizedBox(width: 8),
-
-              // 预览开关
-              Obx(() {
-                final showPreview = _showPreview.value;
-                return GestureDetector(
-                  onTap: () {
-                    _showPreview.value = !showPreview;
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: showPreview
-                          ? AppColors.primary.withValues(alpha: 0.15)
-                          : Colors.grey.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: showPreview
-                            ? AppColors.primary.withValues(alpha: 0.5)
-                            : Colors.transparent,
+                          const SizedBox(width: 4),
+                          Text(
+                            '节拍器',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: metronomeEnabled
+                                  ? AppColors.primary
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.visibility,
-                          size: 16,
-                          color: showPreview ? AppColors.primary : Colors.grey,
+                  );
+                }),
+
+                const SizedBox(width: 8),
+
+                // 预览开关
+                Obx(() {
+                  final showPreview = _showPreview.value;
+                  return GestureDetector(
+                    onTap: () {
+                      _showPreview.value = !showPreview;
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: showPreview
+                            ? AppColors.primary.withValues(alpha: 0.15)
+                            : Colors.grey.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: showPreview
+                              ? AppColors.primary.withValues(alpha: 0.5)
+                              : Colors.transparent,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '预览',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: showPreview
-                                ? AppColors.primary
-                                : Colors.grey,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.visibility,
+                            size: 16,
+                            color: showPreview ? AppColors.primary : Colors.grey,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            '预览',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: showPreview
+                                  ? AppColors.primary
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
-            ],
+                  );
+                }),
+              ],
+            ),
           ),
         ],
       ),

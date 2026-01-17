@@ -131,36 +131,39 @@ class ProfessionalJianpuEditor extends StatelessWidget {
             ),
           ),
 
-          // 中间：编辑模式切换
+          // 中间：编辑模式切换（可滚动）
           Expanded(
             child: Center(
               child: Obx(() {
                 if (isMobile) {
-                  // 移动端：使用更紧凑的布局，只显示图标
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildMobileModeButton(
-                        context,
-                        EditorMode.select,
-                        Icons.touch_app,
-                        '选择',
-                      ),
-                      const SizedBox(width: 4),
-                      _buildMobileModeButton(
-                        context,
-                        EditorMode.input,
-                        Icons.edit,
-                        '输入',
-                      ),
-                      const SizedBox(width: 4),
-                      _buildMobileModeButton(
-                        context,
-                        EditorMode.erase,
-                        Icons.delete_outline,
-                        '删除',
-                      ),
-                    ],
+                  // 移动端：使用可滚动的横向布局
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildMobileModeButton(
+                          context,
+                          EditorMode.select,
+                          Icons.touch_app,
+                          '选择',
+                        ),
+                        const SizedBox(width: 4),
+                        _buildMobileModeButton(
+                          context,
+                          EditorMode.input,
+                          Icons.edit,
+                          '输入',
+                        ),
+                        const SizedBox(width: 4),
+                        _buildMobileModeButton(
+                          context,
+                          EditorMode.erase,
+                          Icons.delete_outline,
+                          '删除',
+                        ),
+                      ],
+                    ),
                   );
                 } else {
                   // 桌面端：使用 SegmentedButton
