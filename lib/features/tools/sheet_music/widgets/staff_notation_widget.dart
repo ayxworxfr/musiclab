@@ -370,14 +370,18 @@ class _StaffLinePainter extends CustomPainter {
     );
     textPainter.layout();
 
-    // 高音谱号：中心点在第二线（G线，从上往下第四条线 = startY + 3 * lineSpacing）
-    // 低音谱号：中心点在第四线（F线，从上往下第二条线 = startY + 1 * lineSpacing）
-    // 根据字体特性调整，使谱号中心对齐到正确的线上
-    final y = clef == 'treble'
-        ? startY -
-              lineSpacing *
-                  0.8 // 高音谱号从顶部往下延伸
-        : startY + lineSpacing * 0.2;
+    // 谱号位置计算（与 grand_staff_painter.dart 保持一致）：
+    // - startY 是第一线的Y坐标
+    // - 高音谱号（G谱号）应该居中在第四线（G线）：startY + 3 * lineSpacing
+    // - 低音谱号（F谱号）应该居中在第二线（F线）：startY + 1 * lineSpacing
+    // Bravura 字体的谱号符号基准点在底部，需要调整Y坐标使谱号中心对齐到目标线
+    final targetLineY = clef == 'treble'
+        ? startY + 3 * lineSpacing  // 第四线
+        : startY + 1 * lineSpacing;  // 第二线
+    
+    // 将谱号中心对齐到目标线（字体高度的一半作为偏移）
+    final y = targetLineY - textPainter.height * 0.5;
+    
     textPainter.paint(canvas, Offset(x, y));
   }
 

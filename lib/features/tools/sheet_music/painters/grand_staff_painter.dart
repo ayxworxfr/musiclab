@@ -198,12 +198,12 @@ class GrandStaffPainter extends CustomPainter {
 
     // 谱号位置计算：
     // - staffY 是第一线的Y坐标
-    // - 高音谱号（G谱号）应该居中在第二线（G线）：staffY + lineSpacing
-    // - 低音谱号（F谱号）应该居中在第四线（F线）：staffY + 3 * lineSpacing
+    // - 高音谱号（G谱号）应该居中在第四线（G线）：staffY + 3 * lineSpacing
+    // - 低音谱号（F谱号）应该居中在第二线（F线）：staffY + 1 * lineSpacing
     // Bravura 字体的谱号符号基准点在底部，需要调整Y坐标使谱号中心对齐到目标线
     final targetLineY = clef == Clef.treble
-        ? staffY + config.lineSpacing  // 第二线
-        : staffY + 3 * config.lineSpacing;  // 第四线
+        ? staffY + 3 * config.lineSpacing  // 第四线
+        : staffY + 1 * config.lineSpacing;  // 第二线
     
     // 将谱号中心对齐到目标线（字体高度的一半作为偏移）
     final y = targetLineY - textPainter.height * 0.5;

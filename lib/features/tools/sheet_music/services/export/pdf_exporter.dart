@@ -387,11 +387,12 @@ class PdfExporter {
     final staffWidth = 50.0 + maxMeasures * 200.0;
 
     // 五线谱参数
-    final trebleY = 30.0; // 高音谱表第五线
+    // trebleY 和 bassY 是第一线的Y坐标（与 grand_staff_painter.dart 保持一致）
+    final trebleY = 30.0; // 高音谱表第一线
     final lineSpacing = 8.0;
     final staffHeight = 4 * lineSpacing;
     final staffGap = 50.0; // 高低音谱表间距
-    final bassY = trebleY + staffHeight + staffGap; // 低音谱表第五线
+    final bassY = trebleY + staffHeight + staffGap; // 低音谱表第一线
     
     return pw.Container(
       height: 200, // 容器高度，包含两个谱表
@@ -423,21 +424,23 @@ class PdfExporter {
               ),
             );
           }),
-          // 高音谱号
+          // 高音谱号（与 grand_staff_painter.dart 保持一致）
+          // trebleY 是第一线的Y坐标，高音谱号应该居中在第四线（G线）：trebleY + 3 * lineSpacing
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
-              top: trebleY - lineSpacing * 1.5 - 55,
+              top: trebleY + 3 * lineSpacing - 20, // 高音谱号居中在第四线（字体基准点补偿）
               child: pw.Text(
                 SMuFLGlyphs.gClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
               ),
             ),
-          // 低音谱号
+          // 低音谱号（与 grand_staff_painter.dart 保持一致）
+          // bassY 是第一线的Y坐标，低音谱号应该居中在第二线（F线）：bassY + 1 * lineSpacing
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
-              top: bassY - lineSpacing * 5 - 18, // 低音谱号中心在第二三线之间
+              top: bassY + 1 * lineSpacing - 20, // 低音谱号居中在第二线（字体基准点补偿）
               child: pw.Text(
                 SMuFLGlyphs.fClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
@@ -504,13 +507,17 @@ class PdfExporter {
               ),
             );
           }),
-          // 谱号（参考Canvas的_drawClef位置计算）
+          // 谱号（参考Canvas的_drawClef位置计算，与 grand_staff_painter.dart 保持一致）
+          // - staffY 是第一线的Y坐标
+          // - 高音谱号（G谱号）应该居中在第四线（G线）：staffY + 3 * lineSpacing
+          // - 低音谱号（F谱号）应该居中在第三线（F线）：staffY + 2 * lineSpacing
+          // PDF 字体的基准点补偿需要根据实际字体特性调整
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
               top: clef == Clef.treble
-                  ? staffY + lineSpacing * 1.5 - 55 // 高音谱号向上大幅调整（字体基准点补偿）
-                  : staffY + lineSpacing * 3 - 15, // 低音谱号居中在第四线
+                  ? staffY + 3 * lineSpacing - 20 // 高音谱号居中在第四线（字体基准点补偿）
+                  : staffY + 2 * lineSpacing - 20, // 低音谱号居中在第三线（字体基准点补偿）
               child: pw.Text(
                 clef == Clef.treble ? SMuFLGlyphs.gClef : SMuFLGlyphs.fClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
