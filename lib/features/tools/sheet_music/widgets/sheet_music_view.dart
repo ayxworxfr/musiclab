@@ -83,6 +83,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   MusicKey? _overrideKey; // 临时调号
   int? _overrideBeatsPerMeasure; // 临时拍数
   int? _overrideTempo; // 临时速度
+  
+  // 存储当前绘制宽度，用于滚动计算
+  double? _currentDrawWidth;
 
   @override
   void initState() {
@@ -744,6 +747,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       return const SizedBox(height: 200);
     }
 
+    // 存储当前绘制宽度，用于滚动计算（确保和绘制时使用相同的宽度）
+    _currentDrawWidth = constraints.maxWidth;
+
     // 如果字体未加载完成，显示加载提示（仅 Web 平台）
     if (!_fontsReady) {
       return Container(
@@ -1195,18 +1201,28 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   /// 核心逻辑：让播放音符所在的行滚动到可视区域，确保能看到最高音符
   void _scrollToCurrentPlayPosition(double currentTime) {
     if (!_scoreScrollController.hasClients) return;
+    if (_playbackController == null) return;
 
     // 如果用户正在拖动，不要自动滚动
     if (_isUserScrolling) return;
 
     // 获取header的实际高度
     final headerHeight = _getHeaderHeight();
+    final controller = _playbackController!;
 
     double targetScroll = 0.0;
 
     if (_currentMode == NotationMode.staff && _layout != null) {
       // 五线谱模式：使用 LayoutResult 中的行信息
-      final currentNote = _findNoteAtTime(currentTime);
+      // noteLayout.startTime 是基于原始速度计算的
+      // 在播放时，使用 currentTime * speedMultiplier 来匹配 adjustedStartTime
+      // adjustedStartTime = noteLayout.startTime * (originalTempo / currentTempo)
+      // 所以：noteLayout.startTime = (currentTime * speedMultiplier) * (currentTempo / originalTempo)
+      final originalTempo = widget.score.metadata.tempo;
+      final currentTempo = controller.baseTempo.value;
+      final musicTime = currentTime * controller.speedMultiplier.value * (currentTempo / originalTempo);
+      
+      final currentNote = _findNoteAtTime(musicTime);
       if (currentNote == null) return;
 
       final currentLine = _findLineForMeasure(currentNote.measureIndex);
@@ -1227,7 +1243,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       targetScroll = headerHeight + minY - topMargin;
     } else {
       // 简谱模式：需要手动计算行位置
-      final totalDuration = widget.score.totalDuration;
+      // 使用实际总时长（考虑倍速和临时速度调整）
+      final totalDuration = controller.getTotalDuration();
       if (totalDuration <= 0) return;
 
       // 计算当前播放进度
@@ -1235,8 +1252,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       final measureIndex = (progress * widget.score.measureCount).floor().clamp(0, widget.score.measureCount - 1);
 
       // 使用与 JianpuPainter 相同的布局计算逻辑
-      final contentWidth = _scoreScrollController.position.viewportDimension -
-          widget.config.padding.left - widget.config.padding.right;
+      // 使用存储的绘制宽度，确保和绘制时使用相同的宽度
+      final drawWidth = _currentDrawWidth ?? _scoreScrollController.position.viewportDimension;
+      final contentWidth = drawWidth - widget.config.padding.left - widget.config.padding.right;
       final beatsPerMeasure = widget.score.metadata.beatsPerMeasure;
 
       // 计算每行小节数（与 JianpuPainter 保持一致）
@@ -1302,10 +1320,17 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   }
 
   /// 根据时间查找对应的音符
+  /// currentTime 应该是基于原始速度的音乐时间（秒）
   NoteLayout? _findNoteAtTime(double currentTime) {
+    // noteLayout.startTime 是基于原始速度的秒数
+    // note.duration.beats 是拍数，需要转换为秒数
+    final originalTempo = widget.score.metadata.tempo;
+    final beatsPerSecond = originalTempo / 60.0;
+    
     for (final noteLayout in _layout!.noteLayouts) {
-      final noteDuration = noteLayout.note.duration.beats;
-      final endTime = noteLayout.startTime + noteDuration;
+      final noteDurationInBeats = noteLayout.note.duration.beats;
+      final noteDurationInSeconds = noteDurationInBeats / beatsPerSecond;
+      final endTime = noteLayout.startTime + noteDurationInSeconds;
       if (noteLayout.startTime <= currentTime && endTime >= currentTime) {
         return noteLayout;
       }
