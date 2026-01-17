@@ -729,10 +729,33 @@ class Score {
   /// 总小节数
   int get measureCount => tracks.isEmpty ? 0 : tracks.first.measures.length;
 
-  /// 总时长（秒）
+  /// 总时长（秒）- 基于实际拍数计算，而不是假设每个小节都是完整的
   double get totalDuration {
-    final totalBeats = measureCount * metadata.beatsPerMeasure;
-    return totalBeats * 60 / metadata.tempo;
+    if (tracks.isEmpty) return 0.0;
+
+    var totalBeats = 0.0;
+
+    // 遍历所有轨道，找到最长的轨道（拍数最多）
+    for (final track in tracks) {
+      var trackBeats = 0.0;
+      for (final measure in track.measures) {
+        for (final beat in measure.beats) {
+          trackBeats += beat.totalBeats;
+        }
+      }
+      if (trackBeats > totalBeats) {
+        totalBeats = trackBeats;
+      }
+    }
+
+    // 如果没有任何拍，使用默认计算（避免除零）
+    if (totalBeats == 0.0) {
+      final totalBeatsDefault = measureCount * metadata.beatsPerMeasure;
+      return totalBeatsDefault * 60 / metadata.tempo;
+    }
+
+    final secondsPerBeat = 60.0 / metadata.tempo;
+    return totalBeats * secondsPerBeat;
   }
 
   factory Score.fromJson(Map<String, dynamic> json) {
