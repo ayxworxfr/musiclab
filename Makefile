@@ -60,6 +60,11 @@ build-android: ## 构建 Android 版本
 
 build-android-docker: ## 构建 Android 版本（使用 DockerCompose）
 	@echo "$(GREEN)正在构建 Android 版本...$(NC)"
+	echo "===== 彻底清理项目 ====="
+	# 删除所有可能导致问题的临时文件和目录
+	rm -rf .dart_tool/ .packages .flutter-plugins .flutter-plugins-dependencies
+	rm -rf build/ android/.gradle/ android/app/build/
+	rm -rf ios/Pods/ ios/build/
 	flutter clean
 	docker-compose up --build
 
