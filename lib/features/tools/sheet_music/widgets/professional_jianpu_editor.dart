@@ -76,8 +76,10 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
   /// 顶部工具栏
   Widget _buildTopToolbar(BuildContext context, Score score, bool isDark) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    
     return Container(
-      height: 56,
+      height: isMobile ? 64 : 56,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         border: Border(
@@ -95,23 +97,36 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         children: [
           // 左侧：撤销/重做
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 8),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Obx(() => IconButton(
                       onPressed: controller.canUndo ? controller.undo : null,
-                      icon: const Icon(Icons.undo, size: 20),
+                      icon: Icon(Icons.undo, size: isMobile ? 18 : 20),
                       tooltip: '撤销 (Ctrl+Z)',
                       color: controller.canUndo ? null : Colors.grey,
+                      padding: EdgeInsets.all(isMobile ? 8 : 12),
+                      constraints: BoxConstraints(
+                        minWidth: isMobile ? 36 : 48,
+                        minHeight: isMobile ? 36 : 48,
+                      ),
                     )),
                 Obx(() => IconButton(
                       onPressed: controller.canRedo ? controller.redo : null,
-                      icon: const Icon(Icons.redo, size: 20),
+                      icon: Icon(Icons.redo, size: isMobile ? 18 : 20),
                       tooltip: '重做 (Ctrl+Y)',
                       color: controller.canRedo ? null : Colors.grey,
+                      padding: EdgeInsets.all(isMobile ? 8 : 12),
+                      constraints: BoxConstraints(
+                        minWidth: isMobile ? 36 : 48,
+                        minHeight: isMobile ? 36 : 48,
+                      ),
                     )),
-                const SizedBox(width: 8),
-                const VerticalDivider(width: 1),
+                if (!isMobile) ...[
+                  const SizedBox(width: 8),
+                  const VerticalDivider(width: 1),
+                ],
               ],
             ),
           ),
@@ -119,7 +134,37 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           // 中间：编辑模式切换
           Expanded(
             child: Center(
-              child: Obx(() => SegmentedButton<EditorMode>(
+              child: Obx(() {
+                if (isMobile) {
+                  // 移动端：使用更紧凑的布局，只显示图标
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildMobileModeButton(
+                        context,
+                        EditorMode.select,
+                        Icons.touch_app,
+                        '选择',
+                      ),
+                      const SizedBox(width: 4),
+                      _buildMobileModeButton(
+                        context,
+                        EditorMode.input,
+                        Icons.edit,
+                        '输入',
+                      ),
+                      const SizedBox(width: 4),
+                      _buildMobileModeButton(
+                        context,
+                        EditorMode.erase,
+                        Icons.delete_outline,
+                        '删除',
+                      ),
+                    ],
+                  );
+                } else {
+                  // 桌面端：使用 SegmentedButton
+                  return SegmentedButton<EditorMode>(
                     segments: [
                       ButtonSegment(
                         value: EditorMode.select,
@@ -145,26 +190,87 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       textStyle: const TextStyle(fontSize: 13),
                     ),
-                  )),
+                  );
+                }
+              }),
             ),
           ),
 
-          // 右侧：乐谱信息
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                _buildInfoChip('1 = ${score.metadata.key.displayName}'),
-                const SizedBox(width: 8),
-                _buildInfoChip(score.metadata.timeSignature),
-                const SizedBox(width: 8),
-                _buildInfoChip('♩ = ${score.metadata.tempo}'),
-              ],
+          // 右侧：乐谱信息（移动端隐藏或使用更紧凑的布局）
+          if (!isMobile)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildInfoChip('1 = ${score.metadata.key.displayName}'),
+                  const SizedBox(width: 8),
+                  _buildInfoChip(score.metadata.timeSignature),
+                  const SizedBox(width: 8),
+                  _buildInfoChip('♩ = ${score.metadata.tempo}'),
+                ],
+              ),
+            )
+          else
+            // 移动端：只显示关键信息，使用更小的字体
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: _buildInfoChip(
+                '${score.metadata.key.displayName} ${score.metadata.timeSignature}',
+                isCompact: true,
+              ),
             ),
-          ),
         ],
       ),
     );
+  }
+
+  /// 移动端模式按钮
+  Widget _buildMobileModeButton(BuildContext context, EditorMode mode, IconData icon, String tooltip) {
+    return Obx(() {
+      final isSelected = controller.editorMode.value == mode;
+      return GestureDetector(
+        onTap: () => controller.editorMode.value = mode,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.15)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey.withValues(alpha: 0.3),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey[600],
+              ),
+              const SizedBox(width: 4),
+              Text(
+                tooltip,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   /// 轨道选择器
@@ -1164,20 +1270,25 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   }
 
   /// 信息标签
-  Widget _buildInfoChip(String text) {
+  Widget _buildInfoChip(String text, {bool isCompact = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 6 : 10,
+        vertical: isCompact ? 2 : 4,
+      ),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(isCompact ? 8 : 12),
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 12,
+        style: TextStyle(
+          fontSize: isCompact ? 10 : 12,
           fontWeight: FontWeight.w500,
           color: AppColors.primary,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

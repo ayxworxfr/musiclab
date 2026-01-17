@@ -251,6 +251,8 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                                   context,
                                 ).textTheme.bodyLarge?.color,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           // 大谱表标识

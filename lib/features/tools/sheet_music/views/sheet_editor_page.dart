@@ -766,8 +766,11 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
   /// 乐谱预览区域 (使用 Canvas 渲染)
   Widget _buildPreviewSection(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final previewHeight = isMobile ? 250.0 : 300.0;
+    
     return Container(
-      height: 200,
+      height: previewHeight,
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
@@ -827,35 +830,40 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
             }
 
             return SingleChildScrollView(
-              child: GestureDetector(
-                onTapDown: (details) {
-                  // 点击跳转到对应音符
-                  final note = layout.hitTestNote(details.localPosition);
-                  if (note != null) {
-                    // 找到对应的小节和音符索引
-                    _playerController.seekTo(0, 0); // TODO: 精确定位
-                  }
-                },
-                child: CustomPaint(
-                  size: Size(constraints.maxWidth, canvasHeight),
-                  painter: isJianpu
-                      ? JianpuPainter(
-                          score: score,
-                          layout: layout,
-                          config: config,
-                          currentTime: state.currentTime,
-                          highlightedNoteIndices: highlightedIndices,
-                          showLyrics: true,
-                        )
-                      : GrandStaffPainter(
-                          score: score,
-                          layout: layout,
-                          config: config,
-                          currentTime: state.currentTime,
-                          highlightedNoteIndices: highlightedIndices,
-                          showFingering: false,
-                          showLyrics: true,
-                        ),
+              scrollDirection: Axis.vertical,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: canvasHeight,
+                child: GestureDetector(
+                  onTapDown: (details) {
+                    // 点击跳转到对应音符
+                    final note = layout.hitTestNote(details.localPosition);
+                    if (note != null) {
+                      // 找到对应的小节和音符索引
+                      _playerController.seekTo(0, 0); // TODO: 精确定位
+                    }
+                  },
+                  child: CustomPaint(
+                    size: Size(constraints.maxWidth, canvasHeight),
+                    painter: isJianpu
+                        ? JianpuPainter(
+                            score: score,
+                            layout: layout,
+                            config: config,
+                            currentTime: state.currentTime,
+                            highlightedNoteIndices: highlightedIndices,
+                            showLyrics: true,
+                          )
+                        : GrandStaffPainter(
+                            score: score,
+                            layout: layout,
+                            config: config,
+                            currentTime: state.currentTime,
+                            highlightedNoteIndices: highlightedIndices,
+                            showFingering: false,
+                            showLyrics: true,
+                          ),
+                  ),
                 ),
               ),
             );

@@ -147,12 +147,11 @@ class MusicXmlParserV2 implements SheetParser {
       }
     }
 
-    final sound = root.findAllElements('sound').firstOrNull;
-    if (sound != null) {
-      final tempo = sound.getAttribute('tempo');
-      if (tempo != null) {
-        attrs['tempo'] = int.tryParse(tempo) ?? 120;
-      }
+    // 解析速度信息（支持多种方式）
+    final tempoInfo = _parseTempo(root, warnings);
+    if (tempoInfo != null) {
+      attrs['tempo'] = tempoInfo['tempo'];
+      attrs['tempoText'] = tempoInfo['tempoText'];
     }
 
     return attrs;
@@ -178,6 +177,127 @@ class MusicXmlParserV2 implements SheetParser {
       7: MusicKey.Fs,
     };
     return keyMap[fifths] ?? MusicKey.C;
+  }
+
+  /// 解析速度信息（支持多种 MusicXML 标记方式）
+  ///
+  /// 优先级：
+  /// 1. `<sound tempo="120"/>` - 直接指定
+  /// 2. `<direction><metronome>` - 节拍器标记（最常见）
+  /// 3. `<direction><words>` - 文字速度术语（如 Allegro、Andante）
+  ///
+  /// 返回: {'tempo': int, 'tempoText': String?}
+  Map<String, dynamic>? _parseTempo(XmlElement root, List<String> warnings) {
+    int? tempo;
+    String? tempoText;
+
+    // 方式1: 从 <sound tempo="..."> 解析（优先级最高）
+    final sound = root.findAllElements('sound').firstOrNull;
+    if (sound != null) {
+      final tempoAttr = sound.getAttribute('tempo');
+      if (tempoAttr != null) {
+        final parsedTempo = double.tryParse(tempoAttr);
+        if (parsedTempo != null) {
+          tempo = parsedTempo.round();
+          warnings.add('从 <sound> 解析速度: $tempo BPM');
+        }
+      }
+    }
+
+    // 方式2: 从 <direction><metronome> 解析（最常见）
+    if (tempo == null) {
+      for (final direction in root.findAllElements('direction')) {
+        final directionType = direction.findElements('direction-type').firstOrNull;
+        if (directionType != null) {
+          final metronome = directionType.findElements('metronome').firstOrNull;
+          if (metronome != null) {
+            // 读取 <per-minute> 标签
+            final perMinute = metronome.findElements('per-minute').firstOrNull;
+            if (perMinute != null) {
+              final parsedTempo = double.tryParse(perMinute.innerText.trim());
+              if (parsedTempo != null) {
+                tempo = parsedTempo.round();
+
+                // 读取节拍单位（可选）
+                final beatUnit = metronome.findElements('beat-unit').firstOrNull?.innerText;
+                if (beatUnit != null) {
+                  warnings.add('从 <metronome> 解析速度: $beatUnit = $tempo BPM');
+                } else {
+                  warnings.add('从 <metronome> 解析速度: $tempo BPM');
+                }
+                break;
+              }
+            }
+          }
+
+          // 方式3: 从 <direction><words> 解析文字速度术语
+          if (tempo == null) {
+            final words = directionType.findElements('words').firstOrNull;
+            if (words != null) {
+              final text = words.innerText.trim();
+              final tempoFromWords = _tempoFromWordMarking(text);
+              if (tempoFromWords != null) {
+                tempo = tempoFromWords;
+                tempoText = text;
+                warnings.add('从速度术语 "$text" 推断速度: $tempo BPM');
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 如果解析到了速度，返回结果
+    if (tempo != null) {
+      return {
+        'tempo': tempo,
+        'tempoText': tempoText,
+      };
+    }
+
+    // 未找到速度标记
+    warnings.add('未找到速度标记，使用默认值 120 BPM');
+    return null;
+  }
+
+  /// 从文字速度术语推断 BPM
+  ///
+  /// 参考标准音乐速度术语
+  int? _tempoFromWordMarking(String text) {
+    final normalized = text.toLowerCase().trim();
+
+    // 极慢速度
+    if (normalized.contains('grave')) return 40;
+    if (normalized.contains('largo')) return 50;
+    if (normalized.contains('lento')) return 55;
+    if (normalized.contains('larghetto')) return 65;
+
+    // 慢速度
+    if (normalized.contains('adagio')) return 70;
+    if (normalized.contains('adagietto')) return 75;
+    if (normalized.contains('andante')) return 85;
+    if (normalized.contains('andantino')) return 95;
+
+    // 中速度
+    if (normalized.contains('moderato')) return 105;
+    if (normalized.contains('allegretto')) return 115;
+
+    // 快速度
+    if (normalized.contains('allegro') && !normalized.contains('allegretto')) {
+      return 132;
+    }
+    if (normalized.contains('vivace')) return 145;
+    if (normalized.contains('presto')) return 180;
+    if (normalized.contains('prestissimo')) return 200;
+
+    // 尝试从文本中提取数字（例如 "Moderato ♩= 120"）
+    final numMatch = RegExp(r'[=\s](\d+)').firstMatch(normalized);
+    if (numMatch != null) {
+      return int.tryParse(numMatch.group(1)!);
+    }
+
+    return null;
   }
 
   /// 解析所有轨道
@@ -286,6 +406,9 @@ class MusicXmlParserV2 implements SheetParser {
       final repeatSign = _parseRepeat(measureElement);
       final ending = _parseEnding(measureElement);
 
+      // 解析小节内的速度变化
+      final tempoChange = _parseMeasureTempo(measureElement, warnings);
+
       final beats = _parseMeasureBeats(measureElement, divisions, warnings);
 
       if (beats.isNotEmpty) {
@@ -296,11 +419,46 @@ class MusicXmlParserV2 implements SheetParser {
           pedal: pedal,
           repeatSign: repeatSign,
           ending: ending,
+          tempoChange: tempoChange,
         ));
       }
     }
 
     return measures;
+  }
+
+  /// 解析小节内的速度变化
+  int? _parseMeasureTempo(XmlElement measureElement, List<String> warnings) {
+    // 检查 <sound tempo="...">
+    final sound = measureElement.findElements('sound').firstOrNull;
+    if (sound != null) {
+      final tempoAttr = sound.getAttribute('tempo');
+      if (tempoAttr != null) {
+        final tempo = double.tryParse(tempoAttr);
+        if (tempo != null) {
+          return tempo.round();
+        }
+      }
+    }
+
+    // 检查 <direction><metronome>
+    for (final direction in measureElement.findElements('direction')) {
+      final directionType = direction.findElements('direction-type').firstOrNull;
+      if (directionType != null) {
+        final metronome = directionType.findElements('metronome').firstOrNull;
+        if (metronome != null) {
+          final perMinute = metronome.findElements('per-minute').firstOrNull;
+          if (perMinute != null) {
+            final tempo = double.tryParse(perMinute.innerText.trim());
+            if (tempo != null) {
+              return tempo.round();
+            }
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   /// 解析小节中的拍
@@ -454,14 +612,34 @@ class MusicXmlParserV2 implements SheetParser {
     return baseMidi + alter;
   }
 
-  /// 拍数转时值
+  /// 拍数转时值（改进算法：选择最接近的时值）
+  ///
+  /// 通过计算与各标准时值的距离，选择最接近的时值
+  /// 考虑了附点的影响（1拍 vs 1.5拍等）
   NoteDuration _beatsToDuration(double beats) {
-    if (beats >= 3.5) return NoteDuration.whole;
-    if (beats >= 1.75) return NoteDuration.half;
-    if (beats >= 0.875) return NoteDuration.quarter;
-    if (beats >= 0.4375) return NoteDuration.eighth;
-    if (beats >= 0.21875) return NoteDuration.sixteenth;
-    return NoteDuration.thirtySecond;
+    // 定义所有可能的时值（包括附点）
+    final durations = [
+      NoteDuration.whole,      // 4.0
+      NoteDuration.half,       // 2.0
+      NoteDuration.quarter,    // 1.0
+      NoteDuration.eighth,     // 0.5
+      NoteDuration.sixteenth,  // 0.25
+      NoteDuration.thirtySecond, // 0.125
+    ];
+
+    // 找到与 beats 最接近的时值
+    NoteDuration? closestDuration;
+    double minDiff = double.infinity;
+
+    for (final duration in durations) {
+      final diff = (duration.beats - beats).abs();
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestDuration = duration;
+      }
+    }
+
+    return closestDuration ?? NoteDuration.quarter;
   }
 
   /// 解析变音记号
