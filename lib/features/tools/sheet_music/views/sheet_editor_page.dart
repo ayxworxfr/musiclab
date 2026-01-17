@@ -791,99 +791,18 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
             );
             final layout = layoutEngine.calculate(score);
 
-            // 计算高亮音符索引（基于布局结果和播放时间）
-            // 使用播放时间匹配，这样可以同时高亮所有轨道的音符
-            // 注意：SheetPlayerController 的时间计算与 LayoutEngine 不一致（每个轨道从0开始）
-            // 所以需要根据当前播放的音符，找到对应的布局时间
+            // 计算高亮音符索引
             final highlightedIndices = <int>{};
             if (state.isPlaying && state.currentTime >= 0) {
-              // 由于 SheetPlayerController 的时间计算方式（每个轨道独立），
-              // 我们需要找到当前播放的音符，然后根据它在布局中的时间来计算
-              // 或者直接使用播放时间，但需要转换
-              
-              // 方法：找到当前播放的音符在 _playableNotes 中的位置，
-              // 然后根据它的 measureIndex 和 beatIndex 在布局中查找对应时间的音符
-              
-              final currentTime = state.currentTime;
-              final tolerance = 0.1; // 100ms 容差
-              
-              // 由于 SheetPlayerController 的时间是每个轨道独立的，
-              // 我们需要在布局中查找所有可能匹配的音符
-              // 布局引擎使用全局时间，所以我们需要找到所有轨道在同一"逻辑时间"的音符
-              
-              // 遍历所有布局音符，找到时间匹配的
-              // 但问题是：SheetPlayerController 的时间与布局时间不一致
-              // 解决方案：根据当前播放的音符信息，在布局中查找
-              
-              // 如果 currentTime 很小（< 0.5秒），可能是第一个音符
-              // 我们需要找到所有轨道在第一个位置的音符
-              
-              // 更简单的方法：根据 measureIndex 和 beatIndex 在布局中查找
-              // 但需要考虑双轨道的特殊性
-              
               final measureIndex = state.currentMeasureIndex;
-              final noteIndex = state.currentNoteIndex; // 这是 beat 内的索引
-              
-              // 找到当前播放的音符所在的 beat（beat.index）
-              // 由于 noteIndex 是 beat 内的索引，我们需要找到包含这个 noteIndex 的 beat
-              int? targetBeatIndex;
-              
-              // 遍历所有轨道，找到当前播放的音符所在的 beat
-              // 注意：每个轨道的 noteIndex 都是从 0 开始的（beat 内的索引）
-              for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
-                final track = score.tracks[trackIndex];
-                if (measureIndex >= track.measures.length) continue;
-                
-                final measure = track.measures[measureIndex];
-                
-                // 遍历所有 beat，找到包含 noteIndex 的 beat
-                var noteCountInMeasure = 0;
-                for (final beat in measure.beats) {
-                  if (noteIndex >= noteCountInMeasure && 
-                      noteIndex < noteCountInMeasure + beat.notes.length) {
-                    // 找到了！这个 beat 包含当前播放的音符
-                    targetBeatIndex = beat.index;
-                    break;
-                  }
-                  noteCountInMeasure += beat.notes.length;
-                }
-                
-                if (targetBeatIndex != null) break;
-              }
-              
-              // 如果找到了目标 beat，高亮所有轨道在这个 beat 的所有音符
-              // 这是双轨道特殊性的关键：同一拍的所有音符应该同时高亮
-              if (targetBeatIndex != null) {
-                for (var i = 0; i < layout.noteLayouts.length; i++) {
-                  final noteLayout = layout.noteLayouts[i];
-                  if (noteLayout.measureIndex == measureIndex &&
-                      noteLayout.beatIndex == targetBeatIndex) {
-                    highlightedIndices.add(i);
-                  }
-                }
-              }
-              
-              // 如果上面的方法没找到，尝试基于时间匹配（作为备选）
-              if (highlightedIndices.isEmpty && currentTime > 0) {
-                // 计算布局中的时间（基于小节索引）
-                final beatsPerSecond = score.metadata.tempo / 60.0;
-                final beatsPerMeasure = score.metadata.beatsPerMeasure;
-                final measureStartTime = measureIndex * beatsPerMeasure / beatsPerSecond;
-                
-                // 在布局中查找时间接近的音符
-                for (var i = 0; i < layout.noteLayouts.length; i++) {
-                  final noteLayout = layout.noteLayouts[i];
-                  if (noteLayout.measureIndex == measureIndex) {
-                    final noteStartTime = noteLayout.startTime;
-                    final noteDuration = noteLayout.note.actualBeats / beatsPerSecond;
-                    final noteEndTime = noteStartTime + noteDuration;
-                    
-                    // 如果布局时间在测量开始时间附近，则高亮
-                    if (noteStartTime >= measureStartTime - tolerance && 
-                        noteStartTime <= measureStartTime + 1.0) {
-                      highlightedIndices.add(i);
-                    }
-                  }
+              final beatIndex = state.currentBeatIndex;  // 直接使用 currentBeatIndex
+
+              // 高亮所有轨道在这个 beat 的所有音符
+              for (var i = 0; i < layout.noteLayouts.length; i++) {
+                final noteLayout = layout.noteLayouts[i];
+                if (noteLayout.measureIndex == measureIndex &&
+                    noteLayout.beatIndex == beatIndex) {
+                  highlightedIndices.add(i);
                 }
               }
             }
