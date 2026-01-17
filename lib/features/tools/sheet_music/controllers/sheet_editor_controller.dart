@@ -87,6 +87,12 @@ class SheetEditorController extends GetxController {
   /// 当前选中的八度（相对于中央C）
   final selectedOctave = 0.obs;
 
+  /// 多音模式（同时弹奏多个音）
+  final isMultiNoteMode = false.obs;
+
+  /// 多音模式下临时选中的音符列表
+  final pendingNotes = <int>[].obs;
+
   /// 每个轨道的小节索引（轨道索引 -> 小节索引）
   final Map<int, int> _trackMeasureIndices = {};
 

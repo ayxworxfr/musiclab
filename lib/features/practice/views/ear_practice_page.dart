@@ -252,10 +252,15 @@ class EarPracticePage extends GetView<PracticeController> {
 
   /// 播放按钮
   Widget _buildPlayButton(BuildContext context) {
+    final audioService = Get.find<AudioService>();
     return Column(
       children: [
         GestureDetector(
-          onTap: controller.playCurrentAudio,
+          onTap: () {
+            // 标记用户交互，确保音频可以播放
+            audioService.markUserInteracted();
+            controller.playCurrentAudio();
+          },
           child: Container(
             width: 140,
             height: 140,
@@ -329,8 +334,11 @@ class EarPracticePage extends GetView<PracticeController> {
           return GestureDetector(
             onTap: hasAnswered ? null : () => controller.submitAnswer(option),
             child: Container(
-              width: 80,
-              height: 80,
+              constraints: const BoxConstraints(
+                minWidth: 80,
+                minHeight: 80,
+              ),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(16),

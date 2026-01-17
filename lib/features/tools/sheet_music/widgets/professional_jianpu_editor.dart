@@ -53,8 +53,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           // 顶部工具栏（预览模式下隐藏）
           if (!isPreviewMode) _buildTopToolbar(context, score, isDark),
 
-          // 轨道选择器（如果是多轨道，且非预览模式）
-          if (score.tracks.length > 1 && !isPreviewMode) _buildTrackSelector(context, score),
+          // 轨道选择器（如果是多轨道，预览模式也显示）
+          if (score.tracks.length > 1) _buildTrackSelector(context, score),
 
           // 乐谱编辑区域
           Expanded(
@@ -839,6 +839,11 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
               const Divider(height: 1),
 
+              // 多音模式开关
+              _buildMultiNoteModeToggle(context),
+
+              const Divider(height: 1),
+
               // 修饰符和八度
               _buildModifiersRow(context),
 
@@ -911,6 +916,142 @@ class ProfessionalJianpuEditor extends StatelessWidget {
             }).toList(),
             ),
           )),
+    );
+  }
+
+  /// 多音模式开关
+  Widget _buildMultiNoteModeToggle(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Obx(() {
+        final isMultiMode = controller.isMultiNoteMode.value;
+        final pendingCount = controller.pendingNotes.length;
+        
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 多音模式开关
+            GestureDetector(
+              onTap: () {
+                controller.isMultiNoteMode.value = !controller.isMultiNoteMode.value;
+                if (!controller.isMultiNoteMode.value) {
+                  // 关闭多音模式时清空待添加列表
+                  controller.pendingNotes.clear();
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isMultiMode
+                      ? AppColors.primary
+                      : Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isMultiMode
+                        ? AppColors.primary
+                        : Colors.grey.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.layers,
+                      size: 18,
+                      color: isMultiMode ? Colors.white : Colors.grey[700],
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '多音模式',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isMultiMode ? Colors.white : Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // 待添加音符数量和确认按钮
+            if (isMultiMode && pendingCount > 0) ...[
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: AppColors.success.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  '已选 $pendingCount 个音',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.success,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  if (controller.pendingNotes.isNotEmpty) {
+                    controller.addChord(controller.pendingNotes.toList());
+                    controller.pendingNotes.clear();
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.success,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.check,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        '确认添加',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  controller.pendingNotes.clear();
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.clear,
+                    size: 18,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        );
+      }),
     );
   }
 
@@ -1111,7 +1252,13 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         onTap: () {
           if (degree == 0) {
             // 休止符
-            controller.addNote(0);
+            if (controller.isMultiNoteMode.value) {
+              // 多音模式下，休止符直接添加
+              controller.addNote(0);
+              controller.pendingNotes.clear();
+            } else {
+              controller.addNote(0);
+            }
             return;
           }
 
@@ -1157,25 +1304,83 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           // 限制在有效范围内 (21-108)
           pitch = pitch.clamp(21, 108);
           
-          controller.addNote(pitch);
+          // 多音模式：添加到待添加列表
+          if (controller.isMultiNoteMode.value) {
+            if (!controller.pendingNotes.contains(pitch)) {
+              controller.pendingNotes.add(pitch);
+            } else {
+              // 如果已存在，则移除（切换选择）
+              controller.pendingNotes.remove(pitch);
+            }
+          } else {
+            // 单音模式：直接添加
+            controller.addNote(pitch);
+          }
         },
-        child: Container(
-          width: 56,
-          height: 64,
-          decoration: BoxDecoration(
-            color: degree == 0
-                ? Colors.grey.withValues(alpha: 0.1)
-                : AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.3),
-              width: 1.5,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        child: Builder(
+          builder: (context) {
+            // 计算当前按键对应的 pitch（用于多音模式选中状态）
+            int? currentPitch;
+            if (degree != 0) {
+              final score = controller.currentScore.value;
+              if (score != null) {
+                final key = score.metadata.key;
+                const degreeToSemitone = [0, 0, 2, 4, 5, 7, 9, 11];
+                final semitone = degreeToSemitone[degree.clamp(0, 7)];
+                final keyTonicMidiMap = {
+                  MusicKey.C: 60,
+                  MusicKey.G: 67,
+                  MusicKey.D: 62,
+                  MusicKey.A: 69,
+                  MusicKey.E: 64,
+                  MusicKey.B: 71,
+                  MusicKey.Fs: 66,
+                  MusicKey.F: 65,
+                  MusicKey.Bb: 70,
+                  MusicKey.Eb: 63,
+                  MusicKey.Ab: 68,
+                  MusicKey.Db: 61,
+                  MusicKey.Am: 69,
+                  MusicKey.Em: 64,
+                  MusicKey.Dm: 62,
+                };
+                final tonicMidi = keyTonicMidiMap[key] ?? 60;
+                var pitch = tonicMidi + semitone + octave * 12;
+                if (accidental == Accidental.sharp) {
+                  pitch += 1;
+                } else if (accidental == Accidental.flat) {
+                  pitch -= 1;
+                }
+                currentPitch = pitch.clamp(21, 108);
+              }
+            }
+            
+            // 多音模式下检查是否已选中
+            final isSelected = controller.isMultiNoteMode.value &&
+                currentPitch != null &&
+                controller.pendingNotes.contains(currentPitch);
+            
+            return Container(
+              width: 56,
+              height: 64,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.success.withValues(alpha: 0.2)
+                    : degree == 0
+                        ? Colors.grey.withValues(alpha: 0.1)
+                        : AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.success
+                      : AppColors.primary.withValues(alpha: 0.3),
+                  width: isSelected ? 2 : 1.5,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
               if (degree == 0)
                 Text(
                   '0',
@@ -1203,8 +1408,10 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+                ],
+              ),
+            );
+          },
         ),
       );
     });

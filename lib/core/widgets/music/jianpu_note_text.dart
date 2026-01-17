@@ -121,8 +121,10 @@ class JianpuNoteText extends StatelessWidget {
     final dotsHeight = octaveOffset.abs() * (dotSize + dotSpacing * 0.5);
     
     // 使用 Stack 确保数字对齐，点叠加在上方或下方
+    // 增加宽度以容纳 # 符号等变音记号
+    final textWidth = fontSize * (number.length > 1 ? 1.4 : 0.8);
     return SizedBox(
-      width: fontSize * (number.length > 1 ? 1.2 : 0.8),
+      width: textWidth,
       height: fontSize + dotsHeight * 2, // 预留上下点的空间
       child: Stack(
         alignment: Alignment.center,
