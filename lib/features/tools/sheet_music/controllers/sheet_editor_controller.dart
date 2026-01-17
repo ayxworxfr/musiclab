@@ -99,6 +99,9 @@ class SheetEditorController extends GetxController {
   /// 每个轨道的拍索引（轨道索引 -> 拍索引）
   final Map<int, double> _trackBeatIndices = {};
 
+  /// 当前选中的小节索引（响应式，用于UI更新）
+  final selectedMeasureIndexRx = 0.obs;
+  
   /// 当前选中的小节索引（根据当前轨道获取）
   int get selectedMeasureIndex {
     return _trackMeasureIndices[selectedTrackIndex.value] ?? 0;
@@ -107,6 +110,8 @@ class SheetEditorController extends GetxController {
   /// 设置当前选中的小节索引
   set selectedMeasureIndex(int value) {
     _trackMeasureIndices[selectedTrackIndex.value] = value;
+    // 更新响应式变量以触发UI更新
+    selectedMeasureIndexRx.value = value;
   }
 
   /// 当前选中的拍索引（根据当前轨道获取，使用double以支持8分音符等）
@@ -665,6 +670,7 @@ class SheetEditorController extends GetxController {
 
   /// 选择音符
   /// 验证索引有效性，确保选择成功
+  /// 即使点击非当前小节也能选中
   void selectNote(int measureIndex, int beatIndex, int noteIndex) {
     final score = currentScore.value;
     if (score == null) return;
@@ -679,7 +685,9 @@ class SheetEditorController extends GetxController {
     final beat = measure.beats.firstWhereOrNull((b) => b.index == beatIndex);
     
     if (beat == null) {
-      // beat不存在，清除选择
+      // beat不存在，但可以设置小节和拍索引，用于插入新音符
+      selectedMeasureIndex = measureIndex;
+      selectedBeatIndex = beatIndex.toDouble();
       selectedNoteIndex.value = -1;
       selectedJianpuNoteIndex.value = -1;
       return;
@@ -687,12 +695,15 @@ class SheetEditorController extends GetxController {
 
     // 验证noteIndex是否有效
     if (noteIndex < 0 || noteIndex >= beat.notes.length) {
+      // 音符索引无效，但可以设置小节和拍索引
+      selectedMeasureIndex = measureIndex;
+      selectedBeatIndex = beatIndex.toDouble();
       selectedNoteIndex.value = -1;
       selectedJianpuNoteIndex.value = -1;
       return;
     }
 
-    // 所有验证通过，设置选择
+    // 所有验证通过，设置选择（包括更新小节索引）
     selectedMeasureIndex = measureIndex;
     selectedBeatIndex = beatIndex.toDouble();
     selectedNoteIndex.value = noteIndex;
@@ -1128,15 +1139,18 @@ class SheetEditorController extends GetxController {
     // 检查新轨道的小节数量，如果当前小节索引超出范围，调整到有效范围
     final newTrack = score.tracks[index];
     if (newTrack.measures.isEmpty) {
-      selectedMeasureIndex = 0;
-      selectedBeatIndex = 0.0;
+      _trackMeasureIndices[index] = 0;
+      _trackBeatIndices[index] = 0.0;
+      selectedMeasureIndexRx.value = 0;
     } else {
       // 获取新轨道之前保存的索引，如果没有则使用0
       final savedMeasureIndex = _trackMeasureIndices[index] ?? 0;
       // 确保索引在有效范围内
       final measureIndex = savedMeasureIndex.clamp(0, newTrack.measures.length - 1);
-      selectedMeasureIndex = measureIndex;
-      selectedBeatIndex = _trackBeatIndices[index] ?? 0.0;
+      _trackMeasureIndices[index] = measureIndex;
+      _trackBeatIndices[index] = _trackBeatIndices[index] ?? 0.0;
+      // 更新响应式变量以触发UI更新
+      selectedMeasureIndexRx.value = measureIndex;
     }
     
     selectedNoteIndex.value = -1;

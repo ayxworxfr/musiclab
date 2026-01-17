@@ -335,10 +335,10 @@ class EarPracticePage extends GetView<PracticeController> {
             onTap: hasAnswered ? null : () => controller.submitAnswer(option),
             child: Container(
               constraints: const BoxConstraints(
-                minWidth: 80,
+                minWidth: 100,
                 minHeight: 80,
               ),
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(16),

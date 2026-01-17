@@ -276,7 +276,12 @@ class NotePracticePage extends GetView<PracticeController> {
       children: [
         // 播放按钮
         GestureDetector(
-          onTap: controller.playCurrentAudio,
+          onTap: () {
+            // 标记用户交互，确保音频可以播放
+            final audioService = Get.find<AudioService>();
+            audioService.markUserInteracted();
+            controller.playCurrentAudio();
+          },
           child: Container(
             width: 120,
             height: 120,
@@ -411,8 +416,11 @@ class NotePracticePage extends GetView<PracticeController> {
           return GestureDetector(
             onTap: hasAnswered ? null : () => controller.submitAnswer(option),
             child: Container(
-              width: 80,
-              height: 80,
+              constraints: const BoxConstraints(
+                minWidth: 100,
+                minHeight: 80,
+              ),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(16),

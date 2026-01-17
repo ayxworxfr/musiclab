@@ -467,7 +467,9 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     bool isDark,
   ) {
     return Obx(() {
-      final isSelected = controller.selectedMeasureIndex == measureIndex;
+      // 使用响应式变量确保UI能够响应小节选择的变化
+      final currentSelectedMeasure = controller.selectedMeasureIndexRx.value;
+      final isSelected = currentSelectedMeasure == measureIndex;
 
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -600,20 +602,105 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     int measureIndex,
     bool isDark,
   ) {
+    if (notes.isEmpty) {
+      return _buildEmptyMeasureHint(measureIndex);
+    }
+
+    // 获取小节对应的 Measure 对象，用于计算 beat 索引
+    final score = controller.currentScore.value;
+    if (score == null) return const SizedBox();
+    final track = controller.currentTrack;
+    if (track == null) return const SizedBox();
+    if (measureIndex >= track.measures.length) return const SizedBox();
+    final measure = track.measures[measureIndex];
+
+    // 按 beat.index 排序 beats
+    final sortedBeats = List.from(measure.beats);
+    sortedBeats.sort((a, b) => a.index.compareTo(b.index));
+
+    // 构建音符列表，在音符之间插入可点击的插入区域
+    final List<Widget> widgets = [];
+    
+    for (int i = 0; i < notes.length; i++) {
+      final note = notes[i];
+      
+      // 找到这个音符对应的 beat
+      final beatAndNote = controller.findBeatAndNoteIndex(measureIndex, i);
+      if (beatAndNote == null) continue;
+      
+      final (beatIndex, noteIndexInBeat) = beatAndNote;
+      
+      // 在第一个音符前添加插入区域
+      if (i == 0) {
+        widgets.add(_buildInsertArea(measureIndex, 0, isDark));
+      }
+      
+      // 添加音符
+      widgets.add(_buildProfessionalNote(
+        note,
+        measureIndex,
+        i,
+        isDark,
+      ));
+      
+      // 计算下一个插入位置（基于当前音符的时值）
+      final noteDuration = note.duration;
+      final beatsPerMeasure = score.metadata.beatsPerMeasure;
+      final nextBeatIndex = ((beatIndex + noteDuration.beats).clamp(0, beatsPerMeasure)).toInt();
+      
+      // 在音符后添加插入区域
+      widgets.add(_buildInsertArea(measureIndex, nextBeatIndex, isDark));
+    }
+
     return Wrap(
       spacing: 8,
       runSpacing: 12,
-      children: notes.asMap().entries.map((entry) {
-        final noteIndex = entry.key;
-        final note = entry.value;
-        return _buildProfessionalNote(
-          note,
-          measureIndex,
-          noteIndex,
-          isDark,
-        );
-      }).toList(),
+      children: widgets,
     );
+  }
+
+  /// 构建插入区域（可点击的空隙）
+  Widget _buildInsertArea(int measureIndex, int beatIndex, bool isDark) {
+    return Obx(() {
+      final isSelected = controller.selectedMeasureIndex == measureIndex &&
+          controller.selectedBeatIndex.floor() == beatIndex &&
+          controller.selectedNoteIndex.value < 0;
+      
+      return GestureDetector(
+        onTap: () {
+          // 设置插入位置
+          controller.selectMeasure(measureIndex);
+          controller.selectedBeatIndex = beatIndex.toDouble();
+          controller.selectedNoteIndex.value = -1;
+          controller.selectedJianpuNoteIndex.value = -1;
+        },
+        child: Container(
+          width: 40,
+          height: 60,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.1)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.primary
+                  : Colors.grey.withValues(alpha: 0.2),
+              width: isSelected ? 2 : 1,
+              style: BorderStyle.solid,
+            ),
+          ),
+          child: Icon(
+            Icons.add,
+            size: 20,
+            color: isSelected
+                ? AppColors.primary
+                : Colors.grey.withValues(alpha: 0.4),
+          ),
+        ),
+      );
+    });
   }
 
   /// 专业音符显示
@@ -638,7 +725,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
         if (beatAndNote != null) {
           final (beatIndex, _) = beatAndNote;
-          // 简化判断：只要在同一小节的同一拍即高亮
+          // 多音（和弦）支持：只要在同一小节的同一拍即高亮（同一拍内的所有音符都高亮）
           isSelected = playbackState.currentMeasureIndex == measureIndex &&
                        _isCurrentBeat(playbackState, beatIndex);
         } else {
