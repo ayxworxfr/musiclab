@@ -20,6 +20,7 @@ class GrandStaffPainter extends CustomPainter {
   final Set<int> highlightedNoteIndices;
   final bool showFingering;
   final bool showLyrics;
+  final double? overrideTotalDuration; // 临时总时长（考虑速度调整）
 
   GrandStaffPainter({
     required this.score,
@@ -29,6 +30,7 @@ class GrandStaffPainter extends CustomPainter {
     this.highlightedNoteIndices = const {},
     this.showFingering = true,
     this.showLyrics = true,
+    this.overrideTotalDuration,
   });
 
   @override
@@ -674,7 +676,8 @@ class GrandStaffPainter extends CustomPainter {
   }
 
   void _drawPlayhead(Canvas canvas, Size size) {
-    final totalDuration = score.totalDuration;
+    // 使用临时总时长（如果提供），否则使用原始总时长
+    final totalDuration = overrideTotalDuration ?? score.totalDuration;
     if (totalDuration <= 0) return;
 
     final measureIndex = layout.getMeasureIndexAtTime(

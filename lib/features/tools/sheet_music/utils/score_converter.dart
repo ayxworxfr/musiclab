@@ -30,10 +30,10 @@ class ScoreConverter {
         int.tryParse(timeParts.length > 1 ? timeParts[1] : '4') ?? 4;
 
     final tempo = metadata['tempo'] as int? ?? 120;
-    final difficulty = json['difficulty'] as int? ?? 1;
+    final difficulty = metadata['difficulty'] as int ?? 1;
 
     ScoreCategory category = ScoreCategory.children;
-    final categoryStr = json['category'] as String?;
+    final categoryStr = metadata['category'] as String?;
     if (categoryStr != null) {
       switch (categoryStr) {
         case 'folk':
@@ -48,8 +48,19 @@ class ScoreConverter {
         case 'exercise':
           category = ScoreCategory.exercise;
           break;
-        default:
+        case 'children':
           category = ScoreCategory.children;
+          break;
+        default:
+          // 尝试使用 ScoreCategory 的 fromString 方法
+          try {
+            category = ScoreCategory.values.firstWhere(
+              (c) => c.name == categoryStr || c.label == categoryStr,
+              orElse: () => ScoreCategory.children,
+            );
+          } catch (_) {
+            category = ScoreCategory.children;
+          }
       }
     }
 

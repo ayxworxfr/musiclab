@@ -5,6 +5,42 @@ import '../models/enums.dart';
 import '../layout/layout_result.dart';
 import 'render_config.dart';
 
+/// 布局参数（用于播放指示线计算）
+class _LayoutParams {
+  final double contentWidth;
+  final double startX;
+  final int beatsPerMeasure;
+  final int measuresPerLine;
+  final double measureWidth;
+  final double beatWidth;
+  final double trackHeight;
+  final double lineHeight;
+  
+  const _LayoutParams({
+    required this.contentWidth,
+    required this.startX,
+    required this.beatsPerMeasure,
+    required this.measuresPerLine,
+    required this.measureWidth,
+    required this.beatWidth,
+    required this.trackHeight,
+    required this.lineHeight,
+  });
+}
+
+/// 播放指示线位置
+class _PlayheadPosition {
+  final double x;
+  final double y;
+  final double height;
+  
+  const _PlayheadPosition({
+    required this.x,
+    required this.y,
+    required this.height,
+  });
+}
+
 /// ═══════════════════════════════════════════════════════════════
 /// 简谱绘制器 (Canvas)
 /// ═══════════════════════════════════════════════════════════════
@@ -16,6 +52,7 @@ class JianpuPainter extends CustomPainter {
   final Set<int> highlightedNoteIndices;
   final bool showLyrics;
   final MusicKey? overrideKey; // 临时调号（不修改原始内容）
+  final double? overrideTotalDuration; // 临时总时长（考虑速度调整）
 
   JianpuPainter({
     required this.score,
@@ -25,6 +62,7 @@ class JianpuPainter extends CustomPainter {
     this.highlightedNoteIndices = const {},
     this.showLyrics = true,
     this.overrideKey,
+    this.overrideTotalDuration,
   });
 
   @override
@@ -570,18 +608,15 @@ class JianpuPainter extends CustomPainter {
     textPainter.paint(canvas, Offset(x - textPainter.width / 2, y));
   }
 
-  void _drawPlayhead(Canvas canvas, Size size) {
-    final totalDuration = score.totalDuration;
-    if (totalDuration <= 0) return;
-
+  /// 获取布局参数（与绘制逻辑保持一致）
+  _LayoutParams _getLayoutParams(Size size) {
     final contentWidth = size.width - config.padding.left - config.padding.right;
     final startX = config.padding.left;
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
     final measuresPerLine = _calculateMeasuresPerLine(contentWidth, beatsPerMeasure);
     final measureWidth = contentWidth / measuresPerLine;
-    final trackCount = score.tracks.length;
+    final beatWidth = measureWidth / beatsPerMeasure;
     
-    // 自适应轨道高度
     final maxNotes = _getMaxNotesInChord();
     final double trackHeight;
     if (maxNotes <= 2) {
@@ -593,27 +628,91 @@ class JianpuPainter extends CustomPainter {
     }
     
     final lineSpacing = 20.0;
-    final lineHeight = trackCount * trackHeight + lineSpacing;
+    final lineHeight = score.tracks.length * trackHeight + lineSpacing;
+    
+    return _LayoutParams(
+      contentWidth: contentWidth,
+      startX: startX,
+      beatsPerMeasure: beatsPerMeasure,
+      measuresPerLine: measuresPerLine,
+      measureWidth: measureWidth,
+      beatWidth: beatWidth,
+      trackHeight: trackHeight,
+      lineHeight: lineHeight,
+    );
+  }
 
-    // 根据时间计算位置
-    final progress = currentTime / totalDuration;
-    final measureIndex = (progress * score.measureCount).floor().clamp(0, score.measureCount - 1);
-    final measureInLine = measureIndex % measuresPerLine;
-    final currentLine = measureIndex ~/ measuresPerLine;
+  void _drawPlayhead(Canvas canvas, Size size) {
+    // 使用临时总时长（如果提供），否则使用原始总时长
+    final totalDuration = overrideTotalDuration ?? score.totalDuration;
+    if (totalDuration <= 0 || currentTime <= 0) return;
 
-    // 小节内的进度
-    final measureProgress = (progress * score.measureCount) - measureIndex;
-    final beatInMeasure = measureProgress * beatsPerMeasure;
-    final beatWidth = measureWidth / beatsPerMeasure;
-
-    final x = startX + measureInLine * measureWidth + beatInMeasure * beatWidth;
-    final y = config.padding.top + currentLine * lineHeight;
+    // 获取布局参数（与绘制逻辑保持一致）
+    final params = _getLayoutParams(size);
+    
+    // 计算当前时间对应的位置
+    // 使用与绘制逻辑相同的计算方法
+    final playheadPosition = _calculatePlayheadPosition(
+      currentTime: currentTime,
+      totalDuration: totalDuration,
+      params: params,
+    );
+    
+    if (playheadPosition == null) return;
 
     final paint = Paint()
       ..color = config.theme.playingColor.withValues(alpha: 0.4)
       ..strokeWidth = 2;
 
-    canvas.drawLine(Offset(x, y), Offset(x, y + trackCount * trackHeight), paint);
+    canvas.drawLine(
+      Offset(playheadPosition.x, playheadPosition.y),
+      Offset(playheadPosition.x, playheadPosition.y + playheadPosition.height),
+      paint,
+    );
+  }
+  
+  /// 计算播放指示线位置
+  /// 返回 (x, y, height) 或 null（如果无法计算）
+  /// 
+  /// 注意：currentTime 和 totalDuration 都已经考虑了倍速和临时速度调整
+  /// - currentTime: 实际播放时间（在 _onTick 中每16ms增加，已考虑倍速）
+  /// - totalDuration: 实际总时长（已除以倍速，通过 getTotalDuration() 计算）
+  _PlayheadPosition? _calculatePlayheadPosition({
+    required double currentTime,
+    required double totalDuration,
+    required _LayoutParams params,
+  }) {
+    if (totalDuration <= 0) return null;
+    
+    // 直接使用进度比例计算位置，避免重复计算速度
+    // currentTime 和 totalDuration 已经考虑了倍速和临时速度调整
+    final progress = (currentTime / totalDuration).clamp(0.0, 1.0);
+    
+    // 计算当前小节索引
+    final measureIndex = (progress * score.measureCount).floor().clamp(0, score.measureCount - 1);
+    
+    // 计算小节内的进度
+    final measureProgress = (progress * score.measureCount) - measureIndex;
+    
+    // 计算拍内位置
+    final beatInMeasure = measureProgress * params.beatsPerMeasure;
+    
+    // 计算行位置
+    final measureInLine = measureIndex % params.measuresPerLine;
+    final currentLine = measureIndex ~/ params.measuresPerLine;
+    
+    // 计算X坐标：小节起始位置 + 拍内位置
+    // 与绘制逻辑保持一致：小节线在 measureX，音符在 beatX = measureX + beatIndex * beatWidth + beatWidth / 2
+    final measureX = params.startX + measureInLine * params.measureWidth;
+    final beatX = measureX + beatInMeasure * params.beatWidth;
+    
+    // 计算Y坐标
+    final y = config.padding.top + currentLine * params.lineHeight;
+    
+    // 计算高度
+    final height = score.tracks.length * params.trackHeight;
+    
+    return _PlayheadPosition(x: beatX, y: y, height: height);
   }
 
   /// 静态方法计算每行小节数

@@ -145,8 +145,17 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         );
         _layout = layoutEngine.calculate(widget.score);
 
-        // 加载到播放控制器
-        _playbackController?.loadScore(widget.score, _layout!);
+        // 加载到播放控制器（只在布局变化时重新加载，避免重置速度）
+        if (_playbackController != null && 
+            (_playbackController!.score != widget.score || 
+             _playbackController!.layout != _layout)) {
+          _playbackController!.loadScore(widget.score, _layout!);
+          // 如果设置了临时速度，恢复它
+          if (_overrideTempo != null) {
+            _playbackController!.baseTempo.value = _overrideTempo!;
+            _playbackController!.rebuildSchedule();
+          }
+        }
 
         // 底部固定区域高度（钢琴 + 键位提示 + 控制区）
         final double bottomHeight = widget.showPiano
@@ -663,13 +672,24 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [60, 80, 100, 120, 140, 160, 180].map((tempo) {
-                    final isSelected = tempo == currentTempo;
+                    // 检查是否选中：要么是当前值，要么是输入框中的值
+                    final inputValue = int.tryParse(tempoController.text);
+                    final isSelected = tempo == currentTempo || tempo == inputValue;
                     return ChoiceChip(
                       label: Text('$tempo'),
                       selected: isSelected,
                       onSelected: (selected) {
                         if (selected) {
-                          tempoController.text = tempo.toString();
+                          setModalState(() {
+                            tempoController.text = tempo.toString();
+                            // 立即更新临时速度以触发高亮
+                            _overrideTempo = tempo;
+                          });
+                          // 立即更新播放控制器
+                          if (_playbackController != null) {
+                            _playbackController!.baseTempo.value = tempo;
+                            _playbackController!.rebuildSchedule();
+                          }
                         }
                       },
                     );
@@ -745,6 +765,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
             _scrollToCurrentPlayPosition(currentTime);
           }
 
+          // 获取实际总时长（考虑速度调整）
+          final actualTotalDuration = controller.getTotalDuration();
+          
           if (_currentMode == NotationMode.staff) {
             // 五线谱模式
             final scoreHeight = _layout!.pianoY;
@@ -754,10 +777,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 score: widget.score,
                 layout: _layout!,
                 config: widget.config,
-                currentTime: currentTime * controller.speedMultiplier.value,
+                currentTime: currentTime, // currentTime 已经是实际播放时间，不需要再乘以倍速
                 highlightedNoteIndices: highlightedIndices,
                 showFingering: widget.showFingering,
                 showLyrics: widget.showLyrics,
+                overrideTotalDuration: actualTotalDuration, // 使用实际总时长（已除以倍速）
               ),
             );
           } else {
@@ -772,10 +796,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 score: widget.score,
                 layout: _layout!,
                 config: widget.config,
-                currentTime: currentTime * controller.speedMultiplier.value,
+                currentTime: currentTime, // currentTime 已经是实际播放时间，不需要再乘以倍速
                 highlightedNoteIndices: highlightedIndices,
                 showLyrics: widget.showLyrics,
                 overrideKey: _overrideKey, // 使用临时调号
+                overrideTotalDuration: actualTotalDuration, // 使用实际总时长（已除以倍速）
               ),
             );
           }

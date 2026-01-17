@@ -139,13 +139,27 @@ class PlaybackController extends GetxController {
     _scheduledNotes.clear();
     if (_layout == null || _score == null) return;
 
-    final beatsPerSecond = baseTempo.value / 60.0;
+    // 获取原始速度和当前速度
+    final originalTempo = _score!.metadata.tempo;
+    final currentTempo = baseTempo.value;
+    
+    // 计算速度比例（用于调整时间）
+    final tempoRatio = originalTempo / currentTempo;
+    
+    // 使用当前速度计算每拍的秒数
+    final beatsPerSecond = currentTempo / 60.0;
 
     for (var i = 0; i < _layout!.noteLayouts.length; i++) {
       final noteLayout = _layout!.noteLayouts[i];
+      
+      // 根据速度比例调整开始时间
+      // 如果速度从100变成180，tempoRatio = 100/180 = 0.556
+      // 所以原来的时间需要乘以这个比例（时间变短）
+      final adjustedStartTime = noteLayout.startTime * tempoRatio;
+      
       _scheduledNotes.add(_ScheduledNote(
         layoutIndex: i,
-        startTime: noteLayout.startTime,
+        startTime: adjustedStartTime,
         duration: noteLayout.note.actualBeats / beatsPerSecond,
         midi: noteLayout.note.pitch,
         hand: noteLayout.hand,
@@ -158,7 +172,32 @@ class PlaybackController extends GetxController {
 
   /// 重新构建播放时间表（公共方法，用于速度变化时）
   void rebuildSchedule() {
+    if (_score == null) return;
+    
+    // 如果正在播放，需要同步调整 currentTime 以保持相对进度不变
+    final wasPlaying = isPlaying.value;
+    double? savedProgress;
+    if (wasPlaying && currentTime.value > 0) {
+      // 保存当前进度比例（0.0-1.0）
+      final oldTotalDuration = getTotalDuration();
+      if (oldTotalDuration > 0) {
+        savedProgress = currentTime.value / oldTotalDuration;
+      }
+    }
+    
+    // 重新构建时间表
     _buildSchedule();
+    
+    // 如果正在播放，根据新的总时长调整 currentTime
+    if (wasPlaying && savedProgress != null) {
+      final newTotalDuration = getTotalDuration();
+      if (newTotalDuration > 0) {
+        currentTime.value = savedProgress * newTotalDuration;
+        // 更新播放索引
+        _scheduledNoteIndex = _findNoteIndexAtTime(currentTime.value * speedMultiplier.value);
+      }
+    }
+    
     update();
   }
 

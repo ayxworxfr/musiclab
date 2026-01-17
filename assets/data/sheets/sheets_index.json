@@ -5,7 +5,7 @@
       "filename": "twinkle_twinkle.json",
       "title": "小星星",
       "difficulty": 1,
-      "category": "folk"
+      "category": "children"
     },
     {
       "id": "sheet_002",
@@ -19,14 +19,14 @@
       "filename": "happy_birthday.json",
       "title": "生日快乐歌",
       "difficulty": 1,
-      "category": "folk"
+      "category": "children"
     },
     {
       "id": "sheet_004",
       "filename": "two_tigers.json",
       "title": "两只老虎",
       "difficulty": 1,
-      "category": "folk"
+      "category": "children"
     },
     {
       "id": "sheet_005",
@@ -61,94 +61,95 @@
       "filename": "fireflies.json",
       "title": "虫儿飞",
       "difficulty": 1,
-      "category": "folk"
+      "category": "children"
     },
     {
       "id": "practice_scale_c_major_beginner",
       "filename": "scale_c_major_beginner.json",
       "title": "C大调音阶练习（入门）",
       "difficulty": 1,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_scale_g_major_beginner",
       "filename": "scale_g_major_beginner.json",
       "title": "G大调音阶练习（入门）",
       "difficulty": 1,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_scale_f_major_beginner",
       "filename": "scale_f_major_beginner.json",
       "title": "F大调音阶练习（入门）",
       "difficulty": 1,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_scale_c_major_two_octaves",
       "filename": "scale_c_major_two_octaves.json",
       "title": "C大调音阶练习（两个八度）",
       "difficulty": 3,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_scale_thirds",
       "filename": "scale_thirds.json",
       "title": "三度音程音阶练习",
       "difficulty": 3,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_arpeggio_c_major",
       "filename": "arpeggio_c_major.json",
       "title": "C大调琶音练习",
       "difficulty": 3,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_chord_c_major_beginner",
       "filename": "chord_c_major_beginner.json",
       "title": "C大调主和弦练习（入门）",
       "difficulty": 1,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_chord_progression_beginner",
       "filename": "chord_progression_beginner.json",
       "title": "基础和弦进行练习（入门）",
       "difficulty": 2,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_chord_inversions",
       "filename": "chord_inversions.json",
       "title": "三和弦转位练习（进阶）",
       "difficulty": 3,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_chord_seventh",
       "filename": "chord_seventh.json",
       "title": "七和弦练习（进阶）",
       "difficulty": 4,
-      "category": "practice"
+      "category": "exercise"
     },
     {
       "id": "practice_chord_progression_advanced",
       "filename": "chord_progression_advanced.json",
       "title": "进阶和弦进行练习",
       "difficulty": 4,
-      "category": "practice"
+      "category": "exercise"
     }
   ],
   "metadata": {
     "total": 20,
     "lastUpdated": "2026-01-13",
     "categories": {
-      "folk": 5,
-      "classical": 3,
-      "pop": 4,
-      "practice": 11
+      "children": 4,
+      "folk": 1,
+      "classical": 2,
+      "pop": 2,
+      "exercise": 11
     },
     "difficulties": {
       "1": 7,
