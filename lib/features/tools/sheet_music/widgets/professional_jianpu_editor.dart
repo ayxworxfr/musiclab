@@ -926,12 +926,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
               const Divider(height: 1),
 
-              // 多音模式开关
-              _buildMultiNoteModeToggle(context),
-
-              const Divider(height: 1),
-
-              // 修饰符和八度
+              // 修饰符、多音模式和八度（合并到一行）
               _buildModifiersRow(context),
 
               const Divider(height: 1),
@@ -1006,164 +1001,152 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     );
   }
 
-  /// 多音模式开关
-  Widget _buildMultiNoteModeToggle(BuildContext context) {
+  /// 修饰符行（包含多音模式、附点、变音记号、八度控制）
+  Widget _buildModifiersRow(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Obx(() {
-        final isMultiMode = controller.isMultiNoteMode.value;
-        final pendingCount = controller.pendingNotes.length;
-        
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 多音模式开关
-            GestureDetector(
-              onTap: () {
-                controller.isMultiNoteMode.value = !controller.isMultiNoteMode.value;
-                if (!controller.isMultiNoteMode.value) {
-                  // 关闭多音模式时清空待添加列表
-                  controller.pendingNotes.clear();
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isMultiMode
-                      ? AppColors.primary
-                      : Colors.grey.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isMultiMode
-                        ? AppColors.primary
-                        : Colors.grey.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.layers,
-                      size: 18,
-                      color: isMultiMode ? Colors.white : Colors.grey[700],
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '多音模式',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: isMultiMode ? Colors.white : Colors.grey[700],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            // 待添加音符数量和确认按钮
-            if (isMultiMode && pendingCount > 0) ...[
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: AppColors.success.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Text(
-                  '已选 $pendingCount 个音',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.success,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Obx(() {
+          final isMultiMode = controller.isMultiNoteMode.value;
+          final pendingCount = controller.pendingNotes.length;
+          
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 多音模式开关（放在最前面）
               GestureDetector(
                 onTap: () {
-                  if (controller.pendingNotes.isNotEmpty) {
-                    controller.addChord(controller.pendingNotes.toList());
+                  controller.isMultiNoteMode.value = !controller.isMultiNoteMode.value;
+                  if (!controller.isMultiNoteMode.value) {
                     controller.pendingNotes.clear();
                   }
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.success,
-                    borderRadius: BorderRadius.circular(8),
+                    color: isMultiMode
+                        ? AppColors.primary
+                        : Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: isMultiMode
+                          ? AppColors.primary
+                          : Colors.grey.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.check,
-                        size: 18,
-                        color: Colors.white,
+                      Icon(
+                        Icons.layers,
+                        size: 16,
+                        color: isMultiMode ? Colors.white : Colors.grey[700],
                       ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        '确认添加',
+                      const SizedBox(width: 4),
+                      Text(
+                        '多音',
                         style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isMultiMode ? Colors.white : Colors.grey[700],
                         ),
                       ),
+                      if (isMultiMode && pendingCount > 0) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$pendingCount',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () {
-                  controller.pendingNotes.clear();
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.clear,
-                    size: 18,
-                    color: Colors.grey[700],
+              
+              // 多音模式下的确认和清除按钮
+              if (isMultiMode && pendingCount > 0) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    if (controller.pendingNotes.isNotEmpty) {
+                      controller.addChord(controller.pendingNotes.toList());
+                      controller.pendingNotes.clear();
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          '确认',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ],
-        );
-      }),
-    );
-  }
-
-  /// 修饰符行
-  Widget _buildModifiersRow(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-          // 附点
-          Obx(() => _buildModifierButton(
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () {
+                    controller.pendingNotes.clear();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      Icons.clear,
+                      size: 16,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+              ],
+              
+              const SizedBox(width: 16),
+              
+              // 附点
+              _buildModifierButton(
                 icon: Icons.circle,
                 label: '附点',
                 isSelected: controller.isDotted.value,
                 onTap: () => controller.isDotted.value =
                     !controller.isDotted.value,
-              )),
+              ),
 
-          const SizedBox(width: 8),
+              const SizedBox(width: 8),
 
-          // 变音记号
-          Obx(() => Row(
+              // 变音记号
+              Row(
                 children: [
                   _buildModifierButton(
                     icon: null,
@@ -1187,12 +1170,12 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                             : Accidental.flat,
                   ),
                 ],
-              )),
+              ),
 
-          const SizedBox(width: 16),
+              const SizedBox(width: 16),
 
-          // 八度控制
-          Obx(() => Row(
+              // 八度控制
+              Row(
                 children: [
                   _buildModifierButton(
                     icon: Icons.arrow_downward,
@@ -1237,9 +1220,10 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     },
                   ),
                 ],
-              )),
-          ],
-        ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
