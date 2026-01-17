@@ -361,16 +361,20 @@ class PianoPage extends GetView<PianoController> {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: MainAxisSize.max,
                     children: [
                       const Icon(Icons.piano, size: 16, color: AppColors.primary),
                       const SizedBox(width: 6),
-                      Text(
-                        '${_getMidiNoteName(controller.startMidi.value)} - ${_getMidiNoteName(controller.endMidi.value)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
+                      Flexible(
+                        child: Text(
+                          '${_getMidiNoteName(controller.startMidi.value)} - ${_getMidiNoteName(controller.endMidi.value)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                       const SizedBox(width: 4),

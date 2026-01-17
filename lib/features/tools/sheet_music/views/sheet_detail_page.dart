@@ -201,7 +201,26 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_currentScore!.title),
+        title: GestureDetector(
+          onTap: _currentScore!.isBuiltIn
+              ? null
+              : () => _showRenameDialog(),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  _currentScore!.title,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (!_currentScore!.isBuiltIn) ...[
+                const SizedBox(width: 4),
+                const Icon(Icons.edit, size: 16),
+              ],
+            ],
+          ),
+        ),
         actions: [
           IconButton(
             icon: Icon(
@@ -239,5 +258,75 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
         },
       ),
     );
+  }
+
+  /// 显示重命名对话框
+  void _showRenameDialog() {
+    if (_currentScore == null || _currentScore!.isBuiltIn) return;
+
+    final titleController = TextEditingController(text: _currentScore!.title);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('重命名乐谱'),
+        content: TextField(
+          controller: titleController,
+          decoration: const InputDecoration(
+            labelText: '乐谱名称',
+            hintText: '请输入新的乐谱名称',
+          ),
+          autofocus: true,
+          onSubmitted: (_) => _handleRename(titleController.text),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => _handleRename(titleController.text),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 处理重命名
+  void _handleRename(String newTitle) {
+    if (newTitle.trim().isEmpty) {
+      Get.snackbar(
+        '错误',
+        '乐谱名称不能为空',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    if (_currentScore == null) return;
+
+    final updatedScore = _currentScore!.copyWith(title: newTitle.trim());
+
+    // 保存更新后的乐谱
+    _controller.saveUserScore(updatedScore).then((success) {
+      if (success) {
+        setState(() {
+          _currentScore = updatedScore;
+        });
+        Navigator.pop(context); // 关闭对话框
+        Get.snackbar(
+          '成功',
+          '乐谱已重命名为 "${newTitle.trim()}"',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        Get.snackbar(
+          '错误',
+          '重命名失败，请重试',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    });
   }
 }

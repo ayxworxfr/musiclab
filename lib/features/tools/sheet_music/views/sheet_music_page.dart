@@ -346,7 +346,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 更多按钮（导出和删除功能）
+                    // 更多按钮（导出、重命名和删除功能）
                     PopupMenuButton<String>(
                       icon: Icon(
                         Icons.more_vert,
@@ -358,6 +358,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                         switch (value) {
                           case 'export':
                             _exportScore(context, score);
+                            break;
+                          case 'rename':
+                            _renameScore(context, score);
                             break;
                           case 'delete':
                             _deleteScore(context, score);
@@ -375,6 +378,17 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                             ],
                           ),
                         ),
+                        if (!score.isBuiltIn)
+                          const PopupMenuItem(
+                            value: 'rename',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit, size: 18),
+                                SizedBox(width: 8),
+                                Text('重命名'),
+                              ],
+                            ),
+                          ),
                         if (!score.isBuiltIn)
                           const PopupMenuItem(
                             value: 'delete',
@@ -543,5 +557,67 @@ class SheetMusicPage extends GetView<SheetMusicController> {
         );
       },
     );
+  }
+
+  /// 重命名乐谱
+  Future<void> _renameScore(BuildContext context, Score score) async {
+    // 保护预制乐谱
+    if (score.isBuiltIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('系统预制乐谱无法重命名')),
+      );
+      return;
+    }
+
+    final titleController = TextEditingController(text: score.title);
+
+    final newTitle = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('重命名乐谱'),
+        content: TextField(
+          controller: titleController,
+          decoration: const InputDecoration(
+            labelText: '乐谱名称',
+            hintText: '请输入新的乐谱名称',
+          ),
+          autofocus: true,
+          onSubmitted: (value) => Navigator.pop(context, value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, titleController.text),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+
+    if (newTitle == null || newTitle.trim().isEmpty) {
+      if (newTitle != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('乐谱名称不能为空')),
+        );
+      }
+      return;
+    }
+
+    // 更新乐谱
+    final updatedScore = score.copyWith(title: newTitle.trim());
+    final success = await controller.saveUserScore(updatedScore);
+
+    if (success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('已重命名为 "${newTitle.trim()}"')),
+      );
+    } else if (!success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('重命名失败，请重试')),
+      );
+    }
   }
 }

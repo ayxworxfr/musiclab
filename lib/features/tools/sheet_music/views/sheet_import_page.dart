@@ -219,7 +219,7 @@ class _SheetImportPageState extends State<SheetImportPage>
           ],
           if (result.warnings.isNotEmpty) ...[
             const SizedBox(height: 8),
-            const Text('警告:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('提示:', style: TextStyle(fontWeight: FontWeight.bold)),
             ...result.warnings.map(
               (w) => Text('• $w', style: const TextStyle(fontSize: 12)),
             ),
