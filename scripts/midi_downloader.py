@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-MIDI Downloader - 从 bitmidi.com 下载 MIDI 文件
+MIDI Downloader - 多数据源 MIDI 文件下载器
 
 功能:
+    - 支持多个数据源（BitMidi、中国MIDI网站等）
     - 关键词搜索 MIDI
     - 单曲/批量下载
     - 进度显示
@@ -11,7 +12,8 @@ MIDI Downloader - 从 bitmidi.com 下载 MIDI 文件
 
 使用示例:
     python midi_downloader.py search "canon"
-    python midi_downloader.py search "beethoven" --limit 20
+    python midi_downloader.py search "beethoven" --limit 20 --source bitmidi
+    python midi_downloader.py search "月亮代表我的心" --source chinese
     python midi_downloader.py download <midi_url>
     python midi_downloader.py popular --pages 3
 
@@ -27,7 +29,9 @@ import logging
 import re
 import sys
 import time
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Generator, Optional
 from urllib.parse import quote_plus, urljoin
@@ -38,13 +42,26 @@ from tqdm import tqdm
 
 
 # ============================================================================
+# 数据源枚举
+# ============================================================================
+
+class DataSource(Enum):
+    """数据源枚举"""
+    BITMIDI = "bitmidi"
+    CHINESE = "chinese"  # 中国MIDI数据源
+    ALL = "all"  # 所有数据源
+    
+    def __str__(self) -> str:
+        return self.value
+
+
+# ============================================================================
 # 配置
 # ============================================================================
 
 @dataclass
 class Config:
     """全局配置"""
-    base_url: str = "https://bitmidi.com"
     output_dir: Path = field(default_factory=lambda: Path("./midi_downloads"))
     timeout: int = 30
     retry_times: int = 3
@@ -107,70 +124,71 @@ class ParseError(MidiDownloaderError):
 
 
 # ============================================================================
-# 日志配置
+# 数据源抽象基类
 # ============================================================================
 
-def setup_logger(verbose: bool = False) -> logging.Logger:
-    """配置日志"""
-    logger = logging.getLogger("midi_downloader")
-    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+class DataSourceBase(ABC):
+    """数据源抽象基类"""
     
-    if not logger.handlers:
-        handler = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)s] %(message)s",
-            datefmt="%H:%M:%S"
-        )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+    def __init__(self, config: Config, logger: logging.Logger, session: requests.Session):
+        self.config = config
+        self.logger = logger
+        self.session = session
     
-    return logger
-
-
-# ============================================================================
-# 核心下载器类
-# ============================================================================
-
-class MidiDownloader:
-    """MIDI 下载器核心类"""
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """数据源名称"""
+        pass
     
-    def __init__(self, config: Optional[Config] = None, verbose: bool = False):
-        self.config = config or Config()
-        self.logger = setup_logger(verbose)
-        self.session = self._create_session()
-        self._downloaded_hashes: set[str] = set()
-        self._load_existing_files()
+    @property
+    @abstractmethod
+    def base_url(self) -> str:
+        """数据源基础URL"""
+        pass
     
-    def _create_session(self) -> requests.Session:
-        """创建 HTTP 会话"""
-        session = requests.Session()
-        session.headers.update({
-            "User-Agent": self.config.user_agent,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.5",
-        })
-        return session
-    
-    def _load_existing_files(self) -> None:
-        """加载已下载文件的哈希值（用于去重）"""
-        for file_path in self.config.output_dir.glob("*.mid"):
-            try:
-                file_hash = self._calculate_hash(file_path)
-                self._downloaded_hashes.add(file_hash)
-            except IOError:
-                continue
+    @abstractmethod
+    def search(self, query: str, limit: int = 20) -> list[MidiInfo]:
+        """
+        搜索 MIDI 文件
         
-        if self._downloaded_hashes:
-            self.logger.debug(f"已加载 {len(self._downloaded_hashes)} 个已下载文件的哈希")
+        Args:
+            query: 搜索关键词
+            limit: 返回结果数量限制
+            
+        Returns:
+            MidiInfo 列表
+        """
+        pass
     
-    @staticmethod
-    def _calculate_hash(file_path: Path) -> str:
-        """计算文件 MD5 哈希"""
-        hasher = hashlib.md5()
-        with open(file_path, 'rb') as f:
-            for chunk in iter(lambda: f.read(8192), b''):
-                hasher.update(chunk)
-        return hasher.hexdigest()
+    @abstractmethod
+    def get_popular(self, pages: int = 1) -> list[MidiInfo]:
+        """
+        获取热门 MIDI
+        
+        Args:
+            pages: 获取页数
+            
+        Returns:
+            MidiInfo 列表
+        """
+        pass
+    
+    @abstractmethod
+    def get_download_url(self, midi_info: MidiInfo) -> str:
+        """
+        获取真实下载链接
+        
+        Args:
+            midi_info: MIDI 信息对象
+            
+        Returns:
+            下载 URL
+            
+        Raises:
+            ParseError: 无法获取下载链接
+        """
+        pass
     
     def _request(self, url: str, stream: bool = False) -> requests.Response:
         """
@@ -201,23 +219,52 @@ class MidiDownloader:
             except requests.RequestException as e:
                 last_error = e
                 self.logger.warning(
-                    f"请求失败 (尝试 {attempt}/{self.config.retry_times}): {e}"
+                    f"[{self.name}] 请求失败 (尝试 {attempt}/{self.config.retry_times}): {e}"
                 )
                 if attempt < self.config.retry_times:
                     time.sleep(self.config.retry_delay * attempt)
         
         raise NetworkError(f"请求失败: {url}") from last_error
+
+
+# ============================================================================
+# 日志配置
+# ============================================================================
+
+def setup_logger(verbose: bool = False) -> logging.Logger:
+    """配置日志"""
+    logger = logging.getLogger("midi_downloader")
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(
+            "%(asctime)s [%(levelname)s] %(message)s",
+            datefmt="%H:%M:%S"
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    
+    return logger
+
+
+# ============================================================================
+# 数据源实现
+# ============================================================================
+
+class BitMidiDataSource(DataSourceBase):
+    """BitMidi 数据源"""
+    
+    @property
+    def name(self) -> str:
+        return "BitMidi"
+    
+    @property
+    def base_url(self) -> str:
+        return "https://bitmidi.com"
     
     def _parse_search_results(self, html: str) -> Generator[MidiInfo, None, None]:
-        """
-        解析搜索结果页面
-        
-        Args:
-            html: 页面 HTML
-            
-        Yields:
-            MidiInfo 对象
-        """
+        """解析搜索结果页面"""
         soup = BeautifulSoup(html, 'html.parser')
         
         # bitmidi.com 搜索结果结构
@@ -226,7 +273,7 @@ class MidiDownloader:
             name = item.get_text(strip=True)
             
             if href and name:
-                page_url = urljoin(self.config.base_url, href.replace('.mid', ''))
+                page_url = urljoin(self.base_url, href.replace('.mid', ''))
                 yield MidiInfo(name=name, page_url=page_url)
         
         # 备用选择器
@@ -235,19 +282,46 @@ class MidiDownloader:
             name = item.get_text(strip=True)
             
             if href and name and len(name) > 2:
-                page_url = urljoin(self.config.base_url, href)
+                page_url = urljoin(self.base_url, href)
                 yield MidiInfo(name=name, page_url=page_url)
     
-    def _get_download_url(self, midi_info: MidiInfo) -> str:
-        """
-        获取真实下载链接
+    def search(self, query: str, limit: int = 20) -> list[MidiInfo]:
+        """搜索 MIDI 文件"""
+        self.logger.info(f"[{self.name}] 搜索: {query}")
         
-        Args:
-            midi_info: MIDI 信息对象
+        search_url = f"{self.base_url}/search?q={quote_plus(query)}"
+        
+        try:
+            response = self._request(search_url)
+            results = list(self._parse_search_results(response.text))[:limit]
+            self.logger.info(f"[{self.name}] 找到 {len(results)} 个结果")
+            return results
             
-        Returns:
-            下载 URL
-        """
+        except NetworkError as e:
+            self.logger.error(f"[{self.name}] 搜索失败: {e}")
+            return []
+    
+    def get_popular(self, pages: int = 1) -> list[MidiInfo]:
+        """获取热门 MIDI"""
+        self.logger.info(f"[{self.name}] 获取热门 MIDI (前 {pages} 页)")
+        results: list[MidiInfo] = []
+        
+        for page in range(1, pages + 1):
+            url = f"{self.base_url}/?page={page}"
+            try:
+                response = self._request(url)
+                page_results = list(self._parse_search_results(response.text))
+                results.extend(page_results)
+                self.logger.debug(f"[{self.name}] 第 {page} 页: {len(page_results)} 个结果")
+            except NetworkError as e:
+                self.logger.error(f"[{self.name}] 获取第 {page} 页失败: {e}")
+                break
+        
+        self.logger.info(f"[{self.name}] 共获取 {len(results)} 个结果")
+        return results
+    
+    def get_download_url(self, midi_info: MidiInfo) -> str:
+        """获取真实下载链接"""
         if midi_info.download_url:
             return midi_info.download_url
         
@@ -264,16 +338,297 @@ class MidiDownloader:
             
             if download_link:
                 href = download_link.get('href', '')
-                return urljoin(self.config.base_url, href)
+                return urljoin(self.base_url, href)
             
             # 尝试从页面 URL 推断
             if '-mid' in midi_info.page_url:
                 return midi_info.page_url.replace('-mid', '.mid')
             
         except Exception as e:
-            self.logger.debug(f"获取下载链接失败: {e}")
+            self.logger.debug(f"[{self.name}] 获取下载链接失败: {e}")
         
         raise ParseError(f"无法获取下载链接: {midi_info.name}")
+
+
+class ChineseMidiDataSource(DataSourceBase):
+    """中国MIDI数据源 - 支持多个中国MIDI网站"""
+    
+    # 支持的中国MIDI网站列表
+    CHINESE_SITES = [
+        {
+            'name': 'MIDI Show',
+            'base_url': 'https://www.midishow.com',
+            'search_path': '/search',
+            'selectors': {
+                'result_items': 'div.midi-item, div.search-result, li.midi',
+                'title': 'a.title, h3 a, .name a',
+                'link': 'a[href*=".mid"], a[href*="/midi/"]',
+                'download': 'a.download, a[href$=".mid"]'
+            }
+        },
+        {
+            'name': 'MIDI World',
+            'base_url': 'https://www.midiworld.com',
+            'search_path': '/search',
+            'selectors': {
+                'result_items': 'div.result, article',
+                'title': 'h2 a, .title a',
+                'link': 'a[href*=".mid"]',
+                'download': 'a.download-btn, a[href$=".mid"]'
+            }
+        }
+    ]
+    
+    def __init__(self, config: Config, logger: logging.Logger, session: requests.Session):
+        super().__init__(config, logger, session)
+        self.current_site = 0  # 当前使用的网站索引
+    
+    @property
+    def name(self) -> str:
+        return "中国MIDI"
+    
+    @property
+    def base_url(self) -> str:
+        return self.CHINESE_SITES[self.current_site]['base_url']
+    
+    def _get_site_config(self) -> dict:
+        """获取当前网站配置"""
+        return self.CHINESE_SITES[self.current_site]
+    
+    def _parse_search_results(self, html: str, site_config: dict) -> Generator[MidiInfo, None, None]:
+        """解析搜索结果页面"""
+        soup = BeautifulSoup(html, 'html.parser')
+        selectors = site_config['selectors']
+        
+        # 尝试多种选择器
+        items = soup.select(selectors.get('result_items', 'div, article, li'))
+        
+        for item in items:
+            # 查找标题和链接
+            title_elem = (
+                item.select_one(selectors.get('title', 'a, h2, h3')) or
+                item.select_one('a')
+            )
+            
+            if not title_elem:
+                continue
+            
+            name = title_elem.get_text(strip=True)
+            href = title_elem.get('href', '')
+            
+            if not name or not href:
+                continue
+            
+            # 构建完整URL
+            page_url = urljoin(site_config['base_url'], href)
+            
+            # 如果链接直接指向.mid文件，则同时设置下载链接
+            download_url = None
+            if href.endswith('.mid') or '.mid' in href:
+                download_url = page_url
+            
+            yield MidiInfo(name=name, page_url=page_url, download_url=download_url)
+    
+    def search(self, query: str, limit: int = 20) -> list[MidiInfo]:
+        """搜索 MIDI 文件（尝试所有支持的中国网站）"""
+        self.logger.info(f"[{self.name}] 搜索: {query}")
+        all_results: list[MidiInfo] = []
+        
+        # 尝试所有支持的中国网站
+        for site_idx, site_config in enumerate(self.CHINESE_SITES):
+            self.current_site = site_idx
+            self.logger.debug(f"[{self.name}] 尝试网站: {site_config['name']}")
+            
+            try:
+                # 构建搜索URL
+                search_url = f"{site_config['base_url']}{site_config['search_path']}?q={quote_plus(query)}"
+                
+                response = self._request(search_url)
+                results = list(self._parse_search_results(response.text, site_config))[:limit]
+                
+                if results:
+                    self.logger.info(f"[{self.name}] [{site_config['name']}] 找到 {len(results)} 个结果")
+                    all_results.extend(results)
+                    
+                    # 如果已经找到足够的结果，可以提前返回
+                    if len(all_results) >= limit:
+                        break
+                        
+            except (NetworkError, ParseError) as e:
+                self.logger.debug(f"[{self.name}] [{site_config['name']}] 搜索失败: {e}")
+                continue
+        
+        # 去重（基于名称）
+        seen_names = set()
+        unique_results = []
+        for result in all_results:
+            if result.name not in seen_names:
+                seen_names.add(result.name)
+                unique_results.append(result)
+        
+        final_results = unique_results[:limit]
+        self.logger.info(f"[{self.name}] 共找到 {len(final_results)} 个结果")
+        return final_results
+    
+    def get_popular(self, pages: int = 1) -> list[MidiInfo]:
+        """获取热门 MIDI"""
+        self.logger.info(f"[{self.name}] 获取热门 MIDI (前 {pages} 页)")
+        all_results: list[MidiInfo] = []
+        
+        # 尝试第一个网站获取热门
+        site_config = self.CHINESE_SITES[0]
+        self.current_site = 0
+        
+        for page in range(1, pages + 1):
+            try:
+                # 尝试不同的热门页面路径
+                popular_urls = [
+                    f"{site_config['base_url']}/popular?page={page}",
+                    f"{site_config['base_url']}/hot?page={page}",
+                    f"{site_config['base_url']}/?page={page}",
+                ]
+                
+                for url in popular_urls:
+                    try:
+                        response = self._request(url)
+                        page_results = list(self._parse_search_results(response.text, site_config))
+                        if page_results:
+                            all_results.extend(page_results)
+                            break
+                    except NetworkError:
+                        continue
+                        
+            except NetworkError as e:
+                self.logger.debug(f"[{self.name}] 获取第 {page} 页失败: {e}")
+                break
+        
+        # 去重
+        seen_names = set()
+        unique_results = []
+        for result in all_results:
+            if result.name not in seen_names:
+                seen_names.add(result.name)
+                unique_results.append(result)
+        
+        self.logger.info(f"[{self.name}] 共获取 {len(unique_results)} 个结果")
+        return unique_results
+    
+    def get_download_url(self, midi_info: MidiInfo) -> str:
+        """获取真实下载链接"""
+        if midi_info.download_url:
+            return midi_info.download_url
+        
+        # 尝试从页面URL推断
+        if midi_info.page_url.endswith('.mid'):
+            return midi_info.page_url
+        
+        # 尝试访问页面获取下载链接
+        try:
+            response = self._request(midi_info.page_url)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # 尝试多种下载链接选择器
+            download_selectors = [
+                'a[href$=".mid"][download]',
+                'a[href$=".mid"]',
+                'a.download[href*=".mid"]',
+                'a[href*="/download/"]',
+                'a[href*="/midi/"]',
+                '.download-link',
+            ]
+            
+            for selector in download_selectors:
+                download_link = soup.select_one(selector)
+                if download_link:
+                    href = download_link.get('href', '')
+                    if href:
+                        return urljoin(self.base_url, href)
+            
+            # 尝试从页面中提取直接下载链接
+            for link in soup.find_all('a', href=True):
+                href = link.get('href', '')
+                if href.endswith('.mid') or '/download' in href.lower():
+                    return urljoin(self.base_url, href)
+            
+        except Exception as e:
+            self.logger.debug(f"[{self.name}] 获取下载链接失败: {e}")
+        
+        raise ParseError(f"无法获取下载链接: {midi_info.name}")
+
+
+# ============================================================================
+# 核心下载器类
+# ============================================================================
+
+class MidiDownloader:
+    """MIDI 下载器核心类"""
+    
+    def __init__(
+        self,
+        config: Optional[Config] = None,
+        data_source: DataSource = DataSource.BITMIDI,
+        verbose: bool = False
+    ):
+        self.config = config or Config()
+        self.logger = setup_logger(verbose)
+        self.session = self._create_session()
+        self._downloaded_hashes: set[str] = set()
+        self._load_existing_files()
+        
+        # 初始化数据源
+        self.data_source = data_source
+        self._data_sources: dict[DataSource, DataSourceBase] = {}
+        self._init_data_sources()
+    
+    def _create_session(self) -> requests.Session:
+        """创建 HTTP 会话"""
+        session = requests.Session()
+        session.headers.update({
+            "User-Agent": self.config.user_agent,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5,zh-CN,zh;q=0.9",  # 添加中文支持
+        })
+        return session
+    
+    def _init_data_sources(self) -> None:
+        """初始化数据源"""
+        self._data_sources[DataSource.BITMIDI] = BitMidiDataSource(
+            self.config, self.logger, self.session
+        )
+        self._data_sources[DataSource.CHINESE] = ChineseMidiDataSource(
+            self.config, self.logger, self.session
+        )
+    
+    def _get_active_data_sources(self) -> list[DataSourceBase]:
+        """获取活动的数据源列表"""
+        if self.data_source == DataSource.ALL:
+            return list(self._data_sources.values())
+        elif self.data_source in self._data_sources:
+            return [self._data_sources[self.data_source]]
+        else:
+            # 默认使用 BitMidi
+            return [self._data_sources[DataSource.BITMIDI]]
+    
+    def _load_existing_files(self) -> None:
+        """加载已下载文件的哈希值（用于去重）"""
+        for file_path in self.config.output_dir.glob("*.mid"):
+            try:
+                file_hash = self._calculate_hash(file_path)
+                self._downloaded_hashes.add(file_hash)
+            except IOError:
+                continue
+        
+        if self._downloaded_hashes:
+            self.logger.debug(f"已加载 {len(self._downloaded_hashes)} 个已下载文件的哈希")
+    
+    @staticmethod
+    def _calculate_hash(file_path: Path) -> str:
+        """计算文件 MD5 哈希"""
+        hasher = hashlib.md5()
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(8192), b''):
+                hasher.update(chunk)
+        return hasher.hexdigest()
     
     def search(self, query: str, limit: int = 20) -> list[MidiInfo]:
         """
@@ -286,19 +641,26 @@ class MidiDownloader:
         Returns:
             MidiInfo 列表
         """
-        self.logger.info(f"搜索: {query}")
+        all_results: list[MidiInfo] = []
+        active_sources = self._get_active_data_sources()
         
-        search_url = f"{self.config.base_url}/search?q={quote_plus(query)}"
+        for source in active_sources:
+            try:
+                results = source.search(query, limit=limit)
+                all_results.extend(results)
+            except Exception as e:
+                self.logger.warning(f"[{source.name}] 搜索失败: {e}")
+                continue
         
-        try:
-            response = self._request(search_url)
-            results = list(self._parse_search_results(response.text))[:limit]
-            self.logger.info(f"找到 {len(results)} 个结果")
-            return results
-            
-        except NetworkError as e:
-            self.logger.error(f"搜索失败: {e}")
-            return []
+        # 去重（基于名称）
+        seen_names = set()
+        unique_results = []
+        for result in all_results:
+            if result.name not in seen_names:
+                seen_names.add(result.name)
+                unique_results.append(result)
+        
+        return unique_results[:limit]
     
     def get_popular(self, pages: int = 1) -> list[MidiInfo]:
         """
@@ -310,22 +672,57 @@ class MidiDownloader:
         Returns:
             MidiInfo 列表
         """
-        self.logger.info(f"获取热门 MIDI (前 {pages} 页)")
-        results: list[MidiInfo] = []
+        all_results: list[MidiInfo] = []
+        active_sources = self._get_active_data_sources()
         
-        for page in range(1, pages + 1):
-            url = f"{self.config.base_url}/?page={page}"
+        for source in active_sources:
             try:
-                response = self._request(url)
-                page_results = list(self._parse_search_results(response.text))
-                results.extend(page_results)
-                self.logger.debug(f"第 {page} 页: {len(page_results)} 个结果")
-            except NetworkError as e:
-                self.logger.error(f"获取第 {page} 页失败: {e}")
-                break
+                results = source.get_popular(pages=pages)
+                all_results.extend(results)
+            except Exception as e:
+                self.logger.warning(f"[{source.name}] 获取热门失败: {e}")
+                continue
         
-        self.logger.info(f"共获取 {len(results)} 个结果")
-        return results
+        # 去重
+        seen_names = set()
+        unique_results = []
+        for result in all_results:
+            if result.name not in seen_names:
+                seen_names.add(result.name)
+                unique_results.append(result)
+        
+        return unique_results
+    
+    def _get_download_url(self, midi_info: MidiInfo) -> str:
+        """
+        获取真实下载链接
+        
+        Args:
+            midi_info: MIDI 信息对象
+            
+        Returns:
+            下载 URL
+        """
+        if midi_info.download_url:
+            return midi_info.download_url
+        
+        # 尝试所有数据源获取下载链接
+        for source in self._get_active_data_sources():
+            try:
+                # 检查URL是否属于该数据源
+                if source.base_url in midi_info.page_url:
+                    return source.get_download_url(midi_info)
+            except Exception:
+                continue
+        
+        # 如果都不匹配，尝试所有数据源
+        for source in self._get_active_data_sources():
+            try:
+                return source.get_download_url(midi_info)
+            except Exception:
+                continue
+        
+        raise ParseError(f"无法获取下载链接: {midi_info.name}")
     
     def download(
         self,
@@ -355,8 +752,28 @@ class MidiDownloader:
             download_url = self._get_download_url(midi_info)
             self.logger.debug(f"下载链接: {download_url}")
             
-            # 下载文件
-            response = self._request(download_url, stream=True)
+            # 下载文件（使用 session 直接请求）
+            last_error: Optional[Exception] = None
+            response: Optional[requests.Response] = None
+            for attempt in range(1, self.config.retry_times + 1):
+                try:
+                    response = self.session.get(
+                        download_url,
+                        timeout=self.config.timeout,
+                        stream=True
+                    )
+                    response.raise_for_status()
+                    break
+                except requests.RequestException as e:
+                    last_error = e
+                    if attempt < self.config.retry_times:
+                        time.sleep(self.config.retry_delay * attempt)
+                    else:
+                        raise NetworkError(f"下载失败: {download_url}") from last_error
+            
+            if response is None:
+                raise NetworkError(f"下载失败: {download_url}")
+            
             total_size = int(response.headers.get('content-length', 0))
             
             # 写入临时文件
@@ -643,15 +1060,22 @@ class InteractiveMode:
 def create_parser() -> argparse.ArgumentParser:
     """创建命令行参数解析器"""
     parser = argparse.ArgumentParser(
-        description="MIDI Downloader - 从 bitmidi.com 下载 MIDI 文件",
+        description="MIDI Downloader - 多数据源 MIDI 文件下载器",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
-  %(prog)s search "beethoven"          搜索贝多芬相关
-  %(prog)s search "canon" --limit 10   搜索卡农，限制10个
-  %(prog)s popular --pages 2           获取热门（2页）
-  %(prog)s download <url>              下载指定链接
-  %(prog)s interactive                 交互式模式
+  %(prog)s search "beethoven"                   搜索贝多芬相关
+  %(prog)s search "canon" --limit 10            搜索卡农，限制10个
+  %(prog)s search "月亮代表我的心" --source chinese  搜索中国歌曲
+  %(prog)s search "canon" --source all          从所有数据源搜索
+  %(prog)s popular --pages 2                    获取热门（2页）
+  %(prog)s download <url>                       下载指定链接
+  %(prog)s interactive                          交互式模式
+
+数据源选项:
+  bitmidi  - BitMidi.com (默认)
+  chinese  - 中国MIDI数据源
+  all      - 所有数据源
         """
     )
     
@@ -666,6 +1090,14 @@ def create_parser() -> argparse.ArgumentParser:
         type=str,
         default='./midi_downloads',
         help='下载目录 (默认: ./midi_downloads)'
+    )
+    
+    parser.add_argument(
+        '-s', '--source',
+        type=str,
+        choices=['bitmidi', 'chinese', 'all'],
+        default='bitmidi',
+        help='数据源选择 (默认: bitmidi)'
     )
     
     subparsers = parser.add_subparsers(dest='command', help='子命令')
@@ -718,9 +1150,17 @@ def main() -> int:
     if not args.command:
         args.command = 'interactive'
     
+    # 解析数据源
+    data_source_map = {
+        'bitmidi': DataSource.BITMIDI,
+        'chinese': DataSource.CHINESE,
+        'all': DataSource.ALL,
+    }
+    data_source = data_source_map.get(args.source, DataSource.BITMIDI)
+    
     # 初始化配置和下载器
     config = Config(output_dir=Path(args.output))
-    downloader = MidiDownloader(config, verbose=args.verbose)
+    downloader = MidiDownloader(config, data_source=data_source, verbose=args.verbose)
     
     try:
         if args.command == 'search':
