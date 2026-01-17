@@ -30,6 +30,11 @@ android {
         versionName = flutter.versionName
     }
 
+    // 防止音频文件被压缩,确保钢琴音色可以正常播放
+    androidResources {
+        noCompress += listOf("mp3", "wav", "ogg")
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
