@@ -1,0 +1,12 @@
+services:
+  cracker:
+    image: dizcza/docker-hashcat
+    container_name: password-cracker
+    volumes:
+      - ./files:/files:ro
+      - ./output:/output
+      - ./crack.sh:/crack.sh:ro
+      # wget -O rockyou.txt.gz https://gitlab.com/kalilinux/packages/wordlists/-/raw/kali/master/rockyou.txt.gz
+      - ./rockyou.txt:/rockyou.txt:ro
+    command: bash /crack.sh
+    tty: true
