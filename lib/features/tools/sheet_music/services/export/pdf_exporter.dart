@@ -639,7 +639,7 @@ class PdfExporter {
           // 绘制加线
           final staffPosition = _getStaffPosition(note.pitch, clef == Clef.treble);
           if (staffPosition < 0 || staffPosition > 8) {
-            widgets.add(_buildLedgerLines(noteX, noteY, staffPosition, clef));
+            widgets.add(_buildLedgerLines(noteX, noteY, staffPosition, clef, bassY: bassY));
           }
 
           // 绘制音符
@@ -687,7 +687,7 @@ class PdfExporter {
           // 绘制加线
           final staffPosition = _getStaffPosition(note.pitch, clef == Clef.treble);
           if (staffPosition < 0 || staffPosition > 8) {
-            widgets.add(_buildLedgerLines(noteX, noteY, staffPosition, clef));
+            widgets.add(_buildLedgerLines(noteX, noteY, staffPosition, clef, bassY: bassY));
           }
 
           // 绘制音符
@@ -756,12 +756,14 @@ class PdfExporter {
     return octaveDiff * 7 + midiNoteInOctave - baseNoteInOctave;
   }
 
-  /// 构建加线（下加线和上加线）
-  pw.Widget _buildLedgerLines(double noteX, double noteY, int staffPosition, Clef clef) {
+  /// 构建加线(下加线和上加线)
+  pw.Widget _buildLedgerLines(double noteX, double noteY, int staffPosition, Clef clef, {double? bassY}) {
     final widgets = <pw.Widget>[];
     final lineSpacing = 8.0;
-    final staffY = 30.0; // 第五线（最上面）的Y坐标，与_buildStaffLine保持一致
-    final firstLineY = staffY + 4 * lineSpacing; // 第一线（最下面）的Y坐标
+    // 根据是否传入 bassY 判断是高音谱表还是低音谱表
+    // bassY != null 表示是大谱表中的低音谱表
+    final staffY = bassY ?? 30.0; // 第五线(最上面)的Y坐标
+    final firstLineY = staffY + 4 * lineSpacing; // 第一线(最下面)的Y坐标
     final lineWidth = 20.0; // 加线宽度
     
     if (staffPosition < 0) {
