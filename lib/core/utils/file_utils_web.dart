@@ -21,13 +21,13 @@ class FileUtils {
   }
 
   /// 选择并读取文本文件（Web平台）
-  static Future<String?> pickAndReadTextFile({
+  static Future<({String? name, String? content})?> pickAndReadTextFile({
     String accept = '*/*',
   }) async {
     final input = html.FileUploadInputElement()..accept = accept;
     input.click();
 
-    final completer = Completer<String?>();
+    final completer = Completer<({String? name, String? content})?>();
 
     input.onChange.listen((e) async {
       final files = input.files;
@@ -40,7 +40,10 @@ class FileUtils {
       final reader = html.FileReader();
 
       reader.onLoadEnd.listen((e) {
-        completer.complete(reader.result as String?);
+        completer.complete((
+          name: file.name,
+          content: reader.result as String?,
+        ));
       });
 
       reader.onError.listen((e) {

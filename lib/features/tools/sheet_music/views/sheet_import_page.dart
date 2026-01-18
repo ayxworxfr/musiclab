@@ -32,14 +32,14 @@ class _SheetImportPageState extends State<SheetImportPage>
   ImportResult? _result;
   bool _isLoading = false;
 
-  // MIDI 文件数据
+  // 文件数据
   Uint8List? _midiBytes;
-  String? _midiFileName;
+  String? _currentFileName;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 4, vsync: this); // 统一文件导入 + 3个文本导入
 
     // 示例内容
     _jianpuController.text = _jianpuExample;
@@ -64,11 +64,12 @@ class _SheetImportPageState extends State<SheetImportPage>
         title: const Text('导入乐谱'),
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           tabs: const [
+            Tab(text: '导入文件'),
             Tab(text: '简谱文本'),
             Tab(text: 'JSON'),
             Tab(text: 'MusicXML'),
-            Tab(text: 'MIDI'),
           ],
         ),
         actions: [
@@ -85,6 +86,7 @@ class _SheetImportPageState extends State<SheetImportPage>
             child: TabBarView(
               controller: _tabController,
               children: [
+                _buildUnifiedFileTab(), // 统一文件导入
                 _buildInputTab(
                   controller: _jianpuController,
                   hint: '输入简谱文本...',
@@ -100,7 +102,6 @@ class _SheetImportPageState extends State<SheetImportPage>
                   hint: '粘贴 MusicXML 内容...',
                   format: ImportFormat.musicXml,
                 ),
-                _buildMidiTab(),
               ],
             ),
           ),
@@ -113,6 +114,157 @@ class _SheetImportPageState extends State<SheetImportPage>
         ],
       ),
     );
+  }
+
+  /// 统一文件导入 Tab（自动识别格式）
+  Widget _buildUnifiedFileTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            '自动识别文件格式',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '支持自动识别以下格式：JSON、MusicXML、MIDI',
+            style: TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+          const SizedBox(height: 24),
+
+          // 文件信息显示
+          if (_currentFileName != null) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(_getFileIcon(_currentFileName!), color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _currentFileName!,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '格式: ${_detectFormatFromFileName(_currentFileName!)?.displayName ?? "未知"}',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            _currentFileName = null;
+                            _midiBytes = null;
+                            _result = null;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // 选择文件按钮
+          ElevatedButton.icon(
+            onPressed: _pickAnyFile,
+            icon: const Icon(Icons.file_upload, size: 24),
+            label: const Text('选择文件'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              textStyle: const TextStyle(fontSize: 16),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // 支持的格式说明
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '支持的文件格式',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                _buildFormatItem(Icons.code, 'JSON', '.json', '通用数据交换格式'),
+                const SizedBox(height: 8),
+                _buildFormatItem(Icons.music_note, 'MusicXML', '.xml, .musicxml', '乐谱标准格式'),
+                const SizedBox(height: 8),
+                _buildFormatItem(Icons.piano, 'MIDI', '.mid, .midi', '音乐演奏数据'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormatItem(IconData icon, String name, String extensions, String description) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.grey[600]),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$name ($extensions)',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              Text(
+                description,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getFileIcon(String fileName) {
+    final format = _detectFormatFromFileName(fileName);
+    switch (format) {
+      case ImportFormat.json:
+        return Icons.code;
+      case ImportFormat.musicXml:
+        return Icons.music_note;
+      case ImportFormat.midi:
+        return Icons.piano;
+      default:
+        return Icons.insert_drive_file;
+    }
+  }
+
+  ImportFormat? _detectFormatFromFileName(String fileName) {
+    return ImportFormat.fromExtension(fileName);
   }
 
   /// 输入 Tab
@@ -175,81 +327,6 @@ class _SheetImportPageState extends State<SheetImportPage>
                 contentPadding: const EdgeInsets.all(12),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// MIDI Tab
-  Widget _buildMidiTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            'MIDI 文件导入',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          if (_midiFileName != null && _midiBytes != null) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.audio_file, color: Colors.green),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _midiFileName!,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, size: 20),
-                        onPressed: () {
-                          setState(() {
-                            _midiBytes = null;
-                            _midiFileName = null;
-                            _result = null;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text('文件大小: ${_midiBytes!.length} 字节'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          ElevatedButton.icon(
-            onPressed: _pickMidiFile,
-            icon: const Icon(Icons.file_upload),
-            label: const Text('选择 MIDI 文件'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(16),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            '支持的格式：.mid, .midi',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'MIDI 文件可以从专业音乐软件（如 MuseScore、GarageBand 等）导出，或从网络下载。',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
       ),
@@ -381,6 +458,11 @@ class _SheetImportPageState extends State<SheetImportPage>
         break;
       case ImportFormat.midi:
         // MIDI 格式不支持文本输入，需要通过文件选择
+        Get.snackbar(
+          '提示',
+          'MIDI 格式需要通过文件选择功能导入',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         break;
     }
   }
@@ -396,17 +478,55 @@ class _SheetImportPageState extends State<SheetImportPage>
     Future.delayed(const Duration(milliseconds: 300), () {
       ImportResult result;
 
-      // MIDI Tab 特殊处理
-      if (_tabController.index == 3) {
-        if (_midiBytes != null) {
-          result = _importService.importMidiBytes(_midiBytes!);
+      // 统一文件导入 Tab (index 0)
+      if (_tabController.index == 0) {
+        if (_currentFileName != null) {
+          final format = _detectFormatFromFileName(_currentFileName!);
+          if (format == null) {
+            result = const ImportResult.failure('无法识别文件格式');
+          } else if (format == ImportFormat.midi && _midiBytes != null) {
+            result = _importService.importMidiBytes(
+              _midiBytes!,
+              fileName: _currentFileName,
+            );
+          } else {
+            String content = '';
+            switch (format) {
+              case ImportFormat.json:
+                content = _jsonController.text;
+                break;
+              case ImportFormat.musicXml:
+                content = _xmlController.text;
+                break;
+              default:
+                result = const ImportResult.failure('不支持的格式');
+                setState(() {
+                  _result = result;
+                  _isLoading = false;
+                });
+                return;
+            }
+            result = _importService.import(
+              content,
+              format,
+              fileName: _currentFileName,
+            );
+          }
         } else {
-          result = const ImportResult.failure('请先选择 MIDI 文件');
+          result = const ImportResult.failure('请先选择文件');
         }
-      } else {
-        final format = ImportFormat.values[_tabController.index];
+      }
+      // 其他文本输入Tab (index 1-3)
+      else {
+        // 调整索引：因为第一个Tab是统一文件导入
+        final formatIndex = _tabController.index - 1;
+        final format = ImportFormat.values[formatIndex];
         final content = _getCurrentContent();
-        result = _importService.import(content, format);
+        result = _importService.import(
+          content,
+          format,
+          fileName: _currentFileName,
+        );
       }
 
       setState(() {
@@ -420,13 +540,92 @@ class _SheetImportPageState extends State<SheetImportPage>
   String _getCurrentContent() {
     switch (_tabController.index) {
       case 0:
-        return _jianpuController.text;
+        return ''; // 统一文件导入Tab
       case 1:
-        return _jsonController.text;
+        return _jianpuController.text;
       case 2:
+        return _jsonController.text;
+      case 3:
         return _xmlController.text;
       default:
         return '';
+    }
+  }
+
+  /// 选择任意支持的文件（自动识别格式）
+  Future<void> _pickAnyFile() async {
+    try {
+      // 支持所有格式
+      const accept = '.json,.xml,.musicxml,.mid,.midi';
+
+      // 先尝试读取为二进制（用于MIDI）
+      final bytesResult = await FileUtils.pickAndReadBytesFile(accept: accept);
+
+      if (bytesResult != null && bytesResult.bytes != null && bytesResult.name != null) {
+        final fileName = bytesResult.name!;
+        final format = _detectFormatFromFileName(fileName);
+
+        if (format == null) {
+          Get.snackbar(
+            '不支持的格式',
+            '无法识别文件格式，请选择 JSON、MusicXML 或 MIDI 文件',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          return;
+        }
+
+        setState(() {
+          _currentFileName = fileName;
+          _result = null;
+        });
+
+        // 如果是MIDI，保存字节数据
+        if (format == ImportFormat.midi) {
+          setState(() {
+            _midiBytes = Uint8List.fromList(bytesResult.bytes!);
+          });
+        } else {
+          // 如果是文本格式（JSON或MusicXML），转换为字符串
+          try {
+            final content = String.fromCharCodes(bytesResult.bytes!);
+            setState(() {
+              // 根据格式保存到对应的控制器
+              switch (format) {
+                case ImportFormat.json:
+                  _jsonController.text = content;
+                  break;
+                case ImportFormat.musicXml:
+                  _xmlController.text = content;
+                  break;
+                default:
+                  break;
+              }
+            });
+          } catch (e) {
+            Get.snackbar(
+              '文件读取失败',
+              '无法解析文件内容: $e',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+            return;
+          }
+        }
+
+        // 自动触发解析
+        _parseContent();
+      }
+    } catch (e) {
+      Get.snackbar(
+        '文件读取失败',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -449,46 +648,22 @@ class _SheetImportPageState extends State<SheetImportPage>
           break;
       }
 
-      final content = await FileUtils.pickAndReadTextFile(accept: accept);
+      final result = await FileUtils.pickAndReadTextFile(accept: accept);
 
-      if (content != null) {
+      if (result != null && result.content != null) {
         setState(() {
+          _currentFileName = result.name;
           switch (_tabController.index) {
             case 0:
-              _jianpuController.text = content;
+              _jianpuController.text = result.content!;
               break;
             case 1:
-              _jsonController.text = content;
+              _jsonController.text = result.content!;
               break;
             case 2:
-              _xmlController.text = content;
+              _xmlController.text = result.content!;
               break;
           }
-        });
-      }
-    } catch (e) {
-      Get.snackbar(
-        '文件读取失败',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  /// 选择 MIDI 文件
-  Future<void> _pickMidiFile() async {
-    try {
-      final result = await FileUtils.pickAndReadBytesFile(
-        accept: '.mid,.midi',
-      );
-
-      if (result != null && result.bytes != null) {
-        setState(() {
-          _midiBytes = Uint8List.fromList(result.bytes!);
-          _midiFileName = result.name;
-          _result = null;
         });
       }
     } catch (e) {

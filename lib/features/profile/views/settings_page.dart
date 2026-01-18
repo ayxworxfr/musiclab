@@ -562,10 +562,10 @@ class SettingsPage extends StatelessWidget {
     if (kIsWeb) {
       try {
         // Web平台：选择并读取文件
-        final content = await FileUtils.pickAndReadTextFile(accept: '.json');
-        if (content == null) return;
+        final result = await FileUtils.pickAndReadTextFile(accept: '.json');
+        if (result == null || result.content == null) return;
 
-        final data = jsonDecode(content) as Map<String, dynamic>;
+        final data = jsonDecode(result.content!) as Map<String, dynamic>;
 
         final profileController = Get.find<ProfileController>();
         final success = await profileController.importData(data);

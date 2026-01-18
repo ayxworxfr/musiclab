@@ -22,6 +22,9 @@ enum ExportFormat {
   /// JSON 格式
   json('JSON', '.json', 'application/json', Icons.code),
 
+  /// MusicXML 格式
+  musicXml('MusicXML', '.musicxml', 'application/xml', Icons.music_note),
+
   /// PDF 简谱格式
   pdfJianpu('PDF (简谱)', '.pdf', 'application/pdf', Icons.picture_as_pdf),
 
@@ -81,6 +84,10 @@ class SheetExportService {
         case ExportFormat.json:
           final json = _exportToJson(score);
           return ExportResult.success(text: json, filename: filename);
+
+        case ExportFormat.musicXml:
+          final xml = _exportToMusicXml(score);
+          return ExportResult.success(text: xml, filename: filename);
 
         case ExportFormat.pdfJianpu:
           final data = await _pdfExporter.export(score, isJianpu: true);
@@ -195,6 +202,221 @@ class SheetExportService {
     final map = score.toJson();
     const encoder = JsonEncoder.withIndent('  ');
     return encoder.convert(map);
+  }
+
+  /// 导出为 MusicXML
+  String _exportToMusicXml(Score score) {
+    final buffer = StringBuffer();
+    buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
+    buffer.writeln('<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">');
+    buffer.writeln('<score-partwise version="3.1">');
+
+    // 作品信息
+    buffer.writeln('  <work>');
+    buffer.writeln('    <work-title>${_escapeXml(score.title)}</work-title>');
+    buffer.writeln('  </work>');
+
+    if (score.composer != null) {
+      buffer.writeln('  <identification>');
+      buffer.writeln('    <creator type="composer">${_escapeXml(score.composer!)}</creator>');
+      buffer.writeln('    <encoding>');
+      buffer.writeln('      <software>Music Lab</software>');
+      buffer.writeln('      <encoding-date>${DateTime.now().toIso8601String().split('T')[0]}</encoding-date>');
+    buffer.writeln('    </encoding>');
+      buffer.writeln('  </identification>');
+    }
+
+    // 声部列表
+    buffer.writeln('  <part-list>');
+    for (var i = 0; i < score.tracks.length; i++) {
+      final track = score.tracks[i];
+      buffer.writeln('    <score-part id="P${i + 1}">');
+      buffer.writeln('      <part-name>${_escapeXml(track.name)}</part-name>');
+      buffer.writeln('    </score-part>');
+    }
+    buffer.writeln('  </part-list>');
+
+    // 各声部内容
+    for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
+      final track = score.tracks[trackIndex];
+      buffer.writeln('  <part id="P${trackIndex + 1}">');
+
+      for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
+        final measure = track.measures[measureIndex];
+        buffer.writeln('    <measure number="${measureIndex + 1}">');
+
+        // 第一小节添加属性
+        if (measureIndex == 0) {
+          buffer.writeln('      <attributes>');
+          buffer.writeln('        <divisions>4</divisions>'); // 4个divisions = 1拍
+          buffer.writeln('        <key>');
+          buffer.writeln('          <fifths>${_getKeyFifths(score.metadata.key)}</fifths>');
+          buffer.writeln('        </key>');
+          buffer.writeln('        <time>');
+          buffer.writeln('          <beats>${score.metadata.beatsPerMeasure}</beats>');
+          buffer.writeln('          <beat-type>4</beat-type>');
+          buffer.writeln('        </time>');
+          buffer.writeln('        <clef>');
+          buffer.writeln('          <sign>G</sign>');
+          buffer.writeln('          <line>2</line>');
+          buffer.writeln('        </clef>');
+          buffer.writeln('      </attributes>');
+
+          // 速度标记
+          buffer.writeln('      <direction placement="above">');
+          buffer.writeln('        <direction-type>');
+          buffer.writeln('          <metronome>');
+          buffer.writeln('            <beat-unit>quarter</beat-unit>');
+          buffer.writeln('            <per-minute>${score.metadata.tempo}</per-minute>');
+          buffer.writeln('          </metronome>');
+          buffer.writeln('        </direction-type>');
+          buffer.writeln('      </direction>');
+        }
+
+        // 小节中的音符
+        for (var beatIndex = 0; beatIndex < score.metadata.beatsPerMeasure; beatIndex++) {
+          final beatsAtIndex = measure.beats.where((b) => b.index == beatIndex).toList();
+
+          if (beatsAtIndex.isEmpty) {
+            // 休止符
+            buffer.writeln('      <note>');
+            buffer.writeln('        <rest/>');
+            buffer.writeln('        <duration>4</duration>');
+            buffer.writeln('        <type>quarter</type>');
+            buffer.writeln('      </note>');
+          } else {
+            final notes = beatsAtIndex.expand((b) => b.notes).toList();
+            if (notes.isEmpty) {
+              buffer.writeln('      <note>');
+              buffer.writeln('        <rest/>');
+              buffer.writeln('        <duration>4</duration>');
+              buffer.writeln('        <type>quarter</type>');
+              buffer.writeln('      </note>');
+            } else {
+              // 和弦处理
+              for (var noteIndex = 0; noteIndex < notes.length; noteIndex++) {
+                final note = notes[noteIndex];
+                buffer.writeln('      <note>');
+
+                if (noteIndex > 0) {
+                  buffer.writeln('        <chord/>');
+                }
+
+                if (note.isRest) {
+                  buffer.writeln('        <rest/>');
+                } else {
+                  buffer.writeln('        <pitch>');
+                  buffer.writeln('          <step>${_getPitchStep(note.pitch)}</step>');
+                  final alter = _getPitchAlter(note.pitch, note.accidental);
+                  if (alter != 0) {
+                    buffer.writeln('          <alter>$alter</alter>');
+                  }
+                  buffer.writeln('          <octave>${_getPitchOctave(note.pitch)}</octave>');
+                  buffer.writeln('        </pitch>');
+                }
+
+                buffer.writeln('        <duration>${_getDuration(note.duration)}</duration>');
+                buffer.writeln('        <type>${_getNoteType(note.duration)}</type>');
+
+                if (note.dots > 0) {
+                  for (var i = 0; i < note.dots; i++) {
+                    buffer.writeln('        <dot/>');
+                  }
+                }
+
+                if (note.lyric != null && note.lyric!.isNotEmpty) {
+                  buffer.writeln('        <lyric number="1">');
+                  buffer.writeln('          <text>${_escapeXml(note.lyric!)}</text>');
+                  buffer.writeln('        </lyric>');
+                }
+
+                buffer.writeln('      </note>');
+              }
+            }
+          }
+        }
+
+        buffer.writeln('    </measure>');
+      }
+
+      buffer.writeln('  </part>');
+    }
+
+    buffer.writeln('</score-partwise>');
+    return buffer.toString();
+  }
+
+  // MusicXML 辅助方法
+  String _escapeXml(String text) {
+    return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;');
+  }
+
+  int _getKeyFifths(MusicKey key) {
+    // 返回五度圈位置（升号为正，降号为负）
+    const keyMap = {
+      'C': 0, 'G': 1, 'D': 2, 'A': 3, 'E': 4, 'B': 5, 'F#': 6, 'C#': 7,
+      'F': -1, 'Bb': -2, 'Eb': -3, 'Ab': -4, 'Db': -5, 'Gb': -6, 'Cb': -7,
+    };
+    return keyMap[key.name] ?? 0;
+  }
+
+  String _getPitchStep(int pitch) {
+    const steps = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'];
+    return steps[pitch % 12];
+  }
+
+  int _getPitchAlter(int pitch, Accidental? accidental) {
+    if (accidental == Accidental.sharp) return 1;
+    if (accidental == Accidental.flat) return -1;
+
+    // 根据音高判断是否需要变音
+    const needsSharp = [1, 3, 6, 8, 10]; // C#, D#, F#, G#, A#
+    if (needsSharp.contains(pitch % 12)) return 1;
+
+    return 0;
+  }
+
+  int _getPitchOctave(int pitch) {
+    return (pitch ~/ 12) - 1;
+  }
+
+  int _getDuration(NoteDuration duration) {
+    switch (duration) {
+      case NoteDuration.whole:
+        return 16;
+      case NoteDuration.half:
+        return 8;
+      case NoteDuration.quarter:
+        return 4;
+      case NoteDuration.eighth:
+        return 2;
+      case NoteDuration.sixteenth:
+        return 1;
+      case NoteDuration.thirtySecond:
+        return 0; // 或者适当的值
+    }
+  }
+
+  String _getNoteType(NoteDuration duration) {
+    switch (duration) {
+      case NoteDuration.whole:
+        return 'whole';
+      case NoteDuration.half:
+        return 'half';
+      case NoteDuration.quarter:
+        return 'quarter';
+      case NoteDuration.eighth:
+        return 'eighth';
+      case NoteDuration.sixteenth:
+        return '16th';
+      case NoteDuration.thirtySecond:
+        return '32nd';
+    }
   }
 
   /// 复制文本到剪贴板

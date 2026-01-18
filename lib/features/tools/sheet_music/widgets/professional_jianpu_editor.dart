@@ -615,7 +615,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     final measure = track.measures[measureIndex];
 
     // 按 beat.index 排序 beats
-    final sortedBeats = List.from(measure.beats);
+    final sortedBeats = List<Beat>.from(measure.beats);
     sortedBeats.sort((a, b) => a.index.compareTo(b.index));
 
     // 构建音符列表，在音符之间插入可点击的插入区域

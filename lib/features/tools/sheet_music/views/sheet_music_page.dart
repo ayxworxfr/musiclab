@@ -10,6 +10,7 @@ import '../../../../core/utils/file_utils.dart';
 import '../controllers/sheet_music_controller.dart';
 import '../models/score.dart';
 import '../models/enums.dart';
+import '../services/export/sheet_export_service.dart';
 
 /// 乐谱库页面 (列表)
 class SheetMusicPage extends GetView<SheetMusicController> {
@@ -477,33 +478,12 @@ class SheetMusicPage extends GetView<SheetMusicController> {
   /// 导出乐谱
   Future<void> _exportScore(BuildContext context, Score score) async {
     try {
-      final jsonString = controller.exportScore(score);
-
-      // 在 Web 平台，下载文件
-      if (kIsWeb) {
-        await FileUtils.downloadFile(
-          content: jsonString,
-          filename: '${score.title}.json',
-        );
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('《${score.title}》已导出')));
-        }
-      } else {
-        // 移动平台使用分享功能
-        await FileUtils.downloadFile(
-          content: jsonString,
-          filename: '${score.title}.json',
-        );
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('《${score.title}》已分享')));
-        }
-      }
+      final exportService = SheetExportService();
+      await exportService.showExportDialog(
+        context,
+        score,
+        title: '导出 ${score.title}',
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(

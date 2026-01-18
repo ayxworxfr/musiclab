@@ -31,7 +31,7 @@ class FileUtils {
   }
 
   /// 选择并读取文本文件
-  static Future<String?> pickAndReadTextFile({
+  static Future<({String? name, String? content})?> pickAndReadTextFile({
     String accept = '*/*',
   }) async {
     try {
@@ -59,15 +59,16 @@ class FileUtils {
       final file = result.files.first;
 
       // 读取文件内容
+      String? content;
       if (file.path != null) {
         final fileContent = File(file.path!);
-        return await fileContent.readAsString();
+        content = await fileContent.readAsString();
       } else if (file.bytes != null) {
         // 如果是 Web 平台或没有路径，使用字节数据
-        return String.fromCharCodes(file.bytes!);
+        content = String.fromCharCodes(file.bytes!);
       }
 
-      return null;
+      return (name: file.name, content: content);
     } catch (e) {
       throw Exception('文件读取失败: $e');
     }
