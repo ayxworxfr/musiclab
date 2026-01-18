@@ -1,8 +1,8 @@
 {
   "id": "practice_scale_c_major_two_octaves",
   "title": "C大调音阶练习（两个八度）",
-  "composer": "练习曲",
   "metadata": {
+    "composer": "Music Lab",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,

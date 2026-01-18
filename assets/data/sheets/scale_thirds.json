@@ -1,8 +1,8 @@
 {
   "id": "practice_scale_thirds",
   "title": "三度音程音阶练习",
-  "composer": "练习曲",
   "metadata": {
+    "composer": "Music Lab",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,

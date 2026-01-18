@@ -1,8 +1,8 @@
 {
   "id": "practice_chord_progression_advanced",
   "title": "进阶和弦进行练习",
-  "composer": "练习曲",
   "metadata": {
+    "composer": "Music Lab",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,

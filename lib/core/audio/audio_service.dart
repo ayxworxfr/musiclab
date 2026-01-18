@@ -52,6 +52,9 @@ class AudioService extends GetxService {
   /// 用户是否已交互（Web 端需要）
   bool _userInteracted = false;
 
+  /// 是否已预热
+  bool _warmedUp = false;
+
   /// 右手音量 (0.0-1.0)
   double _rightHandVolume = 1.0;
 
@@ -144,7 +147,13 @@ class AudioService extends GetxService {
 
   /// 标记用户已交互
   void markUserInteracted() {
-    _userInteracted = true;
+    if (!_userInteracted) {
+      _userInteracted = true;
+      // 如果还没有预热，现在执行预热
+      if (!_warmedUp && _isInitialized) {
+        _warmupAudioSystem();
+      }
+    }
   }
 
   /// 预加载钢琴音色（创建播放器池）
@@ -221,6 +230,17 @@ class AudioService extends GetxService {
   ///
   /// 播放一个静音音符以消除首次播放延迟
   Future<void> _warmupAudioSystem() async {
+    // Web 端如果用户没有交互，无法播放音频，跳过预热
+    if (kIsWeb && !_userInteracted) {
+      LoggerUtil.debug('Web端需要用户先交互才能预热音频系统');
+      return;
+    }
+
+    // 如果已经预热过，跳过
+    if (_warmedUp) {
+      return;
+    }
+
     try {
       // 使用中央C（MIDI 60）进行预热
       const warmupMidi = 60;
@@ -240,6 +260,7 @@ class AudioService extends GetxService {
       await Future.delayed(const Duration(milliseconds: 50));
       await player.stop();
 
+      _warmedUp = true;
       LoggerUtil.info('音频系统预热完成');
     } catch (e) {
       LoggerUtil.debug('音频系统预热失败（不影响使用）: $e');
