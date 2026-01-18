@@ -1,0 +1,110 @@
+# 音频生成配置 - 默认配置
+# 所有乐器使用默认设置
+
+# 音频基础配置
+audio:
+  sample_rate: 44100
+  bit_depth: 16
+  channels: 1
+
+# 输出配置
+output:
+  base_dir: "assets/audio"
+  prefer_mp3: true
+
+# 生成模式
+generation:
+  mode: "test"  # test | all
+  test_notes: [21, 36, 48, 60, 72, 84, 96, 108]  # 测试音符
+
+# 乐器配置
+instruments:
+  # 钢琴
+  piano:
+    enabled: true
+    duration: 2.5
+    velocity: 0.8
+    midi_range:
+      min: 21
+      max: 108
+
+  # 电钢琴
+  electric_piano:
+    enabled: false
+    duration: 2.0
+    velocity: 0.8
+    midi_range:
+      min: 21
+      max: 108
+
+  # 风琴
+  organ:
+    enabled: false
+    duration: 3.0
+    velocity: 0.8
+    midi_range:
+      min: 21
+      max: 108
+
+  # 弦乐
+  strings:
+    enabled: false
+    duration: 3.0
+    velocity: 0.8
+    midi_range:
+      min: 21
+      max: 108
+
+  # 合成垫音
+  pad:
+    enabled: false
+    duration: 4.0
+    velocity: 0.8
+    midi_range:
+      min: 21
+      max: 108
+
+  # 钟琴
+  bell:
+    enabled: false
+    duration: 2.0
+    velocity: 0.8
+    midi_range:
+      min: 60
+      max: 96
+
+  # 贝斯
+  bass:
+    enabled: false
+    duration: 1.5
+    velocity: 0.8
+    midi_range:
+      min: 21
+      max: 60
+
+  # 拨弦
+  pluck:
+    enabled: false
+    duration: 1.5
+    velocity: 0.8
+    midi_range:
+      min: 21
+      max: 96
+
+  # 吉他
+  guitar:
+    enabled: false
+    duration: 2.0
+    velocity: 0.8
+    midi_range:
+      min: 40
+      max: 88
+
+  # 小提琴
+  violin:
+    enabled: false
+    duration: 3.0
+    velocity: 0.8
+    midi_range:
+      min: 55
+      max: 103

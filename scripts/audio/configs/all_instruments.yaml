@@ -1,0 +1,67 @@
+# 音频生成配置 - 所有乐器
+# 生成所有 10 种乐器的测试音符
+
+audio:
+  sample_rate: 44100
+  bit_depth: 16
+  channels: 1
+
+output:
+  base_dir: "assets/audio/all_instruments"
+  prefer_mp3: true
+
+generation:
+  mode: "test"
+  test_notes: [48, 60, 72]  # 只生成 3 个测试音符（快速测试）
+
+# 启用所有乐器
+instruments:
+  piano:
+    enabled: true
+    duration: 2.5
+    velocity: 0.8
+
+  electric_piano:
+    enabled: true
+    duration: 2.0
+    velocity: 0.8
+
+  organ:
+    enabled: true
+    duration: 3.0
+    velocity: 0.8
+
+  strings:
+    enabled: true
+    duration: 3.0
+    velocity: 0.8
+
+  pad:
+    enabled: true
+    duration: 4.0
+    velocity: 0.8
+
+  bell:
+    enabled: true
+    duration: 2.0
+    velocity: 0.8
+
+  bass:
+    enabled: true
+    duration: 1.5
+    velocity: 0.8
+
+  pluck:
+    enabled: true
+    duration: 1.5
+    velocity: 0.8
+
+  guitar:
+    enabled: true
+    duration: 2.0
+    velocity: 0.8
+
+  violin:
+    enabled: true
+    duration: 3.0
+    velocity: 0.8

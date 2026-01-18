@@ -45,6 +45,8 @@ INSTRUMENT_NAME_MAP = {
     'bell': InstrumentType.BELL,
     'bass': InstrumentType.BASS,
     'pluck': InstrumentType.PLUCK,
+    'guitar': InstrumentType.GUITAR,
+    'violin': InstrumentType.VIOLIN,
 }
 
 # 乐器中文名称
@@ -57,6 +59,8 @@ INSTRUMENT_NAMES_CN = {
     InstrumentType.BELL: '钟琴',
     InstrumentType.BASS: '贝斯',
     InstrumentType.PLUCK: '拨弦',
+    InstrumentType.GUITAR: '吉他',
+    InstrumentType.VIOLIN: '小提琴',
 }
 
 # 乐器默认时长配置（秒）
@@ -69,6 +73,8 @@ INSTRUMENT_DURATION = {
     InstrumentType.BELL: 2.0,
     InstrumentType.BASS: 1.5,
     InstrumentType.PLUCK: 1.5,
+    InstrumentType.GUITAR: 2.0,
+    InstrumentType.VIOLIN: 3.0,
 }
 
 

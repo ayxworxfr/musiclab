@@ -29,6 +29,7 @@ from .core.constants import (
     MIDI_MIN,
     MIDI_MAX,
     MIDI_RANGE,
+    INSTRUMENT_NAMES_CN,
     midi_to_frequency,
     midi_to_note_name,
     get_instrument_type,
@@ -42,6 +43,7 @@ from .processors.envelope_generator import EnvelopeGenerator
 from .generators.base import AudioGenerator
 from .generators.piano import EnhancedPianoGenerator
 from .generators.chord_mixer import ChordMixer
+from .generators.instruments import InstrumentGenerator
 
 # I/O
 from .io.exporter import AudioExporter
@@ -67,6 +69,7 @@ __all__ = [
     'MIDI_MIN',
     'MIDI_MAX',
     'MIDI_RANGE',
+    'INSTRUMENT_NAMES_CN',
     'midi_to_frequency',
     'midi_to_note_name',
     'get_instrument_type',
@@ -79,6 +82,7 @@ __all__ = [
     'AudioGenerator',
     'EnhancedPianoGenerator',
     'ChordMixer',
+    'InstrumentGenerator',
 
     # I/O
     'AudioExporter',

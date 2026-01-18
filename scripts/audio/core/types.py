@@ -16,6 +16,8 @@ class InstrumentType(Enum):
     BELL = auto()
     BASS = auto()
     PLUCK = auto()
+    GUITAR = auto()      # 吉他
+    VIOLIN = auto()      # 小提琴
 
 
 class EffectType(Enum):

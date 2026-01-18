@@ -1,0 +1,31 @@
+# 音频生成配置 - 吉他和贝斯
+# 生成吉他和贝斯音符
+
+audio:
+  sample_rate: 44100
+  bit_depth: 16
+  channels: 1
+
+output:
+  base_dir: "assets/audio/guitar_bass"
+  prefer_mp3: true
+
+generation:
+  mode: "all"  # 生成所有音符
+
+instruments:
+  guitar:
+    enabled: true
+    duration: 2.0
+    velocity: 0.8
+    midi_range:
+      min: 40  # E2 (吉他最低音)
+      max: 88  # E6
+
+  bass:
+    enabled: true
+    duration: 1.5
+    velocity: 0.85
+    midi_range:
+      min: 28  # E1 (贝斯最低音)
+      max: 60  # C4
