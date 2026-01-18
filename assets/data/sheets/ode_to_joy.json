@@ -1,8 +1,8 @@
 {
   "id": "sheet_007",
   "title": "欢乐颂",
-  "composer": "贝多芬",
   "metadata": {
+    "composer": "贝多芬",
     "key": "D",
     "beatsPerMeasure": 4,
     "beatUnit": 4,
@@ -26,7 +26,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -35,7 +35,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -44,7 +44,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -53,7 +53,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 67,
                   "duration": "quarter"
                 }
               ]
@@ -67,7 +67,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 67,
                   "duration": "quarter"
                 }
               ]
@@ -76,7 +76,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -85,7 +85,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -94,7 +94,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "quarter"
                 }
               ]
@@ -108,7 +108,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "quarter"
                 }
               ]
@@ -117,7 +117,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -126,7 +126,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -135,11 +135,11 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "eighth"
                 },
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "eighth"
                 }
               ]
@@ -153,7 +153,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "half"
                 }
               ]
@@ -162,7 +162,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -171,7 +171,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -185,7 +185,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -194,7 +194,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 67,
                   "duration": "quarter"
                 }
               ]
@@ -203,7 +203,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 67,
+                  "pitch": 69,
                   "duration": "quarter"
                 }
               ]
@@ -212,7 +212,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 67,
+                  "pitch": 69,
                   "duration": "quarter"
                 }
               ]
@@ -226,7 +226,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 67,
                   "duration": "quarter"
                 }
               ]
@@ -235,7 +235,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -244,7 +244,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -253,7 +253,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "quarter"
                 }
               ]
@@ -267,7 +267,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "quarter"
                 }
               ]
@@ -276,7 +276,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -285,7 +285,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -294,11 +294,11 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "eighth"
                 },
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "eighth"
                 }
               ]
@@ -312,7 +312,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "whole"
                 }
               ]
@@ -326,7 +326,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -335,7 +335,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -344,7 +344,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 67,
                   "duration": "quarter"
                 }
               ]
@@ -353,7 +353,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 67,
+                  "pitch": 69,
                   "duration": "quarter"
                 }
               ]
@@ -367,7 +367,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 67,
+                  "pitch": 69,
                   "duration": "quarter"
                 }
               ]
@@ -376,7 +376,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 67,
                   "duration": "quarter"
                 }
               ]
@@ -385,7 +385,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -394,7 +394,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -408,7 +408,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "quarter"
                 }
               ]
@@ -417,7 +417,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "quarter"
                 }
               ]
@@ -426,7 +426,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -435,7 +435,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -449,11 +449,11 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "eighth"
                 },
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "eighth"
                 }
               ]
@@ -462,7 +462,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "half"
                 }
               ]
@@ -471,7 +471,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 55,
+                  "pitch": 57,
                   "duration": "quarter"
                 }
               ]
@@ -485,7 +485,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -494,7 +494,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -503,7 +503,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 67,
                   "duration": "quarter"
                 }
               ]
@@ -512,7 +512,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 67,
+                  "pitch": 69,
                   "duration": "quarter"
                 }
               ]
@@ -526,7 +526,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 67,
+                  "pitch": 69,
                   "duration": "quarter"
                 }
               ]
@@ -535,7 +535,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 65,
+                  "pitch": 67,
                   "duration": "quarter"
                 }
               ]
@@ -544,7 +544,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -553,7 +553,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -567,7 +567,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "quarter"
                 }
               ]
@@ -576,7 +576,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "quarter"
                 }
               ]
@@ -585,7 +585,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 64,
+                  "pitch": 66,
                   "duration": "quarter"
                 }
               ]
@@ -594,11 +594,11 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 64,
                   "duration": "eighth"
                 },
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "eighth"
                 }
               ]
@@ -612,7 +612,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 60,
+                  "pitch": 62,
                   "duration": "whole"
                 }
               ]

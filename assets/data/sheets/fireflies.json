@@ -1,8 +1,8 @@
 {
   "id": "sheet_011",
   "title": "虫儿飞",
-  "composer": "陈光荣",
   "metadata": {
+    "composer": "陈光荣",
     "key": "F",
     "beatsPerMeasure": 4,
     "beatUnit": 4,
@@ -803,7 +803,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 41,
                   "duration": "half"
                 }
               ]
@@ -812,7 +812,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -821,7 +821,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 57,
                   "duration": "quarter"
                 }
               ]
@@ -835,7 +835,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 41,
                   "duration": "half"
                 }
               ]
@@ -844,7 +844,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -853,7 +853,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 57,
                   "duration": "quarter"
                 }
               ]
@@ -867,7 +867,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 41,
                   "duration": "half"
                 }
               ]
@@ -876,7 +876,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -885,7 +885,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 57,
                   "duration": "quarter"
                 }
               ]
@@ -899,7 +899,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 41,
                   "duration": "half"
                 }
               ]
@@ -908,7 +908,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -917,7 +917,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 57,
                   "duration": "quarter"
                 }
               ]
@@ -931,7 +931,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 38,
                   "duration": "half"
                 }
               ]
@@ -940,7 +940,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 50,
                   "duration": "quarter"
                 }
               ]
@@ -949,7 +949,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 54,
                   "duration": "quarter"
                 }
               ]
@@ -963,7 +963,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 38,
                   "duration": "half"
                 }
               ]
@@ -972,7 +972,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 50,
                   "duration": "quarter"
                 }
               ]
@@ -981,7 +981,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 54,
                   "duration": "quarter"
                 }
               ]
@@ -995,7 +995,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 38,
                   "duration": "half"
                 }
               ]
@@ -1004,7 +1004,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 50,
                   "duration": "quarter"
                 }
               ]
@@ -1013,7 +1013,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 54,
                   "duration": "quarter"
                 }
               ]
@@ -1027,7 +1027,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 38,
                   "duration": "half"
                 }
               ]
@@ -1036,7 +1036,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 50,
                   "duration": "quarter"
                 }
               ]
@@ -1045,7 +1045,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 54,
                   "duration": "quarter"
                 }
               ]
@@ -1059,7 +1059,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 41,
                   "duration": "half"
                 }
               ]
@@ -1068,7 +1068,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -1077,7 +1077,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 57,
                   "duration": "quarter"
                 }
               ]
@@ -1091,7 +1091,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 41,
                   "duration": "half"
                 }
               ]
@@ -1100,7 +1100,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -1109,7 +1109,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 57,
                   "duration": "quarter"
                 }
               ]
@@ -1123,7 +1123,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 46,
+                  "pitch": 41,
                   "duration": "half"
                 }
               ]
@@ -1132,7 +1132,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 58,
+                  "pitch": 53,
                   "duration": "quarter"
                 }
               ]
@@ -1141,7 +1141,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 62,
+                  "pitch": 57,
                   "duration": "quarter"
                 }
               ]

@@ -1,8 +1,8 @@
 {
   "id": "sheet_001",
-  "title": "小星星（钢琴）",
-  "composer": "民谣",
+  "title": "小星星",
   "metadata": {
+    "composer": "Mozart",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,
@@ -26,7 +26,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 72,
+                  "pitch": 60,
                   "duration": "quarter",
                   "lyric": "一"
                 }
@@ -36,7 +36,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 72,
+                  "pitch": 60,
                   "duration": "quarter",
                   "lyric": "闪"
                 }
@@ -46,7 +46,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "一"
                 }
@@ -56,7 +56,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "闪"
                 }
@@ -71,7 +71,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 81,
+                  "pitch": 69,
                   "duration": "quarter",
                   "lyric": "亮"
                 }
@@ -81,7 +81,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 81,
+                  "pitch": 69,
                   "duration": "quarter",
                   "lyric": "晶"
                 }
@@ -91,7 +91,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "half",
                   "lyric": "晶"
                 }
@@ -106,7 +106,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "满"
                 }
@@ -116,7 +116,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "天"
                 }
@@ -126,7 +126,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "都"
                 }
@@ -136,7 +136,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "是"
                 }
@@ -151,7 +151,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 74,
+                  "pitch": 62,
                   "duration": "quarter",
                   "lyric": "小"
                 }
@@ -161,7 +161,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 74,
+                  "pitch": 62,
                   "duration": "quarter",
                   "lyric": "星"
                 }
@@ -171,7 +171,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 72,
+                  "pitch": 60,
                   "duration": "half",
                   "lyric": "星"
                 }
@@ -186,7 +186,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "挂"
                 }
@@ -196,7 +196,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "在"
                 }
@@ -206,7 +206,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "天"
                 }
@@ -216,7 +216,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "上"
                 }
@@ -231,7 +231,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "放"
                 }
@@ -241,7 +241,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "光"
                 }
@@ -251,7 +251,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 74,
+                  "pitch": 62,
                   "duration": "half",
                   "lyric": "明"
                 }
@@ -266,7 +266,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "好"
                 }
@@ -276,7 +276,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "像"
                 }
@@ -286,7 +286,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "许"
                 }
@@ -296,7 +296,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "多"
                 }
@@ -311,7 +311,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "小"
                 }
@@ -321,7 +321,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "眼"
                 }
@@ -331,7 +331,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 74,
+                  "pitch": 62,
                   "duration": "half",
                   "lyric": "睛"
                 }
@@ -346,7 +346,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 72,
+                  "pitch": 60,
                   "duration": "quarter",
                   "lyric": "一"
                 }
@@ -356,7 +356,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 72,
+                  "pitch": 60,
                   "duration": "quarter",
                   "lyric": "闪"
                 }
@@ -366,7 +366,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "一"
                 }
@@ -376,7 +376,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "闪"
                 }
@@ -391,7 +391,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 81,
+                  "pitch": 69,
                   "duration": "quarter",
                   "lyric": "亮"
                 }
@@ -401,7 +401,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 81,
+                  "pitch": 69,
                   "duration": "quarter",
                   "lyric": "晶"
                 }
@@ -411,7 +411,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "half",
                   "lyric": "晶"
                 }
@@ -426,7 +426,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "满"
                 }
@@ -436,7 +436,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "天"
                 }
@@ -446,7 +446,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "都"
                 }
@@ -456,7 +456,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "是"
                 }
@@ -471,7 +471,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 74,
+                  "pitch": 62,
                   "duration": "quarter",
                   "lyric": "小"
                 }
@@ -481,7 +481,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 74,
+                  "pitch": 62,
                   "duration": "quarter",
                   "lyric": "星"
                 }
@@ -491,7 +491,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 72,
+                  "pitch": 60,
                   "duration": "half",
                   "lyric": "星"
                 }
@@ -506,7 +506,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "挂"
                 }
@@ -516,7 +516,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "在"
                 }
@@ -526,7 +526,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "天"
                 }
@@ -536,7 +536,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "上"
                 }
@@ -551,7 +551,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "放"
                 }
@@ -561,7 +561,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "光"
                 }
@@ -571,7 +571,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 74,
+                  "pitch": 62,
                   "duration": "half",
                   "lyric": "明"
                 }
@@ -586,7 +586,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "好"
                 }
@@ -596,7 +596,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 79,
+                  "pitch": 67,
                   "duration": "quarter",
                   "lyric": "像"
                 }
@@ -606,7 +606,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "许"
                 }
@@ -616,7 +616,7 @@
               "index": 3,
               "notes": [
                 {
-                  "pitch": 77,
+                  "pitch": 65,
                   "duration": "quarter",
                   "lyric": "多"
                 }
@@ -631,7 +631,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "小"
                 }
@@ -641,7 +641,7 @@
               "index": 1,
               "notes": [
                 {
-                  "pitch": 76,
+                  "pitch": 64,
                   "duration": "quarter",
                   "lyric": "眼"
                 }
@@ -651,7 +651,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 74,
+                  "pitch": 62,
                   "duration": "half",
                   "lyric": "睛"
                 }

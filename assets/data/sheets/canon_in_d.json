@@ -1,8 +1,8 @@
 {
   "id": "sheet_002",
   "title": "C大调卡农",
-  "composer": "帕赫贝尔",
   "metadata": {
+    "composer": "帕赫贝尔",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,
@@ -1337,7 +1337,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 31,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1368,7 +1368,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 33,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1394,7 +1394,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 28,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1425,7 +1425,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 29,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1451,7 +1451,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 24,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1482,7 +1482,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 29,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1508,7 +1508,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 31,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1539,7 +1539,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 33,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1565,7 +1565,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 28,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1596,7 +1596,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 29,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1622,7 +1622,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 24,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1653,7 +1653,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 33,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1679,7 +1679,7 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 28,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {
@@ -1710,7 +1710,7 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 31,
+                  "pitch": 36,
                   "duration": "eighth"
                 },
                 {

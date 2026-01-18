@@ -1,8 +1,8 @@
 {
   "id": "sheet_010",
   "title": "送别",
-  "composer": "李叔同",
   "metadata": {
+    "composer": "李叔同",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,
@@ -715,6 +715,10 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "half"
+                },
+                {
                   "pitch": 48,
                   "duration": "half"
                 }
@@ -725,6 +729,10 @@
               "notes": [
                 {
                   "pitch": 43,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 55,
                   "duration": "half"
                 }
               ]
@@ -738,6 +746,10 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "half"
+                },
+                {
                   "pitch": 48,
                   "duration": "half"
                 }
@@ -748,6 +760,10 @@
               "notes": [
                 {
                   "pitch": 43,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 55,
                   "duration": "half"
                 }
               ]
@@ -761,6 +777,10 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "half"
+                },
+                {
                   "pitch": 48,
                   "duration": "half"
                 }
@@ -771,6 +791,10 @@
               "notes": [
                 {
                   "pitch": 43,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 55,
                   "duration": "half"
                 }
               ]
@@ -784,7 +808,15 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "whole"
+                },
+                {
                   "pitch": 48,
+                  "duration": "whole"
+                },
+                {
+                  "pitch": 55,
                   "duration": "whole"
                 }
               ]
@@ -798,7 +830,11 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 40,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 52,
                   "duration": "half"
                 }
               ]
@@ -807,7 +843,11 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 43,
+                  "pitch": 45,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 57,
                   "duration": "half"
                 }
               ]
@@ -821,7 +861,11 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 40,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 52,
                   "duration": "half"
                 }
               ]
@@ -830,7 +874,11 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 43,
+                  "pitch": 45,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 57,
                   "duration": "half"
                 }
               ]
@@ -844,7 +892,11 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 40,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 52,
                   "duration": "half"
                 }
               ]
@@ -853,7 +905,11 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 43,
+                  "pitch": 45,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 57,
                   "duration": "half"
                 }
               ]
@@ -867,7 +923,15 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 40,
+                  "duration": "whole"
+                },
+                {
+                  "pitch": 52,
+                  "duration": "whole"
+                },
+                {
+                  "pitch": 57,
                   "duration": "whole"
                 }
               ]
@@ -881,6 +945,10 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "half"
+                },
+                {
                   "pitch": 48,
                   "duration": "half"
                 }
@@ -891,6 +959,10 @@
               "notes": [
                 {
                   "pitch": 43,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 55,
                   "duration": "half"
                 }
               ]
@@ -904,6 +976,10 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "half"
+                },
+                {
                   "pitch": 48,
                   "duration": "half"
                 }
@@ -914,6 +990,10 @@
               "notes": [
                 {
                   "pitch": 43,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 55,
                   "duration": "half"
                 }
               ]
@@ -927,6 +1007,10 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "half"
+                },
+                {
                   "pitch": 48,
                   "duration": "half"
                 }
@@ -937,6 +1021,10 @@
               "notes": [
                 {
                   "pitch": 43,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 55,
                   "duration": "half"
                 }
               ]
@@ -950,7 +1038,15 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "whole"
+                },
+                {
                   "pitch": 48,
+                  "duration": "whole"
+                },
+                {
+                  "pitch": 55,
                   "duration": "whole"
                 }
               ]
@@ -964,7 +1060,11 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 40,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 52,
                   "duration": "half"
                 }
               ]
@@ -973,7 +1073,11 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 43,
+                  "pitch": 45,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 57,
                   "duration": "half"
                 }
               ]
@@ -987,7 +1091,11 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 40,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 52,
                   "duration": "half"
                 }
               ]
@@ -996,7 +1104,11 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 43,
+                  "pitch": 45,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 57,
                   "duration": "half"
                 }
               ]
@@ -1010,7 +1122,11 @@
               "index": 0,
               "notes": [
                 {
-                  "pitch": 48,
+                  "pitch": 40,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 52,
                   "duration": "half"
                 }
               ]
@@ -1019,7 +1135,11 @@
               "index": 2,
               "notes": [
                 {
-                  "pitch": 43,
+                  "pitch": 45,
+                  "duration": "half"
+                },
+                {
+                  "pitch": 57,
                   "duration": "half"
                 }
               ]
@@ -1033,7 +1153,15 @@
               "index": 0,
               "notes": [
                 {
+                  "pitch": 36,
+                  "duration": "whole"
+                },
+                {
                   "pitch": 48,
+                  "duration": "whole"
+                },
+                {
+                  "pitch": 55,
                   "duration": "whole"
                 }
               ]

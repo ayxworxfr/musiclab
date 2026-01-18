@@ -1,8 +1,8 @@
 {
   "id": "sheet_004",
   "title": "两只老虎",
-  "composer": "法国儿歌",
   "metadata": {
+    "composer": "法国儿歌",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,
@@ -24,43 +24,19 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "quarter",
-                  "lyric": "两"
-                }
-              ]
+              "notes": [{"pitch": 60, "duration": "quarter", "lyric": "两"}]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 62,
-                  "duration": "quarter",
-                  "lyric": "只"
-                }
-              ]
+              "notes": [{"pitch": 62, "duration": "quarter", "lyric": "只"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "老"
-                }
-              ]
+              "notes": [{"pitch": 64, "duration": "quarter", "lyric": "老"}]
             },
             {
               "index": 3,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "quarter",
-                  "lyric": "虎"
-                }
-              ]
+              "notes": [{"pitch": 60, "duration": "quarter", "lyric": "虎"}]
             }
           ]
         },
@@ -69,43 +45,19 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "quarter",
-                  "lyric": "两"
-                }
-              ]
+              "notes": [{"pitch": 60, "duration": "quarter", "lyric": "两"}]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 62,
-                  "duration": "quarter",
-                  "lyric": "只"
-                }
-              ]
+              "notes": [{"pitch": 62, "duration": "quarter", "lyric": "只"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "老"
-                }
-              ]
+              "notes": [{"pitch": 64, "duration": "quarter", "lyric": "老"}]
             },
             {
               "index": 3,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "quarter",
-                  "lyric": "虎"
-                }
-              ]
+              "notes": [{"pitch": 60, "duration": "quarter", "lyric": "虎"}]
             }
           ]
         },
@@ -114,33 +66,15 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "跑"
-                }
-              ]
+              "notes": [{"pitch": 64, "duration": "quarter", "lyric": "跑"}]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 65,
-                  "duration": "quarter",
-                  "lyric": "得"
-                }
-              ]
+              "notes": [{"pitch": 65, "duration": "quarter", "lyric": "得"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 67,
-                  "duration": "half",
-                  "lyric": "快"
-                }
-              ]
+              "notes": [{"pitch": 67, "duration": "half", "lyric": "快"}]
             }
           ]
         },
@@ -149,33 +83,15 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "跑"
-                }
-              ]
+              "notes": [{"pitch": 64, "duration": "quarter", "lyric": "跑"}]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 65,
-                  "duration": "quarter",
-                  "lyric": "得"
-                }
-              ]
+              "notes": [{"pitch": 65, "duration": "quarter", "lyric": "得"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 67,
-                  "duration": "half",
-                  "lyric": "快"
-                }
-              ]
+              "notes": [{"pitch": 67, "duration": "half", "lyric": "快"}]
             }
           ]
         },
@@ -184,53 +100,19 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 67,
-                  "duration": "eighth",
-                  "lyric": "一"
-                },
-                {
-                  "pitch": 69,
-                  "duration": "eighth",
-                  "lyric": "只"
-                }
-              ]
+              "notes": [{"pitch": 67, "duration": "eighth", "lyric": "一"}, {"pitch": 69, "duration": "eighth", "lyric": "只"}]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 67,
-                  "duration": "eighth",
-                  "lyric": "没"
-                },
-                {
-                  "pitch": 65,
-                  "duration": "eighth",
-                  "lyric": "有"
-                }
-              ]
+              "notes": [{"pitch": 67, "duration": "eighth", "lyric": "没"}, {"pitch": 65, "duration": "eighth", "lyric": "有"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "眼"
-                }
-              ]
+              "notes": [{"pitch": 64, "duration": "quarter", "lyric": "眼"}]
             },
             {
               "index": 3,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "quarter",
-                  "lyric": "睛"
-                }
-              ]
+              "notes": [{"pitch": 60, "duration": "quarter", "lyric": "睛"}]
             }
           ]
         },
@@ -239,53 +121,19 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 67,
-                  "duration": "eighth",
-                  "lyric": "一"
-                },
-                {
-                  "pitch": 69,
-                  "duration": "eighth",
-                  "lyric": "只"
-                }
-              ]
+              "notes": [{"pitch": 67, "duration": "eighth", "lyric": "一"}, {"pitch": 69, "duration": "eighth", "lyric": "只"}]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 67,
-                  "duration": "eighth",
-                  "lyric": "没"
-                },
-                {
-                  "pitch": 65,
-                  "duration": "eighth",
-                  "lyric": "有"
-                }
-              ]
+              "notes": [{"pitch": 67, "duration": "eighth", "lyric": "没"}, {"pitch": 65, "duration": "eighth", "lyric": "有"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "尾"
-                }
-              ]
+              "notes": [{"pitch": 64, "duration": "quarter", "lyric": "尾"}]
             },
             {
               "index": 3,
-              "notes": [
-                {
-                  "pitch": 60,
-                  "duration": "quarter",
-                  "lyric": "巴"
-                }
-              ]
+              "notes": [{"pitch": 60, "duration": "quarter", "lyric": "巴"}]
             }
           ]
         },
@@ -294,33 +142,15 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "真"
-                }
-              ]
+              "notes": [{"pitch": 64, "duration": "quarter", "lyric": "真"}]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 65,
-                  "duration": "quarter",
-                  "lyric": "奇"
-                }
-              ]
+              "notes": [{"pitch": 65, "duration": "quarter", "lyric": "奇"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 67,
-                  "duration": "half",
-                  "lyric": "怪"
-                }
-              ]
+              "notes": [{"pitch": 67, "duration": "half", "lyric": "怪"}]
             }
           ]
         },
@@ -329,33 +159,15 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 64,
-                  "duration": "quarter",
-                  "lyric": "真"
-                }
-              ]
+              "notes": [{"pitch": 64, "duration": "quarter", "lyric": "真"}]
             },
             {
               "index": 1,
-              "notes": [
-                {
-                  "pitch": 65,
-                  "duration": "quarter",
-                  "lyric": "奇"
-                }
-              ]
+              "notes": [{"pitch": 65, "duration": "quarter", "lyric": "奇"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 67,
-                  "duration": "half",
-                  "lyric": "怪"
-                }
-              ]
+              "notes": [{"pitch": 67, "duration": "half", "lyric": "怪"}]
             }
           ]
         }
@@ -373,21 +185,11 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             }
           ]
         },
@@ -396,21 +198,11 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             }
           ]
         },
@@ -419,21 +211,11 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             }
           ]
         },
@@ -442,21 +224,11 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             }
           ]
         },
@@ -465,21 +237,11 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             }
           ]
         },
@@ -488,21 +250,11 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             }
           ]
         },
@@ -511,21 +263,11 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             }
           ]
         },
@@ -534,21 +276,11 @@
           "beats": [
             {
               "index": 0,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             },
             {
               "index": 2,
-              "notes": [
-                {
-                  "pitch": 48,
-                  "duration": "half"
-                }
-              ]
+              "notes": [{"pitch": 48, "duration": "half"}]
             }
           ]
         }
