@@ -1,4 +1,4 @@
-.PHONY: help install run build clean analyze test format stop audio audio-v2 audio-clean
+.PHONY: help install run build clean analyze test format stop audio audio-v2 audio-guitar-violin audio-clean
 
 # 默认目标
 .DEFAULT_GOAL := help
@@ -170,6 +170,10 @@ audio: ## 生成/重新生成所有音频文件（钢琴、节拍器、效果音
 audio-v2: ## 生成音频文件 v2（使用新模块化架构：钢琴+效果音+节拍器）
 	@echo "$(GREEN)正在使用新架构生成音频文件...$(NC)"
 	@python3 -m scripts.audio.generate --config configs/piano_effects.yaml
+
+audio-guitar-violin: ## 生成吉他和小提琴音频
+	@echo "$(GREEN)正在生成吉他和小提琴...$(NC)"
+	@python3 -m scripts.audio.generate --config configs/guitar_violin.yaml
 
 audio-clean: ## 清理所有音频文件
 	@echo "$(GREEN)正在清理音频文件...$(NC)"

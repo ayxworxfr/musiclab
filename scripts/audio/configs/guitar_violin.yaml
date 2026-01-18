@@ -1,0 +1,31 @@
+# 音频生成配置 - 吉他和小提琴
+# 生成吉他和小提琴音符
+
+audio:
+  sample_rate: 44100
+  bit_depth: 16
+  channels: 1
+
+output:
+  base_dir: "assets/audio"  # 吉他会在 assets/audio/guitar/, 小提琴在 assets/audio/violin/
+  prefer_mp3: true
+
+generation:
+  mode: "all"  # 生成所有音符
+
+instruments:
+  guitar:
+    enabled: true
+    duration: 2.0
+    velocity: 0.8
+    midi_range:
+      min: 40  # E2 (吉他最低音)
+      max: 88  # E6
+
+  violin:
+    enabled: true
+    duration: 3.0
+    velocity: 0.8
+    midi_range:
+      min: 55  # G3 (小提琴最低音)
+      max: 103 # G7
