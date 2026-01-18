@@ -764,56 +764,63 @@ class EnhancedPianoGenerator(AudioGenerator):
         self.piano_config = piano_config
     
     def generate(self, midi_number: int) -> Tuple[np.ndarray, int]:
-        """生成钢琴音符"""
+        """生成钢琴音符 - 全面优化版"""
         frequency = self._midi_to_frequency(midi_number)
         t = self._create_time_array(self.piano_config.duration)
         num_samples = len(t)
-        
+
+        # 【优化】使用动态泛音配置
+        dynamic_harmonics = self._get_dynamic_harmonics(midi_number)
+
         # 生成泛音叠加
-        audio = self._generate_harmonics(t, frequency)
-        
+        audio = self._generate_harmonics(t, frequency, dynamic_harmonics)
+
         # 添加轻微失谐
         audio += self._generate_inharmonic(t, frequency)
-        
+
         # 添加音板共鸣
         audio += self._add_soundboard_resonance(t, frequency)
-        
+
         # 添加琴弦耦合
         audio += self._add_string_coupling(t, frequency)
-        
+
         # 根据音高调整包络
         envelope_config = self._adjust_envelope_for_pitch(midi_number)
         envelope = EnvelopeGenerator.adsr(num_samples, self.config.sample_rate, envelope_config)
         audio *= envelope
-        
+
         # 动态低通滤波
         cutoff = self._calculate_dynamic_cutoff(midi_number, frequency)
         audio = self.processor.lowpass_filter(audio, cutoff, self.config.sample_rate)
-        
+
         # 淡入淡出消除杂音
         fade_in_samples = int(self.piano_config.fade_in * self.config.sample_rate)
         fade_out_samples = int(self.piano_config.fade_out * self.config.sample_rate)
         audio = self.processor.apply_fade(audio, fade_in_samples, fade_out_samples)
-        
-        # 归一化并转换
-        audio = self.processor.normalize(audio, 0.9)
+
+        # 【优化】应用音量补偿
+        volume_compensation = self._get_volume_compensation(midi_number)
+
+        # 归一化并转换（应用补偿）
+        audio = self.processor.normalize(audio, 0.9 * volume_compensation)
         audio = self.processor.to_int16(audio)
-        
+
         return audio, self.config.sample_rate
     
-    def _generate_harmonics(self, t: np.ndarray, base_freq: float) -> np.ndarray:
-        """生成泛音"""
+    def _generate_harmonics(self, t: np.ndarray, base_freq: float,
+                            harmonics: List[HarmonicConfig]) -> np.ndarray:
+        """生成泛音 - 支持动态泛音配置"""
         audio = np.zeros_like(t)
-        
-        for harmonic in self.piano_config.harmonics:
+
+        for harmonic in harmonics:
             freq = base_freq * harmonic.harmonic_number
             if freq > self.config.sample_rate / 2:
                 continue
-            
+
             envelope = np.exp(-harmonic.decay_rate * t)
             wave = harmonic.amplitude * np.sin(2 * np.pi * freq * t) * envelope
             audio += wave
-        
+
         return audio
     
     def _generate_inharmonic(self, t: np.ndarray, base_freq: float) -> np.ndarray:
@@ -842,31 +849,124 @@ class EnhancedPianoGenerator(AudioGenerator):
         return coupling
     
     def _adjust_envelope_for_pitch(self, midi: int) -> EnvelopeConfig:
-        """根据音高调整包络（高音衰减更快）"""
+        """
+        根据音高调整包络（方案C：优化包络参数）
+
+        优化策略：
+        - 低音：快速attack提供冲击力，长release保持共鸣
+        - 高音：稍长的decay和release，避免过于尖锐短促
+        """
         config = EnvelopeConfig()
-        
-        if midi > 84:  # C6以上
-            config.decay = 0.05
-            config.release = 0.4
-        elif midi > 72:  # C5-C6
-            config.decay = 0.08
-            config.release = 0.6
-        elif midi < 48:  # C3以下
+
+        if midi > 96:  # 极高音 (C7-C8) - 避免过于尖锐
+            config.attack = 0.003
+            config.decay = 0.08      # 增加 (原0.05)
+            config.sustain = 0.5
+            config.release = 0.6     # 增加 (原0.4)
+        elif midi > 84:  # 高音区 (C6-C7) - 稍微延长
+            config.attack = 0.004
+            config.decay = 0.1       # 增加 (原0.05)
+            config.sustain = 0.55
+            config.release = 0.7     # 增加 (原0.4)
+        elif midi > 72:  # 中高音区 (C5-C6)
+            config.attack = 0.005
+            config.decay = 0.12      # 增加 (原0.08)
+            config.sustain = 0.6
+            config.release = 0.8     # 增加 (原0.6)
+        elif midi < 36:  # 极低音 (A0-C2) - 更有力的attack
+            config.attack = 0.002    # 更快的attack
+            config.decay = 0.18
+            config.sustain = 0.65
+            config.release = 1.5     # 更长的共鸣
+        elif midi < 48:  # 低音区 (C2-C3)
+            config.attack = 0.003
             config.decay = 0.15
+            config.sustain = 0.65
             config.release = 1.2
-        
+        else:  # 中音区 - 保持默认平衡
+            config.attack = 0.005
+            config.decay = 0.1
+            config.sustain = 0.6
+            config.release = 0.8
+
         return config
     
     def _calculate_dynamic_cutoff(self, midi: int, frequency: float) -> float:
-        """动态计算低通滤波截止频率"""
-        if midi > 84:
-            return min(12000, frequency * 4)
-        elif midi > 72:
+        """动态计算低通滤波截止频率 - 优化版"""
+        # 优化：所有音域使用更平衡的滤波器设置
+        if midi > 84:  # 高音区 - 降低截止频率，减少尖锐感
             return min(10000, frequency * 3)
-        elif midi > 60:
-            return min(8000, frequency * 2.5)
-        else:
-            return min(6000, frequency * 2)
+        elif midi > 72:  # 中高音区
+            return min(9000, frequency * 2.8)
+        elif midi > 60:  # 中音区
+            return min(9000, frequency * 2.5)
+        elif midi > 48:  # 中低音区
+            return min(8000, frequency * 2.3)
+        else:  # 低音区 - 提高截止频率，保留更多泛音
+            return min(9000, frequency * 2.5)
+
+    def _get_volume_compensation(self, midi: int) -> float:
+        """
+        获取音量补偿系数（方案A：音量均衡曲线）
+
+        基于真实钢琴的响度特性和等响曲线：
+        - 低音区需要更大音量才能达到相同感知响度
+        - 高音区能量集中，需要适当衰减
+        """
+        if midi <= 36:  # 极低音 (A0-C2)
+            return 1.5
+        elif midi <= 48:  # 低音区 (C#2-C3)
+            return 1.35
+        elif midi <= 60:  # 中低音区 (C#3-C4)
+            return 1.15
+        elif midi <= 72:  # 中音区 (C#4-C5)
+            return 1.0
+        elif midi <= 84:  # 中高音区 (C#5-C6)
+            return 0.85
+        elif midi <= 96:  # 高音区 (C#6-C7)
+            return 0.75
+        else:  # 极高音 (C#7-C8)
+            return 0.65
+
+    def _get_dynamic_harmonics(self, midi: int) -> List[HarmonicConfig]:
+        """
+        根据音高动态调整泛音结构（方案B：动态泛音调整）
+
+        模拟真实钢琴：
+        - 低音：低次泛音更强，高次泛音快速衰减
+        - 高音：泛音整体减弱，避免刺耳
+        """
+        if midi <= 48:  # 低音区 - 增强低次泛音
+            return [
+                HarmonicConfig(1, 1.0, 1.5),    # 基频更持久
+                HarmonicConfig(2, 0.75, 2.0),   # 二次泛音增强
+                HarmonicConfig(3, 0.5, 2.5),    # 三次泛音增强
+                HarmonicConfig(4, 0.3, 3.0),
+                HarmonicConfig(5, 0.18, 3.8),
+                HarmonicConfig(6, 0.1, 4.5),
+                HarmonicConfig(7, 0.05, 5.5),
+                HarmonicConfig(8, 0.02, 6.5),
+            ]
+        elif midi <= 72:  # 中音区 - 平衡的泛音
+            return [
+                HarmonicConfig(1, 1.0, 2.0),
+                HarmonicConfig(2, 0.6, 2.5),
+                HarmonicConfig(3, 0.35, 3.0),
+                HarmonicConfig(4, 0.2, 3.5),
+                HarmonicConfig(5, 0.12, 4.0),
+                HarmonicConfig(6, 0.08, 4.5),
+                HarmonicConfig(7, 0.05, 5.0),
+                HarmonicConfig(8, 0.03, 5.5),
+            ]
+        else:  # 高音区 - 减弱高次泛音，避免尖锐
+            return [
+                HarmonicConfig(1, 1.0, 2.5),
+                HarmonicConfig(2, 0.45, 3.0),   # 减弱
+                HarmonicConfig(3, 0.25, 3.8),   # 显著减弱
+                HarmonicConfig(4, 0.12, 4.5),   # 大幅减弱
+                HarmonicConfig(5, 0.06, 5.5),   # 大幅减弱
+                HarmonicConfig(6, 0.03, 6.5),   # 几乎消失
+            ]
 
 
 # ============================================================================
