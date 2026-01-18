@@ -481,7 +481,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
 
       // 在 Web 平台，下载文件
       if (kIsWeb) {
-        FileUtils.downloadFile(
+        await FileUtils.downloadFile(
           content: jsonString,
           filename: '${score.title}.json',
         );
@@ -493,11 +493,15 @@ class SheetMusicPage extends GetView<SheetMusicController> {
         }
       } else {
         // 移动平台使用分享功能
-        // TODO: 实现移动平台的文件分享
+        await FileUtils.downloadFile(
+          content: jsonString,
+          filename: '${score.title}.json',
+        );
+
         if (context.mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('移动平台导出功能待实现')));
+          ).showSnackBar(SnackBar(content: Text('《${score.title}》已分享')));
         }
       }
     } catch (e) {

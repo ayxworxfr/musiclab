@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/file_utils.dart';
 
 import '../models/score.dart';
 import '../controllers/sheet_music_controller.dart';
@@ -29,10 +32,14 @@ class _SheetImportPageState extends State<SheetImportPage>
   ImportResult? _result;
   bool _isLoading = false;
 
+  // MIDI 文件数据
+  Uint8List? _midiBytes;
+  String? _midiFileName;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
 
     // 示例内容
     _jianpuController.text = _jianpuExample;
@@ -61,6 +68,7 @@ class _SheetImportPageState extends State<SheetImportPage>
             Tab(text: '简谱文本'),
             Tab(text: 'JSON'),
             Tab(text: 'MusicXML'),
+            Tab(text: 'MIDI'),
           ],
         ),
         actions: [
@@ -92,6 +100,7 @@ class _SheetImportPageState extends State<SheetImportPage>
                   hint: '粘贴 MusicXML 内容...',
                   format: ImportFormat.musicXml,
                 ),
+                _buildMidiTab(),
               ],
             ),
           ),
@@ -124,6 +133,12 @@ class _SheetImportPageState extends State<SheetImportPage>
                 onPressed: () => _loadExample(format),
                 icon: const Icon(Icons.library_books, size: 18),
                 label: const Text('加载示例'),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: () => _pickFile(format),
+                icon: const Icon(Icons.file_upload, size: 18),
+                label: const Text('选择文件'),
               ),
               const SizedBox(width: 8),
               TextButton.icon(
@@ -160,6 +175,81 @@ class _SheetImportPageState extends State<SheetImportPage>
                 contentPadding: const EdgeInsets.all(12),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// MIDI Tab
+  Widget _buildMidiTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'MIDI 文件导入',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          if (_midiFileName != null && _midiBytes != null) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.audio_file, color: Colors.green),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _midiFileName!,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            _midiBytes = null;
+                            _midiFileName = null;
+                            _result = null;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('文件大小: ${_midiBytes!.length} 字节'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          ElevatedButton.icon(
+            onPressed: _pickMidiFile,
+            icon: const Icon(Icons.file_upload),
+            label: const Text('选择 MIDI 文件'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.all(16),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '支持的格式：.mid, .midi',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'MIDI 文件可以从专业音乐软件（如 MuseScore、GarageBand 等）导出，或从网络下载。',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
       ),
@@ -302,12 +392,23 @@ class _SheetImportPageState extends State<SheetImportPage>
       _result = null;
     });
 
-    final format = ImportFormat.values[_tabController.index];
-    final content = _getCurrentContent();
-
     // 模拟异步处理
     Future.delayed(const Duration(milliseconds: 300), () {
-      final result = _importService.import(content, format);
+      ImportResult result;
+
+      // MIDI Tab 特殊处理
+      if (_tabController.index == 3) {
+        if (_midiBytes != null) {
+          result = _importService.importMidiBytes(_midiBytes!);
+        } else {
+          result = const ImportResult.failure('请先选择 MIDI 文件');
+        }
+      } else {
+        final format = ImportFormat.values[_tabController.index];
+        final content = _getCurrentContent();
+        result = _importService.import(content, format);
+      }
+
       setState(() {
         _result = result;
         _isLoading = false;
@@ -326,6 +427,78 @@ class _SheetImportPageState extends State<SheetImportPage>
         return _xmlController.text;
       default:
         return '';
+    }
+  }
+
+  /// 选择文件
+  Future<void> _pickFile(ImportFormat format) async {
+    try {
+      String accept;
+      switch (format) {
+        case ImportFormat.jianpuText:
+          accept = '.txt';
+          break;
+        case ImportFormat.json:
+          accept = '.json';
+          break;
+        case ImportFormat.musicXml:
+          accept = '.xml,.musicxml';
+          break;
+        case ImportFormat.midi:
+          accept = '.mid,.midi';
+          break;
+      }
+
+      final content = await FileUtils.pickAndReadTextFile(accept: accept);
+
+      if (content != null) {
+        setState(() {
+          switch (_tabController.index) {
+            case 0:
+              _jianpuController.text = content;
+              break;
+            case 1:
+              _jsonController.text = content;
+              break;
+            case 2:
+              _xmlController.text = content;
+              break;
+          }
+        });
+      }
+    } catch (e) {
+      Get.snackbar(
+        '文件读取失败',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// 选择 MIDI 文件
+  Future<void> _pickMidiFile() async {
+    try {
+      final result = await FileUtils.pickAndReadBytesFile(
+        accept: '.mid,.midi',
+      );
+
+      if (result != null && result.bytes != null) {
+        setState(() {
+          _midiBytes = Uint8List.fromList(result.bytes!);
+          _midiFileName = result.name;
+          _result = null;
+        });
+      }
+    } catch (e) {
+      Get.snackbar(
+        '文件读取失败',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -433,6 +606,16 @@ class _SheetImportPageState extends State<SheetImportPage>
 • Dorico
 
 导出时选择 "MusicXML" 或 ".musicxml" 格式。'''),
+
+                const SizedBox(height: 16),
+
+                // MIDI
+                _buildHelpSection('MIDI 格式', '''
+支持标准 MIDI 文件（.mid, .midi）：
+• 从音乐软件导出（MuseScore、GarageBand 等）
+• 从网络下载的 MIDI 文件
+• 自动解析音符、节奏、速度等信息
+• 适合快速导入现有音乐作品'''),
 
                 const SizedBox(height: 32),
               ],

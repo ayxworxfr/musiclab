@@ -44,6 +44,11 @@ dependencies:
   printing: ^5.13.4
   pdf: ^3.11.2
 
+  # 文件选择和分享
+  file_picker: ^8.1.6
+  share_plus: ^10.1.4
+  path_provider: ^2.1.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
