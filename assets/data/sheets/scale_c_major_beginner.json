@@ -1,8 +1,8 @@
 {
   "id": "practice_scale_c_major_beginner",
   "title": "C大调音阶练习（入门）",
-  "composer": "练习曲",
   "metadata": {
+    "composer": "Music Lab",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,

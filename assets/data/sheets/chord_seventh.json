@@ -1,8 +1,8 @@
 {
   "id": "practice_chord_seventh",
   "title": "七和弦练习（进阶）",
-  "composer": "练习曲",
   "metadata": {
+    "composer": "Music Lab",
     "key": "C",
     "beatsPerMeasure": 4,
     "beatUnit": 4,

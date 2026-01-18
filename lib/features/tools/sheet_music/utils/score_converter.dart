@@ -29,11 +29,16 @@ class ScoreConverter {
     final beatUnit =
         int.tryParse(timeParts.length > 1 ? timeParts[1] : '4') ?? 4;
 
-    final tempo = metadata['tempo'] as int? ?? 120;
-    final difficulty = metadata['difficulty'] as int ?? 1;
+    final tempo = metadata['tempo'] as int? ?? json['tempo'] as int? ?? 120;
+    // difficulty 可能在 metadata 中，也可能在顶层
+    final difficulty = (metadata['difficulty'] as int?) ?? 
+                      (json['difficulty'] as int?) ?? 
+                      1;
 
     ScoreCategory category = ScoreCategory.children;
-    final categoryStr = metadata['category'] as String?;
+    // category 可能在 metadata 中，也可能在顶层
+    final categoryStr = metadata['category'] as String? ?? 
+                       json['category'] as String?;
     if (categoryStr != null) {
       switch (categoryStr) {
         case 'folk':
