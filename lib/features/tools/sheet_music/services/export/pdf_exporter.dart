@@ -150,16 +150,51 @@ class PdfExporter {
     // 计算每行小节数（使用安全除法）
     final measuresPerLine = _safeDivide(contentWidth, 120.0, 4.0).floor().clamp(2, 6);
 
-    for (final track in score.tracks) {
-      if (track.measures.isEmpty) continue;
+    // 如果是大谱表，需要将高音和低音轨道绘制在一起
+    if (score.isGrandStaff && score.tracks.length >= 2) {
+      final rightHandTrack = score.rightHandTrack;
+      final leftHandTrack = score.leftHandTrack;
 
-      // 按行分组小节
-      for (var i = 0; i < track.measures.length; i += measuresPerLine) {
-        final end = (i + measuresPerLine).clamp(0, track.measures.length);
-        final lineMeasures = track.measures.sublist(i, end);
+      if (rightHandTrack != null && leftHandTrack != null) {
+        final maxMeasures = rightHandTrack.measures.length > leftHandTrack.measures.length
+            ? rightHandTrack.measures.length
+            : leftHandTrack.measures.length;
 
-        widgets.add(_buildJianpuLine(lineMeasures, beatsPerMeasure, contentWidth, score.metadata.key, track.clef));
-        widgets.add(pw.SizedBox(height: 8));
+        // 按行分组小节，每行同时显示高音和低音
+        for (var i = 0; i < maxMeasures; i += measuresPerLine) {
+          final end = (i + measuresPerLine).clamp(0, maxMeasures);
+          final rightMeasures = i < rightHandTrack.measures.length
+              ? rightHandTrack.measures.sublist(i, end.clamp(0, rightHandTrack.measures.length))
+              : <Measure>[];
+          final leftMeasures = i < leftHandTrack.measures.length
+              ? leftHandTrack.measures.sublist(i, end.clamp(0, leftHandTrack.measures.length))
+              : <Measure>[];
+
+          // 高音谱行
+          if (rightMeasures.isNotEmpty) {
+            widgets.add(_buildJianpuLine(rightMeasures, beatsPerMeasure, contentWidth, score.metadata.key, rightHandTrack.clef));
+            widgets.add(pw.SizedBox(height: 4));
+          }
+          // 低音谱行
+          if (leftMeasures.isNotEmpty) {
+            widgets.add(_buildJianpuLine(leftMeasures, beatsPerMeasure, contentWidth, score.metadata.key, leftHandTrack.clef));
+            widgets.add(pw.SizedBox(height: 12));
+          }
+        }
+      }
+    } else {
+      // 单轨道，按原来的方式处理
+      for (final track in score.tracks) {
+        if (track.measures.isEmpty) continue;
+
+        // 按行分组小节
+        for (var i = 0; i < track.measures.length; i += measuresPerLine) {
+          final end = (i + measuresPerLine).clamp(0, track.measures.length);
+          final lineMeasures = track.measures.sublist(i, end);
+
+          widgets.add(_buildJianpuLine(lineMeasures, beatsPerMeasure, contentWidth, score.metadata.key, track.clef));
+          widgets.add(pw.SizedBox(height: 8));
+        }
       }
     }
 
@@ -379,7 +414,7 @@ class PdfExporter {
   /// 构建大谱表行（高音+低音）
   pw.Widget _buildGrandStaffLine(List<Measure> trebleMeasures, List<Measure> bassMeasures) {
     if (trebleMeasures.isEmpty && bassMeasures.isEmpty) return pw.SizedBox();
-    
+
     // 计算五线谱总宽度
     final maxMeasures = trebleMeasures.length > bassMeasures.length
         ? trebleMeasures.length
@@ -678,19 +713,19 @@ class PdfExporter {
     // 如果指定了 bassY，说明是大谱表，使用 bassY 作为低音谱表的基准
     final staffY = bassY ?? 30.0; // 第五线（最上面）的Y坐标，对应Canvas的startY
     final lineSpacing = 8.0; // 必须与五线绘制时的间距一致
-    
+
     // 使用与Canvas相同的计算方式
     // staffPosition: 0 = 第一线（最下面，E4 for treble）, 正数向上，负数向下
     final staffPosition = _getStaffPosition(pitch, clef == Clef.treble);
-    
+
     // 第一线（最下面）的Y坐标 = 第五线（最上面）的Y坐标 + 4个间距
     final firstLineY = staffY + 4 * lineSpacing;
-    
+
     // 音符Y坐标：从第一线（最下面）向上移动 staffPosition 个半间距
     // staffPosition 正数向上（Y减小），负数向下（Y增大）
     // 向上调整35个像素以补偿SMuFL字体的基准点偏移
     final noteY = firstLineY - staffPosition * (lineSpacing / 2) - 30.0;
-    
+
     return noteY;
   }
   
