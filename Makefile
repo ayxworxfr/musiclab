@@ -189,6 +189,10 @@ audio-install-deps: ## 安装音频生成脚本的Python依赖
 	@echo "$(YELLOW)提示：还需要安装 ffmpeg 来生成 MP3 格式$(NC)"
 	@echo "  macOS: brew install ffmpeg"
 
+midi_download: ## 下载midi文件
+	@echo "$(GREEN)正在下载midi文件...$(NC)"
+	python3 scripts/midi_downloader.py interactive
+
 musicxml: ## midi文件转换为musicxml
 	@echo "$(GREEN)midi文件转换为musicxml...$(NC)"
 	python3 scripts/midi2xml.py scripts/midi_downloads/*.mid -O scripts/musicxml/
