@@ -44,6 +44,8 @@ from .generators.base import AudioGenerator
 from .generators.piano import EnhancedPianoGenerator
 from .generators.chord_mixer import ChordMixer
 from .generators.instruments import InstrumentGenerator
+from .generators.effect_sounds import EffectSoundGenerator
+from .generators.metronome import MetronomeGenerator
 
 # I/O
 from .io.exporter import AudioExporter
@@ -83,6 +85,8 @@ __all__ = [
     'EnhancedPianoGenerator',
     'ChordMixer',
     'InstrumentGenerator',
+    'EffectSoundGenerator',
+    'MetronomeGenerator',
 
     # I/O
     'AudioExporter',

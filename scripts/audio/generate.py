@@ -20,10 +20,14 @@ from . import (
     InstrumentGenerator,
     AudioExporter,
     InstrumentType,
+    EffectType,
+    EffectSoundGenerator,
+    MetronomeGenerator,
     INSTRUMENT_NAMES_CN,
     MIDI_RANGE,
     midi_to_note_name,
 )
+from .core.config import PianoConfig
 from .core.config_loader import ConfigLoader
 
 
@@ -89,81 +93,126 @@ def generate_from_config(config_path: Path):
 
     # 创建音频配置
     audio_config = ConfigLoader.create_audio_config(config_dict)
-
-    # 获取需要生成的乐器
-    instruments = ConfigLoader.get_instruments_to_generate(config_dict)
-    if not instruments:
-        print("⚠️  没有启用的乐器")
-        return 1
-
-    print(f"📋 启用的乐器: {', '.join(INSTRUMENT_NAMES_CN[i] for i in instruments)}")
-    print()
-
-    # 获取输出目录
     output_base = ConfigLoader.get_output_dir(config_dict)
 
-    # 判断生成模式
-    generate_all = ConfigLoader.should_generate_all_notes(config_dict)
+    # ========== 生成乐器 ==========
+    instruments = ConfigLoader.get_instruments_to_generate(config_dict)
+    if instruments:
+        print(f"📋 启用的乐器: {', '.join(INSTRUMENT_NAMES_CN[i] for i in instruments)}")
+        print()
 
-    # 为每个乐器生成音符
-    for instrument in instruments:
-        inst_name_cn = INSTRUMENT_NAMES_CN[instrument]
-        inst_name_en = instrument.name.lower()
+        # 判断生成模式
+        generate_all = ConfigLoader.should_generate_all_notes(config_dict)
 
-        print(f"🎹 生成 {inst_name_cn} ({inst_name_en})...")
+        # 为每个乐器生成音符
+        for instrument in instruments:
+            inst_name_cn = INSTRUMENT_NAMES_CN[instrument]
+            inst_name_en = instrument.name.lower()
 
-        # 创建输出目录
-        output_dir = output_base / inst_name_en
-        exporter = AudioExporter(output_dir)
+            print(f"🎹 生成 {inst_name_cn} ({inst_name_en})...")
 
-        # 获取乐器配置
-        velocity = ConfigLoader.get_velocity(config_dict, instrument)
-        duration = ConfigLoader.get_duration(config_dict, instrument)
-        midi_min, midi_max = ConfigLoader.get_midi_range(config_dict, instrument)
+            # 创建输出目录
+            output_dir = output_base / inst_name_en
+            exporter = AudioExporter(output_dir)
 
-        # 创建生成器
-        if instrument == InstrumentType.PIANO:
-            from .core.config import PianoConfig
-            piano_config = PianoConfig()
-            if duration:
-                piano_config.duration = duration
-            generator = EnhancedPianoGenerator(audio_config, piano_config)
-            use_piano_gen = True
-        else:
-            generator = InstrumentGenerator(audio_config)
-            use_piano_gen = False
+            # 获取乐器配置
+            velocity = ConfigLoader.get_velocity(config_dict, instrument)
+            duration = ConfigLoader.get_duration(config_dict, instrument)
+            midi_min, midi_max = ConfigLoader.get_midi_range(config_dict, instrument)
 
-        # 确定要生成的音符
-        if generate_all:
-            notes_to_generate = range(midi_min, midi_max + 1)
-            print(f"  模式: 生成所有音符 ({midi_min}-{midi_max})")
-        else:
-            test_notes = ConfigLoader.get_test_notes(config_dict)
-            notes_to_generate = [n for n in test_notes if midi_min <= n <= midi_max]
-            print(f"  模式: 测试音符 {notes_to_generate}")
-
-        # 生成音符
-        for i, midi in enumerate(notes_to_generate, 1):
-            # 生成音频
-            if use_piano_gen:
-                audio = generator.generate(midi, velocity=velocity)
+            # 创建生成器
+            if instrument == InstrumentType.PIANO:
+                piano_config = PianoConfig()
+                if duration:
+                    piano_config.duration = duration
+                generator = EnhancedPianoGenerator(audio_config, piano_config)
+                use_piano_gen = True
             else:
-                audio = generator.generate(instrument, midi, duration=duration, velocity=velocity)
+                generator = InstrumentGenerator(audio_config)
+                use_piano_gen = False
 
-            # 导出
-            note_name = midi_to_note_name(midi)
-            filename = f'note_{midi}'
-            output_path = exporter.export(audio, audio_config.sample_rate, filename)
+            # 确定要生成的音符
+            if generate_all:
+                notes_to_generate = range(midi_min, midi_max + 1)
+                print(f"  模式: 生成所有音符 ({midi_min}-{midi_max})")
+            else:
+                test_notes = ConfigLoader.get_test_notes(config_dict)
+                notes_to_generate = [n for n in test_notes if midi_min <= n <= midi_max]
+                print(f"  模式: 测试音符 {notes_to_generate}")
 
-            if i % 10 == 0 or i == len(notes_to_generate):
-                print(f"    进度: {i}/{len(notes_to_generate)} - {note_name}")
+            # 生成音符
+            for i, midi in enumerate(notes_to_generate, 1):
+                # 生成音频
+                if use_piano_gen:
+                    audio = generator.generate(midi, velocity=velocity)
+                else:
+                    audio = generator.generate(instrument, midi, duration=duration, velocity=velocity)
 
-        print(f"  ✅ 完成！生成了 {len(notes_to_generate)} 个音符")
-        print(f"  📁 输出目录: {output_dir}")
+                # 导出
+                note_name = midi_to_note_name(midi)
+                filename = f'note_{midi}'
+                output_path = exporter.export(audio, audio_config.sample_rate, filename)
+
+                if i % 10 == 0 or i == len(notes_to_generate):
+                    print(f"    进度: {i}/{len(notes_to_generate)} - {note_name}")
+
+            print(f"  ✅ 完成！生成了 {len(notes_to_generate)} 个音符")
+            print(f"  📁 输出目录: {output_dir}")
+            print()
+
+    # ========== 生成效果音 ==========
+    if ConfigLoader.should_generate_effects(config_dict):
+        print("🎵 生成效果音...")
+
+        effects_dir = output_base / 'effects'
+        effects_exporter = AudioExporter(effects_dir)
+
+        effect_generator = EffectSoundGenerator(audio_config)
+        effect_types = ConfigLoader.get_effects_to_generate(config_dict)
+
+        effect_names = {
+            EffectType.CORRECT: '回答正确',
+            EffectType.WRONG: '回答错误',
+            EffectType.COMPLETE: '训练完成',
+            EffectType.LEVEL_UP: '等级提升'
+        }
+
+        for effect_type in effect_types:
+            audio, sr = effect_generator.generate(effect_type)
+            filename = effect_type.value
+            output_path = effects_exporter.export(audio, sr, filename)
+            print(f"  ✓ {output_path.name} ({effect_names.get(effect_type, effect_type.value)})")
+
+        print(f"  ✅ 完成！生成了 {len(effect_types)} 个效果音")
+        print(f"  📁 输出目录: {effects_dir}")
+        print()
+
+    # ========== 生成节拍器 ==========
+    if ConfigLoader.should_generate_metronome(config_dict):
+        print("🎵 生成节拍器...")
+
+        metronome_dir = output_base / 'metronome'
+        metronome_exporter = AudioExporter(metronome_dir)
+
+        metronome_config = ConfigLoader.create_metronome_config(config_dict)
+        metronome_generator = MetronomeGenerator(audio_config, metronome_config)
+
+        # 强拍
+        audio, sr = metronome_generator.generate(is_strong=True)
+        strong_path = metronome_exporter.export(audio, sr, 'click_strong')
+        print(f"  ✓ {strong_path.name} (强拍)")
+
+        # 弱拍
+        audio, sr = metronome_generator.generate(is_strong=False)
+        weak_path = metronome_exporter.export(audio, sr, 'click_weak')
+        print(f"  ✓ {weak_path.name} (弱拍)")
+
+        print(f"  ✅ 完成！生成了节拍器音效")
+        print(f"  📁 输出目录: {metronome_dir}")
         print()
 
     print("=" * 70)
-    print(" ✅ 所有乐器生成完成！")
+    print(" ✅ 所有音频生成完成！")
     print("=" * 70)
     print()
 

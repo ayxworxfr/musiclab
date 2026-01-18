@@ -6,8 +6,8 @@
 import yaml
 from pathlib import Path
 from typing import Dict, Any, List
-from .config import AudioConfig, PianoConfig, EnvelopeConfig
-from .types import InstrumentType
+from .config import AudioConfig, PianoConfig, EnvelopeConfig, MetronomeConfig
+from .types import InstrumentType, EffectType
 from .constants import get_instrument_type
 
 
@@ -116,3 +116,62 @@ class ConfigLoader:
         """获取测试音符列表"""
         generation = config_dict.get('generation', {})
         return generation.get('test_notes', [21, 36, 48, 60, 72, 84, 96, 108])
+
+    @staticmethod
+    def should_generate_effects(config_dict: Dict[str, Any]) -> bool:
+        """是否生成效果音"""
+        generation = config_dict.get('generation', {})
+        if generation.get('generate_effects', False):
+            return True
+        # 兼容旧配置
+        effects_config = config_dict.get('effects', {})
+        return effects_config.get('enabled', False)
+
+    @staticmethod
+    def get_effects_to_generate(config_dict: Dict[str, Any]) -> List[EffectType]:
+        """获取需要生成的效果音列表"""
+        effects_config = config_dict.get('effects', {})
+        effect_types = effects_config.get('types', [])
+
+        result = []
+        for effect_name in effect_types:
+            if effect_name == 'correct':
+                result.append(EffectType.CORRECT)
+            elif effect_name == 'wrong':
+                result.append(EffectType.WRONG)
+            elif effect_name == 'complete':
+                result.append(EffectType.COMPLETE)
+            elif effect_name == 'levelUp':
+                result.append(EffectType.LEVEL_UP)
+            else:
+                print(f"⚠️  警告: 未知的效果音类型 '{effect_name}'，已跳过")
+
+        return result
+
+    @staticmethod
+    def should_generate_metronome(config_dict: Dict[str, Any]) -> bool:
+        """是否生成节拍器"""
+        generation = config_dict.get('generation', {})
+        if generation.get('generate_metronome', False):
+            return True
+        # 兼容旧配置
+        metronome_config = config_dict.get('metronome', {})
+        return metronome_config.get('enabled', False)
+
+    @staticmethod
+    def create_metronome_config(config_dict: Dict[str, Any]) -> MetronomeConfig:
+        """创建节拍器配置"""
+        metronome_dict = config_dict.get('metronome', {})
+        return MetronomeConfig(
+            duration=metronome_dict.get('duration', 0.08),
+            strong_beat_freq=metronome_dict.get('strong_beat_freq', 440),
+            weak_beat_freq=metronome_dict.get('weak_beat_freq', 660),
+            decay_rate=metronome_dict.get('decay_rate', 40),
+            lowpass_cutoff=metronome_dict.get('lowpass_cutoff', 3000),
+        )
+
+    @staticmethod
+    def prefer_mp3(config_dict: Dict[str, Any]) -> bool:
+        """是否优先生成MP3"""
+        output = config_dict.get('output', {})
+        return output.get('prefer_mp3', True)

@@ -1,0 +1,44 @@
+# 音频生成配置 - 钢琴 + 效果音 + 节拍器
+# 用于替换原音频文件
+
+audio:
+  sample_rate: 44100
+  bit_depth: 16
+  channels: 1
+
+output:
+  base_dir: "assets/audio"
+  prefer_mp3: true
+
+generation:
+  mode: "all"  # 生成所有音符
+  generate_effects: true  # 生成效果音
+  generate_metronome: true  # 生成节拍器
+
+# 乐器配置
+instruments:
+  piano:
+    enabled: true
+    duration: 2.5
+    velocity: 0.8
+    midi_range:
+      min: 21  # 钢琴最低音 A0
+      max: 108 # 钢琴最高音 C8
+
+# 效果音配置
+effects:
+  enabled: true
+  types:
+    - correct    # 回答正确
+    - wrong      # 回答错误
+    - complete   # 训练完成
+    - levelUp    # 等级提升
+
+# 节拍器配置
+metronome:
+  enabled: true
+  duration: 0.08
+  strong_beat_freq: 440  # 强拍频率
+  weak_beat_freq: 660    # 弱拍频率
+  decay_rate: 40
+  lowpass_cutoff: 3000

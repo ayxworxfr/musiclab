@@ -1,4 +1,4 @@
-.PHONY: help install run build clean analyze test format stop audio audio-clean
+.PHONY: help install run build clean analyze test format stop audio audio-v2 audio-clean
 
 # 默认目标
 .DEFAULT_GOAL := help
@@ -167,6 +167,10 @@ audio: ## 生成/重新生成所有音频文件（钢琴、节拍器、效果音
 	@echo "$(GREEN)正在生成音频文件...$(NC)"
 	@python3 scripts/generate_audio.py
 
+audio-v2: ## 生成音频文件 v2（使用新模块化架构：钢琴+效果音+节拍器）
+	@echo "$(GREEN)正在使用新架构生成音频文件...$(NC)"
+	@python3 -m scripts.audio.generate --config configs/piano_effects.yaml
+
 audio-clean: ## 清理所有音频文件
 	@echo "$(GREEN)正在清理音频文件...$(NC)"
 	@rm -f assets/audio/piano/*.mp3 assets/audio/piano/*.wav
@@ -176,7 +180,7 @@ audio-clean: ## 清理所有音频文件
 
 audio-install-deps: ## 安装音频生成脚本的Python依赖
 	@echo "$(GREEN)正在安装Python依赖...$(NC)"
-	pip3 install numpy scipy
+	pip3 install numpy scipy pyyaml
 	@echo "$(GREEN)依赖安装完成$(NC)"
 	@echo "$(YELLOW)提示：还需要安装 ffmpeg 来生成 MP3 格式$(NC)"
 	@echo "  macOS: brew install ffmpeg"
