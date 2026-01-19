@@ -6,11 +6,12 @@ audio:
   sample_rate: 44100
   bit_depth: 16
   channels: 1
+  master_volume: 1.0  # 主音量 (0.0-2.0)，建议范围：0.5-1.5，1.0为原始音量
 
 # 输出配置
 output:
   base_dir: "assets/audio"
-  prefer_mp3: true
+  format: "mp3"  # 输出格式：wav 或 mp3
 
 # 生成模式
 generation:

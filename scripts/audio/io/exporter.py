@@ -25,7 +25,7 @@ class AudioExporter:
             return False
 
     def export(self, audio: np.ndarray, sample_rate: int,
-               filename: str, prefer_mp3: bool = True) -> Path:
+               filename: str, output_format: str = 'mp3') -> Path:
         """
         导出音频文件
 
@@ -33,7 +33,7 @@ class AudioExporter:
             audio: 音频数据 (int16)
             sample_rate: 采样率
             filename: 文件名（不含扩展名）
-            prefer_mp3: 是否优先使用 MP3 格式
+            output_format: 输出格式 ('wav' 或 'mp3')
 
         Returns:
             导出的文件路径
@@ -46,11 +46,18 @@ class AudioExporter:
         # 保存 WAV
         wavfile.write(str(wav_path), sample_rate, audio)
 
-        # 转换为 MP3（如果可用）
-        if prefer_mp3 and self.has_ffmpeg:
+        # 如果需要 MP3 格式
+        if output_format == 'mp3' and self.has_ffmpeg:
             if self._convert_to_mp3(wav_path, mp3_path):
                 wav_path.unlink()  # 删除 WAV
                 return mp3_path
+            else:
+                print(f"⚠️  MP3 转换失败，保留 WAV 格式")
+                return wav_path
+
+        # 返回 WAV 或 MP3
+        if output_format == 'mp3':
+            print(f"⚠️  ffmpeg 不可用，无法转换为 MP3，保留 WAV 格式")
 
         return wav_path
 

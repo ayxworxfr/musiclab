@@ -82,8 +82,8 @@ class EffectSoundGenerator(AudioGenerator):
         # 淡出
         audio = self.processor.apply_fade(audio, 0, int(0.02 * self.config.sample_rate))
 
-        # 归一化
-        audio = self.processor.normalize(audio, preset['normalize_level'])
+        # 归一化（应用主音量）
+        audio = self.processor.normalize(audio, preset['normalize_level'], volume=self.config.master_volume)
         return self.processor.to_int16(audio)
 
     def _generate_wrong(self, preset: dict) -> np.ndarray:
@@ -104,8 +104,8 @@ class EffectSoundGenerator(AudioGenerator):
         # 淡出
         audio = self.processor.apply_fade(audio, 0, int(0.02 * self.config.sample_rate))
 
-        # 归一化
-        audio = self.processor.normalize(audio, preset['normalize_level'])
+        # 归一化（应用主音量）
+        audio = self.processor.normalize(audio, preset['normalize_level'], volume=self.config.master_volume)
         return self.processor.to_int16(audio)
 
     def _generate_complete(self, preset: dict) -> np.ndarray:
@@ -133,8 +133,8 @@ class EffectSoundGenerator(AudioGenerator):
         # 淡出
         audio = self.processor.apply_fade(audio, 0, int(0.1 * self.config.sample_rate))
 
-        # 归一化
-        audio = self.processor.normalize(audio, preset['normalize_level'])
+        # 归一化（应用主音量）
+        audio = self.processor.normalize(audio, preset['normalize_level'], volume=self.config.master_volume)
         return self.processor.to_int16(audio)
 
     def _generate_levelup(self, preset: dict) -> np.ndarray:
@@ -170,6 +170,6 @@ class EffectSoundGenerator(AudioGenerator):
         # 淡出
         audio = self.processor.apply_fade(audio, 0, int(0.15 * self.config.sample_rate))
 
-        # 归一化
-        audio = self.processor.normalize(audio, preset['normalize_level'])
+        # 归一化（应用主音量）
+        audio = self.processor.normalize(audio, preset['normalize_level'], volume=self.config.master_volume)
         return self.processor.to_int16(audio)

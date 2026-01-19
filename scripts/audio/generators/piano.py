@@ -103,8 +103,8 @@ class EnhancedPianoGenerator(AudioGenerator):
         # 9. 音量补偿
         volume_comp = self._get_volume_compensation(midi_number)
 
-        # 10. 归一化并转换
-        audio = self.processor.normalize(audio, 0.9 * volume_comp * velocity)
+        # 10. 归一化并转换（应用主音量）
+        audio = self.processor.normalize(audio, 0.9 * volume_comp * velocity, volume=self.config.master_volume)
         return self.processor.to_int16(audio)
 
     # ========================================================================

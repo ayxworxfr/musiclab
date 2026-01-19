@@ -123,7 +123,7 @@ audio:
 # 输出配置
 output:
   base_dir: "assets/audio/my_output"  # 自定义输出目录
-  prefer_mp3: true
+  format: "mp3"  # 输出格式：wav 或 mp3
 
 # 生成模式
 generation:
@@ -163,8 +163,9 @@ instruments:
 |------|------|--------|
 | `audio.sample_rate` | 采样率 | 44100 |
 | `audio.bit_depth` | 位深度 | 16 |
+| `audio.master_volume` | 主音量 (0.0-2.0) | 1.0 |
 | `output.base_dir` | 输出根目录 | assets/audio |
-| `output.prefer_mp3` | 优先生成 MP3 | true |
+| `output.format` | 输出格式 (wav/mp3) | mp3 |
 | `generation.mode` | 生成模式（test/all） | test |
 | `generation.test_notes` | 测试音符列表 | [21,36,48,60,72,84,96,108] |
 | `instruments.<name>.enabled` | 是否启用该乐器 | false |
@@ -407,7 +408,7 @@ A: 在配置文件中设置：
 
 ```yaml
 output:
-  prefer_mp3: false
+  format: "wav"
 ```
 
 或者删除 ffmpeg。

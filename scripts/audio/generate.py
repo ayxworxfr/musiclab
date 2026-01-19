@@ -94,6 +94,7 @@ def generate_from_config(config_path: Path):
     # 创建音频配置
     audio_config = ConfigLoader.create_audio_config(config_dict)
     output_base = ConfigLoader.get_output_dir(config_dict)
+    output_format = ConfigLoader.get_output_format(config_dict)
 
     # ========== 生成乐器 ==========
     instruments = ConfigLoader.get_instruments_to_generate(config_dict)
@@ -151,7 +152,7 @@ def generate_from_config(config_path: Path):
                 # 导出
                 note_name = midi_to_note_name(midi)
                 filename = f'note_{midi}'
-                output_path = exporter.export(audio, audio_config.sample_rate, filename)
+                output_path = exporter.export(audio, audio_config.sample_rate, filename, output_format)
 
                 if i % 10 == 0 or i == len(notes_to_generate):
                     print(f"    进度: {i}/{len(notes_to_generate)} - {note_name}")
@@ -180,7 +181,7 @@ def generate_from_config(config_path: Path):
         for effect_type in effect_types:
             audio, sr = effect_generator.generate(effect_type)
             filename = effect_type.value
-            output_path = effects_exporter.export(audio, sr, filename)
+            output_path = effects_exporter.export(audio, sr, filename, output_format)
             print(f"  ✓ {output_path.name} ({effect_names.get(effect_type, effect_type.value)})")
 
         print(f"  ✅ 完成！生成了 {len(effect_types)} 个效果音")
@@ -199,12 +200,12 @@ def generate_from_config(config_path: Path):
 
         # 强拍
         audio, sr = metronome_generator.generate(is_strong=True)
-        strong_path = metronome_exporter.export(audio, sr, 'click_strong')
+        strong_path = metronome_exporter.export(audio, sr, 'click_strong', output_format)
         print(f"  ✓ {strong_path.name} (强拍)")
 
         # 弱拍
         audio, sr = metronome_generator.generate(is_strong=False)
-        weak_path = metronome_exporter.export(audio, sr, 'click_weak')
+        weak_path = metronome_exporter.export(audio, sr, 'click_weak', output_format)
         print(f"  ✓ {weak_path.name} (弱拍)")
 
         print(f"  ✅ 完成！生成了节拍器音效")

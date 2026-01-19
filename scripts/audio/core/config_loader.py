@@ -41,6 +41,7 @@ class ConfigLoader:
             sample_rate=audio_config_dict.get('sample_rate', 44100),
             bit_depth=audio_config_dict.get('bit_depth', 16),
             channels=audio_config_dict.get('channels', 1),
+            master_volume=audio_config_dict.get('master_volume', 1.0),
         )
 
     @staticmethod
@@ -171,7 +172,14 @@ class ConfigLoader:
         )
 
     @staticmethod
-    def prefer_mp3(config_dict: Dict[str, Any]) -> bool:
-        """是否优先生成MP3"""
+    def get_output_format(config_dict: Dict[str, Any]) -> str:
+        """获取输出格式 (wav 或 mp3)"""
         output = config_dict.get('output', {})
-        return output.get('prefer_mp3', True)
+        format_str = output.get('format', 'mp3').lower()
+
+        # 验证格式
+        if format_str not in ['wav', 'mp3']:
+            print(f"⚠️  警告: 不支持的音频格式 '{format_str}'，使用默认格式 mp3")
+            return 'mp3'
+
+        return format_str

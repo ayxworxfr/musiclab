@@ -16,11 +16,21 @@ class AudioProcessor:
     # ========================================================================
 
     @staticmethod
-    def normalize(audio: np.ndarray, target_peak: float = 0.9) -> np.ndarray:
-        """归一化音频到目标峰值"""
+    def normalize(audio: np.ndarray, target_peak: float = 0.9, volume: float = 1.0) -> np.ndarray:
+        """
+        归一化音频到目标峰值并应用音量
+
+        Args:
+            audio: 音频数组
+            target_peak: 目标峰值 (0-1)
+            volume: 音量倍数 (0.0-2.0)，1.0 为原始音量
+
+        Returns:
+            归一化并调整音量后的音频
+        """
         max_val = np.max(np.abs(audio))
         if max_val > 0:
-            return audio * (target_peak / max_val)
+            return audio * (target_peak / max_val) * volume
         return audio
 
     @staticmethod
@@ -125,6 +135,20 @@ class AudioProcessor:
         """应用增益（分贝）"""
         gain_linear = 10 ** (gain_db / 20)
         return audio * gain_linear
+
+    @staticmethod
+    def apply_volume(audio: np.ndarray, volume: float) -> np.ndarray:
+        """
+        应用音量调整（线性）
+
+        Args:
+            audio: 音频数组
+            volume: 音量倍数 (0.0-2.0)，1.0 为原始音量
+
+        Returns:
+            调整后的音频
+        """
+        return audio * volume
 
     # ========================================================================
     # 智能混音 - 🔥 核心功能

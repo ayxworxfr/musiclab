@@ -59,8 +59,8 @@ class InstrumentGenerator(AudioGenerator):
         generator_func = generators.get(instrument, self._piano)
         audio = generator_func(freq, duration, midi_note)
 
-        # 归一化并转换
-        audio = self.processor.normalize(audio, velocity)
+        # 归一化并转换（应用主音量）
+        audio = self.processor.normalize(audio, velocity, volume=self.config.master_volume)
         return self.processor.to_int16(audio)
 
     # ========================================================================

@@ -63,9 +63,9 @@ class MetronomeGenerator(AudioGenerator):
         fade_out_samples = int(0.01 * self.config.sample_rate)
         audio = self.processor.apply_fade(audio, 0, fade_out_samples)
 
-        # 归一化（提高音量）
+        # 归一化（提高音量，应用主音量）
         normalize_level = 1.0 if is_strong else 0.9  # 强拍更响
-        audio = self.processor.normalize(audio, normalize_level)
+        audio = self.processor.normalize(audio, normalize_level, volume=self.config.master_volume)
         audio = self.processor.to_int16(audio)
 
         return audio, self.config.sample_rate

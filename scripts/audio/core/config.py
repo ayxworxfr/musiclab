@@ -18,6 +18,7 @@ class AudioConfig:
     sample_rate: int = 44100
     bit_depth: int = 16
     channels: int = 1
+    master_volume: float = 1.0  # 主音量 (0.0-2.0)，1.0为原始音量
 
     @property
     def max_amplitude(self) -> int:

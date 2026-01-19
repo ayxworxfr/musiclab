@@ -5,10 +5,11 @@ audio:
   sample_rate: 44100
   bit_depth: 16
   channels: 1
+  master_volume: 1.5  # 主音量 (0.0-2.0)，1.5 = 增大50%
 
 output:
   base_dir: "assets/audio/all_instruments"
-  prefer_mp3: true
+  format: "mp3"  # 输出格式：wav 或 mp3
 
 generation:
   mode: "test"
