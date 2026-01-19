@@ -9,7 +9,7 @@ audio:
 
 output:
   base_dir: "assets/audio"
-  format: "wav"  # 输出格式：wav 或 mp3
+  format: "mp3"  # 输出格式：wav 或 mp3
 
 generation:
   mode: "all"  # 生成所有音符

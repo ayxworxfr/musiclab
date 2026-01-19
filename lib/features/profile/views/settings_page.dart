@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/utils/file_utils.dart';
+import '../../../features/tools/sheet_music/models/enums.dart';
 import '../controllers/profile_controller.dart';
 
 /// 设置页面
@@ -220,6 +221,7 @@ class SettingsPage extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // 钢琴音效开关
           Obx(() => _buildSwitchTile(
                 context,
                 icon: Icons.piano,
@@ -229,6 +231,7 @@ class SettingsPage extends StatelessWidget {
                 onChanged: (value) => profileController.togglePianoSound(value),
               )),
           const Divider(height: 1, indent: 56),
+          // 效果音开关
           Obx(() => _buildSwitchTile(
                 context,
                 icon: Icons.music_note,
@@ -236,6 +239,20 @@ class SettingsPage extends StatelessWidget {
                 subtitle: '正确/错误提示音',
                 value: profileController.effectSoundEnabled.value,
                 onChanged: (value) => profileController.toggleEffectSound(value),
+              )),
+          const Divider(height: 1, indent: 56),
+          // 乐器选择
+          Obx(() => _buildInstrumentTile(
+                context,
+                profileController.currentInstrument.value,
+                profileController.changeInstrument,
+              )),
+          const Divider(height: 1, indent: 56),
+          // 全局音量滑块
+          Obx(() => _buildVolumeTile(
+                context,
+                profileController.masterVolume.value,
+                profileController.setMasterVolume,
               )),
         ],
       ),
@@ -640,6 +657,199 @@ class SettingsPage extends StatelessWidget {
             child: const Text(
               '确认清除',
               style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建乐器选择项
+  Widget _buildInstrumentTile(
+    BuildContext context,
+    Instrument currentInstrument,
+    Function(Instrument) onChanged,
+  ) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(Icons.music_note_outlined, color: AppColors.primary, size: 20),
+      ),
+      title: Text(
+        '乐器选择',
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+      ),
+      subtitle: Text(
+        currentInstrument.name,
+        style: TextStyle(
+          color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+          fontSize: 13,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => _showInstrumentPicker(context, currentInstrument, onChanged),
+    );
+  }
+
+  /// 显示乐器选择器
+  void _showInstrumentPicker(
+    BuildContext context,
+    Instrument currentInstrument,
+    Function(Instrument) onChanged,
+  ) {
+    Get.bottomSheet(
+      Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                '选择乐器',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...Instrument.values.map((instrument) => ListTile(
+                  leading: Icon(
+                    _getInstrumentIcon(instrument),
+                    color: currentInstrument == instrument
+                        ? AppColors.primary
+                        : Theme.of(context).iconTheme.color,
+                  ),
+                  title: Text(
+                    instrument.name,
+                    style: TextStyle(
+                      color: currentInstrument == instrument
+                          ? AppColors.primary
+                          : Theme.of(context).textTheme.bodyLarge?.color,
+                      fontWeight: currentInstrument == instrument
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  trailing: currentInstrument == instrument
+                      ? const Icon(Icons.check, color: AppColors.primary)
+                      : null,
+                  onTap: () {
+                    onChanged(instrument);
+                    Get.back();
+                  },
+                )),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 获取乐器图标
+  IconData _getInstrumentIcon(Instrument instrument) {
+    switch (instrument) {
+      case Instrument.piano:
+      case Instrument.acousticPiano:
+      case Instrument.electricPiano:
+        return Icons.piano;
+      case Instrument.guitar:
+        return Icons.music_note;
+      case Instrument.violin:
+        return Icons.music_note_outlined;
+    }
+  }
+
+  /// 构建音量滑块项
+  Widget _buildVolumeTile(
+    BuildContext context,
+    double volume,
+    Function(double) onChanged,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.volume_up, color: AppColors.primary, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '全局音量',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    Text(
+                      '${(volume * 100).round()}%',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: AppColors.primary,
+                    inactiveTrackColor: AppColors.primary.withValues(alpha: 0.2),
+                    thumbColor: AppColors.primary,
+                    overlayColor: AppColors.primary.withValues(alpha: 0.1),
+                    trackHeight: 4,
+                  ),
+                  child: Slider(
+                    value: volume,
+                    min: 0.0,
+                    max: 1.0,
+                    divisions: 20,
+                    onChanged: onChanged,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

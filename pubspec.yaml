@@ -64,6 +64,8 @@ flutter:
     - assets/images/icons/
     - assets/images/illustrations/
     - assets/audio/piano/
+    - assets/audio/guitar/
+    - assets/audio/violin/
     - assets/audio/metronome/
     - assets/audio/effects/
     - assets/data/courses/

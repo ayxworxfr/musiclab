@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// 环境配置
 ///
@@ -106,6 +107,21 @@ class EnvConfig {
         return 3;
     }
   }
+
+  /// ==================== 音频配置 ====================
+
+  /// 音频格式（mp3 或 wav）
+  static String get audioFormat {
+    final format = dotenv.env['AUDIO_FORMAT']?.toLowerCase() ?? 'mp3';
+    // 验证格式是否有效
+    if (format != 'mp3' && format != 'wav') {
+      return 'mp3'; // 默认使用 mp3
+    }
+    return format;
+  }
+
+  /// 音频文件扩展名（带点）
+  static String get audioExtension => '.$audioFormat';
 }
 
 /// 环境枚举

@@ -257,10 +257,40 @@ enum ScoreCategory {
 enum Instrument {
   piano('钢琴'),
   acousticPiano('原声钢琴'),
-  electricPiano('电钢琴');
+  electricPiano('电钢琴'),
+  guitar('吉他'),
+  violin('小提琴');
 
   final String name;
   const Instrument(this.name);
+
+  /// 获取乐器的音频文件夹名称
+  String get audioFolder {
+    switch (this) {
+      case Instrument.piano:
+      case Instrument.acousticPiano:
+      case Instrument.electricPiano:
+        return 'piano';
+      case Instrument.guitar:
+        return 'guitar';
+      case Instrument.violin:
+        return 'violin';
+    }
+  }
+
+  /// 获取乐器的 MIDI 音域范围
+  ({int min, int max}) get midiRange {
+    switch (this) {
+      case Instrument.piano:
+      case Instrument.acousticPiano:
+      case Instrument.electricPiano:
+        return (min: 21, max: 108); // A0 - C8 (88键钢琴)
+      case Instrument.guitar:
+        return (min: 40, max: 88); // E2 - E6
+      case Instrument.violin:
+        return (min: 55, max: 103); // G3 - G7
+    }
+  }
 }
 
 /// ═══════════════════════════════════════════════════════════════

@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
 import '../../../core/settings/settings_service.dart';
+import '../../../features/tools/sheet_music/models/enums.dart';
 import '../../home/controllers/home_controller.dart';
 import '../models/achievement_model.dart';
 import '../models/learning_stats_model.dart';
@@ -30,6 +31,12 @@ class ProfileController extends GetxController {
 
   /// 效果音开关
   final effectSoundEnabled = true.obs;
+
+  /// 当前选择的乐器
+  final currentInstrument = Rx<Instrument>(Instrument.piano);
+
+  /// 全局音量 (0.0-1.0)
+  final masterVolume = 1.0.obs;
 
   @override
   void onInit() {
@@ -134,6 +141,8 @@ class ProfileController extends GetxController {
   void _loadAudioSettings() {
     pianoSoundEnabled.value = _settingsService.getAudioPianoEnabled();
     effectSoundEnabled.value = _settingsService.getAudioEffectsEnabled();
+    currentInstrument.value = _settingsService.getAudioCurrentInstrument();
+    masterVolume.value = _settingsService.getAudioMasterVolume();
   }
 
   /// 切换钢琴音效
@@ -148,6 +157,20 @@ class ProfileController extends GetxController {
     effectSoundEnabled.value = enabled;
     await _settingsService.setAudioEffectsEnabled(enabled);
     _audioService.setEffectsEnabled(enabled);
+  }
+
+  /// 切换乐器
+  Future<void> changeInstrument(Instrument instrument) async {
+    currentInstrument.value = instrument;
+    await _settingsService.setAudioCurrentInstrument(instrument);
+    _audioService.setInstrument(instrument);
+  }
+
+  /// 设置全局音量
+  Future<void> setMasterVolume(double volume) async {
+    masterVolume.value = volume;
+    await _settingsService.setAudioMasterVolume(volume);
+    _audioService.setMasterVolume(volume);
   }
 
   /// 导出所有数据

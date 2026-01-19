@@ -117,6 +117,9 @@ abstract class StorageKeys {
   /// 主音量（0.0-1.0）
   static const String audioMasterVolume = 'audio_master_volume';
 
+  /// 当前乐器（piano/guitar/violin等）
+  static const String audioCurrentInstrument = 'audio_current_instrument';
+
   // ========== 练习设置 ==========
   /// 练习默认难度（1-3）
   static const String practiceDefaultDifficulty = 'practice_default_difficulty';

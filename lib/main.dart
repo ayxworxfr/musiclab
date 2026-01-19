@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 
 import 'app/app.dart';
@@ -14,6 +15,14 @@ import 'features/tools/sheet_music/services/sheet_storage_service.dart';
 void main() async {
   // 确保 Flutter 绑定初始化
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 加载环境配置
+  try {
+    await dotenv.load(fileName: '.env');
+    LoggerUtil.info('环境配置加载成功');
+  } catch (e) {
+    LoggerUtil.warning('环境配置加载失败: $e，将使用默认配置');
+  }
 
   // 设置系统 UI 样式
   SystemChrome.setSystemUIOverlayStyle(

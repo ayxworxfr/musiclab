@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
+import '../config/env_config.dart';
 import '../settings/settings_service.dart';
 import '../utils/logger_util.dart';
 import '../../features/tools/sheet_music/models/enums.dart';
@@ -73,6 +74,9 @@ class AudioService extends GetxService {
   /// 节拍器音效开关
   bool _metronomeEnabled = true;
 
+  /// 当前选择的乐器
+  Instrument _currentInstrument = Instrument.piano;
+
   /// 设置服务（用于持久化）
   SettingsService? _settingsService;
 
@@ -106,6 +110,34 @@ class AudioService extends GetxService {
     _metronomeEnabled = enabled;
   }
 
+  /// 设置当前乐器
+  void setInstrument(Instrument instrument) {
+    if (_currentInstrument == instrument) return;
+
+    LoggerUtil.info('切换乐器: ${_currentInstrument.name} -> ${instrument.name}');
+    _currentInstrument = instrument;
+
+    // 保存到设置
+    _settingsService?.setAudioCurrentInstrument(instrument);
+
+    // 清空当前播放器池，让系统重新加载新乐器的音频
+    _pianoPlayerPools.clear();
+    _pianoPlayerIndex.clear();
+
+    // 预加载新乐器的常用音域
+    _preloadPianoSounds();
+  }
+
+  /// 获取当前乐器
+  Instrument get currentInstrument => _currentInstrument;
+
+  /// 构建音频文件路径
+  String _buildAudioPath(int midiNumber) {
+    final folder = _currentInstrument.audioFolder;
+    final extension = EnvConfig.audioExtension;
+    return 'audio/$folder/note_$midiNumber$extension';
+  }
+
   /// 初始化音频服务
   Future<AudioService> init() async {
     if (_isInitialized) return this;
@@ -120,6 +152,8 @@ class AudioService extends GetxService {
         _effectsEnabled = _settingsService!.getAudioEffectsEnabled();
         _metronomeEnabled = _settingsService!.getAudioMetronomeEnabled();
         _masterVolume = _settingsService!.getAudioMasterVolume();
+        _currentInstrument = _settingsService!.getAudioCurrentInstrument();
+        LoggerUtil.info('当前乐器: ${_currentInstrument.name}');
       } catch (e) {
         LoggerUtil.warning('加载音频设置失败，使用默认值', e);
       }
@@ -362,7 +396,7 @@ class AudioService extends GetxService {
       await player.setVolume(smartVolume);
 
       // 使用 AssetSource 直接播放（更稳定）
-      await player.play(AssetSource('audio/piano/note_$midiNumber.mp3'));
+      await player.play(AssetSource(_buildAudioPath(midiNumber)));
 
       // 播放完成后减少活跃流计数
       Future.delayed(const Duration(milliseconds: 2000), () {
@@ -439,7 +473,7 @@ class AudioService extends GetxService {
 
           // 设置音量并播放
           await player.setVolume(chordVolume);
-          await player.play(AssetSource('audio/piano/note_$midi.mp3'));
+          await player.play(AssetSource(_buildAudioPath(midi)));
         } catch (e) {
           LoggerUtil.warning('播放和弦音符失败: $midi', e);
         }
@@ -482,8 +516,8 @@ class AudioService extends GetxService {
       await player.stop();
       await player.setVolume(_masterVolume);
       final assetPath = isStrong
-          ? 'audio/metronome/click_strong.mp3'
-          : 'audio/metronome/click_weak.mp3';
+          ? 'audio/metronome/click_strong${EnvConfig.audioExtension}'
+          : 'audio/metronome/click_weak${EnvConfig.audioExtension}';
       await player.play(AssetSource(assetPath));
     } catch (e) {
       LoggerUtil.warning('播放节拍器音效失败', e);
@@ -518,7 +552,7 @@ class AudioService extends GetxService {
     try {
       await player.stop();
       await player.setVolume(_masterVolume);
-      await player.play(AssetSource('audio/effects/$type.mp3'));
+      await player.play(AssetSource('audio/effects/$type${EnvConfig.audioExtension}'));
     } catch (e) {
       LoggerUtil.warning('播放效果音失败: $type', e);
     }

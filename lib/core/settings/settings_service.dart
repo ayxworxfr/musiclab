@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../storage/storage_service.dart';
 import '../../shared/constants/storage_keys.dart';
+import '../../features/tools/sheet_music/models/enums.dart';
 
 /// 设置服务
 ///
@@ -185,6 +186,26 @@ class SettingsService extends GetxService {
   /// 设置主音量
   Future<bool> setAudioMasterVolume(double value) {
     return _storage.setDouble(StorageKeys.audioMasterVolume, value);
+  }
+
+  /// 获取当前乐器（默认piano）
+  Instrument getAudioCurrentInstrument() {
+    final instrumentName = _storage.getString(StorageKeys.audioCurrentInstrument);
+    if (instrumentName == null) return Instrument.piano;
+
+    try {
+      return Instrument.values.firstWhere(
+        (i) => i.name == instrumentName,
+        orElse: () => Instrument.piano,
+      );
+    } catch (e) {
+      return Instrument.piano;
+    }
+  }
+
+  /// 设置当前乐器
+  Future<bool> setAudioCurrentInstrument(Instrument instrument) {
+    return _storage.setString(StorageKeys.audioCurrentInstrument, instrument.name);
   }
 
   // ==================== 批量操作 ====================
