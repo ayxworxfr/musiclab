@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 /// 应用文字样式定义
-/// 
+///
 /// 统一管理应用中使用的所有文字样式
 abstract class AppTextStyles {
   // ==================== 标题样式 ====================
@@ -148,4 +148,3 @@ abstract class AppTextStyles {
     height: 1.43,
   );
 }
-

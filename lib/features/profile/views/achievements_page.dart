@@ -119,7 +119,11 @@ class AchievementsPage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildCategorySection(BuildContext context, AchievementCategory category, bool isDark) {
+  Widget _buildCategorySection(
+    BuildContext context,
+    AchievementCategory category,
+    bool isDark,
+  ) {
     final categoryAchievements = AchievementDefinitions.getByCategory(category);
     if (categoryAchievements.isEmpty) return const SizedBox.shrink();
 
@@ -165,10 +169,15 @@ class AchievementsPage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildAchievementCard(BuildContext context, Achievement achievement, bool isDark) {
+  Widget _buildAchievementCard(
+    BuildContext context,
+    Achievement achievement,
+    bool isDark,
+  ) {
     final userAchievement = controller.getUserAchievement(achievement.id);
     final isUnlocked = userAchievement?.isUnlocked ?? false;
-    final progress = userAchievement?.progressPercent(achievement.targetValue) ?? 0;
+    final progress =
+        userAchievement?.progressPercent(achievement.targetValue) ?? 0;
     final currentValue = userAchievement?.currentValue ?? 0;
 
     // 隐藏成就且未解锁
@@ -248,7 +257,9 @@ class AchievementsPage extends GetView<ProfileController> {
                   isHiddenAndLocked ? '继续探索解锁吧！' : achievement.description,
                   style: TextStyle(
                     fontSize: 13,
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondary,
                   ),
                 ),
                 if (!isUnlocked && !isHiddenAndLocked) ...[
@@ -274,7 +285,9 @@ class AchievementsPage extends GetView<ProfileController> {
                         '$currentValue/${achievement.targetValue}',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -286,7 +299,9 @@ class AchievementsPage extends GetView<ProfileController> {
                     '解锁于 ${_formatDate(userAchievement!.unlockedAt!)}',
                     style: TextStyle(
                       fontSize: 11,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -302,4 +317,3 @@ class AchievementsPage extends GetView<ProfileController> {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }
-

@@ -31,14 +31,13 @@ class ScoreConverter {
 
     final tempo = metadata['tempo'] as int? ?? json['tempo'] as int? ?? 120;
     // difficulty 可能在 metadata 中，也可能在顶层
-    final difficulty = (metadata['difficulty'] as int?) ?? 
-                      (json['difficulty'] as int?) ?? 
-                      1;
+    final difficulty =
+        (metadata['difficulty'] as int?) ?? (json['difficulty'] as int?) ?? 1;
 
     ScoreCategory category = ScoreCategory.children;
     // category 可能在 metadata 中，也可能在顶层
-    final categoryStr = metadata['category'] as String? ?? 
-                       json['category'] as String?;
+    final categoryStr =
+        metadata['category'] as String? ?? json['category'] as String?;
     if (categoryStr != null) {
       switch (categoryStr) {
         case 'folk':
@@ -449,18 +448,39 @@ class ScoreConverter {
             Measure(
               number: 1,
               beats: [
-                Beat(index: 0, notes: [Note(pitch: 72, duration: NoteDuration.quarter)]),
-                Beat(index: 1, notes: [Note(pitch: 72, duration: NoteDuration.quarter)]),
-                Beat(index: 2, notes: [Note(pitch: 79, duration: NoteDuration.quarter)]),
-                Beat(index: 3, notes: [Note(pitch: 79, duration: NoteDuration.quarter)]),
+                Beat(
+                  index: 0,
+                  notes: [Note(pitch: 72, duration: NoteDuration.quarter)],
+                ),
+                Beat(
+                  index: 1,
+                  notes: [Note(pitch: 72, duration: NoteDuration.quarter)],
+                ),
+                Beat(
+                  index: 2,
+                  notes: [Note(pitch: 79, duration: NoteDuration.quarter)],
+                ),
+                Beat(
+                  index: 3,
+                  notes: [Note(pitch: 79, duration: NoteDuration.quarter)],
+                ),
               ],
             ),
             Measure(
               number: 2,
               beats: [
-                Beat(index: 0, notes: [Note(pitch: 81, duration: NoteDuration.quarter)]),
-                Beat(index: 1, notes: [Note(pitch: 81, duration: NoteDuration.quarter)]),
-                Beat(index: 2, notes: [Note(pitch: 79, duration: NoteDuration.half)]),
+                Beat(
+                  index: 0,
+                  notes: [Note(pitch: 81, duration: NoteDuration.quarter)],
+                ),
+                Beat(
+                  index: 1,
+                  notes: [Note(pitch: 81, duration: NoteDuration.quarter)],
+                ),
+                Beat(
+                  index: 2,
+                  notes: [Note(pitch: 79, duration: NoteDuration.half)],
+                ),
               ],
             ),
           ],

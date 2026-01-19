@@ -23,10 +23,7 @@ class PdfExporter {
     }
 
     if (_smuflFont == null) {
-      final fontPaths = [
-        'assets/fonts/Bravura.ttf',
-        'assets/fonts/Leland.ttf',
-      ];
+      final fontPaths = ['assets/fonts/Bravura.ttf', 'assets/fonts/Leland.ttf'];
 
       for (final path in fontPaths) {
         try {
@@ -130,7 +127,11 @@ class PdfExporter {
       margin: const pw.EdgeInsets.only(top: 10),
       child: pw.Text(
         '第 ${context.pageNumber} 页，共 ${context.pagesCount} 页',
-        style: pw.TextStyle(font: _chineseFont, fontSize: 10, color: PdfColors.grey),
+        style: pw.TextStyle(
+          font: _chineseFont,
+          fontSize: 10,
+          color: PdfColors.grey,
+        ),
       ),
     );
   }
@@ -148,7 +149,11 @@ class PdfExporter {
     if (beatsPerMeasure <= 0) return widgets;
 
     // 计算每行小节数（使用安全除法）
-    final measuresPerLine = _safeDivide(contentWidth, 120.0, 4.0).floor().clamp(2, 6);
+    final measuresPerLine = _safeDivide(
+      contentWidth,
+      120.0,
+      4.0,
+    ).floor().clamp(2, 6);
 
     // 如果是大谱表，需要将高音和低音轨道绘制在一起
     if (score.isGrandStaff && score.tracks.length >= 2) {
@@ -156,7 +161,8 @@ class PdfExporter {
       final leftHandTrack = score.leftHandTrack;
 
       if (rightHandTrack != null && leftHandTrack != null) {
-        final maxMeasures = rightHandTrack.measures.length > leftHandTrack.measures.length
+        final maxMeasures =
+            rightHandTrack.measures.length > leftHandTrack.measures.length
             ? rightHandTrack.measures.length
             : leftHandTrack.measures.length;
 
@@ -164,20 +170,42 @@ class PdfExporter {
         for (var i = 0; i < maxMeasures; i += measuresPerLine) {
           final end = (i + measuresPerLine).clamp(0, maxMeasures);
           final rightMeasures = i < rightHandTrack.measures.length
-              ? rightHandTrack.measures.sublist(i, end.clamp(0, rightHandTrack.measures.length))
+              ? rightHandTrack.measures.sublist(
+                  i,
+                  end.clamp(0, rightHandTrack.measures.length),
+                )
               : <Measure>[];
           final leftMeasures = i < leftHandTrack.measures.length
-              ? leftHandTrack.measures.sublist(i, end.clamp(0, leftHandTrack.measures.length))
+              ? leftHandTrack.measures.sublist(
+                  i,
+                  end.clamp(0, leftHandTrack.measures.length),
+                )
               : <Measure>[];
 
           // 高音谱行
           if (rightMeasures.isNotEmpty) {
-            widgets.add(_buildJianpuLine(rightMeasures, beatsPerMeasure, contentWidth, score.metadata.key, rightHandTrack.clef));
+            widgets.add(
+              _buildJianpuLine(
+                rightMeasures,
+                beatsPerMeasure,
+                contentWidth,
+                score.metadata.key,
+                rightHandTrack.clef,
+              ),
+            );
             widgets.add(pw.SizedBox(height: 4));
           }
           // 低音谱行
           if (leftMeasures.isNotEmpty) {
-            widgets.add(_buildJianpuLine(leftMeasures, beatsPerMeasure, contentWidth, score.metadata.key, leftHandTrack.clef));
+            widgets.add(
+              _buildJianpuLine(
+                leftMeasures,
+                beatsPerMeasure,
+                contentWidth,
+                score.metadata.key,
+                leftHandTrack.clef,
+              ),
+            );
             widgets.add(pw.SizedBox(height: 12));
           }
         }
@@ -192,7 +220,15 @@ class PdfExporter {
           final end = (i + measuresPerLine).clamp(0, track.measures.length);
           final lineMeasures = track.measures.sublist(i, end);
 
-          widgets.add(_buildJianpuLine(lineMeasures, beatsPerMeasure, contentWidth, score.metadata.key, track.clef));
+          widgets.add(
+            _buildJianpuLine(
+              lineMeasures,
+              beatsPerMeasure,
+              contentWidth,
+              score.metadata.key,
+              track.clef,
+            ),
+          );
           widgets.add(pw.SizedBox(height: 8));
         }
       }
@@ -202,10 +238,20 @@ class PdfExporter {
   }
 
   /// 构建简谱行
-  pw.Widget _buildJianpuLine(List<Measure> measures, int beatsPerMeasure, double contentWidth, MusicKey key, Clef clef) {
+  pw.Widget _buildJianpuLine(
+    List<Measure> measures,
+    int beatsPerMeasure,
+    double contentWidth,
+    MusicKey key,
+    Clef clef,
+  ) {
     if (measures.isEmpty) return pw.SizedBox();
 
-    final measureWidth = _safeDivide(contentWidth, measures.length.toDouble(), 100.0);
+    final measureWidth = _safeDivide(
+      contentWidth,
+      measures.length.toDouble(),
+      100.0,
+    );
 
     return pw.Row(
       children: [
@@ -249,7 +295,10 @@ class PdfExporter {
   /// 构建简谱拍
   pw.Widget _buildJianpuBeat(Beat beat, MusicKey key) {
     if (beat.notes.isEmpty) {
-      return pw.Text('-', style: pw.TextStyle(font: _chineseFont, fontSize: 16));
+      return pw.Text(
+        '-',
+        style: pw.TextStyle(font: _chineseFont, fontSize: 16),
+      );
     }
 
     if (beat.notes.length == 1) {
@@ -260,7 +309,8 @@ class PdfExporter {
     // beamCount > 0 (短时值)：水平排列
     // beamCount = 0 (长时值)：垂直排列(和弦)
     final firstNote = beat.notes.first;
-    final allAreSameShortDuration = beat.notes.length > 1 &&
+    final allAreSameShortDuration =
+        beat.notes.length > 1 &&
         firstNote.duration.beamCount > 0 &&
         beat.notes.every((n) => n.duration == firstNote.duration);
 
@@ -268,12 +318,14 @@ class PdfExporter {
       // 短时值音符：水平排列
       return pw.Row(
         mainAxisSize: pw.MainAxisSize.min,
-        children: beat.notes.map((n) =>
-          pw.Container(
-            margin: const pw.EdgeInsets.symmetric(horizontal: 2),
-            child: _buildJianpuNote(n, key),
-          )
-        ).toList(),
+        children: beat.notes
+            .map(
+              (n) => pw.Container(
+                margin: const pw.EdgeInsets.symmetric(horizontal: 2),
+                child: _buildJianpuNote(n, key),
+              ),
+            )
+            .toList(),
       );
     } else {
       // 和弦(长时值)：垂直排列，按音高从低到高排序
@@ -289,7 +341,10 @@ class PdfExporter {
   /// 构建简谱音符
   pw.Widget _buildJianpuNote(Note note, MusicKey key) {
     if (note.isRest) {
-      return pw.Text('0', style: pw.TextStyle(font: _chineseFont, fontSize: 16));
+      return pw.Text(
+        '0',
+        style: pw.TextStyle(font: _chineseFont, fontSize: 16),
+      );
     }
 
     // 根据调号计算简谱度数
@@ -314,36 +369,53 @@ class PdfExporter {
             if (octave > 0)
               pw.Row(
                 mainAxisSize: pw.MainAxisSize.min,
-                children: List.generate(octave, (_) => pw.Container(
-                  width: 3, height: 3,
-                  margin: const pw.EdgeInsets.symmetric(horizontal: 1),
-                  decoration: const pw.BoxDecoration(
-                    shape: pw.BoxShape.circle, color: PdfColors.black,
+                children: List.generate(
+                  octave,
+                  (_) => pw.Container(
+                    width: 3,
+                    height: 3,
+                    margin: const pw.EdgeInsets.symmetric(horizontal: 1),
+                    decoration: const pw.BoxDecoration(
+                      shape: pw.BoxShape.circle,
+                      color: PdfColors.black,
+                    ),
                   ),
-                )),
+                ),
               ),
             // 数字（包含升降号）
-            pw.Text(displayText, style: pw.TextStyle(font: _chineseBoldFont, fontSize: 16)),
+            pw.Text(
+              displayText,
+              style: pw.TextStyle(font: _chineseBoldFont, fontSize: 16),
+            ),
             // 下划线
             if (underlineCount > 0)
               pw.Column(
-                children: List.generate(underlineCount, (_) => pw.Container(
-                  width: 10, height: 1,
-                  margin: const pw.EdgeInsets.only(top: 1),
-                  color: PdfColors.black,
-                )),
+                children: List.generate(
+                  underlineCount,
+                  (_) => pw.Container(
+                    width: 10,
+                    height: 1,
+                    margin: const pw.EdgeInsets.only(top: 1),
+                    color: PdfColors.black,
+                  ),
+                ),
               ),
             // 低音点
             if (octave < 0)
               pw.Row(
                 mainAxisSize: pw.MainAxisSize.min,
-                children: List.generate(-octave, (_) => pw.Container(
-                  width: 3, height: 3,
-                  margin: const pw.EdgeInsets.symmetric(horizontal: 1),
-                  decoration: const pw.BoxDecoration(
-                    shape: pw.BoxShape.circle, color: PdfColors.black,
+                children: List.generate(
+                  -octave,
+                  (_) => pw.Container(
+                    width: 3,
+                    height: 3,
+                    margin: const pw.EdgeInsets.symmetric(horizontal: 1),
+                    decoration: const pw.BoxDecoration(
+                      shape: pw.BoxShape.circle,
+                      color: PdfColors.black,
+                    ),
                   ),
-                )),
+                ),
               ),
           ],
         ),
@@ -352,9 +424,11 @@ class PdfExporter {
           pw.Positioned(
             right: -8,
             child: pw.Container(
-              width: 3, height: 3,
+              width: 3,
+              height: 3,
               decoration: const pw.BoxDecoration(
-                shape: pw.BoxShape.circle, color: PdfColors.black,
+                shape: pw.BoxShape.circle,
+                color: PdfColors.black,
               ),
             ),
           ),
@@ -374,19 +448,26 @@ class PdfExporter {
     if (score.isGrandStaff && score.tracks.length >= 2) {
       final trebleTrack = score.tracks[0]; // 高音轨道
       final bassTrack = score.tracks[1]; // 低音轨道
-      
+
       // 简化版：每行2个小节
-      final maxMeasures = trebleTrack.measures.length > bassTrack.measures.length
+      final maxMeasures =
+          trebleTrack.measures.length > bassTrack.measures.length
           ? trebleTrack.measures.length
           : bassTrack.measures.length;
-      
+
       for (var i = 0; i < maxMeasures; i += 2) {
         final end = (i + 2).clamp(0, maxMeasures);
         final trebleMeasures = i < trebleTrack.measures.length
-            ? trebleTrack.measures.sublist(i, end.clamp(0, trebleTrack.measures.length))
+            ? trebleTrack.measures.sublist(
+                i,
+                end.clamp(0, trebleTrack.measures.length),
+              )
             : <Measure>[];
         final bassMeasures = i < bassTrack.measures.length
-            ? bassTrack.measures.sublist(i, end.clamp(0, bassTrack.measures.length))
+            ? bassTrack.measures.sublist(
+                i,
+                end.clamp(0, bassTrack.measures.length),
+              )
             : <Measure>[];
 
         widgets.add(_buildGrandStaffLine(trebleMeasures, bassMeasures));
@@ -412,7 +493,10 @@ class PdfExporter {
   }
 
   /// 构建大谱表行（高音+低音）
-  pw.Widget _buildGrandStaffLine(List<Measure> trebleMeasures, List<Measure> bassMeasures) {
+  pw.Widget _buildGrandStaffLine(
+    List<Measure> trebleMeasures,
+    List<Measure> bassMeasures,
+  ) {
     if (trebleMeasures.isEmpty && bassMeasures.isEmpty) return pw.SizedBox();
 
     // 计算五线谱总宽度
@@ -430,7 +514,7 @@ class PdfExporter {
     final bassY = trebleY + staffHeight + staffGap; // 低音谱表第五线
     // 谱号位置补偿
     final clefOffset = -7 * lineSpacing;
-    
+
     return pw.Container(
       height: 200, // 容器高度，包含两个谱表
       child: pw.Stack(
@@ -466,7 +550,11 @@ class PdfExporter {
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
-              top: trebleY + clefOffset + 3 * lineSpacing - 20, // 高音谱号居中在第四线（字体基准点补偿）
+              top:
+                  trebleY +
+                  clefOffset +
+                  3 * lineSpacing -
+                  20, // 高音谱号居中在第四线（字体基准点补偿）
               child: pw.Text(
                 SMuFLGlyphs.gClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
@@ -477,7 +565,11 @@ class PdfExporter {
           if (_smuflFont != null)
             pw.Positioned(
               left: 5,
-              top: bassY + clefOffset + 1 * lineSpacing - 20, // 低音谱号居中在第二线（字体基准点补偿）
+              top:
+                  bassY +
+                  clefOffset +
+                  1 * lineSpacing -
+                  20, // 低音谱号居中在第二线（字体基准点补偿）
               child: pw.Text(
                 SMuFLGlyphs.fClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
@@ -493,7 +585,12 @@ class PdfExporter {
           ...List.generate(bassMeasures.length, (measureIndex) {
             final measure = bassMeasures[measureIndex];
             final measureX = 50.0 + measureIndex * 200.0;
-            return _buildMeasureNotes(measure, measureX, Clef.bass, bassY: bassY);
+            return _buildMeasureNotes(
+              measure,
+              measureX,
+              Clef.bass,
+              bassY: bassY,
+            );
           }),
           // 小节线（贯穿两个谱表）
           ...List.generate(maxMeasures + 1, (i) {
@@ -526,7 +623,7 @@ class PdfExporter {
     final staffY = 30.0; // 第五线（最上面）的Y坐标
     final lineSpacing = 8.0; // 线间距
     final staffHeight = 4 * lineSpacing; // 五线谱高度（第五线到第一线）
-    
+
     return pw.Container(
       height: 100, // 容器高度，留出上下空间用于加线
       child: pw.Stack(
@@ -553,7 +650,9 @@ class PdfExporter {
             pw.Positioned(
               left: 5,
               top: clef == Clef.treble
-                  ? staffY + 3 * lineSpacing - 20 // 高音谱号居中在第四线（字体基准点补偿）
+                  ? staffY +
+                        3 * lineSpacing -
+                        20 // 高音谱号居中在第四线（字体基准点补偿）
                   : staffY + 2 * lineSpacing - 20, // 低音谱号居中在第三线（字体基准点补偿）
               child: pw.Text(
                 clef == Clef.treble ? SMuFLGlyphs.gClef : SMuFLGlyphs.fClef,
@@ -586,7 +685,12 @@ class PdfExporter {
   }
 
   /// 构建小节内的音符
-  pw.Widget _buildMeasureNotes(Measure measure, double measureX, Clef clef, {double? bassY}) {
+  pw.Widget _buildMeasureNotes(
+    Measure measure,
+    double measureX,
+    Clef clef, {
+    double? bassY,
+  }) {
     final widgets = <pw.Widget>[];
 
     if (measure.beats.isEmpty) return pw.SizedBox();
@@ -602,7 +706,8 @@ class PdfExporter {
 
       // 判断是否为短时值音符(需要水平排列)
       final firstNote = beat.notes.first;
-      final allAreSameShortDuration = beat.notes.length > 1 &&
+      final allAreSameShortDuration =
+          beat.notes.length > 1 &&
           firstNote.duration.beamCount > 0 &&
           beat.notes.every((n) => n.duration == firstNote.duration);
 
@@ -618,7 +723,9 @@ class PdfExporter {
 
           // 绘制升降号
           if (note.accidental != Accidental.none && _smuflFont != null) {
-            final accidentalSymbol = SMuFLGlyphs.getAccidental(note.accidental.name);
+            final accidentalSymbol = SMuFLGlyphs.getAccidental(
+              note.accidental.name,
+            );
 
             if (accidentalSymbol.isNotEmpty) {
               final accidentalFontSize = 16.0;
@@ -629,7 +736,10 @@ class PdfExporter {
                   top: accidentalTop,
                   child: pw.Text(
                     accidentalSymbol,
-                    style: pw.TextStyle(font: _smuflFont, fontSize: accidentalFontSize),
+                    style: pw.TextStyle(
+                      font: _smuflFont,
+                      fontSize: accidentalFontSize,
+                    ),
                   ),
                 ),
               );
@@ -637,9 +747,20 @@ class PdfExporter {
           }
 
           // 绘制加线
-          final staffPosition = _getStaffPosition(note.pitch, clef == Clef.treble);
+          final staffPosition = _getStaffPosition(
+            note.pitch,
+            clef == Clef.treble,
+          );
           if (staffPosition < 0 || staffPosition > 8) {
-            widgets.add(_buildLedgerLines(noteX, noteY, staffPosition, clef, bassY: bassY));
+            widgets.add(
+              _buildLedgerLines(
+                noteX,
+                noteY,
+                staffPosition,
+                clef,
+                bassY: bassY,
+              ),
+            );
           }
 
           // 绘制音符
@@ -666,7 +787,9 @@ class PdfExporter {
 
           // 绘制升降号
           if (note.accidental != Accidental.none && _smuflFont != null) {
-            final accidentalSymbol = SMuFLGlyphs.getAccidental(note.accidental.name);
+            final accidentalSymbol = SMuFLGlyphs.getAccidental(
+              note.accidental.name,
+            );
 
             if (accidentalSymbol.isNotEmpty) {
               final accidentalFontSize = 16.0;
@@ -677,7 +800,10 @@ class PdfExporter {
                   top: accidentalTop,
                   child: pw.Text(
                     accidentalSymbol,
-                    style: pw.TextStyle(font: _smuflFont, fontSize: accidentalFontSize),
+                    style: pw.TextStyle(
+                      font: _smuflFont,
+                      fontSize: accidentalFontSize,
+                    ),
                   ),
                 ),
               );
@@ -685,9 +811,20 @@ class PdfExporter {
           }
 
           // 绘制加线
-          final staffPosition = _getStaffPosition(note.pitch, clef == Clef.treble);
+          final staffPosition = _getStaffPosition(
+            note.pitch,
+            clef == Clef.treble,
+          );
           if (staffPosition < 0 || staffPosition > 8) {
-            widgets.add(_buildLedgerLines(noteX, noteY, staffPosition, clef, bassY: bassY));
+            widgets.add(
+              _buildLedgerLines(
+                noteX,
+                noteY,
+                staffPosition,
+                clef,
+                bassY: bassY,
+              ),
+            );
           }
 
           // 绘制音符
@@ -728,7 +865,7 @@ class PdfExporter {
 
     return noteY;
   }
-  
+
   /// 获取五线谱位置（与Canvas的_getStaffPosition保持一致）
   /// 返回值：0 = 第一线(E4 for treble), 正数向上，负数向下
   int _getStaffPosition(int midi, bool isTreble) {
@@ -757,7 +894,13 @@ class PdfExporter {
   }
 
   /// 构建加线(下加线和上加线)
-  pw.Widget _buildLedgerLines(double noteX, double noteY, int staffPosition, Clef clef, {double? bassY}) {
+  pw.Widget _buildLedgerLines(
+    double noteX,
+    double noteY,
+    int staffPosition,
+    Clef clef, {
+    double? bassY,
+  }) {
     final widgets = <pw.Widget>[];
     final lineSpacing = 8.0;
     // 根据是否传入 bassY 判断是高音谱表还是低音谱表
@@ -765,7 +908,7 @@ class PdfExporter {
     final staffY = bassY ?? 30.0; // 第五线(最上面)的Y坐标
     final firstLineY = staffY + 4 * lineSpacing; // 第一线(最下面)的Y坐标
     final lineWidth = 20.0; // 加线宽度
-    
+
     if (staffPosition < 0) {
       // 下加线：从下加一线开始画，直到音符所在的线
       for (var i = -2; i >= staffPosition; i -= 2) {
@@ -799,7 +942,7 @@ class PdfExporter {
         );
       }
     }
-    
+
     return pw.Stack(children: widgets);
   }
 
@@ -852,9 +995,6 @@ class PdfExporter {
   /// 分享 PDF
   Future<void> sharePdf(Score score, {bool isJianpu = false}) async {
     final pdfData = await export(score, isJianpu: isJianpu);
-    await Printing.sharePdf(
-      bytes: pdfData,
-      filename: '${score.title}.pdf',
-    );
+    await Printing.sharePdf(bytes: pdfData, filename: '${score.title}.pdf');
   }
 }

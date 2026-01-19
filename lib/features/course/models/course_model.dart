@@ -38,7 +38,8 @@ class CourseModel {
   final int completedLessons;
 
   /// 学习进度（0.0 - 1.0）
-  double get progress => lessons.isEmpty ? 0 : completedLessons / lessons.length;
+  double get progress =>
+      lessons.isEmpty ? 0 : completedLessons / lessons.length;
 
   /// 是否已完成
   bool get isCompleted => completedLessons >= lessons.length;
@@ -65,10 +66,11 @@ class CourseModel {
       title: json['title'] as String,
       description: json['description'] as String,
       icon: json['icon'] as String,
-      gradientColors: json['gradientColors'] != null 
+      gradientColors: json['gradientColors'] != null
           ? List<String>.from(json['gradientColors'] as List)
           : ['#667eea', '#764ba2'],
-      lessons: (json['lessons'] as List<dynamic>?)
+      lessons:
+          (json['lessons'] as List<dynamic>?)
               ?.map((e) => LessonModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -173,7 +175,8 @@ class LessonModel {
       subtitle: json['subtitle'] as String? ?? '',
       type: json['type'] as String? ?? 'text',
       durationMinutes: json['durationMinutes'] as int? ?? 5,
-      contentBlocks: (json['contentBlocks'] as List<dynamic>?)
+      contentBlocks:
+          (json['contentBlocks'] as List<dynamic>?)
               ?.map((e) => ContentBlock.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -231,7 +234,7 @@ class LessonModel {
 }
 
 /// 内容块模型
-/// 
+///
 /// 支持的类型：
 /// - text: 文本内容
 /// - image: 图片
@@ -248,10 +251,7 @@ class ContentBlock {
   /// 内容数据
   final Map<String, dynamic> data;
 
-  const ContentBlock({
-    required this.type,
-    required this.data,
-  });
+  const ContentBlock({required this.type, required this.data});
 
   /// 从 JSON 创建
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
@@ -263,10 +263,6 @@ class ContentBlock {
 
   /// 转换为 JSON
   Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'data': data,
-    };
+    return {'type': type, 'data': data};
   }
 }
-

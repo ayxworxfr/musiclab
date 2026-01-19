@@ -1,5 +1,5 @@
 /// API 响应模型
-/// 
+///
 /// 统一封装 API 返回的数据格式
 class ApiResponse<T> {
   /// 响应码
@@ -54,4 +54,3 @@ class ApiResponse<T> {
     return 'ApiResponse(code: $code, message: $message, data: $data)';
   }
 }
-

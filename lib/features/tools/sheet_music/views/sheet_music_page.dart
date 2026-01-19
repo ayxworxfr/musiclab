@@ -266,7 +266,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: const Text(
@@ -349,11 +351,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                   children: [
                     // 更多按钮（导出、重命名和删除功能）
                     PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.more_vert,
-                        size: 20,
-                        color: Colors.grey,
-                      ),
+                      icon: Icon(Icons.more_vert, size: 20, color: Colors.grey),
                       tooltip: '更多操作',
                       onSelected: (value) {
                         switch (value) {
@@ -547,9 +545,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
   Future<void> _renameScore(BuildContext context, Score score) async {
     // 保护预制乐谱
     if (score.isBuiltIn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('系统预制乐谱无法重命名')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('系统预制乐谱无法重命名')));
       return;
     }
 
@@ -583,9 +581,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
 
     if (newTitle == null || newTitle.trim().isEmpty) {
       if (newTitle != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('乐谱名称不能为空')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('乐谱名称不能为空')));
       }
       return;
     }
@@ -595,13 +593,13 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     final success = await controller.saveUserScore(updatedScore);
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('已重命名为 "${newTitle.trim()}"')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('已重命名为 "${newTitle.trim()}"')));
     } else if (!success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('重命名失败，请重试')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('重命名失败，请重试')));
     }
   }
 }

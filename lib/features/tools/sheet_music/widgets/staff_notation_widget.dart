@@ -376,12 +376,14 @@ class _StaffLinePainter extends CustomPainter {
     // - 低音谱号（F谱号）应该居中在第二线（F线）：startY + 1 * lineSpacing
     // Bravura 字体的谱号符号基准点在底部，需要调整Y坐标使谱号中心对齐到目标线
     final targetLineY = clef == 'treble'
-        ? startY + 3 * lineSpacing  // 第四线
-        : startY + 1 * lineSpacing;  // 第二线
-    
+        ? startY +
+              3 *
+                  lineSpacing // 第四线
+        : startY + 1 * lineSpacing; // 第二线
+
     // 将谱号中心对齐到目标线（字体高度的一半作为偏移）
     final y = targetLineY - textPainter.height * 0.5;
-    
+
     textPainter.paint(canvas, Offset(x, y));
   }
 
@@ -518,7 +520,8 @@ class _StaffLinePainter extends CustomPainter {
     for (final beat in measure.beats) {
       for (final note in beat.notes) {
         final noteWidth = (note.duration.beats / totalBeats) * noteAreaWidth;
-        final isHighlighted = isHighlightedMeasure && noteIndex == highlightNoteIndex;
+        final isHighlighted =
+            isHighlightedMeasure && noteIndex == highlightNoteIndex;
 
         _drawNote(
           canvas,

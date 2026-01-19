@@ -21,10 +21,7 @@ class FileUtils {
       await file.writeAsString(content);
 
       // 分享文件
-      await Share.shareXFiles(
-        [XFile(filePath)],
-        subject: filename,
-      );
+      await Share.shareXFiles([XFile(filePath)], subject: filename);
     } catch (e) {
       throw Exception('文件保存失败: $e');
     }
@@ -113,4 +110,3 @@ class FileUtils {
     }
   }
 }
-

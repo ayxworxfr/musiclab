@@ -190,7 +190,9 @@ class SettingsService extends GetxService {
 
   /// 获取当前乐器（默认piano）
   Instrument getAudioCurrentInstrument() {
-    final instrumentName = _storage.getString(StorageKeys.audioCurrentInstrument);
+    final instrumentName = _storage.getString(
+      StorageKeys.audioCurrentInstrument,
+    );
     if (instrumentName == null) return Instrument.piano;
 
     try {
@@ -205,7 +207,10 @@ class SettingsService extends GetxService {
 
   /// 设置当前乐器
   Future<bool> setAudioCurrentInstrument(Instrument instrument) {
-    return _storage.setString(StorageKeys.audioCurrentInstrument, instrument.name);
+    return _storage.setString(
+      StorageKeys.audioCurrentInstrument,
+      instrument.name,
+    );
   }
 
   // ==================== 批量操作 ====================

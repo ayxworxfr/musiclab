@@ -202,9 +202,7 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
-          onTap: _currentScore!.isBuiltIn
-              ? null
-              : () => _showRenameDialog(),
+          onTap: _currentScore!.isBuiltIn ? null : () => _showRenameDialog(),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -296,11 +294,7 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
   /// 处理重命名
   void _handleRename(String newTitle) {
     if (newTitle.trim().isEmpty) {
-      Get.snackbar(
-        '错误',
-        '乐谱名称不能为空',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('错误', '乐谱名称不能为空', snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
@@ -321,11 +315,7 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
           snackPosition: SnackPosition.BOTTOM,
         );
       } else {
-        Get.snackbar(
-          '错误',
-          '重命名失败，请重试',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar('错误', '重命名失败，请重试', snackPosition: SnackPosition.BOTTOM);
       }
     });
   }

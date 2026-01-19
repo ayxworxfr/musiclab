@@ -296,12 +296,15 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
         if (sheet != null && noteIndex >= 0) {
           // 使用当前选中的轨道，而不是第一个轨道
           final track = _editorController.currentTrack;
-          if (track != null && measureIndex >= 0 && measureIndex < track.measures.length) {
+          if (track != null &&
+              measureIndex >= 0 &&
+              measureIndex < track.measures.length) {
             final measure = track.measures[measureIndex];
             // 从 beats 中查找对应的音符
             var remainingNoteIndex = noteIndex;
             for (final beat in measure.beats) {
-              if (remainingNoteIndex >= 0 && remainingNoteIndex < beat.notes.length) {
+              if (remainingNoteIndex >= 0 &&
+                  remainingNoteIndex < beat.notes.length) {
                 currentLyric = beat.notes[remainingNoteIndex].lyric;
                 break;
               }
@@ -574,7 +577,10 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
                 IconButton(
                   onPressed: () => _playerController.previousMeasure(),
                   icon: const Icon(Icons.skip_previous, size: 20),
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
                 ),
                 Obx(() {
                   final isPlaying =
@@ -601,7 +607,10 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
                 IconButton(
                   onPressed: () => _playerController.nextMeasure(),
                   icon: const Icon(Icons.skip_next, size: 20),
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
                 ),
 
                 const SizedBox(width: 16),
@@ -742,7 +751,9 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
                           Icon(
                             Icons.visibility,
                             size: 16,
-                            color: showPreview ? AppColors.primary : Colors.grey,
+                            color: showPreview
+                                ? AppColors.primary
+                                : Colors.grey,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -771,7 +782,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
   Widget _buildPreviewSection(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
     final previewHeight = isMobile ? 250.0 : 300.0;
-    
+
     return Container(
       height: previewHeight,
       decoration: BoxDecoration(
@@ -812,7 +823,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
             final highlightedIndices = <int>{};
             if (state.isPlaying && state.currentTime >= 0) {
               final measureIndex = state.currentMeasureIndex;
-              final beatIndex = state.currentBeatIndex;  // 直接使用 currentBeatIndex
+              final beatIndex = state.currentBeatIndex; // 直接使用 currentBeatIndex
 
               // 高亮所有轨道在这个 beat 的所有音符
               for (var i = 0; i < layout.noteLayouts.length; i++) {
@@ -990,12 +1001,12 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
     final exportService = SheetExportService();
     final result = await exportService.export(sheet, ExportFormat.json);
-    
+
     if (!result.success) {
       Get.snackbar('导出失败', result.errorMessage ?? '未知错误');
       return;
     }
-    
+
     final json = result.text ?? '';
 
     showDialog(
@@ -1148,10 +1159,14 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     if (sheet == null) return;
 
     final titleController = TextEditingController(text: sheet.title);
-    final composerController = TextEditingController(text: sheet.composer ?? '');
+    final composerController = TextEditingController(
+      text: sheet.composer ?? '',
+    );
     var selectedKey = sheet.metadata.key.name;
     var selectedTimeSignature = sheet.metadata.timeSignature;
-    final tempoController = TextEditingController(text: sheet.metadata.tempo.toString());
+    final tempoController = TextEditingController(
+      text: sheet.metadata.tempo.toString(),
+    );
 
     showDialog(
       context: context,
@@ -1185,11 +1200,29 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
                       labelText: '调号',
                       border: OutlineInputBorder(),
                     ),
-                    items: ['C', 'G', 'D', 'A', 'E', 'B', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Fs', 'Am', 'Em', 'Dm']
-                        .map(
-                          (k) => DropdownMenuItem(value: k, child: Text(k)),
-                        )
-                        .toList(),
+                    items:
+                        [
+                              'C',
+                              'G',
+                              'D',
+                              'A',
+                              'E',
+                              'B',
+                              'F',
+                              'Bb',
+                              'Eb',
+                              'Ab',
+                              'Db',
+                              'Gb',
+                              'Fs',
+                              'Am',
+                              'Em',
+                              'Dm',
+                            ]
+                            .map(
+                              (k) => DropdownMenuItem(value: k, child: Text(k)),
+                            )
+                            .toList(),
                     onChanged: (v) => setState(() => selectedKey = v ?? 'C'),
                   ),
                   const SizedBox(height: 12),
@@ -1202,7 +1235,8 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
                     items: ['4/4', '3/4', '2/4', '6/8', '2/2', '3/8', '6/4']
                         .map((t) => DropdownMenuItem(value: t, child: Text(t)))
                         .toList(),
-                    onChanged: (v) => setState(() => selectedTimeSignature = v ?? '4/4'),
+                    onChanged: (v) =>
+                        setState(() => selectedTimeSignature = v ?? '4/4'),
                   ),
                   const SizedBox(height: 12),
                   TextField(
@@ -1225,7 +1259,9 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
                 onPressed: () {
                   _editorController.updateMetadata(
                     title: titleController.text,
-                    composer: composerController.text.isEmpty ? null : composerController.text,
+                    composer: composerController.text.isEmpty
+                        ? null
+                        : composerController.text,
                     key: selectedKey,
                     timeSignature: selectedTimeSignature,
                     tempo: int.tryParse(tempoController.text) ?? 120,

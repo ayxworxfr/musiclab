@@ -4,11 +4,11 @@ import '../../models/score.dart';
 import '../../models/enums.dart';
 
 /// MIDI 导出器
-/// 
+///
 /// MIDI 文件格式说明:
 /// - Header Chunk: MThd + length + format + tracks + division
 /// - Track Chunk: MTrk + length + events
-/// 
+///
 /// 参考: https://www.music.mcgill.ca/~ich/classes/mumt306/StandardMIDIfileformat.html
 class MidiExporter {
   /// 导出乐谱为 MIDI 文件
@@ -66,7 +66,7 @@ class MidiExporter {
       metadata.beatsPerMeasure,
       _log2(metadata.beatUnit),
       24, // MIDI clocks per metronome click
-      8,  // 32nd notes per quarter note
+      8, // 32nd notes per quarter note
     ]);
 
     // Key signature (simplified - always C major)
@@ -82,7 +82,12 @@ class MidiExporter {
   }
 
   /// 写入音乐轨道
-  void _writeTrack(BytesBuilder buffer, Track track, ScoreMetadata metadata, int trackIndex) {
+  void _writeTrack(
+    BytesBuilder buffer,
+    Track track,
+    ScoreMetadata metadata,
+    int trackIndex,
+  ) {
     final trackBuffer = BytesBuilder();
     final ticksPerBeat = 480;
     final ticksPerMeasure = ticksPerBeat * metadata.beatsPerMeasure;
@@ -102,7 +107,11 @@ class MidiExporter {
     final events = <_MidiEvent>[];
     var currentTick = 0;
 
-    for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
+    for (
+      var measureIndex = 0;
+      measureIndex < track.measures.length;
+      measureIndex++
+    ) {
       final measure = track.measures[measureIndex];
       final measureStartTick = measureIndex * ticksPerMeasure;
 
@@ -124,26 +133,34 @@ class MidiExporter {
           }
           // beamCount == 0 的音符保持 noteOnTick = beatStartTick，实现同时播放
 
-          final noteDuration = _getDurationTicks(note.duration, ticksPerBeat, note.dots);
+          final noteDuration = _getDurationTicks(
+            note.duration,
+            ticksPerBeat,
+            note.dots,
+          );
           final noteOffTick = noteOnTick + noteDuration;
 
           // Note On
-          events.add(_MidiEvent(
-            tick: noteOnTick,
-            type: _MidiEventType.noteOn,
-            channel: trackIndex,
-            data1: note.pitch,
-            data2: 80, // velocity
-          ));
+          events.add(
+            _MidiEvent(
+              tick: noteOnTick,
+              type: _MidiEventType.noteOn,
+              channel: trackIndex,
+              data1: note.pitch,
+              data2: 80, // velocity
+            ),
+          );
 
           // Note Off
-          events.add(_MidiEvent(
-            tick: noteOffTick,
-            type: _MidiEventType.noteOff,
-            channel: trackIndex,
-            data1: note.pitch,
-            data2: 0,
-          ));
+          events.add(
+            _MidiEvent(
+              tick: noteOffTick,
+              type: _MidiEventType.noteOff,
+              channel: trackIndex,
+              data1: note.pitch,
+              data2: 0,
+            ),
+          );
         }
       }
     }
@@ -270,10 +287,7 @@ class MidiExporter {
 }
 
 /// MIDI 事件类型
-enum _MidiEventType {
-  noteOn,
-  noteOff,
-}
+enum _MidiEventType { noteOn, noteOff }
 
 /// MIDI 事件
 class _MidiEvent {

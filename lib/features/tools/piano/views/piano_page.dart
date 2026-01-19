@@ -24,29 +24,36 @@ class PianoPage extends GetView<PianoController> {
         elevation: 0,
         actions: [
           // 主题切换
-          Obx(() => IconButton(
-            icon: const Icon(Icons.palette),
-            onPressed: () => _showThemeSelector(context),
-            tooltip: '切换主题 (${PianoController.themes[controller.themeIndex.value]})',
-          )),
+          Obx(
+            () => IconButton(
+              icon: const Icon(Icons.palette),
+              onPressed: () => _showThemeSelector(context),
+              tooltip:
+                  '切换主题 (${PianoController.themes[controller.themeIndex.value]})',
+            ),
+          ),
           // 标签显示切换
-          Obx(() => IconButton(
-            icon: Icon(
-              controller.showLabels.value ? Icons.label : Icons.label_off,
+          Obx(
+            () => IconButton(
+              icon: Icon(
+                controller.showLabels.value ? Icons.label : Icons.label_off,
+              ),
+              onPressed: controller.toggleLabels,
+              tooltip: '显示/隐藏标签',
             ),
-            onPressed: controller.toggleLabels,
-            tooltip: '显示/隐藏标签',
-          )),
+          ),
           // 标签类型切换
-          Obx(() => IconButton(
-            icon: Icon(
-              controller.labelType.value == 'jianpu' 
-                  ? Icons.music_note 
-                  : Icons.abc,
+          Obx(
+            () => IconButton(
+              icon: Icon(
+                controller.labelType.value == 'jianpu'
+                    ? Icons.music_note
+                    : Icons.abc,
+              ),
+              onPressed: controller.toggleLabelType,
+              tooltip: controller.labelType.value == 'jianpu' ? '简谱' : '音名',
             ),
-            onPressed: controller.toggleLabelType,
-            tooltip: controller.labelType.value == 'jianpu' ? '简谱' : '音名',
-          )),
+          ),
         ],
       ),
       body: Column(
@@ -55,11 +62,13 @@ class PianoPage extends GetView<PianoController> {
           _buildControlPanel(context, isDark),
 
           // 钢琴键盘区域（限制高度）
-          Obx(() => Container(
-            height: _getPianoHeight(context),
-            color: _getTheme().backgroundColor,
-            child: _buildPianoArea(context),
-          )),
+          Obx(
+            () => Container(
+              height: _getPianoHeight(context),
+              color: _getTheme().backgroundColor,
+              child: _buildPianoArea(context),
+            ),
+          ),
 
           // 间隔区域
           Expanded(
@@ -94,11 +103,16 @@ class PianoPage extends GetView<PianoController> {
 
   RenderTheme _getTheme() {
     switch (controller.themeIndex.value) {
-      case 1: return RenderTheme.dark();
-      case 2: return RenderTheme.midnightBlue();
-      case 3: return RenderTheme.warmSunset();
-      case 4: return RenderTheme.forest();
-      default: return const RenderTheme();
+      case 1:
+        return RenderTheme.dark();
+      case 2:
+        return RenderTheme.midnightBlue();
+      case 3:
+        return RenderTheme.warmSunset();
+      case 4:
+        return RenderTheme.forest();
+      default:
+        return const RenderTheme();
     }
   }
 
@@ -116,14 +130,16 @@ class PianoPage extends GetView<PianoController> {
           child: const Icon(Icons.mic, color: AppColors.error, size: 32),
         ),
         const SizedBox(height: 12),
-        Obx(() => Text(
-          '录制中... ${controller.recordedNotes.length} 个音符',
-          style: const TextStyle(
-            fontSize: 16,
-            color: AppColors.error,
-            fontWeight: FontWeight.w500,
+        Obx(
+          () => Text(
+            '录制中... ${controller.recordedNotes.length} 个音符',
+            style: const TextStyle(
+              fontSize: 16,
+              color: AppColors.error,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        )),
+        ),
         const SizedBox(height: 8),
         const Text(
           '点击钢琴键录制音符',
@@ -144,17 +160,23 @@ class PianoPage extends GetView<PianoController> {
             color: AppColors.success.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.music_note, color: AppColors.success, size: 32),
+          child: const Icon(
+            Icons.music_note,
+            color: AppColors.success,
+            size: 32,
+          ),
         ),
         const SizedBox(height: 12),
-        Obx(() => Text(
-          '已录制 ${controller.recordedNotes.length} 个音符',
-          style: const TextStyle(
-            fontSize: 16,
-            color: AppColors.success,
-            fontWeight: FontWeight.w500,
+        Obx(
+          () => Text(
+            '已录制 ${controller.recordedNotes.length} 个音符',
+            style: const TextStyle(
+              fontSize: 16,
+              color: AppColors.success,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        )),
+        ),
         const SizedBox(height: 8),
         const Text(
           '点击播放按钮回放',
@@ -172,10 +194,7 @@ class PianoPage extends GetView<PianoController> {
         const SizedBox(height: 12),
         Text(
           '点击钢琴键弹奏',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
         ),
         const SizedBox(height: 8),
         Text(
@@ -234,7 +253,7 @@ class PianoPage extends GetView<PianoController> {
         return Obx(() {
           final startMidi = controller.startMidi.value;
           final endMidi = controller.endMidi.value;
-          
+
           // 计算钢琴宽度
           var whiteKeyCount = 0;
           for (var midi = startMidi; midi <= endMidi; midi++) {
@@ -268,18 +287,36 @@ class PianoPage extends GetView<PianoController> {
     int endMidi,
   ) {
     final audioService = Get.find<AudioService>();
-    
+
     return GestureDetector(
-      onTapDown: (details) => _handleTap(details.localPosition, width, height, startMidi, endMidi, audioService),
-      onPanStart: (details) => _handleTap(details.localPosition, width, height, startMidi, endMidi, audioService),
-      onPanUpdate: (details) => _handleTap(details.localPosition, width, height, startMidi, endMidi, audioService),
+      onTapDown: (details) => _handleTap(
+        details.localPosition,
+        width,
+        height,
+        startMidi,
+        endMidi,
+        audioService,
+      ),
+      onPanStart: (details) => _handleTap(
+        details.localPosition,
+        width,
+        height,
+        startMidi,
+        endMidi,
+        audioService,
+      ),
+      onPanUpdate: (details) => _handleTap(
+        details.localPosition,
+        width,
+        height,
+        startMidi,
+        endMidi,
+        audioService,
+      ),
       child: Obx(() {
         final pressedKeys = controller.pressedNotes.toSet();
         final theme = _getTheme();
-        final config = RenderConfig(
-          pianoHeight: height,
-          theme: theme,
-        );
+        final config = RenderConfig(pianoHeight: height, theme: theme);
 
         return CustomPaint(
           size: Size(width, height),
@@ -311,7 +348,7 @@ class PianoPage extends GetView<PianoController> {
       endMidi: endMidi,
       config: config,
     );
-    
+
     final midi = painter.findKeyAtPosition(position, Size(width, height));
     if (midi != null && !controller.pressedNotes.contains(midi)) {
       controller.pressNote(midi);
@@ -354,7 +391,10 @@ class PianoPage extends GetView<PianoController> {
               return GestureDetector(
                 onTap: () => _showRangeSettings(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -363,7 +403,11 @@ class PianoPage extends GetView<PianoController> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      const Icon(Icons.piano, size: 16, color: AppColors.primary),
+                      const Icon(
+                        Icons.piano,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
@@ -378,7 +422,11 @@ class PianoPage extends GetView<PianoController> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(Icons.tune, size: 12, color: AppColors.primary.withValues(alpha: 0.6)),
+                      Icon(
+                        Icons.tune,
+                        size: 12,
+                        color: AppColors.primary.withValues(alpha: 0.6),
+                      ),
                     ],
                   ),
                 ),
@@ -393,18 +441,18 @@ class PianoPage extends GetView<PianoController> {
             tooltip: '向右移动一个八度',
             visualDensity: VisualDensity.compact,
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // 分隔线
           Container(
             height: 24,
             width: 1,
             color: Colors.grey.withValues(alpha: 0.3),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // 键数选择
           Obx(() => _buildOctaveSelector(context)),
         ],
@@ -427,7 +475,10 @@ class PianoPage extends GetView<PianoController> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              const Text('快速设置:', style: TextStyle(fontWeight: FontWeight.w500)),
+              const Text(
+                '快速设置:',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -449,8 +500,14 @@ class PianoPage extends GetView<PianoController> {
     );
   }
 
-  Widget _buildPresetChip(BuildContext context, String label, int start, int end) {
-    final isActive = controller.startMidi.value == start && controller.endMidi.value == end;
+  Widget _buildPresetChip(
+    BuildContext context,
+    String label,
+    int start,
+    int end,
+  ) {
+    final isActive =
+        controller.startMidi.value == start && controller.endMidi.value == end;
     return ChoiceChip(
       label: Text(label),
       selected: isActive,
@@ -464,7 +521,20 @@ class PianoPage extends GetView<PianoController> {
   }
 
   String _getMidiNoteName(int midi) {
-    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const notes = [
+      'C',
+      'C#',
+      'D',
+      'D#',
+      'E',
+      'F',
+      'F#',
+      'G',
+      'G#',
+      'A',
+      'A#',
+      'B',
+    ];
     final octave = (midi ~/ 12) - 1;
     return '${notes[midi % 12]}$octave';
   }
@@ -492,13 +562,13 @@ class PianoPage extends GetView<PianoController> {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? AppColors.primary 
+                  color: isSelected
+                      ? AppColors.primary
                       : Colors.grey.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: isSelected 
-                        ? AppColors.primary 
+                    color: isSelected
+                        ? AppColors.primary
                         : Colors.grey.withValues(alpha: 0.3),
                   ),
                 ),
@@ -546,35 +616,49 @@ class PianoPage extends GetView<PianoController> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // 录制按钮
-            Obx(() => _buildToolButton(
-              context,
-              icon: controller.isRecording.value ? Icons.stop : Icons.fiber_manual_record,
-              label: controller.isRecording.value ? '停止' : '录制',
-              color: controller.isRecording.value ? AppColors.error : AppColors.primary,
-              onTap: controller.isRecording.value
-                  ? controller.stopRecording
-                  : controller.startRecording,
-            )),
+            Obx(
+              () => _buildToolButton(
+                context,
+                icon: controller.isRecording.value
+                    ? Icons.stop
+                    : Icons.fiber_manual_record,
+                label: controller.isRecording.value ? '停止' : '录制',
+                color: controller.isRecording.value
+                    ? AppColors.error
+                    : AppColors.primary,
+                onTap: controller.isRecording.value
+                    ? controller.stopRecording
+                    : controller.startRecording,
+              ),
+            ),
 
             // 播放按钮
-            Obx(() => _buildToolButton(
-              context,
-              icon: controller.isPlaying.value ? Icons.stop : Icons.play_arrow,
-              label: controller.isPlaying.value ? '停止' : '播放',
-              color: AppColors.success,
-              onTap: controller.playRecording,
-              enabled: controller.recordedNotes.isNotEmpty || controller.isPlaying.value,
-            )),
+            Obx(
+              () => _buildToolButton(
+                context,
+                icon: controller.isPlaying.value
+                    ? Icons.stop
+                    : Icons.play_arrow,
+                label: controller.isPlaying.value ? '停止' : '播放',
+                color: AppColors.success,
+                onTap: controller.playRecording,
+                enabled:
+                    controller.recordedNotes.isNotEmpty ||
+                    controller.isPlaying.value,
+              ),
+            ),
 
             // 清除按钮
-            Obx(() => _buildToolButton(
-              context,
-              icon: Icons.delete_outline,
-              label: '清除',
-              color: Colors.grey,
-              onTap: controller.clearRecording,
-              enabled: controller.recordedNotes.isNotEmpty,
-            )),
+            Obx(
+              () => _buildToolButton(
+                context,
+                icon: Icons.delete_outline,
+                label: '清除',
+                color: Colors.grey,
+                onTap: controller.clearRecording,
+                enabled: controller.recordedNotes.isNotEmpty,
+              ),
+            ),
           ],
         ),
       ),
@@ -605,13 +689,7 @@ class PianoPage extends GetView<PianoController> {
             child: Icon(icon, color: effectiveColor, size: 28),
           ),
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: effectiveColor,
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 12, color: effectiveColor)),
         ],
       ),
     );

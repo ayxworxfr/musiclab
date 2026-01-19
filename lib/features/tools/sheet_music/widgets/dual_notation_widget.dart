@@ -314,12 +314,18 @@ class _CompactJianpuWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: measureIndices.map((i) => _buildMeasure(context, i, measures[i])).toList(),
+        children: measureIndices
+            .map((i) => _buildMeasure(context, i, measures[i]))
+            .toList(),
       ),
     );
   }
 
-  Widget _buildMeasure(BuildContext context, int measureIndex, JianpuMeasure measure) {
+  Widget _buildMeasure(
+    BuildContext context,
+    int measureIndex,
+    JianpuMeasure measure,
+  ) {
     final isHighlighted = measureIndex == highlightMeasureIndex;
 
     return Row(

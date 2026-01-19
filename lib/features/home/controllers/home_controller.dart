@@ -17,7 +17,7 @@ class HomeController extends GetxController {
 
   // 获取个人中心仓库
   ProfileRepository get _profileRepository => Get.find<ProfileRepository>();
-  
+
   // 获取存储服务
   StorageService get _storage => Get.find<StorageService>();
 
@@ -79,13 +79,14 @@ class HomeController extends GetxController {
       // 更新任务状态
       if (todayRecord != null) {
         todayCompletedLesson.value = todayRecord.completedLessons >= 1;
-        todayCompletedPractice.value = todayRecord.practiceCount >= 10; // 需要完成10道题
+        todayCompletedPractice.value =
+            todayRecord.practiceCount >= 10; // 需要完成10道题
       } else {
         // 没有今日记录，重置为 false
         todayCompletedLesson.value = false;
         todayCompletedPractice.value = false;
       }
-      
+
       // 检查今天是否使用了钢琴
       final lastPianoDate = _storage.getString('last_piano_usage_date');
       todayUsedPiano.value = lastPianoDate == todayStr;
@@ -107,4 +108,3 @@ class HomeController extends GetxController {
     currentIndex.value = index;
   }
 }
-

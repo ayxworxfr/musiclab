@@ -58,10 +58,7 @@ class AppLoading extends StatelessWidget {
         color: Colors.black.withValues(alpha: 0.3),
         child: Center(
           child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: loading,
-            ),
+            child: Padding(padding: const EdgeInsets.all(24), child: loading),
           ),
         ),
       );
@@ -72,9 +69,7 @@ class AppLoading extends StatelessWidget {
 
   /// 页面级加载（全屏）
   static Widget page({String? message}) {
-    return Scaffold(
-      body: AppLoading(message: message),
-    );
+    return Scaffold(body: AppLoading(message: message));
   }
 
   /// 内联加载（小尺寸）
@@ -159,11 +154,7 @@ class AppListSkeleton extends StatelessWidget {
           child: Row(
             children: [
               if (showAvatar) ...[
-                _buildShimmerBox(
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                ),
+                _buildShimmerBox(width: 48, height: 48, borderRadius: 24),
                 const SizedBox(width: 12),
               ],
               Expanded(
@@ -178,11 +169,7 @@ class AppListSkeleton extends StatelessWidget {
                     ),
                     if (showSubtitle) ...[
                       const SizedBox(height: 8),
-                      _buildShimmerBox(
-                        width: 150,
-                        height: 12,
-                        borderRadius: 4,
-                      ),
+                      _buildShimmerBox(width: 150, height: 12, borderRadius: 4),
                     ],
                   ],
                 ),
@@ -209,4 +196,3 @@ class AppListSkeleton extends StatelessWidget {
     );
   }
 }
-

@@ -4,16 +4,16 @@
 class DailyLearningRecord {
   /// 日期（YYYY-MM-DD 格式）
   final String date;
-  
+
   /// 学习时长（秒）
   final int durationSeconds;
-  
+
   /// 完成课时数
   final int completedLessons;
-  
+
   /// 练习题数
   final int practiceCount;
-  
+
   /// 正确题数
   final int correctCount;
 
@@ -72,25 +72,25 @@ class DailyLearningRecord {
 class LearningStats {
   /// 连续学习天数
   final int streakDays;
-  
+
   /// 总学习天数
   final int totalDays;
-  
+
   /// 总学习时长（秒）
   final int totalDurationSeconds;
-  
+
   /// 总完成课时数
   final int totalCompletedLessons;
-  
+
   /// 总练习题数
   final int totalPracticeCount;
-  
+
   /// 总正确题数
   final int totalCorrectCount;
-  
+
   /// 最近 7 天的学习记录
   final List<DailyLearningRecord> weeklyRecords;
-  
+
   /// 上次学习日期
   final String? lastLearningDate;
 
@@ -106,7 +106,8 @@ class LearningStats {
   });
 
   /// 总正确率
-  double get totalAccuracy => totalPracticeCount > 0 ? totalCorrectCount / totalPracticeCount : 0;
+  double get totalAccuracy =>
+      totalPracticeCount > 0 ? totalCorrectCount / totalPracticeCount : 0;
 
   /// 总学习时长（分钟）
   int get totalDurationMinutes => totalDurationSeconds ~/ 60;
@@ -122,8 +123,11 @@ class LearningStats {
       totalCompletedLessons: json['totalCompletedLessons'] as int? ?? 0,
       totalPracticeCount: json['totalPracticeCount'] as int? ?? 0,
       totalCorrectCount: json['totalCorrectCount'] as int? ?? 0,
-      weeklyRecords: (json['weeklyRecords'] as List<dynamic>?)
-              ?.map((e) => DailyLearningRecord.fromJson(e as Map<String, dynamic>))
+      weeklyRecords:
+          (json['weeklyRecords'] as List<dynamic>?)
+              ?.map(
+                (e) => DailyLearningRecord.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       lastLearningDate: json['lastLearningDate'] as String?,
@@ -157,7 +161,8 @@ class LearningStats {
       streakDays: streakDays ?? this.streakDays,
       totalDays: totalDays ?? this.totalDays,
       totalDurationSeconds: totalDurationSeconds ?? this.totalDurationSeconds,
-      totalCompletedLessons: totalCompletedLessons ?? this.totalCompletedLessons,
+      totalCompletedLessons:
+          totalCompletedLessons ?? this.totalCompletedLessons,
       totalPracticeCount: totalPracticeCount ?? this.totalPracticeCount,
       totalCorrectCount: totalCorrectCount ?? this.totalCorrectCount,
       weeklyRecords: weeklyRecords ?? this.weeklyRecords,
@@ -165,4 +170,3 @@ class LearningStats {
     );
   }
 }
-

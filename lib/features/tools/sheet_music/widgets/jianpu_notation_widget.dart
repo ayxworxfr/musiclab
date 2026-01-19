@@ -193,7 +193,10 @@ class JianpuNotationWidget extends StatelessWidget {
   }
 
   /// 将小节布局成多行
-  List<List<int>> _layoutMeasures(List<JianpuMeasure> measures, double maxWidth) {
+  List<List<int>> _layoutMeasures(
+    List<JianpuMeasure> measures,
+    double maxWidth,
+  ) {
     final lines = <List<int>>[];
     var currentLine = <int>[];
     var currentWidth = 0.0;
@@ -236,7 +239,11 @@ class JianpuNotationWidget extends StatelessWidget {
   }
 
   /// 构建一行乐谱
-  Widget _buildLine(BuildContext context, List<int> measureIndices, List<JianpuMeasure> measures) {
+  Widget _buildLine(
+    BuildContext context,
+    List<int> measureIndices,
+    List<JianpuMeasure> measures,
+  ) {
     if (measureIndices.isEmpty) return const SizedBox.shrink();
 
     final firstMeasureNumber = measures[measureIndices.first].number;
@@ -263,7 +270,11 @@ class JianpuNotationWidget extends StatelessWidget {
   }
 
   /// 构建单个小节
-  Widget _buildMeasure(BuildContext context, int measureIndex, JianpuMeasure measure) {
+  Widget _buildMeasure(
+    BuildContext context,
+    int measureIndex,
+    JianpuMeasure measure,
+  ) {
     final isHighlighted = measureIndex == highlightMeasureIndex;
 
     return Row(

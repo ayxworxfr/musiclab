@@ -4,12 +4,16 @@
 enum AchievementCategory {
   /// 学习相关
   learning,
+
   /// 练习相关
   practice,
+
   /// 连续性相关
   streak,
+
   /// 技能相关
   skill,
+
   /// 特殊成就
   special,
 }
@@ -18,25 +22,25 @@ enum AchievementCategory {
 class Achievement {
   /// 成就 ID
   final String id;
-  
+
   /// 成就名称
   final String name;
-  
+
   /// 成就描述
   final String description;
-  
+
   /// 成就图标（emoji）
   final String icon;
-  
+
   /// 成就类别
   final AchievementCategory category;
-  
+
   /// 需要的目标值
   final int targetValue;
-  
+
   /// 经验值奖励
   final int expReward;
-  
+
   /// 是否隐藏成就（解锁前不显示详情）
   final bool isHidden;
 
@@ -85,13 +89,13 @@ class Achievement {
 class UserAchievement {
   /// 成就 ID
   final String achievementId;
-  
+
   /// 当前进度值
   final int currentValue;
-  
+
   /// 是否已解锁
   final bool isUnlocked;
-  
+
   /// 解锁时间
   final DateTime? unlockedAt;
 
@@ -183,7 +187,7 @@ class AchievementDefinitions {
       targetValue: 45,
       expReward: 200,
     ),
-    
+
     // 练习相关
     Achievement(
       id: 'first_practice',
@@ -239,7 +243,7 @@ class AchievementDefinitions {
       targetValue: 100,
       expReward: 50,
     ),
-    
+
     // 连续性相关
     Achievement(
       id: 'streak_3',
@@ -268,7 +272,7 @@ class AchievementDefinitions {
       targetValue: 30,
       expReward: 200,
     ),
-    
+
     // 技能相关
     Achievement(
       id: 'piano_first',
@@ -297,7 +301,7 @@ class AchievementDefinitions {
       targetValue: 10,
       expReward: 30,
     ),
-    
+
     // 特殊成就
     Achievement(
       id: 'night_owl',
@@ -345,4 +349,3 @@ class AchievementDefinitions {
     return all.where((a) => a.category == category).toList();
   }
 }
-

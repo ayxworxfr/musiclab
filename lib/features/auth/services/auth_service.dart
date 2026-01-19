@@ -43,10 +43,7 @@ class AuthService extends GetxService {
     // 生产模式：调用真实 API
     final response = await _http.post<Map<String, dynamic>>(
       ApiConstants.login,
-      data: {
-        'username': username,
-        'password': password,
-      },
+      data: {'username': username, 'password': password},
     );
 
     final data = response.data as Map<String, dynamic>;
@@ -59,7 +56,9 @@ class AuthService extends GetxService {
 
     // 保存用户信息到本地
     await _storage.saveUserData(
-        StorageKeys.currentUser, _currentUser!.toJson());
+      StorageKeys.currentUser,
+      _currentUser!.toJson(),
+    );
 
     return _currentUser!;
   }
@@ -76,12 +75,15 @@ class AuthService extends GetxService {
     await _saveTokens(mockResponse);
 
     // 解析用户信息
-    _currentUser =
-        UserModel.fromJson(mockResponse['user'] as Map<String, dynamic>);
+    _currentUser = UserModel.fromJson(
+      mockResponse['user'] as Map<String, dynamic>,
+    );
 
     // 保存用户信息到本地
     await _storage.saveUserData(
-        StorageKeys.currentUser, _currentUser!.toJson());
+      StorageKeys.currentUser,
+      _currentUser!.toJson(),
+    );
 
     return _currentUser!;
   }
@@ -135,7 +137,9 @@ class AuthService extends GetxService {
 
     _currentUser = UserModel.fromJson(data['user'] as Map<String, dynamic>);
     await _storage.saveUserData(
-        StorageKeys.currentUser, _currentUser!.toJson());
+      StorageKeys.currentUser,
+      _currentUser!.toJson(),
+    );
 
     return _currentUser!;
   }
@@ -187,11 +191,15 @@ class AuthService extends GetxService {
 
   /// 获取用户信息
   Future<UserModel> getUserInfo() async {
-    final response = await _http.get<Map<String, dynamic>>(ApiConstants.userInfo);
+    final response = await _http.get<Map<String, dynamic>>(
+      ApiConstants.userInfo,
+    );
 
     _currentUser = UserModel.fromJson(response.data!);
     await _storage.saveUserData(
-        StorageKeys.currentUser, _currentUser!.toJson());
+      StorageKeys.currentUser,
+      _currentUser!.toJson(),
+    );
 
     return _currentUser!;
   }
@@ -209,14 +217,13 @@ class AuthService extends GetxService {
 
   /// 更新用户信息
   Future<UserModel> updateUserInfo(Map<String, dynamic> data) async {
-    final response = await _http.put(
-      ApiConstants.updateProfile,
-      data: data,
-    );
+    final response = await _http.put(ApiConstants.updateProfile, data: data);
 
     _currentUser = UserModel.fromJson(response.data as Map<String, dynamic>);
     await _storage.saveUserData(
-        StorageKeys.currentUser, _currentUser!.toJson());
+      StorageKeys.currentUser,
+      _currentUser!.toJson(),
+    );
 
     return _currentUser!;
   }

@@ -99,9 +99,11 @@ const Map<String, String> enUS = {
   'widgets.error.unauthorized.message': 'Please login to continue',
   'widgets.error.unauthorized.action': 'Login',
   'widgets.error.forbidden.title': 'Access Denied',
-  'widgets.error.forbidden.message': 'You do not have permission to access this content',
+  'widgets.error.forbidden.message':
+      'You do not have permission to access this content',
   'widgets.error.not_found.title': 'Not Found',
-  'widgets.error.not_found.message': 'The page you are looking for does not exist or has been deleted',
+  'widgets.error.not_found.message':
+      'The page you are looking for does not exist or has been deleted',
   'widgets.error.timeout.title': 'Request Timeout',
   'widgets.error.timeout.message': 'Network response timeout, please try again',
 

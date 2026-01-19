@@ -97,4 +97,3 @@ enum ClefType {
 
   const ClefType(this.value, this.label);
 }
-

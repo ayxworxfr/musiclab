@@ -99,9 +99,21 @@ class GrandStaffPainter extends CustomPainter {
 
     // 调号
     if (line.showKeySignature && line.lineIndex == 0) {
-      _drawKeySignature(canvas, currentX, trebleY, score.metadata.key, Clef.treble);
+      _drawKeySignature(
+        canvas,
+        currentX,
+        trebleY,
+        score.metadata.key,
+        Clef.treble,
+      );
       if (score.isGrandStaff) {
-        _drawKeySignature(canvas, currentX, bassY, score.metadata.key, Clef.bass);
+        _drawKeySignature(
+          canvas,
+          currentX,
+          bassY,
+          score.metadata.key,
+          Clef.bass,
+        );
       }
       currentX += score.metadata.key.signatureCount * 10 + 10;
     }
@@ -118,12 +130,22 @@ class GrandStaffPainter extends CustomPainter {
     for (final measureIndex in line.measureIndices) {
       final measureLayout = layout.measureLayouts[measureIndex];
       if (measureLayout == null) continue;
-      _drawBarLine(canvas, measureLayout.x + measureLayout.width, trebleY, bassY);
+      _drawBarLine(
+        canvas,
+        measureLayout.x + measureLayout.width,
+        trebleY,
+        bassY,
+      );
     }
   }
 
   /// 绘制大谱表花括号和连接线
-  void _drawGrandStaffBrace(Canvas canvas, double x, double trebleY, double bassY) {
+  void _drawGrandStaffBrace(
+    Canvas canvas,
+    double x,
+    double trebleY,
+    double bassY,
+  ) {
     final topY = trebleY;
     final bottomY = bassY + 4 * config.lineSpacing;
     final midY = (topY + bottomY) / 2;
@@ -142,20 +164,26 @@ class GrandStaffPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final bracePath = Path();
-    
+
     // 上半部分花括号
     bracePath.moveTo(braceX, topY);
     bracePath.cubicTo(
-      braceX - 12, topY + (midY - topY) * 0.3,
-      braceX - 12, midY - 10,
-      braceX - 6, midY,
+      braceX - 12,
+      topY + (midY - topY) * 0.3,
+      braceX - 12,
+      midY - 10,
+      braceX - 6,
+      midY,
     );
-    
+
     // 下半部分花括号
     bracePath.cubicTo(
-      braceX - 12, midY + 10,
-      braceX - 12, bottomY - (bottomY - midY) * 0.3,
-      braceX, bottomY,
+      braceX - 12,
+      midY + 10,
+      braceX - 12,
+      bottomY - (bottomY - midY) * 0.3,
+      braceX,
+      bottomY,
     );
 
     canvas.drawPath(bracePath, bracePaint);
@@ -172,7 +200,12 @@ class GrandStaffPainter extends CustomPainter {
     canvas.drawPath(tipPath, tipPaint);
   }
 
-  void _drawStaffLines(Canvas canvas, double startX, double endX, double staffY) {
+  void _drawStaffLines(
+    Canvas canvas,
+    double startX,
+    double endX,
+    double staffY,
+  ) {
     final paint = Paint()
       ..color = config.theme.staffLineColor
       ..strokeWidth = config.lineWidth;
@@ -202,16 +235,25 @@ class GrandStaffPainter extends CustomPainter {
     // - 低音谱号（F谱号）应该居中在第二线（F线）：staffY + 1 * lineSpacing
     // Bravura 字体的谱号符号基准点在底部，需要调整Y坐标使谱号中心对齐到目标线
     final targetLineY = clef == Clef.treble
-        ? staffY + 3 * config.lineSpacing  // 第四线
-        : staffY + 1 * config.lineSpacing;  // 第二线
-    
+        ? staffY +
+              3 *
+                  config
+                      .lineSpacing // 第四线
+        : staffY + 1 * config.lineSpacing; // 第二线
+
     // 将谱号中心对齐到目标线（字体高度的一半作为偏移）
     final y = targetLineY - textPainter.height * 0.5;
 
     textPainter.paint(canvas, Offset(x, y));
   }
 
-  void _drawKeySignature(Canvas canvas, double x, double staffY, MusicKey key, Clef clef) {
+  void _drawKeySignature(
+    Canvas canvas,
+    double x,
+    double staffY,
+    MusicKey key,
+    Clef clef,
+  ) {
     final isSharps = key.hasSharps;
     final count = key.signatureCount;
     final symbol = isSharps ? '♯' : '♭';
@@ -241,7 +283,12 @@ class GrandStaffPainter extends CustomPainter {
     }
   }
 
-  void _drawTimeSignature(Canvas canvas, double x, double staffY, ScoreMetadata metadata) {
+  void _drawTimeSignature(
+    Canvas canvas,
+    double x,
+    double staffY,
+    ScoreMetadata metadata,
+  ) {
     final textStyle = TextStyle(
       fontSize: 20,
       fontWeight: FontWeight.bold,
@@ -287,7 +334,7 @@ class GrandStaffPainter extends CustomPainter {
     final anyNoteHighlighted = beamGroup.noteLayoutIndices.any(
       (idx) => highlightedNoteIndices.contains(idx),
     );
-    
+
     // 根据高亮状态或音符所属的手确定颜色
     Color beamColor;
     if (anyNoteHighlighted) {
@@ -353,7 +400,12 @@ class GrandStaffPainter extends CustomPainter {
     canvas.drawPath(path, paint);
   }
 
-  void _drawNote(Canvas canvas, NoteLayout noteLayout, int index, bool isHighlighted) {
+  void _drawNote(
+    Canvas canvas,
+    NoteLayout noteLayout,
+    int index,
+    bool isHighlighted,
+  ) {
     final note = noteLayout.note;
     final x = noteLayout.x;
     final y = noteLayout.y;
@@ -438,7 +490,8 @@ class GrandStaffPainter extends CustomPainter {
     final lineWidth = config.noteHeadRadius * 3;
 
     final track = score.tracks[noteLayout.trackIndex];
-    final lineIndex = layout.measureLayouts[noteLayout.measureIndex]?.lineIndex ?? 0;
+    final lineIndex =
+        layout.measureLayouts[noteLayout.measureIndex]?.lineIndex ?? 0;
     final baseY = track.clef == Clef.treble
         ? layout.trebleStaffY + lineIndex * config.lineHeight
         : layout.bassStaffY + lineIndex * config.lineHeight;
@@ -465,7 +518,13 @@ class GrandStaffPainter extends CustomPainter {
   }
 
   /// 绘制音符头 - 使用 SMuFL 字体
-  void _drawNoteHead(Canvas canvas, double x, double y, NoteDuration duration, Color color) {
+  void _drawNoteHead(
+    Canvas canvas,
+    double x,
+    double y,
+    NoteDuration duration,
+    Color color,
+  ) {
     String symbol;
     double fontSize;
 
@@ -509,15 +568,18 @@ class GrandStaffPainter extends CustomPainter {
     final x = noteLayout.x;
     final y = noteLayout.y;
     final stemUp = noteLayout.stemUp;
-    final stemX = stemUp ? x + config.noteHeadRadius - 1 : x - config.noteHeadRadius + 1;
-    
+    final stemX = stemUp
+        ? x + config.noteHeadRadius - 1
+        : x - config.noteHeadRadius + 1;
+
     double endY;
-    
+
     // 如果音符属于符杠组，符干需要连接到符杠
-    if (noteLayout.beamGroupIndex >= 0 && noteLayout.beamGroupIndex < layout.beamGroups.length) {
+    if (noteLayout.beamGroupIndex >= 0 &&
+        noteLayout.beamGroupIndex < layout.beamGroups.length) {
       final beamGroup = layout.beamGroups[noteLayout.beamGroupIndex];
       // 计算符杠在当前 x 位置的 y 坐标（线性插值）
-      final progress = beamGroup.endX - beamGroup.startX != 0 
+      final progress = beamGroup.endX - beamGroup.startX != 0
           ? (stemX - beamGroup.startX) / (beamGroup.endX - beamGroup.startX)
           : 0.0;
       endY = beamGroup.startY + progress * (beamGroup.endY - beamGroup.startY);
@@ -535,7 +597,9 @@ class GrandStaffPainter extends CustomPainter {
     final stemUp = noteLayout.stemUp;
     final x = noteLayout.x;
     final y = noteLayout.y;
-    final stemX = stemUp ? x + config.noteHeadRadius - 1 : x - config.noteHeadRadius + 1;
+    final stemX = stemUp
+        ? x + config.noteHeadRadius - 1
+        : x - config.noteHeadRadius + 1;
     final stemEndY = stemUp ? y - config.stemLength : y + config.stemLength;
 
     // 使用 SMuFL 字体符号绘制符尾
@@ -561,7 +625,13 @@ class GrandStaffPainter extends CustomPainter {
     textPainter.paint(canvas, Offset(flagX, flagY));
   }
 
-  void _drawAccidental(Canvas canvas, double x, double y, Accidental accidental, Color color) {
+  void _drawAccidental(
+    Canvas canvas,
+    double x,
+    double y,
+    Accidental accidental,
+    Color color,
+  ) {
     final symbol = SMuFLGlyphs.getAccidental(accidental.name);
     if (symbol.isEmpty) return;
 
@@ -623,10 +693,19 @@ class GrandStaffPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    textPainter.paint(canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
+    textPainter.paint(
+      canvas,
+      Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+    );
   }
 
-  void _drawFingering(Canvas canvas, double x, double y, int finger, bool stemUp) {
+  void _drawFingering(
+    Canvas canvas,
+    double x,
+    double y,
+    int finger,
+    bool stemUp,
+  ) {
     final textPainter = TextPainter(
       text: TextSpan(
         text: '$finger',
@@ -647,10 +726,7 @@ class GrandStaffPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: lyric,
-        style: TextStyle(
-          fontSize: 12,
-          color: config.theme.lyricColor,
-        ),
+        style: TextStyle(fontSize: 12, color: config.theme.lyricColor),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -658,7 +734,13 @@ class GrandStaffPainter extends CustomPainter {
     textPainter.paint(canvas, Offset(x - textPainter.width / 2, y + 25));
   }
 
-  void _drawArticulation(Canvas canvas, double x, double y, Articulation articulation, bool stemUp) {
+  void _drawArticulation(
+    Canvas canvas,
+    double x,
+    double y,
+    Articulation articulation,
+    bool stemUp,
+  ) {
     final textPainter = TextPainter(
       text: TextSpan(
         text: articulation.symbol,
@@ -704,7 +786,7 @@ class GrandStaffPainter extends CustomPainter {
     // 如果是大谱表，应该贯穿高音谱表和低音谱表
     final trebleY = layout.trebleStaffY + lineIndex * config.lineHeight;
     final bassY = layout.bassStaffY + lineIndex * config.lineHeight;
-    
+
     final startY = trebleY;
     final endY = score.isGrandStaff
         ? bassY + 4 * config.lineSpacing

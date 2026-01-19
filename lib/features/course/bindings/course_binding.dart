@@ -9,9 +9,8 @@ class CourseBinding extends Bindings {
   void dependencies() {
     // 注册 Repository
     Get.lazyPut<CourseRepository>(() => CourseRepositoryImpl());
-    
+
     // 注册 Controller
     Get.lazyPut<CourseController>(() => CourseController());
   }
 }
-

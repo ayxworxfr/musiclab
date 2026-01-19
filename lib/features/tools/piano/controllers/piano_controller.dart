@@ -64,13 +64,14 @@ class PianoController extends GetxController {
   void _recordPianoUsage() {
     try {
       final today = DateTime.now();
-      final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+      final todayStr =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
       final lastPianoDate = _storage.getString('last_piano_usage_date');
-      
+
       // 如果今天还没有记录使用钢琴，则记录
       if (lastPianoDate != todayStr) {
         _storage.setString('last_piano_usage_date', todayStr);
-        
+
         // 通知 HomeController 更新任务状态
         try {
           if (Get.isRegistered<HomeController>()) {

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'hive_boxes.dart';
 
 /// 存储服务
-/// 
+///
 /// 提供统一的本地存储接口，支持：
 /// - SharedPreferences：简单的键值对存储
 /// - Hive：复杂数据和加密存储
@@ -148,4 +148,3 @@ class StorageService extends GetxService {
   /// 清空所有缓存
   Future<void> clearCache() => clearHiveBox('cache_box');
 }
-

@@ -24,7 +24,7 @@ enum ListState {
 }
 
 /// 刷新列表组件
-/// 
+///
 /// 支持下拉刷新、上拉加载更多、状态管理
 class AppRefreshList<T> extends StatelessWidget {
   /// 数据列表
@@ -108,14 +108,12 @@ class AppRefreshList<T> extends StatelessWidget {
 
     // 加载错误
     if (state == ListState.error && items.isEmpty) {
-      return AppError.loadFailed(
-        message: errorMessage,
-        onRetry: onRetry,
-      );
+      return AppError.loadFailed(message: errorMessage, onRetry: onRetry);
     }
 
     // 空数据
-    if (state == ListState.empty || (state == ListState.success && items.isEmpty)) {
+    if (state == ListState.empty ||
+        (state == ListState.success && items.isEmpty)) {
       return emptyWidget ?? AppEmpty.noData(onAction: onRetry);
     }
 
@@ -227,10 +225,7 @@ class AppRefreshList<T> extends StatelessWidget {
         child: Center(
           child: Text(
             'widgets.list.load_more'.tr,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
         ),
       );
@@ -241,10 +236,7 @@ class AppRefreshList<T> extends StatelessWidget {
       child: Center(
         child: Text(
           'widgets.list.no_more'.tr,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-          ),
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
         ),
       ),
     );

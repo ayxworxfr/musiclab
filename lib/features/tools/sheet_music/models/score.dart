@@ -301,11 +301,7 @@ class Beat {
   }
 
   /// Copy with
-  Beat copyWith({
-    int? index,
-    List<Note>? notes,
-    Tuplet? tuplet,
-  }) {
+  Beat copyWith({int? index, List<Note>? notes, Tuplet? tuplet}) {
     return Beat(
       index: index ?? this.index,
       notes: notes ?? this.notes,

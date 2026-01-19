@@ -17,25 +17,25 @@ class MockData {
 
   /// 模拟用户列表
   static List<Map<String, dynamic>> get users => [
-        {
-          'id': 1,
-          'username': 'admin',
-          'nickname': '管理员',
-          'email': 'admin@example.com',
-          'avatar': 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
-          'role': 'admin',
-          'createdAt': '2026-01-01T00:00:00Z',
-        },
-        {
-          'id': 2,
-          'username': 'user',
-          'nickname': '普通用户',
-          'email': 'user@example.com',
-          'avatar': 'https://api.dicebear.com/7.x/avataaars/svg?seed=user',
-          'role': 'user',
-          'createdAt': '2026-01-02T00:00:00Z',
-        },
-      ];
+    {
+      'id': 1,
+      'username': 'admin',
+      'nickname': '管理员',
+      'email': 'admin@example.com',
+      'avatar': 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
+      'role': 'admin',
+      'createdAt': '2026-01-01T00:00:00Z',
+    },
+    {
+      'id': 2,
+      'username': 'user',
+      'nickname': '普通用户',
+      'email': 'user@example.com',
+      'avatar': 'https://api.dicebear.com/7.x/avataaars/svg?seed=user',
+      'role': 'user',
+      'createdAt': '2026-01-02T00:00:00Z',
+    },
+  ];
 
   /// 根据用户名获取用户
   static Map<String, dynamic>? getUserByUsername(String username) {
@@ -50,8 +50,10 @@ class MockData {
   static Map<String, dynamic> loginResponse(String username) {
     final user = getUserByUsername(username) ?? users.first;
     return {
-      'accessToken': 'mock_access_token_${DateTime.now().millisecondsSinceEpoch}',
-      'refreshToken': 'mock_refresh_token_${DateTime.now().millisecondsSinceEpoch}',
+      'accessToken':
+          'mock_access_token_${DateTime.now().millisecondsSinceEpoch}',
+      'refreshToken':
+          'mock_refresh_token_${DateTime.now().millisecondsSinceEpoch}',
       'expiresIn': 7200,
       'user': user,
     };
@@ -78,20 +80,11 @@ class MockData {
 
   /// 模拟成功响应
   static Map<String, dynamic> successResponse([dynamic data]) {
-    return {
-      'code': 0,
-      'message': 'success',
-      'data': data,
-    };
+    return {'code': 0, 'message': 'success', 'data': data};
   }
 
   /// 模拟错误响应
   static Map<String, dynamic> errorResponse(String message, [int code = -1]) {
-    return {
-      'code': code,
-      'message': message,
-      'data': null,
-    };
+    return {'code': code, 'message': message, 'data': null};
   }
 }
-

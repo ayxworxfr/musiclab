@@ -80,4 +80,3 @@ class OnboardingController extends GetxController {
     super.onClose();
   }
 }
-

@@ -32,8 +32,9 @@ class PracticeController extends GetxController {
   final currentIndex = 0.obs;
 
   /// 当前题目
-  PracticeQuestion? get currentQuestion =>
-      currentIndex.value < questions.length ? questions[currentIndex.value] : null;
+  PracticeQuestion? get currentQuestion => currentIndex.value < questions.length
+      ? questions[currentIndex.value]
+      : null;
 
   /// 用户答案列表
   final answers = <AnswerRecord>[].obs;
@@ -63,10 +64,12 @@ class PracticeController extends GetxController {
   int get correctCount => answers.where((a) => a.isCorrect).length;
 
   /// 正确率
-  double get accuracy => questions.isEmpty ? 0 : correctCount / questions.length;
+  double get accuracy =>
+      questions.isEmpty ? 0 : correctCount / questions.length;
 
   /// 进度（0.0 - 1.0）
-  double get progress => questions.isEmpty ? 0 : (currentIndex.value + 1) / questions.length;
+  double get progress =>
+      questions.isEmpty ? 0 : (currentIndex.value + 1) / questions.length;
 
   @override
   void onInit() {
@@ -77,7 +80,8 @@ class PracticeController extends GetxController {
   /// 加载练习设置
   void _loadSettings() {
     currentDifficulty.value = _settingsService.getPracticeDefaultDifficulty();
-    defaultQuestionCount.value = _settingsService.getPracticeDefaultQuestionCount();
+    defaultQuestionCount.value = _settingsService
+        .getPracticeDefaultQuestionCount();
   }
 
   /// 开始练习
@@ -116,7 +120,9 @@ class PracticeController extends GetxController {
     _startTime = DateTime.now();
     _questionStartTime = DateTime.now();
 
-    LoggerUtil.info('开始练习: ${type.label}, 难度: $difficulty, 题数: ${questions.length}');
+    LoggerUtil.info(
+      '开始练习: ${type.label}, 难度: $difficulty, 题数: ${questions.length}',
+    );
   }
 
   /// 生成题目
@@ -126,22 +132,23 @@ class PracticeController extends GetxController {
     int count,
   ) {
     return switch (type) {
-      PracticeType.noteRecognition => _questionGenerator.generateJianpuRecognition(
+      PracticeType.noteRecognition =>
+        _questionGenerator.generateJianpuRecognition(
           difficulty: difficulty,
           count: count,
         ),
       PracticeType.earTraining => _questionGenerator.generateEarTraining(
-          difficulty: difficulty,
-          count: count,
-        ),
+        difficulty: difficulty,
+        count: count,
+      ),
       PracticeType.pianoPlaying => _questionGenerator.generatePianoPlaying(
-          difficulty: difficulty,
-          count: count,
-        ),
+        difficulty: difficulty,
+        count: count,
+      ),
       _ => _questionGenerator.generateJianpuRecognition(
-          difficulty: difficulty,
-          count: count,
-        ),
+        difficulty: difficulty,
+        count: count,
+      ),
     };
   }
 
@@ -170,7 +177,9 @@ class PracticeController extends GetxController {
     if (hasAnswered.value || currentQuestion == null) return;
 
     final question = currentQuestion!;
-    final responseTime = DateTime.now().difference(_questionStartTime!).inMilliseconds;
+    final responseTime = DateTime.now()
+        .difference(_questionStartTime!)
+        .inMilliseconds;
 
     // 判断是否正确
     bool correct;
@@ -181,12 +190,14 @@ class PracticeController extends GetxController {
     }
 
     // 记录答案
-    answers.add(AnswerRecord(
-      questionId: question.id,
-      userAnswer: answer,
-      isCorrect: correct,
-      responseTimeMs: responseTime,
-    ));
+    answers.add(
+      AnswerRecord(
+        questionId: question.id,
+        userAnswer: answer,
+        isCorrect: correct,
+        responseTimeMs: responseTime,
+      ),
+    );
 
     hasAnswered.value = true;
     isCurrentCorrect.value = correct;
@@ -294,4 +305,3 @@ class PracticeController extends GetxController {
     return true;
   }
 }
-

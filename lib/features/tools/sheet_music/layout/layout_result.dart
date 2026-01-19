@@ -51,7 +51,11 @@ class LayoutResult {
   });
 
   /// 根据时间获取小节索引
-  int getMeasureIndexAtTime(double time, double totalDuration, int measureCount) {
+  int getMeasureIndexAtTime(
+    double time,
+    double totalDuration,
+    int measureCount,
+  ) {
     if (measureCount == 0) return 0;
     final measureDuration = totalDuration / measureCount;
     return (time / measureDuration).floor().clamp(0, measureCount - 1);
@@ -271,4 +275,3 @@ class TieLayout {
     required this.controlPoint2,
   });
 }
-

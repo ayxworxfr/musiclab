@@ -83,8 +83,7 @@ class MusicXmlParserV2 implements SheetParser {
   }
 
   /// 解析作品信息
-  Map<String, String?> _parseWorkInfo(
-      XmlElement root, List<String> warnings) {
+  Map<String, String?> _parseWorkInfo(XmlElement root, List<String> warnings) {
     final info = <String, String?>{};
 
     final workTitle = root.findAllElements('work-title').firstOrNull;
@@ -113,7 +112,9 @@ class MusicXmlParserV2 implements SheetParser {
 
   /// 解析乐谱属性
   Map<String, dynamic> _parseAttributes(
-      XmlElement root, List<String> warnings) {
+    XmlElement root,
+    List<String> warnings,
+  ) {
     final attrs = <String, dynamic>{
       'key': MusicKey.C,
       'beatsPerMeasure': 4,
@@ -207,7 +208,9 @@ class MusicXmlParserV2 implements SheetParser {
     // 方式2: 从 <direction><metronome> 解析（最常见）
     if (tempo == null) {
       for (final direction in root.findAllElements('direction')) {
-        final directionType = direction.findElements('direction-type').firstOrNull;
+        final directionType = direction
+            .findElements('direction-type')
+            .firstOrNull;
         if (directionType != null) {
           final metronome = directionType.findElements('metronome').firstOrNull;
           if (metronome != null) {
@@ -219,7 +222,10 @@ class MusicXmlParserV2 implements SheetParser {
                 tempo = parsedTempo.round();
 
                 // 读取节拍单位（可选）
-                final beatUnit = metronome.findElements('beat-unit').firstOrNull?.innerText;
+                final beatUnit = metronome
+                    .findElements('beat-unit')
+                    .firstOrNull
+                    ?.innerText;
                 if (beatUnit != null) {
                   warnings.add('从 <metronome> 解析速度: $beatUnit = $tempo BPM');
                 } else {
@@ -250,10 +256,7 @@ class MusicXmlParserV2 implements SheetParser {
 
     // 如果解析到了速度，返回结果
     if (tempo != null) {
-      return {
-        'tempo': tempo,
-        'tempoText': tempoText,
-      };
+      return {'tempo': tempo, 'tempoText': tempoText};
     }
 
     // 未找到速度标记
@@ -324,14 +327,16 @@ class MusicXmlParserV2 implements SheetParser {
 
       final hand = _identifyHand(measures, clef);
 
-      tracks.add(Track(
-        id: partId,
-        name: _getPartName(root, partId) ?? '轨道 $trackIndex',
-        clef: clef,
-        hand: hand,
-        measures: measures,
-        instrument: Instrument.piano,
-      ));
+      tracks.add(
+        Track(
+          id: partId,
+          name: _getPartName(root, partId) ?? '轨道 $trackIndex',
+          clef: clef,
+          hand: hand,
+          measures: measures,
+          instrument: Instrument.piano,
+        ),
+      );
     }
 
     return tracks;
@@ -412,15 +417,17 @@ class MusicXmlParserV2 implements SheetParser {
       final beats = _parseMeasureBeats(measureElement, divisions, warnings);
 
       if (beats.isNotEmpty) {
-        measures.add(Measure(
-          number: measureNumber,
-          beats: beats,
-          dynamics: dynamics,
-          pedal: pedal,
-          repeatSign: repeatSign,
-          ending: ending,
-          tempoChange: tempoChange,
-        ));
+        measures.add(
+          Measure(
+            number: measureNumber,
+            beats: beats,
+            dynamics: dynamics,
+            pedal: pedal,
+            repeatSign: repeatSign,
+            ending: ending,
+            tempoChange: tempoChange,
+          ),
+        );
       }
     }
 
@@ -443,7 +450,9 @@ class MusicXmlParserV2 implements SheetParser {
 
     // 检查 <direction><metronome>
     for (final direction in measureElement.findElements('direction')) {
-      final directionType = direction.findElements('direction-type').firstOrNull;
+      final directionType = direction
+          .findElements('direction-type')
+          .firstOrNull;
       if (directionType != null) {
         final metronome = directionType.findElements('metronome').firstOrNull;
         if (metronome != null) {
@@ -481,11 +490,10 @@ class MusicXmlParserV2 implements SheetParser {
 
       if (!isChord) {
         final duration =
-            int.tryParse(noteElement
-                    .findElements('duration')
-                    .firstOrNull
-                    ?.innerText ??
-                '0') ??
+            int.tryParse(
+              noteElement.findElements('duration').firstOrNull?.innerText ??
+                  '0',
+            ) ??
             0;
         final beatPosition = (currentPosition / divisions).floor();
 
@@ -508,11 +516,7 @@ class MusicXmlParserV2 implements SheetParser {
         i++;
       }
 
-      beats.add(Beat(
-        index: beatIndex,
-        notes: chordNotes,
-        tuplet: tuplet,
-      ));
+      beats.add(Beat(index: beatIndex, notes: chordNotes, tuplet: tuplet));
     }
 
     return beats;
@@ -520,16 +524,27 @@ class MusicXmlParserV2 implements SheetParser {
 
   /// 解析三连音
   Tuplet? _parseTuplet(XmlElement noteElement) {
-    final timeModification =
-        noteElement.findElements('time-modification').firstOrNull;
+    final timeModification = noteElement
+        .findElements('time-modification')
+        .firstOrNull;
     if (timeModification != null) {
-      final actualNotes = int.tryParse(
-              timeModification.findElements('actual-notes').firstOrNull?.innerText ??
-                  '0') ??
+      final actualNotes =
+          int.tryParse(
+            timeModification
+                    .findElements('actual-notes')
+                    .firstOrNull
+                    ?.innerText ??
+                '0',
+          ) ??
           0;
-      final normalNotes = int.tryParse(
-              timeModification.findElements('normal-notes').firstOrNull?.innerText ??
-                  '0') ??
+      final normalNotes =
+          int.tryParse(
+            timeModification
+                    .findElements('normal-notes')
+                    .firstOrNull
+                    ?.innerText ??
+                '0',
+          ) ??
           0;
 
       if (actualNotes > 0 && normalNotes > 0) {
@@ -547,9 +562,10 @@ class MusicXmlParserV2 implements SheetParser {
   Note _parseNote(XmlElement noteElement, int divisions) {
     final isRest = noteElement.findElements('rest').isNotEmpty;
 
-    final durationValue = int.tryParse(
-            noteElement.findElements('duration').firstOrNull?.innerText ??
-                '0') ??
+    final durationValue =
+        int.tryParse(
+          noteElement.findElements('duration').firstOrNull?.innerText ?? '0',
+        ) ??
         0;
     final beats = durationValue / divisions;
     final duration = _beatsToDuration(beats);
@@ -566,13 +582,15 @@ class MusicXmlParserV2 implements SheetParser {
 
     final step = pitch.findElements('step').firstOrNull?.innerText ?? 'C';
     final octave =
-        int.tryParse(pitch.findElements('octave').firstOrNull?.innerText ??
-                '4') ??
-            4;
+        int.tryParse(
+          pitch.findElements('octave').firstOrNull?.innerText ?? '4',
+        ) ??
+        4;
     final alter =
-        int.tryParse(pitch.findElements('alter').firstOrNull?.innerText ??
-                '0') ??
-            0;
+        int.tryParse(
+          pitch.findElements('alter').firstOrNull?.innerText ?? '0',
+        ) ??
+        0;
 
     final midiPitch = _convertToMidi(step, octave, alter);
 
@@ -619,11 +637,11 @@ class MusicXmlParserV2 implements SheetParser {
   NoteDuration _beatsToDuration(double beats) {
     // 定义所有可能的时值（包括附点）
     final durations = [
-      NoteDuration.whole,      // 4.0
-      NoteDuration.half,       // 2.0
-      NoteDuration.quarter,    // 1.0
-      NoteDuration.eighth,     // 0.5
-      NoteDuration.sixteenth,  // 0.25
+      NoteDuration.whole, // 4.0
+      NoteDuration.half, // 2.0
+      NoteDuration.quarter, // 1.0
+      NoteDuration.eighth, // 0.5
+      NoteDuration.sixteenth, // 0.25
       NoteDuration.thirtySecond, // 0.125
     ];
 
@@ -644,8 +662,9 @@ class MusicXmlParserV2 implements SheetParser {
 
   /// 解析变音记号
   Accidental _parseAccidental(XmlElement noteElement, int alter) {
-    final accidentalElement =
-        noteElement.findElements('accidental').firstOrNull;
+    final accidentalElement = noteElement
+        .findElements('accidental')
+        .firstOrNull;
     if (accidentalElement != null) {
       final type = accidentalElement.innerText.trim();
       if (type == 'sharp') return Accidental.sharp;
@@ -737,8 +756,7 @@ class MusicXmlParserV2 implements SheetParser {
   Dynamics? _parseDynamics(XmlElement measureElement) {
     final direction = measureElement.findElements('direction').firstOrNull;
     if (direction != null) {
-      final dynamicsElement =
-          direction.findElements('dynamics').firstOrNull;
+      final dynamicsElement = direction.findElements('dynamics').firstOrNull;
       if (dynamicsElement != null) {
         if (dynamicsElement.findElements('ppp').isNotEmpty) {
           return Dynamics.ppp;

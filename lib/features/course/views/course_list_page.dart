@@ -16,11 +16,7 @@ class CourseListPage extends GetView<CourseController> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('课程'),
-        centerTitle: true,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('课程'), centerTitle: true, elevation: 0),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -31,13 +27,19 @@ class CourseListPage extends GetView<CourseController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.school_outlined, size: 64, color: Colors.grey.shade400),
+                Icon(
+                  Icons.school_outlined,
+                  size: 64,
+                  color: Colors.grey.shade400,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   '暂无课程',
                   style: TextStyle(
                     fontSize: 16,
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -57,7 +59,11 @@ class CourseListPage extends GetView<CourseController> {
     );
   }
 
-  Widget _buildCourseCard(BuildContext context, CourseModel course, bool isDark) {
+  Widget _buildCourseCard(
+    BuildContext context,
+    CourseModel course,
+    bool isDark,
+  ) {
     final colors = course.gradientColors.map((c) {
       return Color(int.parse(c.replaceFirst('#', '0xFF')));
     }).toList();
@@ -132,7 +138,9 @@ class CourseListPage extends GetView<CourseController> {
                         child: LinearProgressIndicator(
                           value: course.progress,
                           backgroundColor: Colors.white.withValues(alpha: 0.3),
-                          valueColor: const AlwaysStoppedAnimation(Colors.white),
+                          valueColor: const AlwaysStoppedAnimation(
+                            Colors.white,
+                          ),
                           minHeight: 6,
                         ),
                       ),

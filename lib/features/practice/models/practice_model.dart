@@ -45,7 +45,9 @@ class PracticeQuestion {
         orElse: () => PracticeType.noteRecognition,
       ),
       difficulty: json['difficulty'] as int? ?? 1,
-      content: QuestionContent.fromJson(json['content'] as Map<String, dynamic>),
+      content: QuestionContent.fromJson(
+        json['content'] as Map<String, dynamic>,
+      ),
       correctAnswer: json['correctAnswer'],
       options: (json['options'] as List<dynamic>?)?.cast<String>(),
       hint: json['hint'] as String?,
@@ -143,10 +145,7 @@ class StaffData {
   /// 音符列表（MIDI 编号）
   final List<int> notes;
 
-  const StaffData({
-    required this.clef,
-    required this.notes,
-  });
+  const StaffData({required this.clef, required this.notes});
 
   factory StaffData.fromJson(Map<String, dynamic> json) {
     return StaffData(
@@ -156,10 +155,7 @@ class StaffData {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'clef': clef,
-      'notes': notes,
-    };
+    return {'clef': clef, 'notes': notes};
   }
 }
 
@@ -348,4 +344,3 @@ class PracticeStats {
     );
   }
 }
-

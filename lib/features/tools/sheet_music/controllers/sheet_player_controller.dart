@@ -90,7 +90,7 @@ class SheetPlayerController extends GetxController {
 
     // 为每个轨道单独计算音符时间，然后合并
     for (final track in score.tracks) {
-      double currentTime = 0;  // 每个轨道独立计时
+      double currentTime = 0; // 每个轨道独立计时
 
       for (var mIdx = 0; mIdx < track.measures.length; mIdx++) {
         final measure = track.measures[mIdx];
@@ -115,7 +115,7 @@ class SheetPlayerController extends GetxController {
                   note: note,
                   startTime: currentTime,
                   duration: beatDuration,
-                  hand: track.hand,  // 添加手标记
+                  hand: track.hand, // 添加手标记
                 ),
               );
             } else {
@@ -128,7 +128,7 @@ class SheetPlayerController extends GetxController {
                   note: note,
                   startTime: currentTime,
                   duration: noteDuration,
-                  hand: track.hand,  // 添加手标记
+                  hand: track.hand, // 添加手标记
                 ),
               );
               if (!beat.isChord || note.duration.beamCount > 0) {
@@ -423,7 +423,7 @@ class _PlayableNote {
   final Note note;
   final double startTime;
   final double duration;
-  final Hand? hand;  // 添加手标记，用于排序和播放
+  final Hand? hand; // 添加手标记，用于排序和播放
 
   const _PlayableNote({
     required this.measureIndex,
@@ -441,7 +441,7 @@ class SheetPlaybackState {
   final bool isPlaying;
   final bool isLooping;
   final int currentMeasureIndex;
-  final int currentBeatIndex;  // 添加 beat 索引
+  final int currentBeatIndex; // 添加 beat 索引
   final int currentNoteIndex;
   final double currentTime;
   final double totalDuration;
@@ -453,7 +453,7 @@ class SheetPlaybackState {
     this.isPlaying = false,
     this.isLooping = false,
     this.currentMeasureIndex = 0,
-    this.currentBeatIndex = 0,  // 添加默认值
+    this.currentBeatIndex = 0, // 添加默认值
     this.currentNoteIndex = 0,
     this.currentTime = 0.0,
     this.totalDuration = 0.0,
@@ -466,7 +466,7 @@ class SheetPlaybackState {
     bool? isPlaying,
     bool? isLooping,
     int? currentMeasureIndex,
-    int? currentBeatIndex,  // 添加参数
+    int? currentBeatIndex, // 添加参数
     int? currentNoteIndex,
     double? currentTime,
     double? totalDuration,
@@ -478,7 +478,7 @@ class SheetPlaybackState {
       isPlaying: isPlaying ?? this.isPlaying,
       isLooping: isLooping ?? this.isLooping,
       currentMeasureIndex: currentMeasureIndex ?? this.currentMeasureIndex,
-      currentBeatIndex: currentBeatIndex ?? this.currentBeatIndex,  // 添加复制
+      currentBeatIndex: currentBeatIndex ?? this.currentBeatIndex, // 添加复制
       currentNoteIndex: currentNoteIndex ?? this.currentNoteIndex,
       currentTime: currentTime ?? this.currentTime,
       totalDuration: totalDuration ?? this.totalDuration,

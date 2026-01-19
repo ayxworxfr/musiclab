@@ -103,7 +103,11 @@ enum MusicKey {
   /// [accidental] 临时变音记号
   ///
   /// 返回 MIDI 音高 (21-108)
-  int pitchFromDegree(int degree, int octave, [Accidental accidental = Accidental.none]) {
+  int pitchFromDegree(
+    int degree,
+    int octave, [
+    Accidental accidental = Accidental.none,
+  ]) {
     if (degree < 1 || degree > 7) {
       throw ArgumentError('Degree must be between 1 and 7');
     }
@@ -116,11 +120,13 @@ enum MusicKey {
     final basePitch = 60; // C4
 
     // 计算相对于 C 的半音数
-    final semitoneFromC = (tonicSemitone + majorScaleSemitones[degree - 1]) % 12;
+    final semitoneFromC =
+        (tonicSemitone + majorScaleSemitones[degree - 1]) % 12;
 
     // 计算实际八度
     // 如果度数 + 主音超过一个八度，需要向上调整
-    final octaveAdjust = (tonicSemitone + majorScaleSemitones[degree - 1]) ~/ 12;
+    final octaveAdjust =
+        (tonicSemitone + majorScaleSemitones[degree - 1]) ~/ 12;
 
     // 计算最终音高
     var pitch = basePitch + semitoneFromC + (octave + octaveAdjust) * 12;

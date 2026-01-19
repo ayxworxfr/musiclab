@@ -103,10 +103,7 @@ class AppButton extends StatelessWidget {
           Icon(icon, size: buttonSize.iconSize),
           const SizedBox(width: 8),
         ],
-        Text(
-          text,
-          style: TextStyle(fontSize: buttonSize.fontSize),
-        ),
+        Text(text, style: TextStyle(fontSize: buttonSize.fontSize)),
       ],
     );
 
@@ -175,10 +172,7 @@ class AppButton extends StatelessWidget {
     }
 
     if (width != null || expanded) {
-      return SizedBox(
-        width: width ?? double.infinity,
-        child: button,
-      );
+      return SizedBox(width: width ?? double.infinity, child: button);
     }
 
     return button;
@@ -242,4 +236,3 @@ class _ButtonSize {
     required this.verticalPadding,
   });
 }
-

@@ -6,10 +6,12 @@ import 'package:intl/intl.dart';
 extension FlutterBoostStringExtension on String {
   /// 每个单词首字母大写
   String toTitleCase() {
-    return split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return '${word[0].toUpperCase()}${word.substring(1)}';
-    }).join(' ');
+    return split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return '${word[0].toUpperCase()}${word.substring(1)}';
+        })
+        .join(' ');
   }
 
   /// 是否是有效邮箱
@@ -279,4 +281,3 @@ extension WidgetExtension on Widget {
     return Expanded(flex: flex, child: this);
   }
 }
-

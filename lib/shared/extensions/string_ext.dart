@@ -67,4 +67,3 @@ extension NullableStringExt on String? {
     return isNullOrEmpty ? defaultValue : this!;
   }
 }
-

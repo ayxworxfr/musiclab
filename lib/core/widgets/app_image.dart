@@ -5,7 +5,7 @@ import 'package:shimmer/shimmer.dart';
 import '../theme/app_colors.dart';
 
 /// 统一的图片组件
-/// 
+///
 /// 支持网络图片加载、缓存、占位图、错误处理
 class AppImage extends StatelessWidget {
   /// 图片地址
@@ -74,11 +74,7 @@ class AppImage extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      width: width,
-      height: height,
-      child: image,
-    );
+    return SizedBox(width: width, height: height, child: image);
   }
 
   /// 构建骨架屏占位图
@@ -133,8 +129,7 @@ class AppImage extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius:
-            isCircle ? null : BorderRadius.circular(borderRadius),
+        borderRadius: isCircle ? null : BorderRadius.circular(borderRadius),
         shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
       ),
       child: Icon(
@@ -205,10 +200,7 @@ class AppAvatar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isOnline ? AppColors.success : AppColors.textDisabled,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ),
+                border: Border.all(color: Colors.white, width: 2),
               ),
             ),
           ),
@@ -227,12 +219,7 @@ class AppAvatar extends StatelessWidget {
         color: AppColors.primaryLight,
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.person,
-        size: size * 0.6,
-        color: AppColors.primary,
-      ),
+      child: Icon(Icons.person, size: size * 0.6, color: AppColors.primary),
     );
   }
 }
-

@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
 /// 主页控制器
-/// 
+///
 /// 管理底部导航状态
 class MainController extends GetxController {
   /// 当前选中的 Tab 索引
@@ -27,4 +27,3 @@ class MainController extends GetxController {
   /// 跳转到我的
   void goToProfile() => changeTab(3);
 }
-

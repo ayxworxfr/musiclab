@@ -87,7 +87,10 @@ class ProfileController extends GetxController {
   }
 
   /// 记录练习
-  Future<void> recordPractice({required int total, required int correct}) async {
+  Future<void> recordPractice({
+    required int total,
+    required int correct,
+  }) async {
     await _repository.updateTodayRecord(
       addPractice: total,
       addCorrect: correct,
@@ -214,4 +217,3 @@ class ProfileController extends GetxController {
     await loadData();
   }
 }
-

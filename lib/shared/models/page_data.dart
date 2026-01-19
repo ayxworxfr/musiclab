@@ -97,4 +97,3 @@ class PageData<T> {
     return 'PageData(page: $page, pageSize: $pageSize, total: $total, list: ${list.length} items)';
   }
 }
-

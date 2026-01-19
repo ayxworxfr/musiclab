@@ -26,21 +26,25 @@ class PianoPracticePage extends GetView<PracticeController> {
         centerTitle: true,
         elevation: 0,
         actions: [
-          Obx(() => controller.questions.isNotEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Text(
-                      '${controller.currentIndex.value + 1}/${controller.questions.length}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+          Obx(
+            () => controller.questions.isNotEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Text(
+                        '${controller.currentIndex.value + 1}/${controller.questions.length}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondary,
+                        ),
                       ),
                     ),
-                  ),
-                )
-              : const SizedBox.shrink()),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
       body: Obx(() {
@@ -77,7 +81,9 @@ class PianoPracticePage extends GetView<PracticeController> {
             '看简谱，在钢琴上弹出正确的旋律',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 24),
@@ -172,16 +178,15 @@ class PianoPracticePage extends GetView<PracticeController> {
                           d['desc'] as String,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: d['color'] as Color,
-                  ),
+                  Icon(Icons.chevron_right, color: d['color'] as Color),
                 ],
               ),
             ),
@@ -209,7 +214,7 @@ class PianoPracticePage extends GetView<PracticeController> {
           child: Column(
             children: [
               const SizedBox(height: 20),
-              
+
               // 题目描述
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -227,7 +232,11 @@ class PianoPracticePage extends GetView<PracticeController> {
 
               // 简谱显示
               if (question.content.jianpuData != null)
-                _buildJianpuDisplay(context, question.content.jianpuData!, isDark),
+                _buildJianpuDisplay(
+                  context,
+                  question.content.jianpuData!,
+                  isDark,
+                ),
               const SizedBox(height: 8),
 
               // 提示
@@ -238,7 +247,9 @@ class PianoPracticePage extends GetView<PracticeController> {
                     '💡 ${question.hint}',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -266,16 +277,14 @@ class PianoPracticePage extends GetView<PracticeController> {
   Widget _buildJianpuDisplay(BuildContext context, String jianpu, bool isDark) {
     // 解析简谱字符串，分割成单个音符
     final notes = _parseJianpuString(jianpu);
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -295,42 +304,42 @@ class PianoPracticePage extends GetView<PracticeController> {
       ),
     );
   }
-  
+
   /// 解析简谱字符串为单个音符列表
   List<String> _parseJianpuString(String jianpu) {
     final notes = <String>[];
-    
+
     // 按空格分割，如果输入已经是空格分隔的
     final parts = jianpu.trim().split(RegExp(r'\s+'));
-    
+
     for (final part in parts) {
       if (part.isEmpty) continue;
-      
+
       // 每个 part 应该是一个完整的音符（可能包含升降号和八度标记）
       // 使用正则表达式匹配音符模式
       final noteRegex = RegExp(r"([#b]?)([0-7])([',\u0307\u0323]*)");
       final matches = noteRegex.allMatches(part);
-      
+
       for (final match in matches) {
         final accidental = match.group(1) ?? '';
         final number = match.group(2) ?? '';
         final octaveMarkers = match.group(3) ?? '';
-        
+
         if (number.isNotEmpty) {
           notes.add('$accidental$number$octaveMarkers');
         }
       }
     }
-    
+
     // 如果没有通过空格分割得到结果，尝试字符解析
     if (notes.isEmpty && jianpu.isNotEmpty) {
       final cleaned = jianpu.replaceAll(' ', '');
       final runes = cleaned.runes.toList();
-      
+
       int i = 0;
       while (i < runes.length) {
         String note = '';
-        
+
         // 检查升降号前缀
         if (i < runes.length) {
           final char = String.fromCharCode(runes[i]);
@@ -339,26 +348,28 @@ class PianoPracticePage extends GetView<PracticeController> {
             i++;
           }
         }
-        
+
         // 获取数字
         if (i < runes.length) {
           final char = String.fromCharCode(runes[i]);
           if (RegExp(r'[0-7]').hasMatch(char)) {
             note += char;
             i++;
-            
+
             // 检查高低音后缀（Unicode 组合字符）
             while (i < runes.length) {
               final nextChar = String.fromCharCode(runes[i]);
-              if (nextChar == "'" || nextChar == ',' || 
-                  runes[i] == 0x0307 || runes[i] == 0x0323) {
+              if (nextChar == "'" ||
+                  nextChar == ',' ||
+                  runes[i] == 0x0307 ||
+                  runes[i] == 0x0323) {
                 note += nextChar;
                 i++;
               } else {
                 break;
               }
             }
-            
+
             if (note.isNotEmpty && note.contains(RegExp(r'[0-7]'))) {
               notes.add(note);
             }
@@ -368,17 +379,21 @@ class PianoPracticePage extends GetView<PracticeController> {
         }
       }
     }
-    
+
     return notes;
   }
 
   /// 用户输入显示
-  Widget _buildUserInputDisplay(BuildContext context, PracticeQuestion question, bool isDark) {
+  Widget _buildUserInputDisplay(
+    BuildContext context,
+    PracticeQuestion question,
+    bool isDark,
+  ) {
     final targetNotes = question.content.notes ?? [];
-    
+
     return Obx(() {
       final userNotes = controller.userPlayedNotes;
-      
+
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -394,11 +409,13 @@ class PianoPracticePage extends GetView<PracticeController> {
               '你弹奏的: ',
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
             ),
             Expanded(
-              child: userNotes.isEmpty 
+              child: userNotes.isEmpty
                   ? Text(
                       '...',
                       style: TextStyle(
@@ -426,7 +443,9 @@ class PianoPracticePage extends GetView<PracticeController> {
               '${userNotes.length}/${targetNotes.length}',
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -436,22 +455,26 @@ class PianoPracticePage extends GetView<PracticeController> {
   }
 
   /// 钢琴键盘（使用新的 Canvas 组件）
-  Widget _buildPianoKeyboard(BuildContext context, PracticeQuestion question, bool isDark) {
+  Widget _buildPianoKeyboard(
+    BuildContext context,
+    PracticeQuestion question,
+    bool isDark,
+  ) {
     final targetNotes = question.content.notes ?? [];
     final audioService = Get.find<AudioService>();
-    
+
     // 动态计算需要的 MIDI 范围
-    int startMidi = 60;  // 默认 C4
-    int endMidi = 72;    // 默认 C5
-    
+    int startMidi = 60; // 默认 C4
+    int endMidi = 72; // 默认 C5
+
     if (targetNotes.isNotEmpty) {
       final minNote = targetNotes.reduce((a, b) => a < b ? a : b);
       final maxNote = targetNotes.reduce((a, b) => a > b ? a : b);
-      
+
       // 扩展范围，确保包含所有音符，并留出一些缓冲
-      startMidi = (minNote - 7).clamp(48, 84);  // 至少向下扩展一个五度
-      endMidi = (maxNote + 7).clamp(48, 84);    // 至少向上扩展一个五度
-      
+      startMidi = (minNote - 7).clamp(48, 84); // 至少向下扩展一个五度
+      endMidi = (maxNote + 7).clamp(48, 84); // 至少向上扩展一个五度
+
       // 确保至少显示一个完整的八度
       if (endMidi - startMidi < 12) {
         final center = (startMidi + endMidi) ~/ 2;
@@ -459,24 +482,21 @@ class PianoPracticePage extends GetView<PracticeController> {
         endMidi = (center + 6).clamp(48, 84);
       }
     }
-    
+
     // 使用与乐谱页面一致的主题
     final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
-    final config = RenderConfig(
-      pianoHeight: 160,
-      theme: renderTheme,
-    );
-    
+    final config = RenderConfig(pianoHeight: 160, theme: renderTheme);
+
     return Obx(() {
       final userNotes = controller.userPlayedNotes;
-      
+
       // 高亮目标音符中还没弹的下一个
       final nextNoteIndex = userNotes.length;
       final highlightNotes = <int, Hand>{};
       if (nextNoteIndex < targetNotes.length) {
         highlightNotes[targetNotes[nextNoteIndex]] = Hand.right;
       }
-      
+
       return Container(
         height: 160,
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -501,16 +521,42 @@ class PianoPracticePage extends GetView<PracticeController> {
             final minWhiteKeyWidth = 35.0;
             final pianoWidth = whiteKeyCount * minWhiteKeyWidth;
             final needsScroll = pianoWidth > constraints.maxWidth;
-            final displayWidth = needsScroll ? pianoWidth : constraints.maxWidth;
-            
+            final displayWidth = needsScroll
+                ? pianoWidth
+                : constraints.maxWidth;
+
             // 将 GestureDetector 放到 SingleChildScrollView 内部
             // 这样 localPosition 是相对于 CustomPaint 的，不受滚动影响
             return SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: GestureDetector(
-                onTapDown: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
-                onPanStart: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
-                onPanUpdate: (details) => _handlePianoTap(details, config, targetNotes, audioService, startMidi, endMidi, displayWidth),
+                onTapDown: (details) => _handlePianoTap(
+                  details,
+                  config,
+                  targetNotes,
+                  audioService,
+                  startMidi,
+                  endMidi,
+                  displayWidth,
+                ),
+                onPanStart: (details) => _handlePianoTap(
+                  details,
+                  config,
+                  targetNotes,
+                  audioService,
+                  startMidi,
+                  endMidi,
+                  displayWidth,
+                ),
+                onPanUpdate: (details) => _handlePianoTap(
+                  details,
+                  config,
+                  targetNotes,
+                  audioService,
+                  startMidi,
+                  endMidi,
+                  displayWidth,
+                ),
                 child: CustomPaint(
                   size: Size(displayWidth, 160),
                   painter: PianoKeyboardPainter(
@@ -529,17 +575,25 @@ class PianoPracticePage extends GetView<PracticeController> {
       );
     });
   }
-  
+
   bool _isBlackKey(int midi) {
     const blackKeys = [1, 3, 6, 8, 10];
     return blackKeys.contains(midi % 12);
   }
 
   int? _lastPlayedMidi;
-  
-  void _handlePianoTap(dynamic details, RenderConfig config, List<int> targetNotes, AudioService audioService, int startMidi, int endMidi, double pianoWidth) {
+
+  void _handlePianoTap(
+    dynamic details,
+    RenderConfig config,
+    List<int> targetNotes,
+    AudioService audioService,
+    int startMidi,
+    int endMidi,
+    double pianoWidth,
+  ) {
     if (controller.hasAnswered.value) return;
-    
+
     // 处理不同类型的手势事件
     late final Offset position;
     if (details is TapDownDetails) {
@@ -551,21 +605,21 @@ class PianoPracticePage extends GetView<PracticeController> {
     } else {
       return;
     }
-    
+
     final painter = PianoKeyboardPainter(
       startMidi: startMidi,
       endMidi: endMidi,
       config: config,
     );
-    
+
     final midi = painter.findKeyAtPosition(position, Size(pianoWidth, 160));
-    
+
     if (midi != null && midi != _lastPlayedMidi) {
       _lastPlayedMidi = midi;
       audioService.markUserInteracted();
       audioService.playPianoNote(midi);
       _onNotePlayed(midi, targetNotes);
-      
+
       // 重置
       Future.delayed(const Duration(milliseconds: 100), () {
         _lastPlayedMidi = null;
@@ -576,9 +630,9 @@ class PianoPracticePage extends GetView<PracticeController> {
   /// 音符被弹奏
   void _onNotePlayed(int midi, List<int> targetNotes) {
     if (controller.hasAnswered.value) return;
-    
+
     controller.addPlayedNote(midi);
-    
+
     // 检查是否完成
     if (controller.userPlayedNotes.length >= targetNotes.length) {
       // 对比答案
@@ -588,11 +642,24 @@ class PianoPracticePage extends GetView<PracticeController> {
 
   /// MIDI 转简谱（简化版）
   String _midiToSimpleJianpu(int midi) {
-    const jianpu = ['1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'];
+    const jianpu = [
+      '1',
+      '#1',
+      '2',
+      '#2',
+      '3',
+      '4',
+      '#4',
+      '5',
+      '#5',
+      '6',
+      '#6',
+      '7',
+    ];
     final noteIndex = midi % 12;
     final octave = (midi ~/ 12) - 5;
     final base = jianpu[noteIndex];
-    
+
     if (octave > 0) {
       return "$base'";
     } else if (octave < 0) {
@@ -652,8 +719,12 @@ class PianoPracticePage extends GetView<PracticeController> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      controller.isCurrentCorrect.value ? Icons.check_circle : Icons.cancel,
-                      color: controller.isCurrentCorrect.value ? AppColors.success : AppColors.error,
+                      controller.isCurrentCorrect.value
+                          ? Icons.check_circle
+                          : Icons.cancel,
+                      color: controller.isCurrentCorrect.value
+                          ? AppColors.success
+                          : AppColors.error,
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -661,7 +732,9 @@ class PianoPracticePage extends GetView<PracticeController> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: controller.isCurrentCorrect.value ? AppColors.success : AppColors.error,
+                        color: controller.isCurrentCorrect.value
+                            ? AppColors.success
+                            : AppColors.error,
                       ),
                     ),
                   ],
@@ -677,10 +750,14 @@ class PianoPracticePage extends GetView<PracticeController> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(
-                    controller.currentIndex.value < controller.questions.length - 1
+                    controller.currentIndex.value <
+                            controller.questions.length - 1
                         ? '下一题'
                         : '查看结果',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -706,22 +783,22 @@ class PianoPracticePage extends GetView<PracticeController> {
                 color: controller.accuracy >= 0.8
                     ? AppColors.success.withValues(alpha: 0.1)
                     : controller.accuracy >= 0.6
-                        ? AppColors.warning.withValues(alpha: 0.1)
-                        : AppColors.error.withValues(alpha: 0.1),
+                    ? AppColors.warning.withValues(alpha: 0.1)
+                    : AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 controller.accuracy >= 0.8
                     ? Icons.emoji_events
                     : controller.accuracy >= 0.6
-                        ? Icons.thumb_up
-                        : Icons.sentiment_dissatisfied,
+                    ? Icons.thumb_up
+                    : Icons.sentiment_dissatisfied,
                 size: 48,
                 color: controller.accuracy >= 0.8
                     ? AppColors.success
                     : controller.accuracy >= 0.6
-                        ? AppColors.warning
-                        : AppColors.error,
+                    ? AppColors.warning
+                    : AppColors.error,
               ),
             ),
             const SizedBox(height: 24),
@@ -730,8 +807,8 @@ class PianoPracticePage extends GetView<PracticeController> {
               controller.accuracy >= 0.8
                   ? '弹奏精准！🎹'
                   : controller.accuracy >= 0.6
-                      ? '继续练习！💪'
-                      : '多多练习！📚',
+                  ? '继续练习！💪'
+                  : '多多练习！📚',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -753,7 +830,8 @@ class PianoPracticePage extends GetView<PracticeController> {
                 _buildStatCard(
                   context,
                   label: '正确/总数',
-                  value: '${controller.correctCount}/${controller.questions.length}',
+                  value:
+                      '${controller.correctCount}/${controller.questions.length}',
                   icon: Icons.piano,
                   color: AppColors.primary,
                 ),
@@ -829,10 +907,7 @@ class PianoPracticePage extends GetView<PracticeController> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
         ),
       ],
     );

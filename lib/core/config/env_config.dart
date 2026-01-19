@@ -18,8 +18,8 @@ class EnvConfig {
   static const Environment current = kReleaseMode
       ? Environment.production
       : kProfileMode
-          ? Environment.staging
-          : Environment.development;
+      ? Environment.staging
+      : Environment.development;
 
   /// 环境名称
   static String get appEnv => current.name;

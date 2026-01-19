@@ -69,14 +69,14 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
   Widget _buildJianpuTable(BuildContext context, bool isDark) {
     // 使用 MusicUtils 生成专业格式的简谱（带上下加点）
     final notes = [
-      {'midi': 48, 'name': '低音Do', 'staff': 'C3'},   // 低八度
+      {'midi': 48, 'name': '低音Do', 'staff': 'C3'}, // 低八度
       {'midi': 50, 'name': '低音Re', 'staff': 'D3'},
       {'midi': 52, 'name': '低音Mi', 'staff': 'E3'},
       {'midi': 53, 'name': '低音Fa', 'staff': 'F3'},
       {'midi': 55, 'name': '低音Sol', 'staff': 'G3'},
       {'midi': 57, 'name': '低音La', 'staff': 'A3'},
       {'midi': 59, 'name': '低音Si', 'staff': 'B3'},
-      {'midi': 60, 'name': 'Do', 'staff': 'C4'},       // 中央 C
+      {'midi': 60, 'name': 'Do', 'staff': 'C4'}, // 中央 C
       {'midi': 61, 'name': 'Do#', 'staff': 'C#4'},
       {'midi': 62, 'name': 'Re', 'staff': 'D4'},
       {'midi': 63, 'name': 'Re#', 'staff': 'D#4'},
@@ -88,7 +88,7 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
       {'midi': 69, 'name': 'La', 'staff': 'A4'},
       {'midi': 70, 'name': 'La#', 'staff': 'A#4'},
       {'midi': 71, 'name': 'Si', 'staff': 'B4'},
-      {'midi': 72, 'name': '高音Do', 'staff': 'C5'},   // 高八度
+      {'midi': 72, 'name': '高音Do', 'staff': 'C5'}, // 高八度
       {'midi': 74, 'name': '高音Re', 'staff': 'D5'},
       {'midi': 76, 'name': '高音Mi', 'staff': 'E5'},
       {'midi': 77, 'name': '高音Fa', 'staff': 'F5'},
@@ -126,7 +126,9 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                 '简谱用数字 1234567 表示 Do Re Mi Fa Sol La Si。',
                 style: TextStyle(
                   fontSize: 13,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -142,7 +144,10 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                   children: [
                     Text(
                       '八度标记说明：',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                     SizedBox(height: 6),
                     Row(
@@ -157,7 +162,12 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                             color: Colors.orange,
                           ),
                         ),
-                        Expanded(child: Text('高音 - 上加点', style: TextStyle(fontSize: 13))),
+                        Expanded(
+                          child: Text(
+                            '高音 - 上加点',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 4),
@@ -172,7 +182,12 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                             fontSize: 18,
                           ),
                         ),
-                        Expanded(child: Text('中音 - 无标记', style: TextStyle(fontSize: 13))),
+                        Expanded(
+                          child: Text(
+                            '中音 - 无标记',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 4),
@@ -188,7 +203,12 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                             color: Colors.blue,
                           ),
                         ),
-                        Expanded(child: Text('低音 - 下加点', style: TextStyle(fontSize: 13))),
+                        Expanded(
+                          child: Text(
+                            '低音 - 下加点',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -216,7 +236,10 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
             children: [
               // 表头
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.only(
@@ -226,10 +249,35 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                 ),
                 child: const Row(
                   children: [
-                    Expanded(child: Text('简谱', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(child: Text('唱名', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(child: Text('音名', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 60, child: Text('试听', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                    Expanded(
+                      child: Text(
+                        '简谱',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '唱名',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '音名',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 60,
+                      child: Text(
+                        '试听',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -237,33 +285,52 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
               ...notes.map((note) {
                 final midi = note['midi'] as int;
                 final noteIndex = midi % 12;
-                const numbers = ['1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'];
+                const numbers = [
+                  '1',
+                  '#1',
+                  '2',
+                  '#2',
+                  '3',
+                  '4',
+                  '#4',
+                  '5',
+                  '#5',
+                  '6',
+                  '#6',
+                  '7',
+                ];
                 final number = numbers[noteIndex];
                 final isSharp = number.contains('#');
                 final isLowOctave = midi < 60;
                 final isHighOctave = midi >= 72;
                 final octaveOffset = ((midi ~/ 12) - 1) - 4; // 相对于 C4
-                
-                Color noteColor = isSharp 
-                    ? AppColors.primary 
+
+                Color noteColor = isSharp
+                    ? AppColors.primary
                     : isLowOctave
-                        ? Colors.blue.shade700
-                        : isHighOctave
-                            ? Colors.orange.shade700
-                            : Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
-                
+                    ? Colors.blue.shade700
+                    : isHighOctave
+                    ? Colors.orange.shade700
+                    : Theme.of(context).textTheme.bodyLarge?.color ??
+                          Colors.black;
+
                 return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSharp 
-                        ? Colors.grey.withValues(alpha: 0.05) 
-                        : isLowOctave 
-                            ? Colors.blue.withValues(alpha: 0.03)
-                            : isHighOctave 
-                                ? Colors.orange.withValues(alpha: 0.03)
-                                : null,
+                    color: isSharp
+                        ? Colors.grey.withValues(alpha: 0.05)
+                        : isLowOctave
+                        ? Colors.blue.withValues(alpha: 0.03)
+                        : isHighOctave
+                        ? Colors.orange.withValues(alpha: 0.03)
+                        : null,
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                      bottom: BorderSide(
+                        color: Colors.grey.withValues(alpha: 0.2),
+                      ),
                     ),
                   ),
                   child: Row(
@@ -298,7 +365,10 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                         width: 60,
                         child: IconButton(
                           onPressed: () => _audioService.playPianoNote(midi),
-                          icon: const Icon(Icons.volume_up, color: AppColors.primary),
+                          icon: const Icon(
+                            Icons.volume_up,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -360,7 +430,9 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                 '音程是指两个音之间的距离，用"度"来表示。半音数不同，音程也不同。',
                 style: TextStyle(
                   fontSize: 13,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
                 ),
               ),
             ],
@@ -383,7 +455,10 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.only(
@@ -393,19 +468,50 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                 ),
                 child: const Row(
                   children: [
-                    SizedBox(width: 60, child: Text('半音数', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(child: Text('音程名称', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(child: Text('示例', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    SizedBox(width: 60, child: Text('试听', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                    SizedBox(
+                      width: 60,
+                      child: Text(
+                        '半音数',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '音程名称',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '示例',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 60,
+                      child: Text(
+                        '试听',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ],
                 ),
               ),
               ...intervals.map((interval) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                      bottom: BorderSide(
+                        color: Colors.grey.withValues(alpha: 0.2),
+                      ),
                     ),
                   ),
                   child: Row(
@@ -429,15 +535,21 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                           interval['example'] as String,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ),
                       SizedBox(
                         width: 60,
                         child: IconButton(
-                          onPressed: () => _playInterval(interval['semitones'] as int),
-                          icon: const Icon(Icons.volume_up, color: AppColors.primary),
+                          onPressed: () =>
+                              _playInterval(interval['semitones'] as int),
+                          icon: const Icon(
+                            Icons.volume_up,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -495,7 +607,9 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                 '调号决定了乐曲中哪些音需要升高或降低。每个调号对应一个大调和一个小调（关系大小调）。',
                 style: TextStyle(
                   fontSize: 13,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
                 ),
               ),
             ],
@@ -518,7 +632,10 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.only(
@@ -528,19 +645,49 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                 ),
                 child: const Row(
                   children: [
-                    Expanded(flex: 2, child: Text('调名', style: TextStyle(fontWeight: FontWeight.bold))),
-                    Expanded(child: Text('升号', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(child: Text('降号', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                    Expanded(flex: 2, child: Text('变化音', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        '调名',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '升号',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        '降号',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        '变化音',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ],
                 ),
               ),
               ...keys.map((k) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                      bottom: BorderSide(
+                        color: Colors.grey.withValues(alpha: 0.2),
+                      ),
                     ),
                   ),
                   child: Row(
@@ -571,7 +718,9 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -593,4 +742,3 @@ class _ReferenceTablePageState extends State<ReferenceTablePage>
     await _audioService.playPianoNote(60 + semitones);
   }
 }
-

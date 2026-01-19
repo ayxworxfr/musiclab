@@ -11,9 +11,8 @@ class AuthBinding extends Bindings {
     if (!Get.isRegistered<AuthService>()) {
       Get.lazyPut<AuthService>(() => AuthService());
     }
-    
+
     // 注入认证控制器
     Get.lazyPut<AuthController>(() => AuthController());
   }
 }
-

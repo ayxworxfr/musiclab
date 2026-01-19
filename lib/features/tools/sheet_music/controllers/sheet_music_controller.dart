@@ -15,6 +15,7 @@ import '../utils/score_converter.dart';
 class SheetMusicController extends GetxController {
   /// 乐谱存储服务
   final SheetStorageService _storageService = Get.find<SheetStorageService>();
+
   /// 乐谱列表
   final scores = <Score>[].obs;
 
@@ -60,14 +61,18 @@ class SheetMusicController extends GetxController {
 
       // 1. 加载系统预制乐谱
       try {
-        final indexJson = await rootBundle.loadString('assets/data/sheets/sheets_index.json');
+        final indexJson = await rootBundle.loadString(
+          'assets/data/sheets/sheets_index.json',
+        );
         final indexData = json.decode(indexJson) as Map<String, dynamic>;
         final sheetsList = indexData['sheets'] as List;
 
         for (final item in sheetsList) {
           try {
             final filename = item['filename'] as String;
-            final sheetJson = await rootBundle.loadString('assets/data/sheets/$filename');
+            final sheetJson = await rootBundle.loadString(
+              'assets/data/sheets/$filename',
+            );
             final sheetData = json.decode(sheetJson) as Map<String, dynamic>;
 
             // 使用转换器从旧格式转换，确保 isBuiltIn = true
@@ -105,7 +110,9 @@ class SheetMusicController extends GetxController {
     var result = scores.toList();
 
     if (currentCategory.value != null) {
-      result = result.where((s) => s.metadata.category == currentCategory.value).toList();
+      result = result
+          .where((s) => s.metadata.category == currentCategory.value)
+          .toList();
     }
 
     if (searchQuery.value.isNotEmpty) {
@@ -208,9 +215,7 @@ class SheetMusicController extends GetxController {
   List<Score> _getSampleScores() {
     // 注意：createTwinkleTwinkle 是异步方法，这里返回空列表
     // 实际应该从 assets 加载或使用同步方法
-    return [
-      _createCanonInC(),
-    ];
+    return [_createCanonInC()];
   }
 
   /// C大调卡农
@@ -222,22 +227,58 @@ class SheetMusicController extends GetxController {
       clef: Clef.bass,
       hand: Hand.left,
       measures: [
-        Measure(number: 1, beats: [
-          Beat(index: 0, notes: [const Note(pitch: 48, duration: NoteDuration.half)]), // C3
-          Beat(index: 2, notes: [const Note(pitch: 43, duration: NoteDuration.half)]), // G2
-        ]),
-        Measure(number: 2, beats: [
-          Beat(index: 0, notes: [const Note(pitch: 45, duration: NoteDuration.half)]), // A2
-          Beat(index: 2, notes: [const Note(pitch: 40, duration: NoteDuration.half)]), // E2
-        ]),
-        Measure(number: 3, beats: [
-          Beat(index: 0, notes: [const Note(pitch: 41, duration: NoteDuration.half)]), // F2
-          Beat(index: 2, notes: [const Note(pitch: 36, duration: NoteDuration.half)]), // C2
-        ]),
-        Measure(number: 4, beats: [
-          Beat(index: 0, notes: [const Note(pitch: 41, duration: NoteDuration.half)]), // F2
-          Beat(index: 2, notes: [const Note(pitch: 43, duration: NoteDuration.half)]), // G2
-        ]),
+        Measure(
+          number: 1,
+          beats: [
+            Beat(
+              index: 0,
+              notes: [const Note(pitch: 48, duration: NoteDuration.half)],
+            ), // C3
+            Beat(
+              index: 2,
+              notes: [const Note(pitch: 43, duration: NoteDuration.half)],
+            ), // G2
+          ],
+        ),
+        Measure(
+          number: 2,
+          beats: [
+            Beat(
+              index: 0,
+              notes: [const Note(pitch: 45, duration: NoteDuration.half)],
+            ), // A2
+            Beat(
+              index: 2,
+              notes: [const Note(pitch: 40, duration: NoteDuration.half)],
+            ), // E2
+          ],
+        ),
+        Measure(
+          number: 3,
+          beats: [
+            Beat(
+              index: 0,
+              notes: [const Note(pitch: 41, duration: NoteDuration.half)],
+            ), // F2
+            Beat(
+              index: 2,
+              notes: [const Note(pitch: 36, duration: NoteDuration.half)],
+            ), // C2
+          ],
+        ),
+        Measure(
+          number: 4,
+          beats: [
+            Beat(
+              index: 0,
+              notes: [const Note(pitch: 41, duration: NoteDuration.half)],
+            ), // F2
+            Beat(
+              index: 2,
+              notes: [const Note(pitch: 43, duration: NoteDuration.half)],
+            ), // G2
+          ],
+        ),
       ],
     );
 
@@ -248,30 +289,42 @@ class SheetMusicController extends GetxController {
       clef: Clef.treble,
       hand: Hand.right,
       measures: [
-        Measure(number: 1, beats: [
-          Beat(index: 0, notes: [const Note(pitch: 72)]), // C5
-          Beat(index: 1, notes: [const Note(pitch: 71)]), // B4
-          Beat(index: 2, notes: [const Note(pitch: 69)]), // A4
-          Beat(index: 3, notes: [const Note(pitch: 71)]), // B4
-        ]),
-        Measure(number: 2, beats: [
-          Beat(index: 0, notes: [const Note(pitch: 72)]), // C5
-          Beat(index: 1, notes: [const Note(pitch: 79)]), // G5
-          Beat(index: 2, notes: [const Note(pitch: 76)]), // E5
-          Beat(index: 3, notes: [const Note(pitch: 79)]), // G5
-        ]),
-        Measure(number: 3, beats: [
-          Beat(index: 0, notes: [const Note(pitch: 81)]), // A5
-          Beat(index: 1, notes: [const Note(pitch: 76)]), // E5
-          Beat(index: 2, notes: [const Note(pitch: 77)]), // F5
-          Beat(index: 3, notes: [const Note(pitch: 76)]), // E5
-        ]),
-        Measure(number: 4, beats: [
-          Beat(index: 0, notes: [const Note(pitch: 77)]), // F5
-          Beat(index: 1, notes: [const Note(pitch: 76)]), // E5
-          Beat(index: 2, notes: [const Note(pitch: 77)]), // F5
-          Beat(index: 3, notes: [const Note(pitch: 79)]), // G5
-        ]),
+        Measure(
+          number: 1,
+          beats: [
+            Beat(index: 0, notes: [const Note(pitch: 72)]), // C5
+            Beat(index: 1, notes: [const Note(pitch: 71)]), // B4
+            Beat(index: 2, notes: [const Note(pitch: 69)]), // A4
+            Beat(index: 3, notes: [const Note(pitch: 71)]), // B4
+          ],
+        ),
+        Measure(
+          number: 2,
+          beats: [
+            Beat(index: 0, notes: [const Note(pitch: 72)]), // C5
+            Beat(index: 1, notes: [const Note(pitch: 79)]), // G5
+            Beat(index: 2, notes: [const Note(pitch: 76)]), // E5
+            Beat(index: 3, notes: [const Note(pitch: 79)]), // G5
+          ],
+        ),
+        Measure(
+          number: 3,
+          beats: [
+            Beat(index: 0, notes: [const Note(pitch: 81)]), // A5
+            Beat(index: 1, notes: [const Note(pitch: 76)]), // E5
+            Beat(index: 2, notes: [const Note(pitch: 77)]), // F5
+            Beat(index: 3, notes: [const Note(pitch: 76)]), // E5
+          ],
+        ),
+        Measure(
+          number: 4,
+          beats: [
+            Beat(index: 0, notes: [const Note(pitch: 77)]), // F5
+            Beat(index: 1, notes: [const Note(pitch: 76)]), // E5
+            Beat(index: 2, notes: [const Note(pitch: 77)]), // F5
+            Beat(index: 3, notes: [const Note(pitch: 79)]), // G5
+          ],
+        ),
       ],
     );
 

@@ -185,10 +185,7 @@ class _SheetMusicPageState extends State<SheetMusicPage> {
           icon: Icon(Icons.music_note, color: _config.theme.textColor),
           onSelected: _onSampleChanged,
           itemBuilder: (context) => [
-            const PopupMenuItem<String>(
-              value: 'twinkle',
-              child: Text('小星星'),
-            ),
+            const PopupMenuItem<String>(value: 'twinkle', child: Text('小星星')),
             const PopupMenuItem<String>(
               value: 'piano_example',
               child: Text('钢琴示例'),
@@ -262,4 +259,3 @@ class _SheetMusicPageState extends State<SheetMusicPage> {
     debugPrint('Tapped piano key: $midi');
   }
 }
-

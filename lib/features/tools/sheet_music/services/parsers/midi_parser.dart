@@ -94,11 +94,7 @@ class MidiParser implements SheetParser {
     final trackCount = (bytes[10] << 8) | bytes[11];
     final ppq = (bytes[12] << 8) | bytes[13];
 
-    return {
-      'format': format,
-      'trackCount': trackCount,
-      'ppq': ppq,
-    };
+    return {'format': format, 'trackCount': trackCount, 'ppq': ppq};
   }
 
   /// 解析单个轨道
@@ -117,7 +113,8 @@ class MidiParser implements SheetParser {
       return null;
     }
 
-    final length = (bytes[offset + 4] << 24) |
+    final length =
+        (bytes[offset + 4] << 24) |
         (bytes[offset + 5] << 16) |
         (bytes[offset + 6] << 8) |
         bytes[offset + 7];
@@ -158,13 +155,15 @@ class MidiParser implements SheetParser {
 
         final isNoteOn = eventType == 0x90 && velocity > 0;
 
-        events.add(_MidiEvent(
-          type: isNoteOn ? _MidiEventType.noteOn : _MidiEventType.noteOff,
-          time: currentTime,
-          pitch: pitch,
-          velocity: velocity,
-          channel: channel,
-        ));
+        events.add(
+          _MidiEvent(
+            type: isNoteOn ? _MidiEventType.noteOn : _MidiEventType.noteOff,
+            time: currentTime,
+            pitch: pitch,
+            velocity: velocity,
+            channel: channel,
+          ),
+        );
       } else if (eventType == 0xB0) {
         if (pos + 2 > bytes.length) break;
         final controller = bytes[pos];
@@ -172,12 +171,14 @@ class MidiParser implements SheetParser {
         pos += 2;
 
         if (controller == 64) {
-          events.add(_MidiEvent(
-            type: _MidiEventType.pedal,
-            time: currentTime,
-            value: value,
-            channel: channel,
-          ));
+          events.add(
+            _MidiEvent(
+              type: _MidiEventType.pedal,
+              time: currentTime,
+              value: value,
+              channel: channel,
+            ),
+          );
         }
       } else if (status == 0xFF) {
         if (pos >= bytes.length) break;
@@ -193,35 +194,41 @@ class MidiParser implements SheetParser {
                 (bytes[pos] << 16) | (bytes[pos + 1] << 8) | bytes[pos + 2];
             final bpm = (60000000 / microsecondsPerQuarter).round();
 
-            events.add(_MidiEvent(
-              type: _MidiEventType.tempo,
-              time: currentTime,
-              value: bpm,
-            ));
+            events.add(
+              _MidiEvent(
+                type: _MidiEventType.tempo,
+                time: currentTime,
+                value: bpm,
+              ),
+            );
           }
         } else if (metaType == 0x58 && metaLength == 4) {
           if (pos + 4 <= bytes.length) {
             final numerator = bytes[pos];
             final denominator = 1 << bytes[pos + 1];
 
-            events.add(_MidiEvent(
-              type: _MidiEventType.timeSignature,
-              time: currentTime,
-              value: numerator,
-              value2: denominator,
-            ));
+            events.add(
+              _MidiEvent(
+                type: _MidiEventType.timeSignature,
+                time: currentTime,
+                value: numerator,
+                value2: denominator,
+              ),
+            );
           }
         } else if (metaType == 0x59 && metaLength == 2) {
           if (pos + 2 <= bytes.length) {
             final sharpsFlats = bytes[pos];
             final major = bytes[pos + 1] == 0;
 
-            events.add(_MidiEvent(
-              type: _MidiEventType.keySignature,
-              time: currentTime,
-              value: sharpsFlats,
-              value2: major ? 1 : 0,
-            ));
+            events.add(
+              _MidiEvent(
+                type: _MidiEventType.keySignature,
+                time: currentTime,
+                value: sharpsFlats,
+                value2: major ? 1 : 0,
+              ),
+            );
           }
         }
 
@@ -232,10 +239,7 @@ class MidiParser implements SheetParser {
       }
     }
 
-    return {
-      'track': _MidiTrack(events: events),
-      'offset': endPos,
-    };
+    return {'track': _MidiTrack(events: events), 'offset': endPos};
   }
 
   /// 读取变长数值
@@ -271,11 +275,7 @@ class MidiParser implements SheetParser {
   }
 
   /// 构建 Score
-  Score _buildScore(
-    List<_MidiTrack> tracks,
-    int ppq,
-    List<String> warnings,
-  ) {
+  Score _buildScore(List<_MidiTrack> tracks, int ppq, List<String> warnings) {
     var tempo = 120;
     var beatsPerMeasure = 4;
     var beatUnit = 4;
@@ -328,9 +328,11 @@ class MidiParser implements SheetParser {
 
     for (final midiTrack in tracks) {
       final noteEvents = midiTrack.events
-          .where((e) =>
-              e.type == _MidiEventType.noteOn ||
-              e.type == _MidiEventType.noteOff)
+          .where(
+            (e) =>
+                e.type == _MidiEventType.noteOn ||
+                e.type == _MidiEventType.noteOff,
+          )
           .toList();
 
       if (noteEvents.isEmpty) continue;
@@ -347,7 +349,8 @@ class MidiParser implements SheetParser {
 
       if (measures.isEmpty) continue;
 
-      final avgPitch = noteEvents
+      final avgPitch =
+          noteEvents
               .where((e) => e.type == _MidiEventType.noteOn)
               .map((e) => e.pitch!)
               .reduce((a, b) => a + b) /
@@ -356,14 +359,16 @@ class MidiParser implements SheetParser {
       final clef = avgPitch >= 60 ? Clef.treble : Clef.bass;
       final hand = avgPitch >= 60 ? Hand.right : Hand.left;
 
-      scoreTracks.add(Track(
-        id: 'track_$trackIndex',
-        name: hand == Hand.right ? '右手' : '左手',
-        clef: clef,
-        hand: hand,
-        measures: measures,
-        instrument: Instrument.piano,
-      ));
+      scoreTracks.add(
+        Track(
+          id: 'track_$trackIndex',
+          name: hand == Hand.right ? '右手' : '左手',
+          clef: clef,
+          hand: hand,
+          measures: measures,
+          instrument: Instrument.piano,
+        ),
+      );
     }
 
     return Score(
@@ -400,12 +405,14 @@ class MidiParser implements SheetParser {
         final startEvent = activeNotes.remove(event.pitch!);
         if (startEvent != null) {
           final duration = event.time - startEvent.time;
-          notes.add(_NoteWithTiming(
-            pitch: event.pitch!,
-            startTime: startEvent.time,
-            duration: duration,
-            velocity: startEvent.velocity!,
-          ));
+          notes.add(
+            _NoteWithTiming(
+              pitch: event.pitch!,
+              startTime: startEvent.time,
+              duration: duration,
+              velocity: startEvent.velocity!,
+            ),
+          );
         }
       }
     }
@@ -418,14 +425,17 @@ class MidiParser implements SheetParser {
 
     var currentMeasureStart = 0;
 
-    while (currentMeasureStart < (notes.lastOrNull?.startTime ?? 0) +
-        (notes.lastOrNull?.duration ?? 0)) {
+    while (currentMeasureStart <
+        (notes.lastOrNull?.startTime ?? 0) +
+            (notes.lastOrNull?.duration ?? 0)) {
       measureNumber++;
       final measureEnd = currentMeasureStart + ticksPerMeasure;
 
       final measureNotes = notes
-          .where((n) =>
-              n.startTime >= currentMeasureStart && n.startTime < measureEnd)
+          .where(
+            (n) =>
+                n.startTime >= currentMeasureStart && n.startTime < measureEnd,
+          )
           .toList();
 
       final beats = _quantizeToBeats(
@@ -436,10 +446,7 @@ class MidiParser implements SheetParser {
       );
 
       if (beats.isNotEmpty) {
-        measures.add(Measure(
-          number: measureNumber,
-          beats: beats,
-        ));
+        measures.add(Measure(number: measureNumber, beats: beats));
       }
 
       currentMeasureStart = measureEnd;
@@ -461,9 +468,11 @@ class MidiParser implements SheetParser {
 
     for (final note in notes) {
       final relativeTime = note.startTime - measureStart;
-      
+
       // 量化到最近的1/4拍
-      final quantizedTime = ((relativeTime + quantizationGrid ~/ 2) ~/ quantizationGrid) * quantizationGrid;
+      final quantizedTime =
+          ((relativeTime + quantizationGrid ~/ 2) ~/ quantizationGrid) *
+          quantizationGrid;
       final beatIndex = (quantizedTime / ppq).floor();
 
       if (beatIndex < 0 || beatIndex >= beatsPerMeasure) continue;
@@ -471,11 +480,7 @@ class MidiParser implements SheetParser {
       // 计算时值（基于实际持续时间）
       final duration = _ticksToDuration(note.duration, ppq);
 
-      final scoreNote = Note(
-        pitch: note.pitch,
-        duration: duration,
-        dots: 0,
-      );
+      final scoreNote = Note(pitch: note.pitch, duration: duration, dots: 0);
 
       beatMap.putIfAbsent(beatIndex, () => []).add(scoreNote);
     }
@@ -525,11 +530,7 @@ class MidiParser implements SheetParser {
       };
       return majorKeys[sharpsFlats] ?? MusicKey.C;
     } else {
-      const minorKeys = {
-        -1: MusicKey.Dm,
-        0: MusicKey.Am,
-        1: MusicKey.Em,
-      };
+      const minorKeys = {-1: MusicKey.Dm, 0: MusicKey.Am, 1: MusicKey.Em};
       return minorKeys[sharpsFlats] ?? MusicKey.Am;
     }
   }

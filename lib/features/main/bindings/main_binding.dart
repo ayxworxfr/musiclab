@@ -13,22 +13,21 @@ class MainBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<MainController>(() => MainController());
-    
+
     // 认证服务（如果尚未注册）
     if (!Get.isRegistered<AuthService>()) {
       Get.lazyPut<AuthService>(() => AuthService());
     }
-    
+
     // 课程模块（全局可用）
     Get.lazyPut<CourseRepository>(() => CourseRepositoryImpl());
     Get.lazyPut<CourseController>(() => CourseController());
-    
+
     // 个人中心模块
     Get.lazyPut<ProfileRepository>(() => ProfileRepositoryImpl());
     Get.lazyPut<ProfileController>(() => ProfileController());
-    
+
     // 首页模块
     Get.lazyPut<HomeController>(() => HomeController());
   }
 }
-

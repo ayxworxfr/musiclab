@@ -111,9 +111,8 @@ class JianpuEditorWidget extends StatelessWidget {
           Obx(() {
             final sheet = controller.currentSheet.value;
             final track = controller.currentTrack;
-            final canDelete = sheet != null &&
-                track != null &&
-                track.measures.length > 1;
+            final canDelete =
+                sheet != null && track != null && track.measures.length > 1;
             return TextButton.icon(
               onPressed: canDelete ? controller.deleteCurrentMeasure : null,
               icon: const Icon(Icons.remove, size: 18),
@@ -131,7 +130,10 @@ class JianpuEditorWidget extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     // 使用 JianpuView 转换 Score 为简谱视图
-    final jianpuView = JianpuView(score, trackIndex: controller.selectedTrackIndex.value);
+    final jianpuView = JianpuView(
+      score,
+      trackIndex: controller.selectedTrackIndex.value,
+    );
     final measures = jianpuView.getMeasures();
 
     return Column(
@@ -889,11 +891,20 @@ class JianpuEditorWidget extends StatelessWidget {
     if (score == null) return 60; // 默认 C4
 
     final key = score.metadata.key;
-    
+
     // 简谱度数到半音的映射（C调）
-    const degreeToSemitone = [0, 0, 2, 4, 5, 7, 9, 11]; // 0, 1, 2, 3, 4, 5, 6, 7
+    const degreeToSemitone = [
+      0,
+      0,
+      2,
+      4,
+      5,
+      7,
+      9,
+      11,
+    ]; // 0, 1, 2, 3, 4, 5, 6, 7
     final semitone = degreeToSemitone[degree.clamp(0, 7)];
-    
+
     // 调号主音的 MIDI 值（基准为第4八度）
     final keyTonicMidiMap = {
       MusicKey.C: 60, // C4
@@ -912,13 +923,13 @@ class JianpuEditorWidget extends StatelessWidget {
       MusicKey.Em: 64, // E4 (小调)
       MusicKey.Dm: 62, // D4 (小调)
     };
-    
+
     final tonicMidi = keyTonicMidiMap[key] ?? 60;
-    
+
     // 计算 MIDI pitch
     // 基础音高 = 主音 + 度数偏移 + 八度偏移
     final pitch = tonicMidi + semitone + octave * 12;
-    
+
     // 限制在有效范围内 (21-108)
     return pitch.clamp(21, 108);
   }

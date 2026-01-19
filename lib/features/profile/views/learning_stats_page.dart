@@ -48,7 +48,11 @@ class LearningStatsPage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildOverviewCard(BuildContext context, LearningStats stats, bool isDark) {
+  Widget _buildOverviewCard(
+    BuildContext context,
+    LearningStats stats,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -71,7 +75,11 @@ class LearningStatsPage extends GetView<ProfileController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.local_fire_department, color: Colors.orange, size: 32),
+              const Icon(
+                Icons.local_fire_department,
+                color: Colors.orange,
+                size: 32,
+              ),
               const SizedBox(width: 8),
               Text(
                 '${stats.streakDays}',
@@ -84,10 +92,7 @@ class LearningStatsPage extends GetView<ProfileController> {
               const SizedBox(width: 8),
               const Text(
                 '天',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white70,
-                ),
+                style: TextStyle(fontSize: 20, color: Colors.white70),
               ),
             ],
           ),
@@ -104,8 +109,14 @@ class LearningStatsPage extends GetView<ProfileController> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildMiniStat('总天数', '${stats.totalDays}天'),
-              _buildMiniStat('总时长', _formatDuration(stats.totalDurationSeconds)),
-              _buildMiniStat('正确率', '${(stats.totalAccuracy * 100).toStringAsFixed(0)}%'),
+              _buildMiniStat(
+                '总时长',
+                _formatDuration(stats.totalDurationSeconds),
+              ),
+              _buildMiniStat(
+                '正确率',
+                '${(stats.totalAccuracy * 100).toStringAsFixed(0)}%',
+              ),
             ],
           ),
         ],
@@ -136,7 +147,11 @@ class LearningStatsPage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildWeeklyChart(BuildContext context, LearningStats stats, bool isDark) {
+  Widget _buildWeeklyChart(
+    BuildContext context,
+    LearningStats stats,
+    bool isDark,
+  ) {
     final weekDays = ['一', '二', '三', '四', '五', '六', '日'];
     final today = DateTime.now().weekday - 1; // 0-6
 
@@ -189,7 +204,10 @@ class LearningStatsPage extends GetView<ProfileController> {
                     ? stats.weeklyRecords[index]
                     : DailyLearningRecord(date: '');
                 final height = maxDuration > 0
-                    ? (record.durationMinutes / maxDuration * 100).clamp(4.0, 100.0)
+                    ? (record.durationMinutes / maxDuration * 100).clamp(
+                        4.0,
+                        100.0,
+                      )
                     : 4.0;
                 final isToday = index == 6; // 最后一天是今天
 
@@ -201,7 +219,9 @@ class LearningStatsPage extends GetView<ProfileController> {
                         '${record.durationMinutes}分',
                         style: TextStyle(
                           fontSize: 10,
-                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondary,
                         ),
                       ),
                     const SizedBox(height: 4),
@@ -213,8 +233,8 @@ class LearningStatsPage extends GetView<ProfileController> {
                         color: isToday
                             ? AppColors.primary
                             : record.durationMinutes > 0
-                                ? AppColors.primary.withValues(alpha: 0.5)
-                                : Colors.grey.shade200,
+                            ? AppColors.primary.withValues(alpha: 0.5)
+                            : Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
@@ -223,10 +243,14 @@ class LearningStatsPage extends GetView<ProfileController> {
                       weekDays[(DateTime.now().weekday - 7 + index) % 7],
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isToday
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                         color: isToday
                             ? AppColors.primary
-                            : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary),
+                            : (isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondary),
                       ),
                     ),
                   ],
@@ -239,7 +263,11 @@ class LearningStatsPage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildDetailedStats(BuildContext context, LearningStats stats, bool isDark) {
+  Widget _buildDetailedStats(
+    BuildContext context,
+    LearningStats stats,
+    bool isDark,
+  ) {
     final items = [
       {
         'icon': Icons.school,
@@ -346,14 +374,18 @@ class LearningStatsPage extends GetView<ProfileController> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).textTheme.bodyLarge?.color,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color,
                             ),
                           ),
                           Text(
                             item['label'] as String,
                             style: TextStyle(
                               fontSize: 11,
-                              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -381,4 +413,3 @@ class LearningStatsPage extends GetView<ProfileController> {
     }
   }
 }
-

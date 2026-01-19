@@ -156,12 +156,17 @@ class _SheetImportPageState extends State<SheetImportPage>
                           children: [
                             Text(
                               _currentFileName!,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '格式: ${_detectFormatFromFileName(_currentFileName!)?.displayName ?? "未知"}',
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
@@ -214,7 +219,12 @@ class _SheetImportPageState extends State<SheetImportPage>
                 const SizedBox(height: 12),
                 _buildFormatItem(Icons.code, 'JSON', '.json', '通用数据交换格式'),
                 const SizedBox(height: 8),
-                _buildFormatItem(Icons.music_note, 'MusicXML', '.xml, .musicxml', '乐谱标准格式'),
+                _buildFormatItem(
+                  Icons.music_note,
+                  'MusicXML',
+                  '.xml, .musicxml',
+                  '乐谱标准格式',
+                ),
                 const SizedBox(height: 8),
                 _buildFormatItem(Icons.piano, 'MIDI', '.mid, .midi', '音乐演奏数据'),
               ],
@@ -225,7 +235,12 @@ class _SheetImportPageState extends State<SheetImportPage>
     );
   }
 
-  Widget _buildFormatItem(IconData icon, String name, String extensions, String description) {
+  Widget _buildFormatItem(
+    IconData icon,
+    String name,
+    String extensions,
+    String description,
+  ) {
     return Row(
       children: [
         Icon(icon, size: 20, color: Colors.grey[600]),
@@ -561,7 +576,9 @@ class _SheetImportPageState extends State<SheetImportPage>
       // 先尝试读取为二进制（用于MIDI）
       final bytesResult = await FileUtils.pickAndReadBytesFile(accept: accept);
 
-      if (bytesResult != null && bytesResult.bytes != null && bytesResult.name != null) {
+      if (bytesResult != null &&
+          bytesResult.bytes != null &&
+          bytesResult.name != null) {
         final fileName = bytesResult.name!;
         final format = _detectFormatFromFileName(fileName);
 

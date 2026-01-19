@@ -104,9 +104,7 @@ class AppError extends StatelessWidget {
   }
 
   /// 网络错误
-  factory AppError.network({
-    VoidCallback? onRetry,
-  }) {
+  factory AppError.network({VoidCallback? onRetry}) {
     return AppError(
       icon: Icons.wifi_off_outlined,
       title: 'widgets.error.network.title'.tr,
@@ -116,10 +114,7 @@ class AppError extends StatelessWidget {
   }
 
   /// 服务器错误
-  factory AppError.server({
-    String? message,
-    VoidCallback? onRetry,
-  }) {
+  factory AppError.server({String? message, VoidCallback? onRetry}) {
     return AppError(
       icon: Icons.cloud_off_outlined,
       title: 'widgets.error.server.title'.tr,
@@ -129,10 +124,7 @@ class AppError extends StatelessWidget {
   }
 
   /// 加载失败
-  factory AppError.loadFailed({
-    String? message,
-    VoidCallback? onRetry,
-  }) {
+  factory AppError.loadFailed({String? message, VoidCallback? onRetry}) {
     return AppError(
       icon: Icons.error_outline,
       title: 'widgets.error.load_failed.title'.tr,
@@ -142,9 +134,7 @@ class AppError extends StatelessWidget {
   }
 
   /// 未授权
-  factory AppError.unauthorized({
-    VoidCallback? onLogin,
-  }) {
+  factory AppError.unauthorized({VoidCallback? onLogin}) {
     return AppError(
       icon: Icons.lock_outline,
       title: 'widgets.error.unauthorized.title'.tr,
@@ -155,9 +145,7 @@ class AppError extends StatelessWidget {
   }
 
   /// 无权限
-  factory AppError.forbidden({
-    String? message,
-  }) {
+  factory AppError.forbidden({String? message}) {
     return AppError(
       icon: Icons.block,
       title: 'widgets.error.forbidden.title'.tr,
@@ -166,9 +154,7 @@ class AppError extends StatelessWidget {
   }
 
   /// 页面不存在
-  factory AppError.notFound({
-    VoidCallback? onGoBack,
-  }) {
+  factory AppError.notFound({VoidCallback? onGoBack}) {
     return AppError(
       icon: Icons.search_off,
       title: 'widgets.error.not_found.title'.tr,
@@ -179,9 +165,7 @@ class AppError extends StatelessWidget {
   }
 
   /// 超时错误
-  factory AppError.timeout({
-    VoidCallback? onRetry,
-  }) {
+  factory AppError.timeout({VoidCallback? onRetry}) {
     return AppError(
       icon: Icons.timer_off_outlined,
       title: 'widgets.error.timeout.title'.tr,

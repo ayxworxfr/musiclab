@@ -90,10 +90,7 @@ class AppEmpty extends StatelessWidget {
             // 操作按钮
             if (actionText != null && onAction != null) ...[
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: onAction,
-                child: Text(actionText!),
-              ),
+              ElevatedButton(onPressed: onAction, child: Text(actionText!)),
             ],
           ],
         ),
@@ -117,17 +114,17 @@ class AppEmpty extends StatelessWidget {
   }
 
   /// 无搜索结果
-  factory AppEmpty.noSearchResult({
-    String? keyword,
-    VoidCallback? onClear,
-  }) {
+  factory AppEmpty.noSearchResult({String? keyword, VoidCallback? onClear}) {
     String? description;
     if (keyword != null) {
-      description = 'widgets.empty.no_search.message'.tr.replaceAll('@keyword', keyword);
+      description = 'widgets.empty.no_search.message'.tr.replaceAll(
+        '@keyword',
+        keyword,
+      );
     } else {
       description = 'widgets.empty.no_search.message_default'.tr;
     }
-    
+
     return AppEmpty(
       icon: Icons.search_off_outlined,
       title: 'widgets.empty.no_search.title'.tr,
@@ -138,9 +135,7 @@ class AppEmpty extends StatelessWidget {
   }
 
   /// 无网络
-  factory AppEmpty.noNetwork({
-    VoidCallback? onRetry,
-  }) {
+  factory AppEmpty.noNetwork({VoidCallback? onRetry}) {
     return AppEmpty(
       icon: Icons.wifi_off_outlined,
       title: 'widgets.empty.no_network.title'.tr,
@@ -169,14 +164,14 @@ class AppEmpty extends StatelessWidget {
   }
 
   /// 无收藏
-  factory AppEmpty.noFavorite({
-    VoidCallback? onExplore,
-  }) {
+  factory AppEmpty.noFavorite({VoidCallback? onExplore}) {
     return AppEmpty(
       icon: Icons.favorite_border,
       title: 'widgets.empty.no_favorite.title'.tr,
       description: 'widgets.empty.no_favorite.message'.tr,
-      actionText: onExplore != null ? 'widgets.empty.no_favorite.action'.tr : null,
+      actionText: onExplore != null
+          ? 'widgets.empty.no_favorite.action'.tr
+          : null,
       onAction: onExplore,
     );
   }

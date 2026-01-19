@@ -20,20 +20,42 @@ abstract class MusicConstants {
 
   /// 音名列表
   static const List<String> noteNames = [
-    'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'
+    'C',
+    'C#',
+    'D',
+    'D#',
+    'E',
+    'F',
+    'F#',
+    'G',
+    'G#',
+    'A',
+    'A#',
+    'B',
   ];
 
   /// 简谱数字
   static const List<String> jianpuNumbers = [
-    '1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'
+    '1',
+    '#1',
+    '2',
+    '#2',
+    '3',
+    '4',
+    '#4',
+    '5',
+    '#5',
+    '6',
+    '#6',
+    '7',
   ];
 
   /// 常用拍号
   static const List<Map<String, int>> timeSignatures = [
-    {'beats': 2, 'unit': 4},  // 2/4
-    {'beats': 3, 'unit': 4},  // 3/4
-    {'beats': 4, 'unit': 4},  // 4/4
-    {'beats': 6, 'unit': 8},  // 6/8
+    {'beats': 2, 'unit': 4}, // 2/4
+    {'beats': 3, 'unit': 4}, // 3/4
+    {'beats': 4, 'unit': 4}, // 4/4
+    {'beats': 6, 'unit': 8}, // 6/8
   ];
 
   /// 难度等级
@@ -45,4 +67,3 @@ abstract class MusicConstants {
     5: '高级',
   };
 }
-

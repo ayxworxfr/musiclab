@@ -81,11 +81,7 @@ class _NotFoundPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.search_off,
-              size: 80,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.search_off, size: 80, color: Colors.grey),
             const SizedBox(height: 16),
             const Text(
               '404',
@@ -98,10 +94,7 @@ class _NotFoundPage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'common.page_not_found'.tr,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(

@@ -85,11 +85,7 @@ class _PracticeHomePageState extends State<PracticeHomePage>
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('练习'),
-        centerTitle: true,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('练习'), centerTitle: true, elevation: 0),
       body: RefreshIndicator(
         onRefresh: _loadTodayStats,
         child: SingleChildScrollView(
@@ -114,7 +110,9 @@ class _PracticeHomePageState extends State<PracticeHomePage>
               const SizedBox(height: 16),
 
               // 练习卡片
-              ...PracticeType.values.map((type) => _buildPracticeCard(context, type, isDark)),
+              ...PracticeType.values.map(
+                (type) => _buildPracticeCard(context, type, isDark),
+              ),
             ],
           ),
         ),
@@ -166,8 +164,20 @@ class _PracticeHomePageState extends State<PracticeHomePage>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem(context, '练习题数', '$questionCount', Icons.quiz, isDark),
-              _buildStatItem(context, '正确率', accuracy, Icons.check_circle, isDark),
+              _buildStatItem(
+                context,
+                '练习题数',
+                '$questionCount',
+                Icons.quiz,
+                isDark,
+              ),
+              _buildStatItem(
+                context,
+                '正确率',
+                accuracy,
+                Icons.check_circle,
+                isDark,
+              ),
               _buildStatItem(context, '练习时长', duration, Icons.timer, isDark),
             ],
           ),
@@ -176,7 +186,13 @@ class _PracticeHomePageState extends State<PracticeHomePage>
     );
   }
 
-  Widget _buildStatItem(BuildContext context, String label, String value, IconData icon, bool isDark) {
+  Widget _buildStatItem(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    bool isDark,
+  ) {
     return Column(
       children: [
         Container(
@@ -202,14 +218,20 @@ class _PracticeHomePageState extends State<PracticeHomePage>
           label,
           style: TextStyle(
             fontSize: 12,
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondary,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPracticeCard(BuildContext context, PracticeType type, bool isDark) {
+  Widget _buildPracticeCard(
+    BuildContext context,
+    PracticeType type,
+    bool isDark,
+  ) {
     final config = _getPracticeConfig(type);
     final isAvailable = config['available'] as bool;
 
@@ -272,7 +294,10 @@ class _PracticeHomePageState extends State<PracticeHomePage>
                           if (!isAvailable) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.grey.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
@@ -294,7 +319,9 @@ class _PracticeHomePageState extends State<PracticeHomePage>
                         style: TextStyle(
                           fontSize: 13,
                           color: isAvailable
-                              ? (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary)
+                              ? (isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondary)
                               : Colors.grey.shade400,
                         ),
                       ),
@@ -305,7 +332,9 @@ class _PracticeHomePageState extends State<PracticeHomePage>
                 Icon(
                   Icons.chevron_right,
                   color: isAvailable
-                      ? (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary)
+                      ? (isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondary)
                       : Colors.grey.shade300,
                 ),
               ],

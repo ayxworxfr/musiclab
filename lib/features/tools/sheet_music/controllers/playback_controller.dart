@@ -81,14 +81,14 @@ class PlaybackController extends GetxController {
 
   /// 等待计数
   final RxInt countIn = 0.obs;
-  
+
   /// 节拍器音量 (0-100)
   final RxInt metronomeVolume = 80.obs;
 
   Timer? _playTimer;
   int _scheduledNoteIndex = 0;
   final List<_ScheduledNote> _scheduledNotes = [];
-  
+
   /// 上一次节拍的拍号（用于检测新拍）
   int _lastBeatNumber = -1;
 
@@ -142,28 +142,30 @@ class PlaybackController extends GetxController {
     // 获取原始速度和当前速度
     final originalTempo = _score!.metadata.tempo;
     final currentTempo = baseTempo.value;
-    
+
     // 计算速度比例（用于调整时间）
     final tempoRatio = originalTempo / currentTempo;
-    
+
     // 使用当前速度计算每拍的秒数
     final beatsPerSecond = currentTempo / 60.0;
 
     for (var i = 0; i < _layout!.noteLayouts.length; i++) {
       final noteLayout = _layout!.noteLayouts[i];
-      
+
       // 根据速度比例调整开始时间
       // 如果速度从100变成180，tempoRatio = 100/180 = 0.556
       // 所以原来的时间需要乘以这个比例（时间变短）
       final adjustedStartTime = noteLayout.startTime * tempoRatio;
-      
-      _scheduledNotes.add(_ScheduledNote(
-        layoutIndex: i,
-        startTime: adjustedStartTime,
-        duration: noteLayout.note.actualBeats / beatsPerSecond,
-        midi: noteLayout.note.pitch,
-        hand: noteLayout.hand,
-      ));
+
+      _scheduledNotes.add(
+        _ScheduledNote(
+          layoutIndex: i,
+          startTime: adjustedStartTime,
+          duration: noteLayout.note.actualBeats / beatsPerSecond,
+          midi: noteLayout.note.pitch,
+          hand: noteLayout.hand,
+        ),
+      );
     }
 
     // 按时间排序
@@ -173,7 +175,7 @@ class PlaybackController extends GetxController {
   /// 重新构建播放时间表（公共方法，用于速度变化时）
   void rebuildSchedule() {
     if (_score == null) return;
-    
+
     // 如果正在播放，需要同步调整 currentTime 以保持相对进度不变
     final wasPlaying = isPlaying.value;
     double? savedProgress;
@@ -184,20 +186,22 @@ class PlaybackController extends GetxController {
         savedProgress = currentTime.value / oldTotalDuration;
       }
     }
-    
+
     // 重新构建时间表
     _buildSchedule();
-    
+
     // 如果正在播放，根据新的总时长调整 currentTime
     if (wasPlaying && savedProgress != null) {
       final newTotalDuration = getTotalDuration();
       if (newTotalDuration > 0) {
         currentTime.value = savedProgress * newTotalDuration;
         // 更新播放索引
-        _scheduledNoteIndex = _findNoteIndexAtTime(currentTime.value * speedMultiplier.value);
+        _scheduledNoteIndex = _findNoteIndexAtTime(
+          currentTime.value * speedMultiplier.value,
+        );
       }
     }
-    
+
     update();
   }
 
@@ -243,7 +247,9 @@ class PlaybackController extends GetxController {
     }
 
     isPlaying.value = true;
-    _scheduledNoteIndex = _findNoteIndexAtTime(currentTime.value * speedMultiplier.value);
+    _scheduledNoteIndex = _findNoteIndexAtTime(
+      currentTime.value * speedMultiplier.value,
+    );
 
     const tickInterval = Duration(milliseconds: 16); // ~60fps
     _playTimer = Timer.periodic(tickInterval, _onTick);
@@ -285,7 +291,9 @@ class PlaybackController extends GetxController {
 
     final totalDuration = getTotalDuration();
     currentTime.value = time.clamp(0, totalDuration);
-    _scheduledNoteIndex = _findNoteIndexAtTime(currentTime.value * speedMultiplier.value);
+    _scheduledNoteIndex = _findNoteIndexAtTime(
+      currentTime.value * speedMultiplier.value,
+    );
 
     // 更新当前小节
     if (_score != null && _layout != null) {
@@ -375,7 +383,9 @@ class PlaybackController extends GetxController {
         final loopStartTime =
             loopStartMeasure.value * totalDuration / _score!.measureCount;
         currentTime.value = loopStartTime;
-        _scheduledNoteIndex = _findNoteIndexAtTime(loopStartTime * speedMultiplier.value);
+        _scheduledNoteIndex = _findNoteIndexAtTime(
+          loopStartTime * speedMultiplier.value,
+        );
         // 清除所有高亮，避免最后一个音符一直高亮
         highlightedNoteIndices.clear();
         highlightedPianoKeys.clear();
@@ -414,7 +424,9 @@ class PlaybackController extends GetxController {
     // 清除过期的高亮（不在这里清除钢琴键，最后统一处理）
     final toRemove = <int>[];
     for (final idx in highlightedNoteIndices) {
-      final note = _scheduledNotes.firstWhereOrNull((n) => n.layoutIndex == idx);
+      final note = _scheduledNotes.firstWhereOrNull(
+        (n) => n.layoutIndex == idx,
+      );
       if (note == null || currentRealTime > note.endTime) {
         toRemove.add(idx);
       }
@@ -431,7 +443,8 @@ class PlaybackController extends GetxController {
         // 20ms 提前量
         if (note.midi > 0) {
           // 检查是否应该播放这个音符（根据播放模式）
-          final shouldPlay = playMode.value == PlayMode.both ||
+          final shouldPlay =
+              playMode.value == PlayMode.both ||
               playMode.value.handFilter == note.hand;
 
           if (shouldPlay) {
@@ -455,16 +468,19 @@ class PlaybackController extends GetxController {
   /// 刷新钢琴键高亮（基于当前高亮的音符索引）
   void _refreshPianoKeyHighlights(double currentRealTime) {
     highlightedPianoKeys.clear();
-    
+
     // 遍历当前高亮的音符索引
     for (final idx in highlightedNoteIndices) {
-      final note = _scheduledNotes.firstWhereOrNull((n) => n.layoutIndex == idx);
+      final note = _scheduledNotes.firstWhereOrNull(
+        (n) => n.layoutIndex == idx,
+      );
       if (note == null || note.midi <= 0) continue;
-      
+
       // 检查是否应该高亮钢琴键（根据播放模式）
-      final shouldHighlight = playMode.value == PlayMode.both ||
+      final shouldHighlight =
+          playMode.value == PlayMode.both ||
           playMode.value.handFilter == note.hand;
-      
+
       if (shouldHighlight) {
         // 添加到高亮集合（如果已存在，优先显示右手颜色）
         if (highlightedPianoKeys.containsKey(note.midi)) {
@@ -487,26 +503,26 @@ class PlaybackController extends GetxController {
     final beatDuration = 60.0 / actualTempo;
     final totalBeats = currentTime.value / beatDuration;
     final currentBeatNumber = totalBeats.floor();
-    
+
     // 检测是否进入新的一拍
     if (currentBeatNumber != _lastBeatNumber && currentBeatNumber >= 0) {
       _lastBeatNumber = currentBeatNumber;
-      
+
       // 判断是否为强拍（小节第一拍）
       final beatInMeasure = currentBeatNumber % beatsPerMeasure;
       final isStrong = beatInMeasure == 0;
-      
+
       _audioService.playMetronomeClick(isStrong: isStrong);
     }
   }
-  
+
   /// 切换节拍器
   void toggleMetronome() {
     metronomeEnabled.value = !metronomeEnabled.value;
     _lastBeatNumber = -1; // 重置拍号
     update();
   }
-  
+
   /// 设置节拍器音量
   void setMetronomeVolume(int volume) {
     metronomeVolume.value = volume.clamp(0, 100);

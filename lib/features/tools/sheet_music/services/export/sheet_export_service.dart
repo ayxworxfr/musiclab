@@ -208,7 +208,9 @@ class SheetExportService {
   String _exportToMusicXml(Score score) {
     final buffer = StringBuffer();
     buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
-    buffer.writeln('<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">');
+    buffer.writeln(
+      '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">',
+    );
     buffer.writeln('<score-partwise version="3.1">');
 
     // 作品信息
@@ -218,11 +220,15 @@ class SheetExportService {
 
     if (score.composer != null) {
       buffer.writeln('  <identification>');
-      buffer.writeln('    <creator type="composer">${_escapeXml(score.composer!)}</creator>');
+      buffer.writeln(
+        '    <creator type="composer">${_escapeXml(score.composer!)}</creator>',
+      );
       buffer.writeln('    <encoding>');
       buffer.writeln('      <software>Music Lab</software>');
-      buffer.writeln('      <encoding-date>${DateTime.now().toIso8601String().split('T')[0]}</encoding-date>');
-    buffer.writeln('    </encoding>');
+      buffer.writeln(
+        '      <encoding-date>${DateTime.now().toIso8601String().split('T')[0]}</encoding-date>',
+      );
+      buffer.writeln('    </encoding>');
       buffer.writeln('  </identification>');
     }
 
@@ -241,19 +247,29 @@ class SheetExportService {
       final track = score.tracks[trackIndex];
       buffer.writeln('  <part id="P${trackIndex + 1}">');
 
-      for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
+      for (
+        var measureIndex = 0;
+        measureIndex < track.measures.length;
+        measureIndex++
+      ) {
         final measure = track.measures[measureIndex];
         buffer.writeln('    <measure number="${measureIndex + 1}">');
 
         // 第一小节添加属性
         if (measureIndex == 0) {
           buffer.writeln('      <attributes>');
-          buffer.writeln('        <divisions>4</divisions>'); // 4个divisions = 1拍
+          buffer.writeln(
+            '        <divisions>4</divisions>',
+          ); // 4个divisions = 1拍
           buffer.writeln('        <key>');
-          buffer.writeln('          <fifths>${_getKeyFifths(score.metadata.key)}</fifths>');
+          buffer.writeln(
+            '          <fifths>${_getKeyFifths(score.metadata.key)}</fifths>',
+          );
           buffer.writeln('        </key>');
           buffer.writeln('        <time>');
-          buffer.writeln('          <beats>${score.metadata.beatsPerMeasure}</beats>');
+          buffer.writeln(
+            '          <beats>${score.metadata.beatsPerMeasure}</beats>',
+          );
           buffer.writeln('          <beat-type>4</beat-type>');
           buffer.writeln('        </time>');
           buffer.writeln('        <clef>');
@@ -267,15 +283,23 @@ class SheetExportService {
           buffer.writeln('        <direction-type>');
           buffer.writeln('          <metronome>');
           buffer.writeln('            <beat-unit>quarter</beat-unit>');
-          buffer.writeln('            <per-minute>${score.metadata.tempo}</per-minute>');
+          buffer.writeln(
+            '            <per-minute>${score.metadata.tempo}</per-minute>',
+          );
           buffer.writeln('          </metronome>');
           buffer.writeln('        </direction-type>');
           buffer.writeln('      </direction>');
         }
 
         // 小节中的音符
-        for (var beatIndex = 0; beatIndex < score.metadata.beatsPerMeasure; beatIndex++) {
-          final beatsAtIndex = measure.beats.where((b) => b.index == beatIndex).toList();
+        for (
+          var beatIndex = 0;
+          beatIndex < score.metadata.beatsPerMeasure;
+          beatIndex++
+        ) {
+          final beatsAtIndex = measure.beats
+              .where((b) => b.index == beatIndex)
+              .toList();
 
           if (beatsAtIndex.isEmpty) {
             // 休止符
@@ -306,17 +330,25 @@ class SheetExportService {
                   buffer.writeln('        <rest/>');
                 } else {
                   buffer.writeln('        <pitch>');
-                  buffer.writeln('          <step>${_getPitchStep(note.pitch)}</step>');
+                  buffer.writeln(
+                    '          <step>${_getPitchStep(note.pitch)}</step>',
+                  );
                   final alter = _getPitchAlter(note.pitch, note.accidental);
                   if (alter != 0) {
                     buffer.writeln('          <alter>$alter</alter>');
                   }
-                  buffer.writeln('          <octave>${_getPitchOctave(note.pitch)}</octave>');
+                  buffer.writeln(
+                    '          <octave>${_getPitchOctave(note.pitch)}</octave>',
+                  );
                   buffer.writeln('        </pitch>');
                 }
 
-                buffer.writeln('        <duration>${_getDuration(note.duration)}</duration>');
-                buffer.writeln('        <type>${_getNoteType(note.duration)}</type>');
+                buffer.writeln(
+                  '        <duration>${_getDuration(note.duration)}</duration>',
+                );
+                buffer.writeln(
+                  '        <type>${_getNoteType(note.duration)}</type>',
+                );
 
                 if (note.dots > 0) {
                   for (var i = 0; i < note.dots; i++) {
@@ -326,7 +358,9 @@ class SheetExportService {
 
                 if (note.lyric != null && note.lyric!.isNotEmpty) {
                   buffer.writeln('        <lyric number="1">');
-                  buffer.writeln('          <text>${_escapeXml(note.lyric!)}</text>');
+                  buffer.writeln(
+                    '          <text>${_escapeXml(note.lyric!)}</text>',
+                  );
                   buffer.writeln('        </lyric>');
                 }
 
@@ -359,8 +393,21 @@ class SheetExportService {
   int _getKeyFifths(MusicKey key) {
     // 返回五度圈位置（升号为正，降号为负）
     const keyMap = {
-      'C': 0, 'G': 1, 'D': 2, 'A': 3, 'E': 4, 'B': 5, 'F#': 6, 'C#': 7,
-      'F': -1, 'Bb': -2, 'Eb': -3, 'Ab': -4, 'Db': -5, 'Gb': -6, 'Cb': -7,
+      'C': 0,
+      'G': 1,
+      'D': 2,
+      'A': 3,
+      'E': 4,
+      'B': 5,
+      'F#': 6,
+      'C#': 7,
+      'F': -1,
+      'Bb': -2,
+      'Eb': -3,
+      'Ab': -4,
+      'Db': -5,
+      'Gb': -6,
+      'Cb': -7,
     };
     return keyMap[key.name] ?? 0;
   }

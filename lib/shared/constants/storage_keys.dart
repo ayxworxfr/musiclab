@@ -125,5 +125,6 @@ abstract class StorageKeys {
   static const String practiceDefaultDifficulty = 'practice_default_difficulty';
 
   /// 练习默认题目数量
-  static const String practiceDefaultQuestionCount = 'practice_default_question_count';
+  static const String practiceDefaultQuestionCount =
+      'practice_default_question_count';
 }

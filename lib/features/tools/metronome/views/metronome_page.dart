@@ -18,11 +18,14 @@ class MetronomePage extends GetView<MetronomeController> {
         elevation: 0,
         actions: [
           // 主题切换
-          Obx(() => IconButton(
-            icon: const Icon(Icons.palette),
-            onPressed: () => _showThemeSelector(context),
-            tooltip: MetronomeController.themeNames[controller.themeIndex.value],
-          )),
+          Obx(
+            () => IconButton(
+              icon: const Icon(Icons.palette),
+              onPressed: () => _showThemeSelector(context),
+              tooltip:
+                  MetronomeController.themeNames[controller.themeIndex.value],
+            ),
+          ),
         ],
       ),
       body: SafeArea(
@@ -31,17 +34,19 @@ class MetronomePage extends GetView<MetronomeController> {
             // 节拍器主体（Canvas 绘制）
             Expanded(
               flex: 3,
-              child: Obx(() => CustomPaint(
-                painter: MetronomePainter(
-                  bpm: controller.bpm.value,
-                  beatsPerMeasure: controller.beatsPerMeasure.value,
-                  currentBeat: controller.currentBeat.value,
-                  isPlaying: controller.isPlaying.value,
-                  pendulumAngle: controller.pendulumAngle.value,
-                  theme: controller.currentTheme,
+              child: Obx(
+                () => CustomPaint(
+                  painter: MetronomePainter(
+                    bpm: controller.bpm.value,
+                    beatsPerMeasure: controller.beatsPerMeasure.value,
+                    currentBeat: controller.currentBeat.value,
+                    isPlaying: controller.isPlaying.value,
+                    pendulumAngle: controller.pendulumAngle.value,
+                    theme: controller.currentTheme,
+                  ),
+                  child: Container(),
                 ),
-                child: Container(),
-              )),
+              ),
             ),
 
             // 控制区域
@@ -49,7 +54,9 @@ class MetronomePage extends GetView<MetronomeController> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.1),
@@ -98,7 +105,9 @@ class MetronomePage extends GetView<MetronomeController> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: List.generate(MetronomeController.themes.length, (index) {
+              children: List.generate(MetronomeController.themes.length, (
+                index,
+              ) {
                 final theme = MetronomeController.themes[index];
                 return Obx(() {
                   final isSelected = controller.themeIndex.value == index;
@@ -114,7 +123,9 @@ class MetronomePage extends GetView<MetronomeController> {
                         color: theme.backgroundColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected ? theme.primaryColor : Colors.grey.shade300,
+                          color: isSelected
+                              ? theme.primaryColor
+                              : Colors.grey.shade300,
                           width: isSelected ? 3 : 1,
                         ),
                       ),
@@ -169,27 +180,29 @@ class MetronomePage extends GetView<MetronomeController> {
           onTap: () => controller.decreaseBpm(1),
         ),
         const SizedBox(width: 16),
-        
+
         // BPM 滑块
         Expanded(
-          child: Obx(() => SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              trackHeight: 8,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+          child: Obx(
+            () => SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 8,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
+              ),
+              child: Slider(
+                value: controller.bpm.value.toDouble(),
+                min: 20,
+                max: 240,
+                divisions: 220,
+                onChanged: (value) => controller.setBpm(value.round()),
+                activeColor: AppColors.primary,
+                inactiveColor: AppColors.primary.withValues(alpha: 0.2),
+              ),
             ),
-            child: Slider(
-              value: controller.bpm.value.toDouble(),
-              min: 20,
-              max: 240,
-              divisions: 220,
-              onChanged: (value) => controller.setBpm(value.round()),
-              activeColor: AppColors.primary,
-              inactiveColor: AppColors.primary.withValues(alpha: 0.2),
-            ),
-          )),
+          ),
         ),
-        
+
         const SizedBox(width: 16),
         // +1
         _buildAdjustButton(
@@ -254,36 +267,43 @@ class MetronomePage extends GetView<MetronomeController> {
           ),
         ),
         const SizedBox(height: 8),
-        Obx(() => Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: signatures.map((beats) {
-            final isSelected = controller.beatsPerMeasure.value == beats;
-            return GestureDetector(
-              onTap: () => controller.setTimeSignature(beats),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey.shade400,
-                    width: isSelected ? 2 : 1,
+        Obx(
+          () => Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: signatures.map((beats) {
+              final isSelected = controller.beatsPerMeasure.value == beats;
+              return GestureDetector(
+                onTap: () => controller.setTimeSignature(beats),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.primary
+                          : Colors.grey.shade400,
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Text(
+                    '$beats/4',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? Colors.white : Colors.grey.shade600,
+                    ),
                   ),
                 ),
-                child: Text(
-                  '$beats/4',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : Colors.grey.shade600,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        )),
+              );
+            }).toList(),
+          ),
+        ),
       ],
     );
   }
@@ -291,7 +311,7 @@ class MetronomePage extends GetView<MetronomeController> {
   Widget _buildPlayButton(BuildContext context) {
     return Obx(() {
       final isPlaying = controller.isPlaying.value;
-      
+
       return GestureDetector(
         onTap: controller.toggle,
         child: AnimatedContainer(
@@ -304,7 +324,10 @@ class MetronomePage extends GetView<MetronomeController> {
               end: Alignment.bottomRight,
               colors: isPlaying
                   ? [AppColors.error.withValues(alpha: 0.9), AppColors.error]
-                  : [AppColors.primary.withValues(alpha: 0.9), AppColors.primary],
+                  : [
+                      AppColors.primary.withValues(alpha: 0.9),
+                      AppColors.primary,
+                    ],
             ),
             shape: BoxShape.circle,
             boxShadow: [

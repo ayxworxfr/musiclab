@@ -89,11 +89,7 @@ class ProfilePage extends GetView<ProfileController> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(
-              Icons.person,
-              size: 50,
-              color: AppColors.primary,
-            ),
+            child: const Icon(Icons.person, size: 50, color: AppColors.primary),
           ),
           const SizedBox(width: 20),
           // 用户信息
@@ -121,13 +117,9 @@ class ProfilePage extends GetView<ProfileController> {
                 // 成就徽章
                 Row(
                   children: [
-                    if (streakDays > 0)
-                      _buildBadge('🔥', '$streakDays天连续'),
+                    if (streakDays > 0) _buildBadge('🔥', '$streakDays天连续'),
                     if (streakDays > 0) const SizedBox(width: 8),
-                    _buildBadge(
-                      '🏆',
-                      '${controller.unlockedCount}个成就',
-                    ),
+                    _buildBadge('🏆', '${controller.unlockedCount}个成就'),
                   ],
                 ),
               ],
@@ -152,10 +144,7 @@ class ProfilePage extends GetView<ProfileController> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.white),
           ),
         ],
       ),
@@ -196,7 +185,9 @@ class ProfilePage extends GetView<ProfileController> {
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
                 ),
               ],
             ),
@@ -236,7 +227,12 @@ class ProfilePage extends GetView<ProfileController> {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, String label, String value, bool isDark) {
+  Widget _buildStatItem(
+    BuildContext context,
+    String label,
+    String value,
+    bool isDark,
+  ) {
     return Column(
       children: [
         Text(
@@ -252,7 +248,9 @@ class ProfilePage extends GetView<ProfileController> {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondary,
           ),
         ),
       ],
@@ -309,7 +307,10 @@ class ProfilePage extends GetView<ProfileController> {
           return Column(
             children: [
               ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 leading: Container(
                   width: 44,
                   height: 44,
@@ -335,7 +336,10 @@ class ProfilePage extends GetView<ProfileController> {
                   children: [
                     if (item['badge'] != null)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(10),
@@ -352,7 +356,9 @@ class ProfilePage extends GetView<ProfileController> {
                     const SizedBox(width: 8),
                     Icon(
                       Icons.chevron_right,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondary,
                     ),
                   ],
                 ),

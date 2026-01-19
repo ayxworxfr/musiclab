@@ -20,11 +20,7 @@ class SettingsPage extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('设置'),
-        centerTitle: true,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('设置'), centerTitle: true, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -119,7 +115,7 @@ class SettingsPage extends StatelessWidget {
         ),
       );
     }
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -222,38 +218,46 @@ class SettingsPage extends StatelessWidget {
       child: Column(
         children: [
           // 钢琴音效开关
-          Obx(() => _buildSwitchTile(
-                context,
-                icon: Icons.piano,
-                title: '钢琴音效',
-                subtitle: '弹奏钢琴时播放声音',
-                value: profileController.pianoSoundEnabled.value,
-                onChanged: (value) => profileController.togglePianoSound(value),
-              )),
+          Obx(
+            () => _buildSwitchTile(
+              context,
+              icon: Icons.piano,
+              title: '钢琴音效',
+              subtitle: '弹奏钢琴时播放声音',
+              value: profileController.pianoSoundEnabled.value,
+              onChanged: (value) => profileController.togglePianoSound(value),
+            ),
+          ),
           const Divider(height: 1, indent: 56),
           // 效果音开关
-          Obx(() => _buildSwitchTile(
-                context,
-                icon: Icons.music_note,
-                title: '效果音',
-                subtitle: '正确/错误提示音',
-                value: profileController.effectSoundEnabled.value,
-                onChanged: (value) => profileController.toggleEffectSound(value),
-              )),
+          Obx(
+            () => _buildSwitchTile(
+              context,
+              icon: Icons.music_note,
+              title: '效果音',
+              subtitle: '正确/错误提示音',
+              value: profileController.effectSoundEnabled.value,
+              onChanged: (value) => profileController.toggleEffectSound(value),
+            ),
+          ),
           const Divider(height: 1, indent: 56),
           // 乐器选择
-          Obx(() => _buildInstrumentTile(
-                context,
-                profileController.currentInstrument.value,
-                profileController.changeInstrument,
-              )),
+          Obx(
+            () => _buildInstrumentTile(
+              context,
+              profileController.currentInstrument.value,
+              profileController.changeInstrument,
+            ),
+          ),
           const Divider(height: 1, indent: 56),
           // 全局音量滑块
-          Obx(() => _buildVolumeTile(
-                context,
-                profileController.masterVolume.value,
-                profileController.setMasterVolume,
-              )),
+          Obx(
+            () => _buildVolumeTile(
+              context,
+              profileController.masterVolume.value,
+              profileController.setMasterVolume,
+            ),
+          ),
         ],
       ),
     );
@@ -325,7 +329,9 @@ class SettingsPage extends StatelessWidget {
             trailing: Text(
               'v1.0.0',
               style: TextStyle(
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
             ),
           ),
@@ -389,14 +395,19 @@ class SettingsPage extends StatelessWidget {
               subtitle,
               style: TextStyle(
                 fontSize: 12,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
             )
           : null,
-      trailing: trailing ??
+      trailing:
+          trailing ??
           Icon(
             Icons.chevron_right,
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondary,
           ),
       onTap: onTap,
     );
@@ -435,7 +446,9 @@ class SettingsPage extends StatelessWidget {
               subtitle,
               style: TextStyle(
                 fontSize: 12,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
             )
           : null,
@@ -460,65 +473,68 @@ class SettingsPage extends StatelessWidget {
         title: const Text('选择主题色'),
         content: SizedBox(
           width: 300,
-          child: Obx(() => Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: List.generate(
-                  ThemeController.themeColors.length,
-                  (index) {
-                    final color = ThemeController.themeColors[index];
-                    final name = ThemeController.themeColorNames[index];
-                    final isSelected = themeController.themeColorIndex.value == index;
+          child: Obx(
+            () => Wrap(
+              spacing: 16,
+              runSpacing: 16,
+              children: List.generate(ThemeController.themeColors.length, (
+                index,
+              ) {
+                final color = ThemeController.themeColors[index];
+                final name = ThemeController.themeColorNames[index];
+                final isSelected =
+                    themeController.themeColorIndex.value == index;
 
-                    return GestureDetector(
-                      onTap: () {
-                        themeController.setThemeColor(index);
-                        Get.back();
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: color,
-                              borderRadius: BorderRadius.circular(12),
-                              border: isSelected
-                                  ? Border.all(color: Colors.white, width: 3)
-                                  : null,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: color.withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: isSelected
-                                ? const Icon(Icons.check, color: Colors.white, size: 32)
-                                : null,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            name,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).textTheme.bodyMedium?.color,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                return GestureDetector(
+                  onTap: () {
+                    themeController.setThemeColor(index);
+                    Get.back();
                   },
-                ),
-              )),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(12),
+                          border: isSelected
+                              ? Border.all(color: Colors.white, width: 3)
+                              : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: color.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: isSelected
+                            ? const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 32,
+                              )
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        name,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('取消')),
         ],
       ),
     );
@@ -557,11 +573,7 @@ class SettingsPage extends StatelessWidget {
         );
       } else {
         // 移动平台：TODO
-        Get.snackbar(
-          '提示',
-          '移动平台导出功能待实现',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar('提示', '移动平台导出功能待实现', snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
       Get.snackbar(
@@ -615,11 +627,7 @@ class SettingsPage extends StatelessWidget {
       }
     } else {
       // 移动平台：TODO
-      Get.snackbar(
-        '提示',
-        '移动平台导入功能待实现',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('提示', '移动平台导入功能待实现', snackPosition: SnackPosition.BOTTOM);
     }
   }
 
@@ -629,10 +637,7 @@ class SettingsPage extends StatelessWidget {
         title: const Text('确认清除'),
         content: const Text('确定要清除所有学习数据吗？此操作不可恢复。'),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('取消')),
           TextButton(
             onPressed: () async {
               Get.back();
@@ -654,10 +659,7 @@ class SettingsPage extends StatelessWidget {
                 );
               }
             },
-            child: const Text(
-              '确认清除',
-              style: TextStyle(color: AppColors.error),
-            ),
+            child: const Text('确认清除', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -679,7 +681,11 @@ class SettingsPage extends StatelessWidget {
           color: AppColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: const Icon(Icons.music_note_outlined, color: AppColors.primary, size: 20),
+        child: const Icon(
+          Icons.music_note_outlined,
+          color: AppColors.primary,
+          size: 20,
+        ),
       ),
       title: Text(
         '乐器选择',
@@ -691,7 +697,9 @@ class SettingsPage extends StatelessWidget {
       subtitle: Text(
         currentInstrument.name,
         style: TextStyle(
-          color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+          color: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
           fontSize: 13,
         ),
       ),
@@ -740,32 +748,34 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ...Instrument.values.map((instrument) => ListTile(
-                  leading: Icon(
-                    _getInstrumentIcon(instrument),
+            ...Instrument.values.map(
+              (instrument) => ListTile(
+                leading: Icon(
+                  _getInstrumentIcon(instrument),
+                  color: currentInstrument == instrument
+                      ? AppColors.primary
+                      : Theme.of(context).iconTheme.color,
+                ),
+                title: Text(
+                  instrument.name,
+                  style: TextStyle(
                     color: currentInstrument == instrument
                         ? AppColors.primary
-                        : Theme.of(context).iconTheme.color,
+                        : Theme.of(context).textTheme.bodyLarge?.color,
+                    fontWeight: currentInstrument == instrument
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
-                  title: Text(
-                    instrument.name,
-                    style: TextStyle(
-                      color: currentInstrument == instrument
-                          ? AppColors.primary
-                          : Theme.of(context).textTheme.bodyLarge?.color,
-                      fontWeight: currentInstrument == instrument
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                  trailing: currentInstrument == instrument
-                      ? const Icon(Icons.check, color: AppColors.primary)
-                      : null,
-                  onTap: () {
-                    onChanged(instrument);
-                    Get.back();
-                  },
-                )),
+                ),
+                trailing: currentInstrument == instrument
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  onChanged(instrument);
+                  Get.back();
+                },
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -804,7 +814,11 @@ class SettingsPage extends StatelessWidget {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.volume_up, color: AppColors.primary, size: 20),
+            child: const Icon(
+              Icons.volume_up,
+              color: AppColors.primary,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -836,7 +850,9 @@ class SettingsPage extends StatelessWidget {
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     activeTrackColor: AppColors.primary,
-                    inactiveTrackColor: AppColors.primary.withValues(alpha: 0.2),
+                    inactiveTrackColor: AppColors.primary.withValues(
+                      alpha: 0.2,
+                    ),
                     thumbColor: AppColors.primary,
                     overlayColor: AppColors.primary.withValues(alpha: 0.1),
                     trackHeight: 4,
@@ -857,4 +873,3 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
-

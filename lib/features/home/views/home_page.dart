@@ -71,7 +71,9 @@ class HomePage extends StatelessWidget {
                     AppConstants.slogan,
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -86,7 +88,11 @@ class HomePage extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.local_fire_department, color: Colors.orange, size: 20),
+                  const Icon(
+                    Icons.local_fire_department,
+                    color: Colors.orange,
+                    size: 20,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     '${controller.streakDays}天',
@@ -180,10 +186,7 @@ class HomePage extends StatelessWidget {
             SizedBox(height: 8),
             Text(
               '点击选择课程开始学习',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.white70),
             ),
           ],
         ),
@@ -191,7 +194,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildContinueLearningContent(BuildContext context, CourseModel course, LessonModel lesson) {
+  Widget _buildContinueLearningContent(
+    BuildContext context,
+    CourseModel course,
+    LessonModel lesson,
+  ) {
     final colors = course.gradientColors.map((c) {
       return Color(int.parse(c.replaceFirst('#', '0xFF')));
     }).toList();
@@ -286,17 +293,17 @@ class HomePage extends StatelessWidget {
           {
             'title': '完成1节课程',
             'done': controller.todayCompletedLesson.value,
-            'icon': Icons.menu_book
+            'icon': Icons.menu_book,
           },
           {
             'title': '练习10道题',
             'done': controller.todayCompletedPractice.value,
-            'icon': Icons.quiz
+            'icon': Icons.quiz,
           },
           {
             'title': '使用虚拟钢琴',
             'done': controller.todayUsedPiano.value,
-            'icon': Icons.piano
+            'icon': Icons.piano,
           },
         ];
 
@@ -343,41 +350,73 @@ class HomePage extends StatelessWidget {
                           ),
                           child: Icon(
                             task['icon'] as IconData,
-                            color: task['done'] == true ? AppColors.success : AppColors.primary,
+                            color: task['done'] == true
+                                ? AppColors.success
+                                : AppColors.primary,
                             size: 20,
                           ),
                         ),
                         title: Text(
                           task['title'] as String,
                           style: TextStyle(
-                            decoration: task['done'] == true ? TextDecoration.lineThrough : null,
+                            decoration: task['done'] == true
+                                ? TextDecoration.lineThrough
+                                : null,
                             color: task['done'] == true
-                                ? (isDark ? AppColors.textSecondaryDark : AppColors.textSecondary)
+                                ? (isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondary)
                                 : Theme.of(context).textTheme.bodyLarge?.color,
                           ),
                         ),
                         trailing: task['done'] == true
-                            ? const Icon(Icons.check_circle, color: AppColors.success)
-                            : Icon(Icons.circle_outlined, color: Colors.grey.shade400),
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: AppColors.success,
+                              )
+                            : Icon(
+                                Icons.circle_outlined,
+                                color: Colors.grey.shade400,
+                              ),
                       ),
-                  if (!isLast) const Divider(height: 1, indent: 72),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
+                      if (!isLast) const Divider(height: 1, indent: 72),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        );
       },
     );
   }
 
   Widget _buildQuickTools(BuildContext context, bool isDark) {
     final tools = [
-      {'title': '虚拟钢琴', 'icon': Icons.piano, 'color': const Color(0xFF4facfe), 'route': AppRoutes.piano},
-      {'title': '节拍器', 'icon': Icons.timer, 'color': const Color(0xFFf093fb), 'route': AppRoutes.metronome},
-      {'title': '乐谱库', 'icon': Icons.library_music, 'color': const Color(0xFF43e97b), 'route': AppRoutes.sheetMusic},
-      {'title': '对照表', 'icon': Icons.grid_on, 'color': const Color(0xFFfa709a), 'route': AppRoutes.referenceTable},
+      {
+        'title': '虚拟钢琴',
+        'icon': Icons.piano,
+        'color': const Color(0xFF4facfe),
+        'route': AppRoutes.piano,
+      },
+      {
+        'title': '节拍器',
+        'icon': Icons.timer,
+        'color': const Color(0xFFf093fb),
+        'route': AppRoutes.metronome,
+      },
+      {
+        'title': '乐谱库',
+        'icon': Icons.library_music,
+        'color': const Color(0xFF43e97b),
+        'route': AppRoutes.sheetMusic,
+      },
+      {
+        'title': '对照表',
+        'icon': Icons.grid_on,
+        'color': const Color(0xFFfa709a),
+        'route': AppRoutes.referenceTable,
+      },
     ];
 
     return Column(
@@ -417,7 +456,9 @@ class HomePage extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: (tool['color'] as Color).withValues(alpha: 0.1),
+                          color: (tool['color'] as Color).withValues(
+                            alpha: 0.1,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -432,7 +473,9 @@ class HomePage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -474,7 +517,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCourseProgress(BuildContext context, CourseModel course, bool isDark) {
+  Widget _buildCourseProgress(
+    BuildContext context,
+    CourseModel course,
+    bool isDark,
+  ) {
     return GestureDetector(
       onTap: () {
         Get.find<CourseController>().selectCourse(course.id);
@@ -527,7 +574,9 @@ class HomePage extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: course.progress,
                       backgroundColor: Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                      valueColor: const AlwaysStoppedAnimation(
+                        AppColors.primary,
+                      ),
                       minHeight: 6,
                     ),
                   ),
@@ -536,7 +585,9 @@ class HomePage extends StatelessWidget {
                     '${course.completedLessons}/${course.lessons.length} 课时',
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],

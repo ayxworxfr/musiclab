@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import 'logger_util.dart';
 
 // 条件导入：Web 平台使用 dart:html，非 Web 平台使用空实现
-import 'font_loader_service_web.dart' if (dart.library.io) 'font_loader_service_io.dart' as web_utils;
+import 'font_loader_service_web.dart'
+    if (dart.library.io) 'font_loader_service_io.dart'
+    as web_utils;
 
 /// 字体加载服务
 /// 用于在 Web 平台预加载字体，避免刷新后字体乱码
@@ -13,10 +15,10 @@ class FontLoaderService {
   static final FontLoaderService _instance = FontLoaderService._internal();
   factory FontLoaderService() => _instance;
   FontLoaderService._internal();
-  
+
   /// 字体加载状态
   final Map<String, bool> _fontLoaded = {};
-  
+
   /// 字体加载完成标志
   bool _fontsInitialized = false;
 
@@ -29,23 +31,20 @@ class FontLoaderService {
     if (kIsWeb) {
       try {
         LoggerUtil.info('开始加载字体...');
-        
+
         // 需要加载的字体列表
-        final fonts = [
-          'Bravura',
-          'Leland',
-        ];
+        final fonts = ['Bravura', 'Leland'];
 
         // 在 Web 平台使用 FontLoader
         for (final fontFamily in fonts) {
           try {
             final fontLoader = FontLoader(fontFamily);
-            
+
             // 尝试加载 TTF 字体
             // addFont 需要 Future<ByteData>，所以直接传递 rootBundle.load 的结果
             final fontPath = 'assets/fonts/$fontFamily.ttf';
             fontLoader.addFont(rootBundle.load(fontPath));
-            
+
             await fontLoader.load();
             _fontLoaded[fontFamily] = true;
             LoggerUtil.info('字体加载成功: $fontFamily');
@@ -54,7 +53,7 @@ class FontLoaderService {
             _fontLoaded[fontFamily] = false;
           }
         }
-        
+
         _fontsInitialized = true;
         LoggerUtil.info('字体加载完成');
       } catch (e) {
@@ -106,4 +105,3 @@ class FontLoaderService {
     web_utils.preloadFontsInHtml();
   }
 }
-

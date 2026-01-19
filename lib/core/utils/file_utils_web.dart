@@ -94,4 +94,3 @@ class FileUtils {
     return completer.future;
   }
 }
-

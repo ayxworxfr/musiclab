@@ -10,4 +10,3 @@ class AppBinding extends Bindings {
     Get.put<HttpClient>(HttpClient(), permanent: true);
   }
 }
-

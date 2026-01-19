@@ -28,7 +28,11 @@ class LoggerUtil {
   }
 
   /// Warning 日志
-  static void warning(dynamic message, [dynamic error, StackTrace? stackTrace]) {
+  static void warning(
+    dynamic message, [
+    dynamic error,
+    StackTrace? stackTrace,
+  ]) {
     _logger.w(message, error: error, stackTrace: stackTrace);
   }
 

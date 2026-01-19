@@ -8,10 +8,7 @@ import 'zh_cn.dart';
 /// 应用国际化配置
 class AppTranslations extends Translations {
   /// 支持的语言列表
-  static const supportedLocales = [
-    Locale('zh', 'CN'),
-    Locale('en', 'US'),
-  ];
+  static const supportedLocales = [Locale('zh', 'CN'), Locale('en', 'US')];
 
   /// 默认语言
   static const fallbackLocale = Locale('zh', 'CN');
@@ -31,10 +28,7 @@ class AppTranslations extends Translations {
   }
 
   @override
-  Map<String, Map<String, String>> get keys => {
-        'zh_CN': zhCN,
-        'en_US': enUS,
-      };
+  Map<String, Map<String, String>> get keys => {'zh_CN': zhCN, 'en_US': enUS};
 }
 
 /// 语言切换工具类
@@ -70,4 +64,3 @@ class LocaleHelper {
     return Get.locale?.languageCode == 'zh';
   }
 }
-

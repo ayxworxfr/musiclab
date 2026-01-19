@@ -24,12 +24,18 @@ class DateUtil {
   }
 
   /// 格式化日期时间
-  static String formatDateTime(DateTime date, [String format = defaultDateTimeFormat]) {
+  static String formatDateTime(
+    DateTime date, [
+    String format = defaultDateTimeFormat,
+  ]) {
     return DateFormat(format).format(date);
   }
 
   /// 解析日期字符串
-  static DateTime? parse(String dateString, [String format = defaultDateTimeFormat]) {
+  static DateTime? parse(
+    String dateString, [
+    String format = defaultDateTimeFormat,
+  ]) {
     try {
       return DateFormat(format).parse(dateString);
     } catch (e) {
@@ -64,7 +70,9 @@ class DateUtil {
   /// 判断是否是今天
   static bool isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year && date.month == now.month && date.day == now.day;
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   /// 判断是否是昨天

@@ -23,21 +23,25 @@ class EarPracticePage extends GetView<PracticeController> {
         centerTitle: true,
         elevation: 0,
         actions: [
-          Obx(() => controller.questions.isNotEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Text(
-                      '${controller.currentIndex.value + 1}/${controller.questions.length}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+          Obx(
+            () => controller.questions.isNotEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Text(
+                        '${controller.currentIndex.value + 1}/${controller.questions.length}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondary,
+                        ),
                       ),
                     ),
-                  ),
-                )
-              : const SizedBox.shrink()),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
       body: Obx(() {
@@ -74,7 +78,9 @@ class EarPracticePage extends GetView<PracticeController> {
             '训练你的耳朵，辨别音高和音程',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 24),
@@ -176,16 +182,15 @@ class EarPracticePage extends GetView<PracticeController> {
                           d['desc'] as String,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: d['color'] as Color,
-                  ),
+                  Icon(Icons.chevron_right, color: d['color'] as Color),
                 ],
               ),
             ),
@@ -236,7 +241,8 @@ class EarPracticePage extends GetView<PracticeController> {
 
                 // 反馈
                 Obx(() {
-                  if (!controller.hasAnswered.value) return const SizedBox.shrink();
+                  if (!controller.hasAnswered.value)
+                    return const SizedBox.shrink();
                   return _buildFeedback(context, isDark);
                 }),
               ],
@@ -300,7 +306,11 @@ class EarPracticePage extends GetView<PracticeController> {
   }
 
   /// 选项
-  Widget _buildOptions(BuildContext context, List<String> options, bool isDark) {
+  Widget _buildOptions(
+    BuildContext context,
+    List<String> options,
+    bool isDark,
+  ) {
     return Obx(() {
       final hasAnswered = controller.hasAnswered.value;
       final question = controller.currentQuestion;
@@ -311,13 +321,15 @@ class EarPracticePage extends GetView<PracticeController> {
         alignment: WrapAlignment.center,
         children: options.map((option) {
           final isCorrect = option == question?.correctAnswer;
-          final isSelected = hasAnswered &&
+          final isSelected =
+              hasAnswered &&
               controller.answers.isNotEmpty &&
               controller.answers.last.userAnswer == option;
 
           Color bgColor = Theme.of(context).cardColor;
           Color borderColor = Colors.grey.shade300;
-          Color textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
+          Color textColor =
+              Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
 
           if (hasAnswered) {
             if (isCorrect) {
@@ -334,10 +346,7 @@ class EarPracticePage extends GetView<PracticeController> {
           return GestureDetector(
             onTap: hasAnswered ? null : () => controller.submitAnswer(option),
             child: Container(
-              constraints: const BoxConstraints(
-                minWidth: 100,
-                minHeight: 80,
-              ),
+              constraints: const BoxConstraints(minWidth: 100, minHeight: 80),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: bgColor,
@@ -409,7 +418,9 @@ class EarPracticePage extends GetView<PracticeController> {
               question!.explanation!,
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -469,7 +480,10 @@ class EarPracticePage extends GetView<PracticeController> {
                 controller.currentIndex.value < controller.questions.length - 1
                     ? '下一题'
                     : '查看结果',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           );
@@ -494,22 +508,22 @@ class EarPracticePage extends GetView<PracticeController> {
                 color: controller.accuracy >= 0.8
                     ? AppColors.success.withValues(alpha: 0.1)
                     : controller.accuracy >= 0.6
-                        ? AppColors.warning.withValues(alpha: 0.1)
-                        : AppColors.error.withValues(alpha: 0.1),
+                    ? AppColors.warning.withValues(alpha: 0.1)
+                    : AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 controller.accuracy >= 0.8
                     ? Icons.emoji_events
                     : controller.accuracy >= 0.6
-                        ? Icons.thumb_up
-                        : Icons.sentiment_dissatisfied,
+                    ? Icons.thumb_up
+                    : Icons.sentiment_dissatisfied,
                 size: 48,
                 color: controller.accuracy >= 0.8
                     ? AppColors.success
                     : controller.accuracy >= 0.6
-                        ? AppColors.warning
-                        : AppColors.error,
+                    ? AppColors.warning
+                    : AppColors.error,
               ),
             ),
             const SizedBox(height: 24),
@@ -518,8 +532,8 @@ class EarPracticePage extends GetView<PracticeController> {
               controller.accuracy >= 0.8
                   ? '太棒了！🎉'
                   : controller.accuracy >= 0.6
-                      ? '继续加油！💪'
-                      : '还需努力！📚',
+                  ? '继续加油！💪'
+                  : '还需努力！📚',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -542,7 +556,8 @@ class EarPracticePage extends GetView<PracticeController> {
                 _buildStatCard(
                   context,
                   label: '正确/总数',
-                  value: '${controller.correctCount}/${controller.questions.length}',
+                  value:
+                      '${controller.correctCount}/${controller.questions.length}',
                   icon: Icons.quiz,
                   color: AppColors.primary,
                 ),
@@ -619,10 +634,7 @@ class EarPracticePage extends GetView<PracticeController> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
         ),
       ],
     );
@@ -636,4 +648,3 @@ class EarPracticePage extends GetView<PracticeController> {
     );
   }
 }
-

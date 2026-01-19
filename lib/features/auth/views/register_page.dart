@@ -17,10 +17,7 @@ class RegisterPage extends GetView<AuthController> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-            ],
+            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
           ),
         ),
         child: SafeArea(
@@ -132,49 +129,53 @@ class RegisterPage extends GetView<AuthController> {
             const SizedBox(height: 16),
 
             // 密码输入框
-            Obx(() => _buildTextField(
-                  controller: controller.passwordController,
-                  label: 'pages.register.password'.tr,
-                  hint: 'pages.register.password_hint'.tr,
-                  icon: Icons.lock_outline_rounded,
-                  obscureText: !controller.isPasswordVisible.value,
-                  validator: ValidatorUtil.validatePassword,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      controller.isPasswordVisible.value
-                          ? Icons.visibility_off_rounded
-                          : Icons.visibility_rounded,
-                      color: AppColors.textSecondary,
-                    ),
-                    onPressed: controller.togglePasswordVisibility,
+            Obx(
+              () => _buildTextField(
+                controller: controller.passwordController,
+                label: 'pages.register.password'.tr,
+                hint: 'pages.register.password_hint'.tr,
+                icon: Icons.lock_outline_rounded,
+                obscureText: !controller.isPasswordVisible.value,
+                validator: ValidatorUtil.validatePassword,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.isPasswordVisible.value
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    color: AppColors.textSecondary,
                   ),
-                )),
+                  onPressed: controller.togglePasswordVisibility,
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
 
             // 确认密码输入框
-            Obx(() => _buildTextField(
-                  controller: controller.confirmPasswordController,
-                  label: 'pages.register.confirm_password'.tr,
-                  hint: 'pages.register.confirm_password_hint'.tr,
-                  icon: Icons.lock_outline_rounded,
-                  obscureText: !controller.isConfirmPasswordVisible.value,
-                  validator: (value) {
-                    if (value != controller.passwordController.text) {
-                      return 'validation.password.mismatch'.tr;
-                    }
-                    return null;
-                  },
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      controller.isConfirmPasswordVisible.value
-                          ? Icons.visibility_off_rounded
-                          : Icons.visibility_rounded,
-                      color: AppColors.textSecondary,
-                    ),
-                    onPressed: controller.toggleConfirmPasswordVisibility,
+            Obx(
+              () => _buildTextField(
+                controller: controller.confirmPasswordController,
+                label: 'pages.register.confirm_password'.tr,
+                hint: 'pages.register.confirm_password_hint'.tr,
+                icon: Icons.lock_outline_rounded,
+                obscureText: !controller.isConfirmPasswordVisible.value,
+                validator: (value) {
+                  if (value != controller.passwordController.text) {
+                    return 'validation.password.mismatch'.tr;
+                  }
+                  return null;
+                },
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.isConfirmPasswordVisible.value
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    color: AppColors.textSecondary,
                   ),
-                  onSubmitted: (_) => controller.register(),
-                )),
+                  onPressed: controller.toggleConfirmPasswordVisibility,
+                ),
+                onSubmitted: (_) => controller.register(),
+              ),
+            ),
 
             // 错误信息
             _buildErrorMessage(),
@@ -208,8 +209,9 @@ class RegisterPage extends GetView<AuthController> {
       obscureText: obscureText,
       validator: validator,
       keyboardType: keyboardType,
-      textInputAction:
-          onSubmitted != null ? TextInputAction.done : TextInputAction.next,
+      textInputAction: onSubmitted != null
+          ? TextInputAction.done
+          : TextInputAction.next,
       onFieldSubmitted: onSubmitted,
       decoration: InputDecoration(
         labelText: label,
@@ -262,10 +264,7 @@ class RegisterPage extends GetView<AuthController> {
               Expanded(
                 child: Text(
                   controller.errorMessage.value,
-                  style: const TextStyle(
-                    color: AppColors.error,
-                    fontSize: 13,
-                  ),
+                  style: const TextStyle(color: AppColors.error, fontSize: 13),
                 ),
               ),
             ],
@@ -276,37 +275,38 @@ class RegisterPage extends GetView<AuthController> {
   }
 
   Widget _buildRegisterButton() {
-    return Obx(() => SizedBox(
-          height: 50,
-          child: ElevatedButton(
-            onPressed:
-                controller.isLoading.value ? null : controller.register,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
+    return Obx(
+      () => SizedBox(
+        height: 50,
+        child: ElevatedButton(
+          onPressed: controller.isLoading.value ? null : controller.register,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: controller.isLoading.value
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Text(
-                    'pages.register.submit'.tr,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+            elevation: 0,
           ),
-        ));
+          child: controller.isLoading.value
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Text(
+                  'pages.register.submit'.tr,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+        ),
+      ),
+    );
   }
 
   Widget _buildLoginEntry() {
@@ -315,9 +315,7 @@ class RegisterPage extends GetView<AuthController> {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primary,
         side: const BorderSide(color: AppColors.primary),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 14),
       ),
       child: Row(

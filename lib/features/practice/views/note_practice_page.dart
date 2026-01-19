@@ -28,19 +28,23 @@ class NotePracticePage extends GetView<PracticeController> {
         elevation: 0,
         actions: [
           // 进度指示
-          Obx(() => Center(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Text(
-                '${controller.currentIndex.value + 1}/${controller.questions.length}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+          Obx(
+            () => Center(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Text(
+                  '${controller.currentIndex.value + 1}/${controller.questions.length}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondary,
+                  ),
                 ),
               ),
             ),
-          )),
+          ),
         ],
       ),
       body: Obx(() {
@@ -77,7 +81,9 @@ class NotePracticePage extends GetView<PracticeController> {
             '根据你的水平选择合适的难度',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 24),
@@ -179,16 +185,15 @@ class NotePracticePage extends GetView<PracticeController> {
                           d['desc'] as String,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: d['color'] as Color,
-                  ),
+                  Icon(Icons.chevron_right, color: d['color'] as Color),
                 ],
               ),
             ),
@@ -239,7 +244,8 @@ class NotePracticePage extends GetView<PracticeController> {
 
                 // 反馈
                 Obx(() {
-                  if (!controller.hasAnswered.value) return const SizedBox.shrink();
+                  if (!controller.hasAnswered.value)
+                    return const SizedBox.shrink();
                   return _buildFeedback(context, question, isDark);
                 }),
               ],
@@ -254,7 +260,11 @@ class NotePracticePage extends GetView<PracticeController> {
   }
 
   /// 题目内容
-  Widget _buildQuestionContent(BuildContext context, PracticeQuestion question, bool isDark) {
+  Widget _buildQuestionContent(
+    BuildContext context,
+    PracticeQuestion question,
+    bool isDark,
+  ) {
     final content = question.content;
 
     switch (content.type) {
@@ -268,10 +278,14 @@ class NotePracticePage extends GetView<PracticeController> {
   }
 
   /// 音频内容（使用新的 Canvas 钢琴组件）
-  Widget _buildAudioContent(BuildContext context, QuestionContent content, bool isDark) {
+  Widget _buildAudioContent(
+    BuildContext context,
+    QuestionContent content,
+    bool isDark,
+  ) {
     final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
     final config = RenderConfig(pianoHeight: 120, theme: renderTheme);
-    
+
     return Column(
       children: [
         // 播放按钮
@@ -305,7 +319,9 @@ class NotePracticePage extends GetView<PracticeController> {
           '点击播放音频',
           style: TextStyle(
             fontSize: 14,
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondary,
           ),
         ),
 
@@ -345,7 +361,11 @@ class NotePracticePage extends GetView<PracticeController> {
   }
 
   /// 五线谱内容
-  Widget _buildStaffContent(BuildContext context, QuestionContent content, bool isDark) {
+  Widget _buildStaffContent(
+    BuildContext context,
+    QuestionContent content,
+    bool isDark,
+  ) {
     final staffData = content.staffData;
     if (staffData == null) return const SizedBox.shrink();
 
@@ -383,7 +403,11 @@ class NotePracticePage extends GetView<PracticeController> {
   }
 
   /// 选项
-  Widget _buildOptions(BuildContext context, PracticeQuestion question, bool isDark) {
+  Widget _buildOptions(
+    BuildContext context,
+    PracticeQuestion question,
+    bool isDark,
+  ) {
     return Obx(() {
       final hasAnswered = controller.hasAnswered.value;
 
@@ -393,13 +417,15 @@ class NotePracticePage extends GetView<PracticeController> {
         alignment: WrapAlignment.center,
         children: question.options!.map((option) {
           final isCorrect = option == question.correctAnswer;
-          final isSelected = hasAnswered && 
+          final isSelected =
+              hasAnswered &&
               controller.answers.isNotEmpty &&
               controller.answers.last.userAnswer == option;
 
           Color bgColor = Theme.of(context).cardColor;
           Color borderColor = Colors.grey.shade300;
-          Color textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
+          Color textColor =
+              Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
 
           if (hasAnswered) {
             if (isCorrect) {
@@ -416,10 +442,7 @@ class NotePracticePage extends GetView<PracticeController> {
           return GestureDetector(
             onTap: hasAnswered ? null : () => controller.submitAnswer(option),
             child: Container(
-              constraints: const BoxConstraints(
-                minWidth: 100,
-                minHeight: 80,
-              ),
+              constraints: const BoxConstraints(minWidth: 100, minHeight: 80),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: bgColor,
@@ -449,7 +472,11 @@ class NotePracticePage extends GetView<PracticeController> {
   }
 
   /// 反馈
-  Widget _buildFeedback(BuildContext context, PracticeQuestion question, bool isDark) {
+  Widget _buildFeedback(
+    BuildContext context,
+    PracticeQuestion question,
+    bool isDark,
+  ) {
     final isCorrect = controller.isCurrentCorrect.value;
 
     return Container(
@@ -490,7 +517,9 @@ class NotePracticePage extends GetView<PracticeController> {
               question.explanation!,
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -552,7 +581,10 @@ class NotePracticePage extends GetView<PracticeController> {
                 controller.currentIndex.value < controller.questions.length - 1
                     ? '下一题'
                     : '查看结果',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           );
@@ -577,22 +609,22 @@ class NotePracticePage extends GetView<PracticeController> {
                 color: controller.accuracy >= 0.8
                     ? AppColors.success.withValues(alpha: 0.1)
                     : controller.accuracy >= 0.6
-                        ? AppColors.warning.withValues(alpha: 0.1)
-                        : AppColors.error.withValues(alpha: 0.1),
+                    ? AppColors.warning.withValues(alpha: 0.1)
+                    : AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 controller.accuracy >= 0.8
                     ? Icons.emoji_events
                     : controller.accuracy >= 0.6
-                        ? Icons.thumb_up
-                        : Icons.sentiment_dissatisfied,
+                    ? Icons.thumb_up
+                    : Icons.sentiment_dissatisfied,
                 size: 48,
                 color: controller.accuracy >= 0.8
                     ? AppColors.success
                     : controller.accuracy >= 0.6
-                        ? AppColors.warning
-                        : AppColors.error,
+                    ? AppColors.warning
+                    : AppColors.error,
               ),
             ),
             const SizedBox(height: 24),
@@ -602,8 +634,8 @@ class NotePracticePage extends GetView<PracticeController> {
               controller.accuracy >= 0.8
                   ? '太棒了！🎉'
                   : controller.accuracy >= 0.6
-                      ? '继续加油！💪'
-                      : '还需努力！📚',
+                  ? '继续加油！💪'
+                  : '还需努力！📚',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -626,7 +658,8 @@ class NotePracticePage extends GetView<PracticeController> {
                 _buildStatCard(
                   context,
                   label: '正确/总数',
-                  value: '${controller.correctCount}/${controller.questions.length}',
+                  value:
+                      '${controller.correctCount}/${controller.questions.length}',
                   icon: Icons.quiz,
                   color: AppColors.primary,
                 ),
@@ -703,10 +736,7 @@ class NotePracticePage extends GetView<PracticeController> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
         ),
       ],
     );

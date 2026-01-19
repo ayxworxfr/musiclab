@@ -101,7 +101,7 @@ class SheetEditorController extends GetxController {
 
   /// 当前选中的小节索引（响应式，用于UI更新）
   final selectedMeasureIndexRx = 0.obs;
-  
+
   /// 当前选中的小节索引（根据当前轨道获取）
   int get selectedMeasureIndex {
     return _trackMeasureIndices[selectedTrackIndex.value] ?? 0;
@@ -179,7 +179,7 @@ class SheetEditorController extends GetxController {
   void loadScore(Score score) {
     currentScore.value = score;
     selectedTrackIndex.value = 0;
-    
+
     // 初始化每个轨道的索引
     _trackMeasureIndices.clear();
     _trackBeatIndices.clear();
@@ -187,7 +187,7 @@ class SheetEditorController extends GetxController {
       _trackMeasureIndices[i] = 0;
       _trackBeatIndices[i] = 0.0;
     }
-    
+
     selectedNoteIndex.value = -1;
     selectedJianpuNoteIndex.value = -1;
     hasUnsavedChanges.value = false;
@@ -313,7 +313,7 @@ class SheetEditorController extends GetxController {
         if (updatedScore == null) return;
         final updatedTrack = updatedScore.tracks[trackIndex];
         if (updatedTrack.measures.isEmpty) return;
-        
+
         // 切换到新添加的小节（最后一个）
         measureIndex = updatedTrack.measures.length - 1;
         measure = updatedTrack.measures[measureIndex];
@@ -321,7 +321,7 @@ class SheetEditorController extends GetxController {
         selectedBeatIndex = 0.0;
       }
     }
-    
+
     // 将beatIndex转换为整数（用于beat.index，beat.index是整数）
     final beatIndexInt = beatIndex.floor();
 
@@ -400,7 +400,7 @@ class SheetEditorController extends GetxController {
 
         final measure = track.measures[measureIndex];
         final beatIndex = selectedBeatIndex.floor();
-        
+
         final updatedBeats = List<Beat>.from(measure.beats);
         updatedBeats.removeWhere((b) => b.index == beatIndex);
 
@@ -436,7 +436,7 @@ class SheetEditorController extends GetxController {
 
     final measure = track.measures[measureIndex];
     final beatIndex = selectedBeatIndex.floor();
-    
+
     // 查找对应的beat - 使用indexWhere而不是firstWhereOrNull，确保找到正确的beat
     final beatIdx = measure.beats.indexWhere((b) => b.index == beatIndex);
     if (beatIdx < 0) {
@@ -445,10 +445,10 @@ class SheetEditorController extends GetxController {
       selectedJianpuNoteIndex.value = -1;
       return;
     }
-    
+
     final beat = measure.beats[beatIdx];
     final noteIndex = selectedNoteIndex.value;
-    
+
     // 验证noteIndex是否有效
     if (noteIndex < 0 || noteIndex >= beat.notes.length) {
       selectedNoteIndex.value = -1;
@@ -571,16 +571,18 @@ class SheetEditorController extends GetxController {
     final measure = track.measures[measureIndex];
     final currentBeatIndex = selectedBeatIndex;
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    
+
     // 计算当前音符的时值（如果有选中的音符）
     double beatIncrement = selectedDuration.value.duration.beats; // 使用当前选中的时值
     if (isDotted.value) {
       beatIncrement = beatIncrement * 1.5; // 附点音符
     }
-    
+
     // 如果当前beat有音符，使用最后一个音符的时值
     final currentBeatIndexInt = currentBeatIndex.floor();
-    final beat = measure.beats.firstWhereOrNull((b) => b.index == currentBeatIndexInt);
+    final beat = measure.beats.firstWhereOrNull(
+      (b) => b.index == currentBeatIndexInt,
+    );
     if (beat != null && beat.notes.isNotEmpty) {
       final lastNote = beat.notes.last;
       beatIncrement = lastNote.actualBeats;
@@ -588,7 +590,7 @@ class SheetEditorController extends GetxController {
 
     // 计算下一个 beatIndex（使用浮点数，支持8分音符等）
     final nextBeatIndex = currentBeatIndex + beatIncrement;
-    
+
     // 检查是否超出小节范围
     if (nextBeatIndex < beatsPerMeasure) {
       selectedBeatIndex = nextBeatIndex;
@@ -622,26 +624,29 @@ class SheetEditorController extends GetxController {
 
     final oldTrackIndex = selectedTrackIndex.value;
     if (oldTrackIndex < 0 || oldTrackIndex >= score.tracks.length) return;
-    
+
     final newTrackIndex = (oldTrackIndex + 1) % score.tracks.length;
-    
+
     // 在切换前，保存旧轨道的索引（确保索引有效）
     final oldMeasureIndex = selectedMeasureIndex;
     final oldBeatIndex = selectedBeatIndex;
     final oldTrack = score.tracks[oldTrackIndex];
-    
+
     if (oldTrack.measures.isNotEmpty) {
-      final validMeasureIndex = oldMeasureIndex.clamp(0, oldTrack.measures.length - 1);
+      final validMeasureIndex = oldMeasureIndex.clamp(
+        0,
+        oldTrack.measures.length - 1,
+      );
       _trackMeasureIndices[oldTrackIndex] = validMeasureIndex;
       _trackBeatIndices[oldTrackIndex] = oldBeatIndex;
     } else {
       _trackMeasureIndices[oldTrackIndex] = 0;
       _trackBeatIndices[oldTrackIndex] = 0.0;
     }
-    
+
     // 切换到新轨道
     selectedTrackIndex.value = newTrackIndex;
-    
+
     // 检查新轨道的小节数量，如果当前小节索引超出范围，调整到有效范围
     final newTrack = score.tracks[newTrackIndex];
     if (newTrack.measures.isEmpty) {
@@ -651,11 +656,14 @@ class SheetEditorController extends GetxController {
       // 获取新轨道之前保存的索引，如果没有则使用0
       final savedMeasureIndex = _trackMeasureIndices[newTrackIndex] ?? 0;
       // 确保索引在有效范围内
-      final measureIndex = savedMeasureIndex.clamp(0, newTrack.measures.length - 1);
+      final measureIndex = savedMeasureIndex.clamp(
+        0,
+        newTrack.measures.length - 1,
+      );
       selectedMeasureIndex = measureIndex;
       selectedBeatIndex = _trackBeatIndices[newTrackIndex] ?? 0.0;
     }
-    
+
     selectedNoteIndex.value = -1;
     selectedJianpuNoteIndex.value = -1;
   }
@@ -683,7 +691,7 @@ class SheetEditorController extends GetxController {
 
     final measure = track.measures[measureIndex];
     final beat = measure.beats.firstWhereOrNull((b) => b.index == beatIndex);
-    
+
     if (beat == null) {
       // beat不存在，但可以设置小节和拍索引，用于插入新音符
       selectedMeasureIndex = measureIndex;
@@ -707,7 +715,7 @@ class SheetEditorController extends GetxController {
     selectedMeasureIndex = measureIndex;
     selectedBeatIndex = beatIndex.toDouble();
     selectedNoteIndex.value = noteIndex;
-    
+
     // 计算小节内的简谱音符索引（用于显示匹配）
     _updateJianpuNoteIndex(measureIndex, beatIndex, noteIndex);
   }
@@ -733,26 +741,26 @@ class SheetEditorController extends GetxController {
     }
 
     final measure = track.measures[measureIndex];
-    
+
     // 按 beat.index 排序，确保按时间顺序遍历
     final sortedBeats = List<Beat>.from(measure.beats);
     sortedBeats.sort((a, b) => a.index.compareTo(b.index));
-    
+
     // 遍历 beats，累计音符索引，找到对应的简谱音符索引
     int currentNoteIndex = 0;
     for (final beat in sortedBeats) {
       if (beat.notes.isEmpty) continue;
-      
+
       if (beat.index == beatIndex) {
         // 找到对应的 beat，计算在该 beat 中的索引
         final noteIndexInBeat = noteIndex.clamp(0, beat.notes.length - 1);
         selectedJianpuNoteIndex.value = currentNoteIndex + noteIndexInBeat;
         return;
       }
-      
+
       currentNoteIndex += beat.notes.length;
     }
-    
+
     selectedJianpuNoteIndex.value = -1;
   }
 
@@ -770,29 +778,29 @@ class SheetEditorController extends GetxController {
     if (measureIndex >= track.measures.length) return null;
 
     final measure = track.measures[measureIndex];
-    
+
     // 按 beat.index 排序，确保按时间顺序遍历（这是必要的）
     final sortedBeats = List<Beat>.from(measure.beats);
     sortedBeats.sort((a, b) => a.index.compareTo(b.index));
-    
+
     // 遍历 beats，累计音符索引（完全按照用户输入顺序）
     int currentNoteIndex = 0;
     for (final beat in sortedBeats) {
       if (beat.notes.isEmpty) continue;
-      
+
       // 检查是否在这个 beat 中
       final noteCount = beat.notes.length;
-      
-      if (jianpuNoteIndex >= currentNoteIndex && 
+
+      if (jianpuNoteIndex >= currentNoteIndex &&
           jianpuNoteIndex < currentNoteIndex + noteCount) {
         // 找到对应的音符索引（在beat中的索引）
         final noteIndexInBeat = jianpuNoteIndex - currentNoteIndex;
         return (beat.index, noteIndexInBeat);
       }
-      
+
       currentNoteIndex += noteCount;
     }
-    
+
     return null;
   }
 
@@ -825,7 +833,7 @@ class SheetEditorController extends GetxController {
     // 检查索引有效性 - 使用当前轨道来检查，避免左右手小节编号混乱
     final trackIndex = selectedTrackIndex.value;
     if (trackIndex < 0 || trackIndex >= score.tracks.length) return;
-    
+
     final track = score.tracks[trackIndex];
     if (index < 0 || index >= track.measures.length) return;
 
@@ -862,7 +870,7 @@ class SheetEditorController extends GetxController {
         selectedMeasureIndex = updatedTrack.measures.length - 1;
       }
     }
-    
+
     selectedBeatIndex = 0.0;
     selectedNoteIndex.value = -1;
     selectedJianpuNoteIndex.value = -1;
@@ -909,7 +917,7 @@ class SheetEditorController extends GetxController {
   /// 添加和弦（在同一拍添加多个音符）
   void addChord(List<int> pitches, {String? lyric}) {
     if (pitches.isEmpty) return;
-    
+
     final score = currentScore.value;
     if (score == null) return;
 
@@ -924,13 +932,17 @@ class SheetEditorController extends GetxController {
     final beatIndex = selectedBeatIndex.floor();
 
     // 创建多个音符（和弦）
-    final newNotes = pitches.map((pitch) => Note(
-      pitch: pitch,
-      duration: selectedDuration.value.duration,
-      accidental: selectedAccidental.value,
-      dots: isDotted.value ? 1 : 0,
-      lyric: lyric,
-    )).toList();
+    final newNotes = pitches
+        .map(
+          (pitch) => Note(
+            pitch: pitch,
+            duration: selectedDuration.value.duration,
+            accidental: selectedAccidental.value,
+            dots: isDotted.value ? 1 : 0,
+            lyric: lyric,
+          ),
+        )
+        .toList();
 
     // 查找或创建拍
     final existingBeatIndex = measure.beats.indexWhere(
@@ -968,11 +980,13 @@ class SheetEditorController extends GetxController {
     hasUnsavedChanges.value = true;
 
     // 记录操作
-    _recordAction(EditAction(
-      type: EditActionType.addNote,
-      measureIndex: measureIndex,
-      newValue: newNotes,
-    ));
+    _recordAction(
+      EditAction(
+        type: EditActionType.addNote,
+        measureIndex: measureIndex,
+        newValue: newNotes,
+      ),
+    );
   }
 
   /// 修改选中音符的属性
@@ -1043,13 +1057,15 @@ class SheetEditorController extends GetxController {
     hasUnsavedChanges.value = true;
 
     // 记录操作
-    _recordAction(EditAction(
-      type: EditActionType.modifyNote,
-      measureIndex: measureIndex,
-      noteIndex: noteIndex,
-      oldValue: oldNote,
-      newValue: newNote,
-    ));
+    _recordAction(
+      EditAction(
+        type: EditActionType.modifyNote,
+        measureIndex: measureIndex,
+        noteIndex: noteIndex,
+        oldValue: oldNote,
+        newValue: newNote,
+      ),
+    );
   }
 
   /// 复制选中音符
@@ -1099,8 +1115,7 @@ class SheetEditorController extends GetxController {
   /// 移动到下一小节
   void moveToNextMeasure() {
     final track = currentTrack;
-    if (track != null &&
-        selectedMeasureIndex < track.measures.length - 1) {
+    if (track != null && selectedMeasureIndex < track.measures.length - 1) {
       selectedMeasureIndex = selectedMeasureIndex + 1;
       selectedBeatIndex = 0.0;
       selectedNoteIndex.value = -1;
@@ -1113,18 +1128,21 @@ class SheetEditorController extends GetxController {
     final score = currentScore.value;
     if (score == null) return;
     if (index < 0 || index >= score.tracks.length) return;
-    
+
     final oldTrackIndex = selectedTrackIndex.value;
-    
+
     // 在切换前，保存旧轨道的索引（确保索引有效）
     if (oldTrackIndex >= 0 && oldTrackIndex < score.tracks.length) {
       final oldMeasureIndex = selectedMeasureIndex;
       final oldBeatIndex = selectedBeatIndex;
-      
+
       // 确保旧轨道索引有效
       final oldTrack = score.tracks[oldTrackIndex];
       if (oldTrack.measures.isNotEmpty) {
-        final validMeasureIndex = oldMeasureIndex.clamp(0, oldTrack.measures.length - 1);
+        final validMeasureIndex = oldMeasureIndex.clamp(
+          0,
+          oldTrack.measures.length - 1,
+        );
         _trackMeasureIndices[oldTrackIndex] = validMeasureIndex;
         _trackBeatIndices[oldTrackIndex] = oldBeatIndex;
       } else {
@@ -1132,10 +1150,10 @@ class SheetEditorController extends GetxController {
         _trackBeatIndices[oldTrackIndex] = 0.0;
       }
     }
-    
+
     // 切换到新轨道
     selectedTrackIndex.value = index;
-    
+
     // 检查新轨道的小节数量，如果当前小节索引超出范围，调整到有效范围
     final newTrack = score.tracks[index];
     if (newTrack.measures.isEmpty) {
@@ -1146,13 +1164,16 @@ class SheetEditorController extends GetxController {
       // 获取新轨道之前保存的索引，如果没有则使用0
       final savedMeasureIndex = _trackMeasureIndices[index] ?? 0;
       // 确保索引在有效范围内
-      final measureIndex = savedMeasureIndex.clamp(0, newTrack.measures.length - 1);
+      final measureIndex = savedMeasureIndex.clamp(
+        0,
+        newTrack.measures.length - 1,
+      );
       _trackMeasureIndices[index] = measureIndex;
       _trackBeatIndices[index] = _trackBeatIndices[index] ?? 0.0;
       // 更新响应式变量以触发UI更新
       selectedMeasureIndexRx.value = measureIndex;
     }
-    
+
     selectedNoteIndex.value = -1;
     selectedJianpuNoteIndex.value = -1;
   }

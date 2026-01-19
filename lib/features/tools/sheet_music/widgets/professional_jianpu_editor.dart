@@ -10,7 +10,7 @@ import '../models/jianpu_view.dart';
 import '../models/enums.dart';
 
 /// 专业简谱编辑器
-/// 
+///
 /// 特性：
 /// - 支持多轨道编辑（钢琴大谱表：左右手）
 /// - 专业的界面布局和交互
@@ -77,7 +77,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   /// 顶部工具栏
   Widget _buildTopToolbar(BuildContext context, Score score, bool isDark) {
     final isMobile = MediaQuery.of(context).size.width < 600;
-    
+
     return Container(
       height: isMobile ? 64 : 56,
       decoration: BoxDecoration(
@@ -101,28 +101,32 @@ class ProfessionalJianpuEditor extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Obx(() => IconButton(
-                      onPressed: controller.canUndo ? controller.undo : null,
-                      icon: Icon(Icons.undo, size: isMobile ? 18 : 20),
-                      tooltip: '撤销 (Ctrl+Z)',
-                      color: controller.canUndo ? null : Colors.grey,
-                      padding: EdgeInsets.all(isMobile ? 8 : 12),
-                      constraints: BoxConstraints(
-                        minWidth: isMobile ? 36 : 48,
-                        minHeight: isMobile ? 36 : 48,
-                      ),
-                    )),
-                Obx(() => IconButton(
-                      onPressed: controller.canRedo ? controller.redo : null,
-                      icon: Icon(Icons.redo, size: isMobile ? 18 : 20),
-                      tooltip: '重做 (Ctrl+Y)',
-                      color: controller.canRedo ? null : Colors.grey,
-                      padding: EdgeInsets.all(isMobile ? 8 : 12),
-                      constraints: BoxConstraints(
-                        minWidth: isMobile ? 36 : 48,
-                        minHeight: isMobile ? 36 : 48,
-                      ),
-                    )),
+                Obx(
+                  () => IconButton(
+                    onPressed: controller.canUndo ? controller.undo : null,
+                    icon: Icon(Icons.undo, size: isMobile ? 18 : 20),
+                    tooltip: '撤销 (Ctrl+Z)',
+                    color: controller.canUndo ? null : Colors.grey,
+                    padding: EdgeInsets.all(isMobile ? 8 : 12),
+                    constraints: BoxConstraints(
+                      minWidth: isMobile ? 36 : 48,
+                      minHeight: isMobile ? 36 : 48,
+                    ),
+                  ),
+                ),
+                Obx(
+                  () => IconButton(
+                    onPressed: controller.canRedo ? controller.redo : null,
+                    icon: Icon(Icons.redo, size: isMobile ? 18 : 20),
+                    tooltip: '重做 (Ctrl+Y)',
+                    color: controller.canRedo ? null : Colors.grey,
+                    padding: EdgeInsets.all(isMobile ? 8 : 12),
+                    constraints: BoxConstraints(
+                      minWidth: isMobile ? 36 : 48,
+                      minHeight: isMobile ? 36 : 48,
+                    ),
+                  ),
+                ),
                 if (!isMobile) ...[
                   const SizedBox(width: 8),
                   const VerticalDivider(width: 1),
@@ -163,33 +167,38 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     ),
                   )
                 : Center(
-                    child: Obx(() => SegmentedButton<EditorMode>(
-                          segments: [
-                            ButtonSegment(
-                              value: EditorMode.select,
-                              label: const Text('选择'),
-                              icon: const Icon(Icons.touch_app, size: 18),
-                            ),
-                            ButtonSegment(
-                              value: EditorMode.input,
-                              label: const Text('输入'),
-                              icon: const Icon(Icons.edit, size: 18),
-                            ),
-                            ButtonSegment(
-                              value: EditorMode.erase,
-                              label: const Text('删除'),
-                              icon: const Icon(Icons.delete_outline, size: 18),
-                            ),
-                          ],
-                          selected: {controller.editorMode.value},
-                          onSelectionChanged: (Set<EditorMode> newSelection) {
-                            controller.editorMode.value = newSelection.first;
-                          },
-                          style: SegmentedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            textStyle: const TextStyle(fontSize: 13),
+                    child: Obx(
+                      () => SegmentedButton<EditorMode>(
+                        segments: [
+                          ButtonSegment(
+                            value: EditorMode.select,
+                            label: const Text('选择'),
+                            icon: const Icon(Icons.touch_app, size: 18),
                           ),
-                        )),
+                          ButtonSegment(
+                            value: EditorMode.input,
+                            label: const Text('输入'),
+                            icon: const Icon(Icons.edit, size: 18),
+                          ),
+                          ButtonSegment(
+                            value: EditorMode.erase,
+                            label: const Text('删除'),
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                          ),
+                        ],
+                        selected: {controller.editorMode.value},
+                        onSelectionChanged: (Set<EditorMode> newSelection) {
+                          controller.editorMode.value = newSelection.first;
+                        },
+                        style: SegmentedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          textStyle: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ),
                   ),
           ),
 
@@ -223,7 +232,12 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   }
 
   /// 移动端模式按钮
-  Widget _buildMobileModeButton(BuildContext context, EditorMode mode, IconData icon, String tooltip) {
+  Widget _buildMobileModeButton(
+    BuildContext context,
+    EditorMode mode,
+    IconData icon,
+    String tooltip,
+  ) {
     return Obx(() {
       final isSelected = controller.editorMode.value == mode;
       return GestureDetector(
@@ -306,7 +320,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 // 找到原始索引
                 final originalIndex = score.tracks.indexOf(track);
                 return Obx(() {
-                  final isSelected = controller.selectedTrackIndex.value == originalIndex;
+                  final isSelected =
+                      controller.selectedTrackIndex.value == originalIndex;
                   return GestureDetector(
                     onTap: () => controller.selectTrack(originalIndex),
                     child: Container(
@@ -345,7 +360,9 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: isSelected ? Colors.white : Colors.grey[700],
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.grey[700],
                               height: 1.2,
                             ),
                           ),
@@ -363,11 +380,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   }
 
   /// 乐谱内容
-  Widget _buildScoreContent(
-    BuildContext context,
-    Score score,
-    bool isDark,
-  ) {
+  Widget _buildScoreContent(BuildContext context, Score score, bool isDark) {
     if (score.tracks.isEmpty) {
       return const Center(child: Text('无轨道数据'));
     }
@@ -388,7 +401,11 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.music_off, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+            Icon(
+              Icons.music_off,
+              size: 64,
+              color: Colors.grey.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
             Text(
               '点击下方键盘输入音符',
@@ -414,12 +431,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         ...measures.asMap().entries.map((entry) {
           final index = entry.key;
           final measure = entry.value;
-          return _buildProfessionalMeasure(
-            context,
-            index,
-            measure,
-            isDark,
-          );
+          return _buildProfessionalMeasure(context, index, measure, isDark);
         }),
       ],
     );
@@ -439,19 +451,13 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         children: [
           Text(
             score.title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           if (score.composer != null) ...[
             const SizedBox(height: 4),
             Text(
               '作曲：${score.composer}',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ],
         ],
@@ -514,9 +520,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: isSelected
-                          ? AppColors.primary
-                          : Colors.grey[600],
+                      color: isSelected ? AppColors.primary : Colors.grey[600],
                     ),
                   ),
                   const Spacer(),
@@ -620,52 +624,47 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
     // 构建音符列表，在音符之间插入可点击的插入区域
     final List<Widget> widgets = [];
-    
+
     for (int i = 0; i < notes.length; i++) {
       final note = notes[i];
-      
+
       // 找到这个音符对应的 beat
       final beatAndNote = controller.findBeatAndNoteIndex(measureIndex, i);
       if (beatAndNote == null) continue;
-      
+
       final (beatIndex, noteIndexInBeat) = beatAndNote;
-      
+
       // 在第一个音符前添加插入区域
       if (i == 0) {
         widgets.add(_buildInsertArea(measureIndex, 0, isDark));
       }
-      
+
       // 添加音符
-      widgets.add(_buildProfessionalNote(
-        note,
-        measureIndex,
-        i,
-        isDark,
-      ));
-      
+      widgets.add(_buildProfessionalNote(note, measureIndex, i, isDark));
+
       // 计算下一个插入位置（基于当前音符的时值）
       final noteDuration = note.duration;
       final beatsPerMeasure = score.metadata.beatsPerMeasure;
-      final nextBeatIndex = ((beatIndex + noteDuration.beats).clamp(0, beatsPerMeasure)).toInt();
-      
+      final nextBeatIndex = ((beatIndex + noteDuration.beats).clamp(
+        0,
+        beatsPerMeasure,
+      )).toInt();
+
       // 在音符后添加插入区域
       widgets.add(_buildInsertArea(measureIndex, nextBeatIndex, isDark));
     }
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 12,
-      children: widgets,
-    );
+    return Wrap(spacing: 8, runSpacing: 12, children: widgets);
   }
 
   /// 构建插入区域（可点击的空隙）
   Widget _buildInsertArea(int measureIndex, int beatIndex, bool isDark) {
     return Obx(() {
-      final isSelected = controller.selectedMeasureIndex == measureIndex &&
+      final isSelected =
+          controller.selectedMeasureIndex == measureIndex &&
           controller.selectedBeatIndex.floor() == beatIndex &&
           controller.selectedNoteIndex.value < 0;
-      
+
       return GestureDetector(
         onTap: () {
           // 设置插入位置
@@ -718,16 +717,21 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     return Obx(() {
       // 判断是否高亮：优先使用播放状态，其次使用编辑器选中状态
       bool isSelected;
-      if (playerController != null && playerController.playbackState.value.isPlaying) {
+      if (playerController != null &&
+          playerController.playbackState.value.isPlaying) {
         // 播放模式：检查是否在当前播放的小节中
         final playbackState = playerController.playbackState.value;
-        final beatAndNote = controller.findBeatAndNoteIndex(measureIndex, noteIndex);
+        final beatAndNote = controller.findBeatAndNoteIndex(
+          measureIndex,
+          noteIndex,
+        );
 
         if (beatAndNote != null) {
           final (beatIndex, _) = beatAndNote;
           // 多音（和弦）支持：只要在同一小节的同一拍即高亮（同一拍内的所有音符都高亮）
-          isSelected = playbackState.currentMeasureIndex == measureIndex &&
-                       _isCurrentBeat(playbackState, beatIndex);
+          isSelected =
+              playbackState.currentMeasureIndex == measureIndex &&
+              _isCurrentBeat(playbackState, beatIndex);
         } else {
           isSelected = false;
         }
@@ -741,11 +745,14 @@ class ProfessionalJianpuEditor extends StatelessWidget {
       return GestureDetector(
         onTap: () {
           // 从 JianpuNote 索引找到对应的 Beat 和 Note 索引
-          final beatAndNote = controller.findBeatAndNoteIndex(measureIndex, noteIndex);
+          final beatAndNote = controller.findBeatAndNoteIndex(
+            measureIndex,
+            noteIndex,
+          );
           if (beatAndNote == null) return;
-          
+
           final (beatIndex, noteIndexInBeat) = beatAndNote;
-          
+
           if (controller.editorMode.value == EditorMode.erase) {
             // 删除模式：先选择音符，然后删除
             // 确保使用正确的轨道索引
@@ -864,9 +871,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                   note.lyric!,
                   style: TextStyle(
                     fontSize: 11,
-                    color: isSelected
-                        ? Colors.white70
-                        : Colors.grey[600],
+                    color: isSelected ? Colors.white70 : Colors.grey[600],
                   ),
                 ),
               ],
@@ -944,13 +949,13 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   Widget _buildDurationSelector(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Obx(() => SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: SelectedDuration.values.map((duration) {
-              final isSelected =
-                  controller.selectedDuration.value == duration;
+      child: Obx(
+        () => SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: SelectedDuration.values.map((duration) {
+              final isSelected = controller.selectedDuration.value == duration;
               return GestureDetector(
                 onTap: () => controller.selectedDuration.value = duration,
                 child: Container(
@@ -986,9 +991,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                         duration.description,
                         style: TextStyle(
                           fontSize: 10,
-                          color: isSelected
-                              ? Colors.white70
-                              : Colors.grey[600],
+                          color: isSelected ? Colors.white70 : Colors.grey[600],
                         ),
                       ),
                     ],
@@ -996,8 +999,9 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 ),
               );
             }).toList(),
-            ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1010,20 +1014,24 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         child: Obx(() {
           final isMultiMode = controller.isMultiNoteMode.value;
           final pendingCount = controller.pendingNotes.length;
-          
+
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // 多音模式开关（放在最前面）
               GestureDetector(
                 onTap: () {
-                  controller.isMultiNoteMode.value = !controller.isMultiNoteMode.value;
+                  controller.isMultiNoteMode.value =
+                      !controller.isMultiNoteMode.value;
                   if (!controller.isMultiNoteMode.value) {
                     controller.pendingNotes.clear();
                   }
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isMultiMode
                         ? AppColors.primary
@@ -1055,7 +1063,10 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                       if (isMultiMode && pendingCount > 0) ...[
                         const SizedBox(width: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(10),
@@ -1074,7 +1085,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // 多音模式下的确认和清除按钮
               if (isMultiMode && pendingCount > 0) ...[
                 const SizedBox(width: 8),
@@ -1086,7 +1097,10 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     }
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.success,
                       borderRadius: BorderRadius.circular(6),
@@ -1094,11 +1108,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.check,
-                          size: 16,
-                          color: Colors.white,
-                        ),
+                        Icon(Icons.check, size: 16, color: Colors.white),
                         SizedBox(width: 4),
                         Text(
                           '确认',
@@ -1123,24 +1133,20 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                       color: Colors.grey.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Icon(
-                      Icons.clear,
-                      size: 16,
-                      color: Colors.grey[700],
-                    ),
+                    child: Icon(Icons.clear, size: 16, color: Colors.grey[700]),
                   ),
                 ),
               ],
-              
+
               const SizedBox(width: 16),
-              
+
               // 附点
               _buildModifierButton(
                 icon: Icons.circle,
                 label: '附点',
                 isSelected: controller.isDotted.value,
-                onTap: () => controller.isDotted.value =
-                    !controller.isDotted.value,
+                onTap: () =>
+                    controller.isDotted.value = !controller.isDotted.value,
               ),
 
               const SizedBox(width: 8),
@@ -1151,23 +1157,23 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                   _buildModifierButton(
                     icon: null,
                     label: '#',
-                    isSelected: controller.selectedAccidental.value ==
-                        Accidental.sharp,
+                    isSelected:
+                        controller.selectedAccidental.value == Accidental.sharp,
                     onTap: () => controller.selectedAccidental.value =
                         controller.selectedAccidental.value == Accidental.sharp
-                            ? Accidental.none
-                            : Accidental.sharp,
+                        ? Accidental.none
+                        : Accidental.sharp,
                   ),
                   const SizedBox(width: 4),
                   _buildModifierButton(
                     icon: null,
                     label: '♭',
-                    isSelected: controller.selectedAccidental.value ==
-                        Accidental.flat,
+                    isSelected:
+                        controller.selectedAccidental.value == Accidental.flat,
                     onTap: () => controller.selectedAccidental.value =
                         controller.selectedAccidental.value == Accidental.flat
-                            ? Accidental.none
-                            : Accidental.flat,
+                        ? Accidental.none
+                        : Accidental.flat,
                   ),
                 ],
               ),
@@ -1201,8 +1207,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                       controller.selectedOctave.value == 0
                           ? '中音'
                           : controller.selectedOctave.value > 0
-                              ? '高${controller.selectedOctave.value}'
-                              : '低${-controller.selectedOctave.value}',
+                          ? '高${controller.selectedOctave.value}'
+                          : '低${-controller.selectedOctave.value}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -1335,11 +1341,20 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
           final score = controller.currentScore.value!;
           final key = score.metadata.key;
-          
+
           // 简谱度数到半音的映射（C调）
-          const degreeToSemitone = [0, 0, 2, 4, 5, 7, 9, 11]; // 0, 1, 2, 3, 4, 5, 6, 7
+          const degreeToSemitone = [
+            0,
+            0,
+            2,
+            4,
+            5,
+            7,
+            9,
+            11,
+          ]; // 0, 1, 2, 3, 4, 5, 6, 7
           final semitone = degreeToSemitone[degree.clamp(0, 7)];
-          
+
           // 调号主音的 MIDI 值（基准为第4八度）
           final keyTonicMidiMap = {
             MusicKey.C: 60, // C4
@@ -1358,23 +1373,23 @@ class ProfessionalJianpuEditor extends StatelessWidget {
             MusicKey.Em: 64, // E4 (小调)
             MusicKey.Dm: 62, // D4 (小调)
           };
-          
+
           final tonicMidi = keyTonicMidiMap[key] ?? 60;
-          
+
           // 计算 MIDI pitch
           // 基础音高 = 主音 + 度数偏移 + 八度偏移
           var pitch = tonicMidi + semitone + octave * 12;
-          
+
           // 应用变音记号
           if (accidental == Accidental.sharp) {
             pitch += 1;
           } else if (accidental == Accidental.flat) {
             pitch -= 1;
           }
-          
+
           // 限制在有效范围内 (21-108)
           pitch = pitch.clamp(21, 108);
-          
+
           // 多音模式：添加到待添加列表
           if (controller.isMultiNoteMode.value) {
             if (!controller.pendingNotes.contains(pitch)) {
@@ -1425,12 +1440,13 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 currentPitch = pitch.clamp(21, 108);
               }
             }
-            
+
             // 多音模式下检查是否已选中
-            final isSelected = controller.isMultiNoteMode.value &&
+            final isSelected =
+                controller.isMultiNoteMode.value &&
                 currentPitch != null &&
                 controller.pendingNotes.contains(currentPitch);
-            
+
             return Container(
               width: 56,
               height: 64,
@@ -1438,8 +1454,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 color: isSelected
                     ? AppColors.success.withValues(alpha: 0.2)
                     : degree == 0
-                        ? Colors.grey.withValues(alpha: 0.1)
-                        : AppColors.primary.withValues(alpha: 0.1),
+                    ? Colors.grey.withValues(alpha: 0.1)
+                    : AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected
@@ -1452,33 +1468,30 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-              if (degree == 0)
-                Text(
-                  '0',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                  if (degree == 0)
+                    Text(
+                      '0',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    )
+                  else
+                    JianpuNoteText(
+                      number: number,
+                      octaveOffset: octave,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  const SizedBox(height: 4),
+                  Text(
+                    name,
+                    style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                )
-              else
-                JianpuNoteText(
-                  number: number,
-                  octaveOffset: octave,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              const SizedBox(height: 4),
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey[600],
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
                 ],
               ),
             );
@@ -1533,9 +1546,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         decoration: InputDecoration(
           hintText: '输入歌词...',
           prefixIcon: const Icon(Icons.lyrics, size: 20),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 12,
@@ -1585,4 +1596,3 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     return playbackState.currentBeatIndex == beatIndex;
   }
 }
-

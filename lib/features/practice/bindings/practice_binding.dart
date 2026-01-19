@@ -11,4 +11,3 @@ class PracticeBinding extends Bindings {
     Get.lazyPut<PracticeController>(() => PracticeController());
   }
 }
-

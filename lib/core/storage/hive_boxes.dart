@@ -3,7 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../shared/constants/storage_keys.dart';
 
 /// Hive Box 管理类
-/// 
+///
 /// 统一管理所有 Hive Box 的创建和访问
 class HiveBoxes {
   HiveBoxes._();

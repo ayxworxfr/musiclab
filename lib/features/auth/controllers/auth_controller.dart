@@ -78,10 +78,10 @@ class AuthController extends GetxController {
       );
 
       LoggerUtil.i('pages.login.success'.tr);
-      
+
       // 清空表单
       _clearForm();
-      
+
       // 跳转首页
       Get.offAllNamed<void>(AppRoutes.home);
     } catch (e) {
@@ -115,10 +115,10 @@ class AuthController extends GetxController {
       );
 
       LoggerUtil.info('pages.register.success'.tr);
-      
+
       // 清空表单
       _clearForm();
-      
+
       // 跳转首页
       Get.offAllNamed<void>(AppRoutes.home);
     } catch (e) {
@@ -134,9 +134,9 @@ class AuthController extends GetxController {
     try {
       isLoading.value = true;
       await _authService.logout();
-      
+
       LoggerUtil.info('pages.settings.logout_success'.tr);
-      
+
       // 跳转登录页
       Get.offAllNamed<void>(AppRoutes.login);
     } catch (e) {

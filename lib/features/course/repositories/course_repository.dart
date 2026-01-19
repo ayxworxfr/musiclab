@@ -23,7 +23,11 @@ abstract class CourseRepository {
   Future<void> updateCourseProgress(String courseId, int completedLessons);
 
   /// 更新课时进度
-  Future<void> updateLessonProgress(String lessonId, double progress, bool isCompleted);
+  Future<void> updateLessonProgress(
+    String lessonId,
+    double progress,
+    bool isCompleted,
+  );
 
   /// 获取学习进度数据
   Future<Map<String, dynamic>> getLearningProgress();
@@ -51,22 +55,29 @@ class CourseRepositoryImpl implements CourseRepository {
       final courses = <CourseModel>[];
 
       // 加载简谱入门课程
-      final jianpuCourse = await _loadCourseFromAsset('assets/data/courses/jianpu_basics.json');
+      final jianpuCourse = await _loadCourseFromAsset(
+        'assets/data/courses/jianpu_basics.json',
+      );
       if (jianpuCourse != null) {
         courses.add(jianpuCourse);
       }
 
       // 加载五线谱入门课程
-      final staffCourse = await _loadCourseFromAsset('assets/data/courses/staff_basics.json');
+      final staffCourse = await _loadCourseFromAsset(
+        'assets/data/courses/staff_basics.json',
+      );
       if (staffCourse != null) {
         courses.add(staffCourse);
       }
 
       // 加载钢琴入门课程
-      final pianoCourse = await _loadCourseFromAsset('assets/data/courses/piano_basics.json');
+      final pianoCourse = await _loadCourseFromAsset(
+        'assets/data/courses/piano_basics.json',
+      );
       if (pianoCourse != null) {
         courses.add(pianoCourse);
-      };
+      }
+      ;
 
       // 加载进度数据并合并
       await _loadProgressData();
@@ -94,26 +105,33 @@ class CourseRepositoryImpl implements CourseRepository {
   }
 
   @override
-  Future<void> updateCourseProgress(String courseId, int completedLessons) async {
+  Future<void> updateCourseProgress(
+    String courseId,
+    int completedLessons,
+  ) async {
     _progressData['course_$courseId'] = {
       'completedLessons': completedLessons,
       'lastUpdated': DateTime.now().toIso8601String(),
     };
     await _saveProgressData();
-    
+
     // 更新缓存
     _coursesCache = null;
   }
 
   @override
-  Future<void> updateLessonProgress(String lessonId, double progress, bool isCompleted) async {
+  Future<void> updateLessonProgress(
+    String lessonId,
+    double progress,
+    bool isCompleted,
+  ) async {
     _progressData['lesson_$lessonId'] = {
       'progress': progress,
       'isCompleted': isCompleted,
       'lastUpdated': DateTime.now().toIso8601String(),
     };
     await _saveProgressData();
-    
+
     // 更新缓存
     _coursesCache = null;
   }
@@ -166,8 +184,10 @@ class CourseRepositoryImpl implements CourseRepository {
         final lessonProgress = _progressData['lesson_${lesson.id}'];
 
         return lesson.copyWith(
-          isUnlocked: index == 0 || 
-                      (_progressData['lesson_${course.lessons[index - 1].id}']?['isCompleted'] == true),
+          isUnlocked:
+              index == 0 ||
+              (_progressData['lesson_${course.lessons[index - 1].id}']?['isCompleted'] ==
+                  true),
           isCompleted: lessonProgress?['isCompleted'] as bool? ?? false,
           progress: (lessonProgress?['progress'] as num?)?.toDouble() ?? 0.0,
         );
@@ -180,4 +200,3 @@ class CourseRepositoryImpl implements CourseRepository {
     }).toList();
   }
 }
-

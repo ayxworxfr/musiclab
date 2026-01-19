@@ -83,7 +83,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   MusicKey? _overrideKey; // 临时调号
   int? _overrideBeatsPerMeasure; // 临时拍数
   int? _overrideTempo; // 临时速度
-  
+
   // 存储当前绘制宽度，用于滚动计算
   double? _currentDrawWidth;
 
@@ -149,9 +149,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         _layout = layoutEngine.calculate(widget.score);
 
         // 加载到播放控制器（只在布局变化时重新加载，避免重置速度）
-        if (_playbackController != null && 
-            (_playbackController!.score != widget.score || 
-             _playbackController!.layout != _layout)) {
+        if (_playbackController != null &&
+            (_playbackController!.score != widget.score ||
+                _playbackController!.layout != _layout)) {
           _playbackController!.loadScore(widget.score, _layout!);
           // 如果设置了临时速度，恢复它
           if (_overrideTempo != null) {
@@ -338,7 +338,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   Widget _buildKeyChip() {
     final currentKey = _overrideKey ?? widget.score.metadata.key;
     final isModified = _overrideKey != null;
-    
+
     return GestureDetector(
       onTap: () => _showKeyPicker(),
       child: Container(
@@ -388,10 +388,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
   /// 拍数按钮（可点击修改）
   Widget _buildTimeSignatureChip() {
-    final currentBeats = _overrideBeatsPerMeasure ?? widget.score.metadata.beatsPerMeasure;
+    final currentBeats =
+        _overrideBeatsPerMeasure ?? widget.score.metadata.beatsPerMeasure;
     final beatUnit = widget.score.metadata.beatUnit;
     final isModified = _overrideBeatsPerMeasure != null;
-    
+
     return GestureDetector(
       onTap: () => _showTimeSignaturePicker(),
       child: Container(
@@ -443,7 +444,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   Widget _buildTempoChip() {
     final currentTempo = _overrideTempo ?? widget.score.metadata.tempo;
     final isModified = _overrideTempo != null;
-    
+
     return GestureDetector(
       onTap: () => _showTempoPicker(),
       child: Container(
@@ -498,7 +499,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
           final currentKey = _overrideKey ?? widget.score.metadata.key;
-          
+
           return Container(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -510,7 +511,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   children: [
                     const Text(
                       '选择调号',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (_overrideKey != null)
                       TextButton(
@@ -561,9 +565,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
-          final currentBeats = _overrideBeatsPerMeasure ?? widget.score.metadata.beatsPerMeasure;
+          final currentBeats =
+              _overrideBeatsPerMeasure ?? widget.score.metadata.beatsPerMeasure;
           final beatUnit = widget.score.metadata.beatUnit;
-          
+
           return Container(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -575,7 +580,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   children: [
                     const Text(
                       '选择拍数',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (_overrideBeatsPerMeasure != null)
                       TextButton(
@@ -632,8 +640,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
           final currentTempo = _overrideTempo ?? widget.score.metadata.tempo;
-          final tempoController = TextEditingController(text: currentTempo.toString());
-          
+          final tempoController = TextEditingController(
+            text: currentTempo.toString(),
+          );
+
           return Container(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -645,7 +655,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   children: [
                     const Text(
                       '设置速度 (BPM)',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     if (_overrideTempo != null)
                       TextButton(
@@ -677,7 +690,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   children: [60, 80, 100, 120, 140, 160, 180].map((tempo) {
                     // 检查是否选中：要么是当前值，要么是输入框中的值
                     final inputValue = int.tryParse(tempoController.text);
-                    final isSelected = tempo == currentTempo || tempo == inputValue;
+                    final isSelected =
+                        tempo == currentTempo || tempo == inputValue;
                     return ChoiceChip(
                       label: Text('$tempo'),
                       selected: isSelected,
@@ -724,9 +738,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           Navigator.pop(context);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('请输入 40-200 之间的数字'),
-                            ),
+                            const SnackBar(content: Text('请输入 40-200 之间的数字')),
                           );
                         }
                       },
@@ -773,7 +785,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
           // 获取实际总时长（考虑速度调整）
           final actualTotalDuration = controller.getTotalDuration();
-          
+
           if (_currentMode == NotationMode.staff) {
             // 五线谱模式
             final scoreHeight = _layout!.pianoY;
@@ -1220,8 +1232,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       // 所以：noteLayout.startTime = (currentTime * speedMultiplier) * (currentTempo / originalTempo)
       final originalTempo = widget.score.metadata.tempo;
       final currentTempo = controller.baseTempo.value;
-      final musicTime = currentTime * controller.speedMultiplier.value * (currentTempo / originalTempo);
-      
+      final musicTime =
+          currentTime *
+          controller.speedMultiplier.value *
+          (currentTempo / originalTempo);
+
       final currentNote = _findNoteAtTime(musicTime);
       if (currentNote == null) return;
 
@@ -1249,12 +1264,18 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
       // 计算当前播放进度
       final progress = (currentTime / totalDuration).clamp(0.0, 1.0);
-      final measureIndex = (progress * widget.score.measureCount).floor().clamp(0, widget.score.measureCount - 1);
+      final measureIndex = (progress * widget.score.measureCount).floor().clamp(
+        0,
+        widget.score.measureCount - 1,
+      );
 
       // 使用与 JianpuPainter 相同的布局计算逻辑
       // 使用存储的绘制宽度，确保和绘制时使用相同的宽度
-      final drawWidth = _currentDrawWidth ?? _scoreScrollController.position.viewportDimension;
-      final contentWidth = drawWidth - widget.config.padding.left - widget.config.padding.right;
+      final drawWidth =
+          _currentDrawWidth ??
+          _scoreScrollController.position.viewportDimension;
+      final contentWidth =
+          drawWidth - widget.config.padding.left - widget.config.padding.right;
       final beatsPerMeasure = widget.score.metadata.beatsPerMeasure;
 
       // 计算每行小节数（与 JianpuPainter 保持一致）
@@ -1278,7 +1299,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       if (maxNotesInChord > 3) {
         measuresPerLine = (measuresPerLine * 0.75).floor();
       }
-      measuresPerLine = measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
+      measuresPerLine = measuresPerLine.clamp(
+        minMeasuresPerLine,
+        maxMeasuresPerLine,
+      );
 
       // 计算行号
       final lineIndex = measureIndex ~/ measuresPerLine;
@@ -1326,7 +1350,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     // note.duration.beats 是拍数，需要转换为秒数
     final originalTempo = widget.score.metadata.tempo;
     final beatsPerSecond = originalTempo / 60.0;
-    
+
     for (final noteLayout in _layout!.noteLayouts) {
       final noteDurationInBeats = noteLayout.note.duration.beats;
       final noteDurationInSeconds = noteDurationInBeats / beatsPerSecond;

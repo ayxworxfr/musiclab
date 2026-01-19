@@ -171,7 +171,9 @@ class AudioService extends GetxService {
       await _warmupAudioSystem();
 
       _isInitialized = true;
-      LoggerUtil.info('音频服务初始化完成 (AudioPlayers, 预加载音符: ${_pianoPlayerPools.length})');
+      LoggerUtil.info(
+        '音频服务初始化完成 (AudioPlayers, 预加载音符: ${_pianoPlayerPools.length})',
+      );
     } catch (e) {
       LoggerUtil.error('音频服务初始化失败', e);
     }
@@ -444,8 +446,8 @@ class AudioService extends GetxService {
     final handVolume = hand == Hand.right
         ? _rightHandVolume
         : hand == Hand.left
-            ? _leftHandVolume
-            : 1.0;
+        ? _leftHandVolume
+        : 1.0;
     final chordVolume = _calculateSmartVolume(
       baseVolume * handVolume,
       midiNumbers.length,
@@ -552,7 +554,9 @@ class AudioService extends GetxService {
     try {
       await player.stop();
       await player.setVolume(_masterVolume);
-      await player.play(AssetSource('audio/effects/$type${EnvConfig.audioExtension}'));
+      await player.play(
+        AssetSource('audio/effects/$type${EnvConfig.audioExtension}'),
+      );
     } catch (e) {
       LoggerUtil.warning('播放效果音失败: $type', e);
     }

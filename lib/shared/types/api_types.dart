@@ -7,11 +7,7 @@ class ApiResponse<T> {
   final String message;
   final T? data;
 
-  const ApiResponse({
-    required this.code,
-    required this.message,
-    this.data,
-  });
+  const ApiResponse({required this.code, required this.message, this.data});
 
   /// 是否成功
   bool get isSuccess => code == 0;
@@ -71,11 +67,7 @@ class Pagination {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'current': current,
-      'pageSize': pageSize,
-      'total': total,
-    };
+    return {'current': current, 'pageSize': pageSize, 'total': total};
   }
 }
 
@@ -84,17 +76,15 @@ class PaginatedResponse<T> {
   final List<T> list;
   final Pagination pagination;
 
-  const PaginatedResponse({
-    required this.list,
-    required this.pagination,
-  });
+  const PaginatedResponse({required this.list, required this.pagination});
 
   factory PaginatedResponse.fromJson(
     Map<String, dynamic> json,
     T Function(Map<String, dynamic>) fromJsonT,
   ) {
     return PaginatedResponse<T>(
-      list: (json['list'] as List<dynamic>?)
+      list:
+          (json['list'] as List<dynamic>?)
               ?.map((e) => fromJsonT(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -110,16 +100,10 @@ class PaginationParams {
   final int page;
   final int pageSize;
 
-  const PaginationParams({
-    this.page = 1,
-    this.pageSize = 20,
-  });
+  const PaginationParams({this.page = 1, this.pageSize = 20});
 
   Map<String, dynamic> toJson() {
-    return {
-      'page': page,
-      'pageSize': pageSize,
-    };
+    return {'page': page, 'pageSize': pageSize};
   }
 }
 
@@ -128,16 +112,9 @@ class SortParams {
   final String field;
   final String order; // 'asc' | 'desc'
 
-  const SortParams({
-    required this.field,
-    this.order = 'asc',
-  });
+  const SortParams({required this.field, this.order = 'asc'});
 
   Map<String, dynamic> toJson() {
-    return {
-      'sortField': field,
-      'sortOrder': order,
-    };
+    return {'sortField': field, 'sortOrder': order};
   }
 }
-

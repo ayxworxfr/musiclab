@@ -52,31 +52,21 @@ extension ContextExt on BuildContext {
     SnackBarAction? action,
   }) {
     ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: duration,
-        action: action,
-      ),
+      SnackBar(content: Text(message), duration: duration, action: action),
     );
   }
 
   /// 显示成功 SnackBar
   void showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
 
   /// 显示错误 SnackBar
   void showErrorSnackBar(String message) {
     ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
@@ -140,4 +130,3 @@ extension ContextExt on BuildContext {
     );
   }
 }
-

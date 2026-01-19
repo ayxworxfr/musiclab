@@ -15,7 +15,7 @@ class _LayoutParams {
   final double beatWidth;
   final double trackHeight;
   final double lineHeight;
-  
+
   const _LayoutParams({
     required this.contentWidth,
     required this.startX,
@@ -33,7 +33,7 @@ class _PlayheadPosition {
   final double x;
   final double y;
   final double height;
-  
+
   const _PlayheadPosition({
     required this.x,
     required this.y,
@@ -83,20 +83,24 @@ class JianpuPainter extends CustomPainter {
   }
 
   void _drawJianpuContent(Canvas canvas, Size size) {
-    final contentWidth = size.width - config.padding.left - config.padding.right;
+    final contentWidth =
+        size.width - config.padding.left - config.padding.right;
     final startX = config.padding.left;
-    
+
     // 计算布局参数
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    
+
     // 动态计算每行小节数
-    final measuresPerLine = _calculateMeasuresPerLine(contentWidth, beatsPerMeasure);
+    final measuresPerLine = _calculateMeasuresPerLine(
+      contentWidth,
+      beatsPerMeasure,
+    );
     final measureWidth = contentWidth / measuresPerLine;
     final beatWidth = measureWidth / beatsPerMeasure;
-    
+
     // 计算最大和弦音符数量，用于自适应轨道高度
     final maxNotesInChord = _getMaxNotesInChord();
-    
+
     // 行布局 - 自适应轨道高度
     final trackCount = score.tracks.length;
     final double trackHeight;
@@ -109,12 +113,16 @@ class JianpuPainter extends CustomPainter {
     }
     final lineSpacing = 20.0;
     final lineHeight = trackCount * trackHeight + lineSpacing;
-    
+
     var currentLine = 0;
     var measureInLine = 0;
 
     // 遍历每个小节
-    for (var measureIndex = 0; measureIndex < score.measureCount; measureIndex++) {
+    for (
+      var measureIndex = 0;
+      measureIndex < score.measureCount;
+      measureIndex++
+    ) {
       final measureX = startX + measureInLine * measureWidth;
       final baseY = config.padding.top + currentLine * lineHeight;
 
@@ -136,35 +144,50 @@ class JianpuPainter extends CustomPainter {
           final beatX = measureX + beatIndex * beatWidth + beatWidth / 2;
 
           // 查找这一拍的音符
-          final beatsInMeasure = measure.beats.where((b) => b.index == beatIndex).toList();
+          final beatsInMeasure = measure.beats
+              .where((b) => b.index == beatIndex)
+              .toList();
 
           if (beatsInMeasure.isEmpty) {
             // 没有音符，绘制延长线 "-"
             _drawDash(canvas, beatX, trackY, track.hand);
           } else {
             // 收集这一拍所有的音符
-            final allNotesInBeat = <({Note note, int noteIdx, bool isHighlighted})>[];
+            final allNotesInBeat =
+                <({Note note, int noteIdx, bool isHighlighted})>[];
             for (final beat in beatsInMeasure) {
               for (var noteIdx = 0; noteIdx < beat.notes.length; noteIdx++) {
                 final note = beat.notes[noteIdx];
 
                 // 查找对应的布局索引（使用noteIndex精确匹配）
                 final noteLayoutIndex = _findNoteLayoutIndex(
-                  trackIndex, measureIndex, beatIndex, noteIdx, note,
+                  trackIndex,
+                  measureIndex,
+                  beatIndex,
+                  noteIdx,
+                  note,
                 );
-                final isHighlighted = noteLayoutIndex != null &&
+                final isHighlighted =
+                    noteLayoutIndex != null &&
                     highlightedNoteIndices.contains(noteLayoutIndex);
 
-                allNotesInBeat.add((note: note, noteIdx: noteIdx, isHighlighted: isHighlighted));
+                allNotesInBeat.add((
+                  note: note,
+                  noteIdx: noteIdx,
+                  isHighlighted: isHighlighted,
+                ));
               }
             }
 
             // 判断是否所有音符都是相同的短时值（8分、16分、32分音符应该水平排列）
             // 短时值音符通常是旋律（顺序演奏），长音符在同一拍通常是和弦（同时演奏）
             final noteCount = allNotesInBeat.length;
-            final allAreSameShortDuration = noteCount > 1 &&
+            final allAreSameShortDuration =
+                noteCount > 1 &&
                 allNotesInBeat.first.note.duration.beamCount > 0 &&
-                allNotesInBeat.every((n) => n.note.duration == allNotesInBeat.first.note.duration);
+                allNotesInBeat.every(
+                  (n) => n.note.duration == allNotesInBeat.first.note.duration,
+                );
 
             if (allAreSameShortDuration) {
               // 短时值音符：水平排列（顺序演奏）
@@ -217,13 +240,14 @@ class JianpuPainter extends CustomPainter {
                   ..strokeWidth = 1.5;
                 final baseLineY = trackY + 20.0 * 0.55; // fontSize = 20.0
                 final firstNoteX = startXInBeat;
-                final lastNoteX = startXInBeat + (noteCount - 1) * horizontalSpacing;
+                final lastNoteX =
+                    startXInBeat + (noteCount - 1) * horizontalSpacing;
 
                 for (var i = 0; i < underlineCount; i++) {
                   final lineY = baseLineY + i * 5; // 增加间距从3到5像素
                   canvas.drawLine(
                     Offset(firstNoteX - 3, lineY), // 从第一个音符左边一点开始
-                    Offset(lastNoteX + 3, lineY),  // 到最后一个音符右边一点结束
+                    Offset(lastNoteX + 3, lineY), // 到最后一个音符右边一点结束
                     linePaint,
                   );
                 }
@@ -231,14 +255,18 @@ class JianpuPainter extends CustomPainter {
 
               // 歌词绘制在最后一个音符下方
               if (showLyrics && lyricText != null && trackIndex == 0) {
-                final underlineSpace = underlineCount > 0 ? underlineCount * 5 + 6 : 0; // 更新为5像素间距
+                final underlineSpace = underlineCount > 0
+                    ? underlineCount * 5 + 6
+                    : 0; // 更新为5像素间距
                 final lyricY = trackY + 10 + underlineSpace + 8;
                 _drawLyric(canvas, beatX, lyricY, lyricText);
               }
             } else {
               // 和弦或其他：垂直排列（原有逻辑）
               // 按音高从低到高排序（低音在下，高音在上）
-              allNotesInBeat.sort((a, b) => a.note.pitch.compareTo(b.note.pitch));
+              allNotesInBeat.sort(
+                (a, b) => a.note.pitch.compareTo(b.note.pitch),
+              );
 
               // 自适应计算垂直间距
               final double verticalSpacing;
@@ -258,7 +286,9 @@ class JianpuPainter extends CustomPainter {
               final underlineCount = firstNote.duration.underlineCount;
 
               // 计算自适应字号
-              final fontSize = noteCount > 4 ? 16.0 : (noteCount > 2 ? 18.0 : 20.0);
+              final fontSize = noteCount > 4
+                  ? 16.0
+                  : (noteCount > 2 ? 18.0 : 20.0);
 
               // 计算和弦底部位置（用于歌词定位）
               final lastNoteY = startY + (noteCount - 1) * verticalSpacing;
@@ -292,7 +322,9 @@ class JianpuPainter extends CustomPainter {
 
               // 歌词绘制在和弦底部下方（包括下划线空间）
               if (showLyrics && lyricText != null && trackIndex == 0) {
-                final underlineSpace = underlineCount > 0 ? underlineCount * 5 + 6 : 0; // 更新为5像素间距
+                final underlineSpace = underlineCount > 0
+                    ? underlineCount * 5 + 6
+                    : 0; // 更新为5像素间距
                 final lyricY = chordBottomY + underlineSpace + 8;
                 _drawLyric(canvas, beatX, lyricY, lyricText);
               }
@@ -313,14 +345,22 @@ class JianpuPainter extends CustomPainter {
     final lastLine = score.measureCount ~/ measuresPerLine;
     if (score.measureCount > 0) {
       final endLineIdx = lastMeasureInLine == 0 ? lastLine - 1 : lastLine;
-      final endMeasureIdx = lastMeasureInLine == 0 ? measuresPerLine : lastMeasureInLine;
+      final endMeasureIdx = lastMeasureInLine == 0
+          ? measuresPerLine
+          : lastMeasureInLine;
       final endX = startX + endMeasureIdx * measureWidth;
       final endY = config.padding.top + endLineIdx * lineHeight;
       _drawEndLine(canvas, endX, endY, score.tracks.length * trackHeight);
     }
   }
 
-  int? _findNoteLayoutIndex(int trackIndex, int measureIndex, int beatIndex, int noteIndex, Note note) {
+  int? _findNoteLayoutIndex(
+    int trackIndex,
+    int measureIndex,
+    int beatIndex,
+    int noteIndex,
+    Note note,
+  ) {
     // 使用精确匹配：trackIndex, measureIndex, beatIndex, noteIndex
     for (var i = 0; i < layout.noteLayouts.length; i++) {
       final nl = layout.noteLayouts[i];
@@ -333,18 +373,24 @@ class JianpuPainter extends CustomPainter {
     }
     return null;
   }
-  
+
   /// 计算乐谱中最大和弦音符数量
   int _getMaxNotesInChord() {
     int maxNotes = 1;
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    
+
     for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
       final track = score.tracks[trackIndex];
-      for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
+      for (
+        var measureIndex = 0;
+        measureIndex < track.measures.length;
+        measureIndex++
+      ) {
         final measure = track.measures[measureIndex];
         for (var beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
-          final beatsInMeasure = measure.beats.where((b) => b.index == beatIndex).toList();
+          final beatsInMeasure = measure.beats
+              .where((b) => b.index == beatIndex)
+              .toList();
           int notesInBeat = 0;
           for (final beat in beatsInMeasure) {
             notesInBeat += beat.notes.length;
@@ -362,23 +408,23 @@ class JianpuPainter extends CustomPainter {
   /// 根据屏幕宽度和音符密度自动调整
   int _calculateMeasuresPerLine(double contentWidth, int beatsPerMeasure) {
     // 基础参数
-    const minBeatWidth = 25.0;  // 每拍最小宽度
+    const minBeatWidth = 25.0; // 每拍最小宽度
     const minMeasuresPerLine = 2; // 每行最少小节数
     const maxMeasuresPerLine = 6; // 每行最多小节数
-    
+
     // 计算每小节需要的最小宽度
     final minMeasureWidth = minBeatWidth * beatsPerMeasure;
-    
+
     // 根据内容宽度计算可以放多少小节
     int measuresPerLine = (contentWidth / minMeasureWidth).floor();
-    
+
     // 检查音符密度 - 如果有复杂和弦，减少每行小节数
     final maxNotesInChord = _getMaxNotesInChord();
     if (maxNotesInChord > 3) {
       // 复杂和弦，减少每行小节数
       measuresPerLine = (measuresPerLine * 0.75).floor();
     }
-    
+
     // 限制范围
     return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
   }
@@ -396,7 +442,11 @@ class JianpuPainter extends CustomPainter {
       ..strokeWidth = 1;
     // 双线结束
     canvas.drawLine(Offset(x - 4, y), Offset(x - 4, y + height), paint);
-    canvas.drawLine(Offset(x, y), Offset(x, y + height), paint..strokeWidth = 3);
+    canvas.drawLine(
+      Offset(x, y),
+      Offset(x, y + height),
+      paint..strokeWidth = 3,
+    );
   }
 
   void _drawDash(Canvas canvas, double x, double y, Hand? hand) {
@@ -422,7 +472,10 @@ class JianpuPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    textPainter.paint(canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
+    textPainter.paint(
+      canvas,
+      Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+    );
   }
 
   void _drawJianpuNote(
@@ -433,9 +486,18 @@ class JianpuPainter extends CustomPainter {
     Hand? hand,
     bool isHighlighted,
   ) {
-    _drawJianpuNoteInChord(canvas, note, x, y, hand, isHighlighted, drawUnderline: true, fontSize: 22.0);
+    _drawJianpuNoteInChord(
+      canvas,
+      note,
+      x,
+      y,
+      hand,
+      isHighlighted,
+      drawUnderline: true,
+      fontSize: 22.0,
+    );
   }
-  
+
   /// 绘制和弦中的简谱音符
   /// [drawUnderline] 控制是否绘制下划线（和弦中只在最后一个音符画）
   /// [fontSize] 自适应字号
@@ -492,19 +554,22 @@ class JianpuPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    textPainter.paint(canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
+    textPainter.paint(
+      canvas,
+      Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+    );
 
     // 高低八度点位置 - 在数字正上方或正下方
     final dotSize = fontSize * 0.12;
     final dotSpacing = dotSize + 2; // 多个点之间的间距
     final dotPaint = Paint()..color = color;
-    
+
     if (octaveOffset > 0) {
       // 高八度：数字正上方加点（竖向排列）
       for (var i = 0; i < octaveOffset; i++) {
         canvas.drawCircle(
-          Offset(x, y - fontSize * 0.55 - i * dotSpacing), 
-          dotSize, 
+          Offset(x, y - fontSize * 0.55 - i * dotSpacing),
+          dotSize,
           dotPaint,
         );
       }
@@ -512,8 +577,8 @@ class JianpuPainter extends CustomPainter {
       // 低八度：数字正下方加点（竖向排列）
       for (var i = 0; i < -octaveOffset; i++) {
         canvas.drawCircle(
-          Offset(x, y + fontSize * 0.55 + i * dotSpacing), 
-          dotSize, 
+          Offset(x, y + fontSize * 0.55 + i * dotSpacing),
+          dotSize,
           dotPaint,
         );
       }
@@ -551,7 +616,13 @@ class JianpuPainter extends CustomPainter {
     }
   }
 
-  void _drawRest(Canvas canvas, double x, double y, NoteDuration duration, Hand? hand) {
+  void _drawRest(
+    Canvas canvas,
+    double x,
+    double y,
+    NoteDuration duration,
+    Hand? hand,
+  ) {
     // 休止符用 0 表示
     Color color;
     if (hand == Hand.right) {
@@ -574,7 +645,10 @@ class JianpuPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    textPainter.paint(canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
+    textPainter.paint(
+      canvas,
+      Offset(x - textPainter.width / 2, y - textPainter.height / 2),
+    );
 
     // 时值下划线
     final underlineCount = duration.underlineCount;
@@ -584,11 +658,7 @@ class JianpuPainter extends CustomPainter {
         ..strokeWidth = 1.5;
       for (var i = 0; i < underlineCount; i++) {
         final lineY = y + 14 + i * 5; // 增加间距从3到5像素
-        canvas.drawLine(
-          Offset(x - 8, lineY),
-          Offset(x + 8, lineY),
-          linePaint,
-        );
+        canvas.drawLine(Offset(x - 8, lineY), Offset(x + 8, lineY), linePaint);
       }
     }
   }
@@ -597,10 +667,7 @@ class JianpuPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: lyric,
-        style: TextStyle(
-          fontSize: 12,
-          color: config.theme.lyricColor,
-        ),
+        style: TextStyle(fontSize: 12, color: config.theme.lyricColor),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -610,13 +677,17 @@ class JianpuPainter extends CustomPainter {
 
   /// 获取布局参数（与绘制逻辑保持一致）
   _LayoutParams _getLayoutParams(Size size) {
-    final contentWidth = size.width - config.padding.left - config.padding.right;
+    final contentWidth =
+        size.width - config.padding.left - config.padding.right;
     final startX = config.padding.left;
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    final measuresPerLine = _calculateMeasuresPerLine(contentWidth, beatsPerMeasure);
+    final measuresPerLine = _calculateMeasuresPerLine(
+      contentWidth,
+      beatsPerMeasure,
+    );
     final measureWidth = contentWidth / measuresPerLine;
     final beatWidth = measureWidth / beatsPerMeasure;
-    
+
     final maxNotes = _getMaxNotesInChord();
     final double trackHeight;
     if (maxNotes <= 2) {
@@ -626,10 +697,10 @@ class JianpuPainter extends CustomPainter {
     } else {
       trackHeight = 65.0 + (maxNotes - 4) * 8;
     }
-    
+
     final lineSpacing = 20.0;
     final lineHeight = score.tracks.length * trackHeight + lineSpacing;
-    
+
     return _LayoutParams(
       contentWidth: contentWidth,
       startX: startX,
@@ -649,7 +720,7 @@ class JianpuPainter extends CustomPainter {
 
     // 获取布局参数（与绘制逻辑保持一致）
     final params = _getLayoutParams(size);
-    
+
     // 计算当前时间对应的位置
     // 使用与绘制逻辑相同的计算方法
     final playheadPosition = _calculatePlayheadPosition(
@@ -657,7 +728,7 @@ class JianpuPainter extends CustomPainter {
       totalDuration: totalDuration,
       params: params,
     );
-    
+
     if (playheadPosition == null) return;
 
     final paint = Paint()
@@ -670,10 +741,10 @@ class JianpuPainter extends CustomPainter {
       paint,
     );
   }
-  
+
   /// 计算播放指示线位置
   /// 返回 (x, y, height) 或 null（如果无法计算）
-  /// 
+  ///
   /// 注意：currentTime 和 totalDuration 都已经考虑了倍速和临时速度调整
   /// - currentTime: 实际播放时间（在 _onTick 中每16ms增加，已考虑倍速）
   /// - totalDuration: 实际总时长（已除以倍速，通过 getTotalDuration() 计算）
@@ -683,67 +754,80 @@ class JianpuPainter extends CustomPainter {
     required _LayoutParams params,
   }) {
     if (totalDuration <= 0) return null;
-    
+
     // 直接使用进度比例计算位置，避免重复计算速度
     // currentTime 和 totalDuration 已经考虑了倍速和临时速度调整
     final progress = (currentTime / totalDuration).clamp(0.0, 1.0);
-    
+
     // 计算当前小节索引
-    final measureIndex = (progress * score.measureCount).floor().clamp(0, score.measureCount - 1);
-    
+    final measureIndex = (progress * score.measureCount).floor().clamp(
+      0,
+      score.measureCount - 1,
+    );
+
     // 计算小节内的进度
     final measureProgress = (progress * score.measureCount) - measureIndex;
-    
+
     // 计算拍内位置
     final beatInMeasure = measureProgress * params.beatsPerMeasure;
-    
+
     // 计算行位置
     final measureInLine = measureIndex % params.measuresPerLine;
     final currentLine = measureIndex ~/ params.measuresPerLine;
-    
+
     // 计算X坐标：小节起始位置 + 拍内位置
     // 与绘制逻辑保持一致：小节线在 measureX，音符在 beatX = measureX + beatIndex * beatWidth + beatWidth / 2
     final measureX = params.startX + measureInLine * params.measureWidth;
     final beatX = measureX + beatInMeasure * params.beatWidth;
-    
+
     // 计算Y坐标
     final y = config.padding.top + currentLine * params.lineHeight;
-    
+
     // 计算高度
     final height = score.tracks.length * params.trackHeight;
-    
+
     return _PlayheadPosition(x: beatX, y: y, height: height);
   }
 
   /// 静态方法计算每行小节数
-  static int _staticCalculateMeasuresPerLine(double contentWidth, int beatsPerMeasure, Score score) {
+  static int _staticCalculateMeasuresPerLine(
+    double contentWidth,
+    int beatsPerMeasure,
+    Score score,
+  ) {
     const minBeatWidth = 25.0;
     const minMeasuresPerLine = 2;
     const maxMeasuresPerLine = 6;
-    
+
     final minMeasureWidth = minBeatWidth * beatsPerMeasure;
     int measuresPerLine = (contentWidth / minMeasureWidth).floor();
-    
+
     // 检查音符密度
     final maxNotesInChord = _staticGetMaxNotesInChord(score);
     if (maxNotesInChord > 3) {
       measuresPerLine = (measuresPerLine * 0.75).floor();
     }
-    
+
     return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
   }
-  
+
   /// 静态方法计算最大和弦音符数量
   static int _staticGetMaxNotesInChord(Score score) {
     int maxNotes = 1;
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    
+
     for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
       final track = score.tracks[trackIndex];
-      for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
+      for (
+        var measureIndex = 0;
+        measureIndex < track.measures.length;
+        measureIndex++
+      ) {
         final measure = track.measures[measureIndex];
         for (var beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
-          final beatsInMeasure = measure.beats.where((b) => b.index == beatIndex).toList();
+          final beatsInMeasure = measure.beats
+              .where((b) => b.index == beatIndex)
+              .toList();
           int notesInBeat = 0;
           for (final beat in beatsInMeasure) {
             notesInBeat += beat.notes.length;
@@ -758,17 +842,26 @@ class JianpuPainter extends CustomPainter {
   }
 
   /// 计算简谱所需高度
-  static double calculateHeight(Score score, RenderConfig config, {double? availableWidth}) {
+  static double calculateHeight(
+    Score score,
+    RenderConfig config, {
+    double? availableWidth,
+  }) {
     // 动态计算每行小节数
-    final contentWidth = (availableWidth ?? 400) - config.padding.left - config.padding.right;
+    final contentWidth =
+        (availableWidth ?? 400) - config.padding.left - config.padding.right;
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    final measuresPerLine = _staticCalculateMeasuresPerLine(contentWidth, beatsPerMeasure, score);
+    final measuresPerLine = _staticCalculateMeasuresPerLine(
+      contentWidth,
+      beatsPerMeasure,
+      score,
+    );
     final lineCount = (score.measureCount / measuresPerLine).ceil();
     final trackCount = score.tracks.length;
-    
+
     // 计算最大和弦音符数量
     final maxNotes = _staticGetMaxNotesInChord(score);
-    
+
     // 自适应轨道高度
     final double trackHeight;
     if (maxNotes <= 2) {
@@ -778,10 +871,13 @@ class JianpuPainter extends CustomPainter {
     } else {
       trackHeight = 65.0 + (maxNotes - 4) * 8;
     }
-    
+
     final lineSpacing = 20.0;
     final lineHeight = trackCount * trackHeight + lineSpacing;
-    return config.padding.top + lineCount * lineHeight + config.padding.bottom + 40;
+    return config.padding.top +
+        lineCount * lineHeight +
+        config.padding.bottom +
+        40;
   }
 
   @override

@@ -97,10 +97,12 @@ class CourseController extends GetxController {
   LessonModel? getNextLesson() {
     if (currentCourse.value == null || currentLesson.value == null) return null;
 
-    final currentIndex = currentCourse.value!.lessons
-        .indexWhere((l) => l.id == currentLesson.value!.id);
+    final currentIndex = currentCourse.value!.lessons.indexWhere(
+      (l) => l.id == currentLesson.value!.id,
+    );
 
-    if (currentIndex < 0 || currentIndex >= currentCourse.value!.lessons.length - 1) {
+    if (currentIndex < 0 ||
+        currentIndex >= currentCourse.value!.lessons.length - 1) {
       return null;
     }
 
@@ -125,4 +127,3 @@ class CourseController extends GetxController {
     return (null, null);
   }
 }
-

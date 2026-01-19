@@ -21,7 +21,9 @@ class LessonPage extends GetView<CourseController> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() => Text(controller.currentLesson.value?.title ?? '加载中...')),
+        title: Obx(
+          () => Text(controller.currentLesson.value?.title ?? '加载中...'),
+        ),
         centerTitle: true,
         elevation: 0,
         actions: [
@@ -29,7 +31,8 @@ class LessonPage extends GetView<CourseController> {
           Obx(() {
             final lesson = controller.currentLesson.value;
             final course = controller.currentCourse.value;
-            if (lesson == null || course == null) return const SizedBox.shrink();
+            if (lesson == null || course == null)
+              return const SizedBox.shrink();
 
             return Center(
               child: Padding(
@@ -37,7 +40,9 @@ class LessonPage extends GetView<CourseController> {
                 child: Text(
                   '${lesson.order}/${course.lessons.length}',
                   style: TextStyle(
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondary,
                   ),
                 ),
               ),
@@ -75,7 +80,11 @@ class LessonPage extends GetView<CourseController> {
   }
 
   /// 构建内容块
-  Widget _buildContentBlock(BuildContext context, ContentBlock block, bool isDark) {
+  Widget _buildContentBlock(
+    BuildContext context,
+    ContentBlock block,
+    bool isDark,
+  ) {
     switch (block.type) {
       case 'text':
         return _buildTextBlock(context, block.data, isDark);
@@ -95,7 +104,11 @@ class LessonPage extends GetView<CourseController> {
   }
 
   /// 文本内容块
-  Widget _buildTextBlock(BuildContext context, Map<String, dynamic> data, bool isDark) {
+  Widget _buildTextBlock(
+    BuildContext context,
+    Map<String, dynamic> data,
+    bool isDark,
+  ) {
     final content = data['content'] as String? ?? '';
 
     return Padding(
@@ -105,7 +118,11 @@ class LessonPage extends GetView<CourseController> {
   }
 
   /// 图片内容块
-  Widget _buildImageBlock(BuildContext context, Map<String, dynamic> data, bool isDark) {
+  Widget _buildImageBlock(
+    BuildContext context,
+    Map<String, dynamic> data,
+    bool isDark,
+  ) {
     final url = data['url'] as String? ?? '';
     final caption = data['caption'] as String?;
 
@@ -133,7 +150,9 @@ class LessonPage extends GetView<CourseController> {
               caption,
               style: TextStyle(
                 fontSize: 13,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
                 fontStyle: FontStyle.italic,
               ),
               textAlign: TextAlign.center,
@@ -145,14 +164,17 @@ class LessonPage extends GetView<CourseController> {
   }
 
   /// 音频内容块
-  Widget _buildAudioBlock(BuildContext context, Map<String, dynamic> data, bool isDark) {
+  Widget _buildAudioBlock(
+    BuildContext context,
+    Map<String, dynamic> data,
+    bool isDark,
+  ) {
     final notesData = data['notes'] as List<dynamic>? ?? [];
     final labels = (data['labels'] as List<dynamic>?)?.cast<String>() ?? [];
     final instruction = data['instruction'] as String?;
 
     // 检测是否是嵌套列表（和弦格式）
-    final bool isChordFormat = notesData.isNotEmpty && 
-        notesData.first is List;
+    final bool isChordFormat = notesData.isNotEmpty && notesData.first is List;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -170,7 +192,9 @@ class LessonPage extends GetView<CourseController> {
                 instruction,
                 style: TextStyle(
                   fontSize: 14,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -185,8 +209,9 @@ class LessonPage extends GetView<CourseController> {
                   final chordNotes = (notesData[index] as List<dynamic>)
                       .map((e) => e as int)
                       .toList();
-                  final label = index < labels.length ? labels[index] : 
-                      chordNotes.join('-');
+                  final label = index < labels.length
+                      ? labels[index]
+                      : chordNotes.join('-');
                   return _AudioChordButton(
                     midiNumbers: chordNotes,
                     label: label,
@@ -195,10 +220,7 @@ class LessonPage extends GetView<CourseController> {
                   // 单音格式：[60, 62, 64]
                   final midi = notesData[index] as int;
                   final label = index < labels.length ? labels[index] : '$midi';
-                  return _AudioNoteButton(
-                    midi: midi,
-                    label: label,
-                  );
+                  return _AudioNoteButton(midi: midi, label: label);
                 }
               }),
             ),
@@ -209,12 +231,17 @@ class LessonPage extends GetView<CourseController> {
   }
 
   /// 钢琴内容块（使用新的 Canvas 组件）
-  Widget _buildPianoBlock(BuildContext context, Map<String, dynamic> data, bool isDark) {
+  Widget _buildPianoBlock(
+    BuildContext context,
+    Map<String, dynamic> data,
+    bool isDark,
+  ) {
     final startMidi = data['startMidi'] as int? ?? 60;
     final endMidi = data['endMidi'] as int? ?? 72;
     final showLabels = data['showLabels'] as bool? ?? true;
     final labelType = data['labelType'] as String? ?? 'jianpu';
-    final highlightNotes = (data['highlightNotes'] as List<dynamic>?)?.cast<int>() ?? [];
+    final highlightNotes =
+        (data['highlightNotes'] as List<dynamic>?)?.cast<int>() ?? [];
     final instruction = data['instruction'] as String?;
 
     final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
@@ -248,7 +275,9 @@ class LessonPage extends GetView<CourseController> {
                 instruction,
                 style: TextStyle(
                   fontSize: 14,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -283,7 +312,11 @@ class LessonPage extends GetView<CourseController> {
   }
 
   /// 测验内容块
-  Widget _buildQuizBlock(BuildContext context, Map<String, dynamic> data, bool isDark) {
+  Widget _buildQuizBlock(
+    BuildContext context,
+    Map<String, dynamic> data,
+    bool isDark,
+  ) {
     final question = data['question'] as String? ?? '';
     final options = (data['options'] as List<dynamic>?)?.cast<String>() ?? [];
     final correctIndex = data['correctIndex'] as int? ?? 0;
@@ -306,7 +339,11 @@ class LessonPage extends GetView<CourseController> {
   }
 
   /// 节拍器内容块
-  Widget _buildMetronomeBlock(BuildContext context, Map<String, dynamic> data, bool isDark) {
+  Widget _buildMetronomeBlock(
+    BuildContext context,
+    Map<String, dynamic> data,
+    bool isDark,
+  ) {
     final bpm = data['bpm'] as int? ?? 80;
     final instruction = data['instruction'] as String?;
 
@@ -326,7 +363,9 @@ class LessonPage extends GetView<CourseController> {
                 instruction,
                 style: TextStyle(
                   fontSize: 14,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -364,7 +403,11 @@ class LessonPage extends GetView<CourseController> {
   }
 
   /// 底部按钮栏
-  Widget _buildBottomBar(BuildContext context, LessonModel lesson, bool isDark) {
+  Widget _buildBottomBar(
+    BuildContext context,
+    LessonModel lesson,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -395,12 +438,19 @@ class LessonPage extends GetView<CourseController> {
             // 完成/下一课
             ElevatedButton.icon(
               onPressed: _completeAndNext,
-              icon: Icon(lesson.isCompleted ? Icons.arrow_forward : Icons.check),
+              icon: Icon(
+                lesson.isCompleted ? Icons.arrow_forward : Icons.check,
+              ),
               label: Text(lesson.isCompleted ? '下一课' : '完成学习'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: lesson.isCompleted ? AppColors.primary : AppColors.success,
+                backgroundColor: lesson.isCompleted
+                    ? AppColors.primary
+                    : AppColors.success,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -414,7 +464,9 @@ class LessonPage extends GetView<CourseController> {
     final currentLesson = controller.currentLesson.value;
     if (course == null || currentLesson == null) return;
 
-    final currentIndex = course.lessons.indexWhere((l) => l.id == currentLesson.id);
+    final currentIndex = course.lessons.indexWhere(
+      (l) => l.id == currentLesson.id,
+    );
     if (currentIndex > 0) {
       final prevLesson = course.lessons[currentIndex - 1];
       controller.selectLesson(course.id, prevLesson.id);
@@ -477,7 +529,8 @@ class _InteractivePianoKeyboard extends StatefulWidget {
   });
 
   @override
-  State<_InteractivePianoKeyboard> createState() => _InteractivePianoKeyboardState();
+  State<_InteractivePianoKeyboard> createState() =>
+      _InteractivePianoKeyboardState();
 }
 
 class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
@@ -496,10 +549,12 @@ class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
           labelType: widget.labelType,
           highlightedNotes: widget.highlightedNotes,
         );
-        
+
         return GestureDetector(
-          onTapDown: (details) => _handleTap(details.localPosition, constraints, painter),
-          onPanUpdate: (details) => _handlePan(details.localPosition, constraints, painter),
+          onTapDown: (details) =>
+              _handleTap(details.localPosition, constraints, painter),
+          onPanUpdate: (details) =>
+              _handlePan(details.localPosition, constraints, painter),
           onPanEnd: (_) => _lastPlayedMidi = null,
           onTapUp: (_) => _lastPlayedMidi = null,
           child: CustomPaint(
@@ -511,8 +566,15 @@ class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
     );
   }
 
-  void _handleTap(Offset position, BoxConstraints constraints, PianoKeyboardPainter painter) {
-    final midi = painter.findKeyAtPosition(position, Size(constraints.maxWidth, constraints.maxHeight));
+  void _handleTap(
+    Offset position,
+    BoxConstraints constraints,
+    PianoKeyboardPainter painter,
+  ) {
+    final midi = painter.findKeyAtPosition(
+      position,
+      Size(constraints.maxWidth, constraints.maxHeight),
+    );
     if (midi != null && midi != _lastPlayedMidi) {
       _lastPlayedMidi = midi;
       _audioService.markUserInteracted();
@@ -520,8 +582,15 @@ class _InteractivePianoKeyboardState extends State<_InteractivePianoKeyboard> {
     }
   }
 
-  void _handlePan(Offset position, BoxConstraints constraints, PianoKeyboardPainter painter) {
-    final midi = painter.findKeyAtPosition(position, Size(constraints.maxWidth, constraints.maxHeight));
+  void _handlePan(
+    Offset position,
+    BoxConstraints constraints,
+    PianoKeyboardPainter painter,
+  ) {
+    final midi = painter.findKeyAtPosition(
+      position,
+      Size(constraints.maxWidth, constraints.maxHeight),
+    );
     if (midi != null && midi != _lastPlayedMidi) {
       _lastPlayedMidi = midi;
       _audioService.markUserInteracted();
@@ -566,22 +635,19 @@ class _MarkdownText extends StatelessWidget {
           height: 1.6,
           color: Theme.of(context).textTheme.bodyLarge?.color,
         ),
-        listBullet: TextStyle(
-          fontSize: 16,
-          color: AppColors.primary,
-        ),
+        listBullet: TextStyle(fontSize: 16, color: AppColors.primary),
         listIndent: 24,
         blockquote: TextStyle(
           fontSize: 16,
           fontStyle: FontStyle.italic,
-          color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
+          color: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
         ),
         blockquoteDecoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(8),
-          border: Border(
-            left: BorderSide(color: AppColors.primary, width: 4),
-          ),
+          border: Border(left: BorderSide(color: AppColors.primary, width: 4)),
         ),
         blockquotePadding: const EdgeInsets.all(12),
         code: TextStyle(
@@ -672,10 +738,7 @@ class _AudioChordButton extends StatelessWidget {
   final List<int> midiNumbers;
   final String label;
 
-  const _AudioChordButton({
-    required this.midiNumbers,
-    required this.label,
-  });
+  const _AudioChordButton({required this.midiNumbers, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -737,8 +800,8 @@ class _QuizWidgetState extends State<_QuizWidget> {
       decoration: BoxDecoration(
         color: showResult
             ? (isCorrect
-                ? AppColors.success.withValues(alpha: 0.05)
-                : AppColors.error.withValues(alpha: 0.05))
+                  ? AppColors.success.withValues(alpha: 0.05)
+                  : AppColors.error.withValues(alpha: 0.05))
             : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -754,7 +817,10 @@ class _QuizWidgetState extends State<_QuizWidget> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12),
@@ -806,7 +872,9 @@ class _QuizWidgetState extends State<_QuizWidget> {
             }
 
             return GestureDetector(
-              onTap: showResult ? null : () => setState(() => selectedIndex = index),
+              onTap: showResult
+                  ? null
+                  : () => setState(() => selectedIndex = index),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
@@ -824,7 +892,9 @@ class _QuizWidgetState extends State<_QuizWidget> {
                       height: 24,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isSelected ? AppColors.primary : Colors.grey.shade200,
+                        color: isSelected
+                            ? AppColors.primary
+                            : Colors.grey.shade200,
                       ),
                       child: Center(
                         child: Text(
@@ -848,9 +918,17 @@ class _QuizWidgetState extends State<_QuizWidget> {
                       ),
                     ),
                     if (showResult && isCorrectOption)
-                      const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+                      const Icon(
+                        Icons.check_circle,
+                        color: AppColors.success,
+                        size: 20,
+                      ),
                     if (showResult && isSelected && !isCorrectOption)
-                      const Icon(Icons.cancel, color: AppColors.error, size: 20),
+                      const Icon(
+                        Icons.cancel,
+                        color: AppColors.error,
+                        size: 20,
+                      ),
                   ],
                 ),
               ),
@@ -896,7 +974,9 @@ class _QuizWidgetState extends State<_QuizWidget> {
                       widget.explanation!,
                       style: TextStyle(
                         fontSize: 14,
-                        color: widget.isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                        color: widget.isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ),

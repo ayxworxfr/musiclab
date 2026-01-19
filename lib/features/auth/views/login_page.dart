@@ -17,10 +17,7 @@ class LoginPage extends GetView<AuthController> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-            ],
+            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
           ),
         ),
         child: SafeArea(
@@ -114,10 +111,7 @@ class LoginPage extends GetView<AuthController> {
             // 欢迎文字
             Text(
               'pages.login.welcome'.tr,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
@@ -140,24 +134,26 @@ class LoginPage extends GetView<AuthController> {
             const SizedBox(height: 16),
 
             // 密码输入框
-            Obx(() => _buildTextField(
-                  controller: controller.passwordController,
-                  label: 'pages.login.password'.tr,
-                  hint: 'pages.login.password_hint'.tr,
-                  icon: Icons.lock_outline_rounded,
-                  obscureText: !controller.isPasswordVisible.value,
-                  validator: ValidatorUtil.validatePassword,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      controller.isPasswordVisible.value
-                          ? Icons.visibility_off_rounded
-                          : Icons.visibility_rounded,
-                      color: AppColors.textSecondary,
-                    ),
-                    onPressed: controller.togglePasswordVisibility,
+            Obx(
+              () => _buildTextField(
+                controller: controller.passwordController,
+                label: 'pages.login.password'.tr,
+                hint: 'pages.login.password_hint'.tr,
+                icon: Icons.lock_outline_rounded,
+                obscureText: !controller.isPasswordVisible.value,
+                validator: ValidatorUtil.validatePassword,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    controller.isPasswordVisible.value
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    color: AppColors.textSecondary,
                   ),
-                  onSubmitted: (_) => controller.login(),
-                )),
+                  onPressed: controller.togglePasswordVisibility,
+                ),
+                onSubmitted: (_) => controller.login(),
+              ),
+            ),
 
             // 错误信息
             _buildErrorMessage(),
@@ -175,10 +171,7 @@ class LoginPage extends GetView<AuthController> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'OR',
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                   ),
                 ),
                 Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -208,8 +201,9 @@ class LoginPage extends GetView<AuthController> {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
-      textInputAction:
-          onSubmitted != null ? TextInputAction.done : TextInputAction.next,
+      textInputAction: onSubmitted != null
+          ? TextInputAction.done
+          : TextInputAction.next,
       onFieldSubmitted: onSubmitted,
       decoration: InputDecoration(
         labelText: label,
@@ -262,10 +256,7 @@ class LoginPage extends GetView<AuthController> {
               Expanded(
                 child: Text(
                   controller.errorMessage.value,
-                  style: const TextStyle(
-                    color: AppColors.error,
-                    fontSize: 13,
-                  ),
+                  style: const TextStyle(color: AppColors.error, fontSize: 13),
                 ),
               ),
             ],
@@ -276,36 +267,38 @@ class LoginPage extends GetView<AuthController> {
   }
 
   Widget _buildLoginButton() {
-    return Obx(() => SizedBox(
-          height: 50,
-          child: ElevatedButton(
-            onPressed: controller.isLoading.value ? null : controller.login,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
+    return Obx(
+      () => SizedBox(
+        height: 50,
+        child: ElevatedButton(
+          onPressed: controller.isLoading.value ? null : controller.login,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: controller.isLoading.value
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Text(
-                    'pages.login.submit'.tr,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+            elevation: 0,
           ),
-        ));
+          child: controller.isLoading.value
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Text(
+                  'pages.login.submit'.tr,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+        ),
+      ),
+    );
   }
 
   Widget _buildRegisterEntry() {
@@ -314,9 +307,7 @@ class LoginPage extends GetView<AuthController> {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primary,
         side: const BorderSide(color: AppColors.primary),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 14),
       ),
       child: Row(

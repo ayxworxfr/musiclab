@@ -15,8 +15,7 @@ class Debouncer {
   Timer? _timer;
 
   Debouncer({Duration? delay})
-      : delay = delay ??
-            Duration(milliseconds: AppConfig.debounceDelay);
+    : delay = delay ?? Duration(milliseconds: AppConfig.debounceDelay);
 
   /// 调用防抖函数
   void call(void Function() action) {
@@ -61,8 +60,7 @@ class Throttler {
   bool _isThrottled = false;
 
   Throttler({Duration? interval})
-      : interval = interval ??
-            Duration(milliseconds: AppConfig.throttleInterval);
+    : interval = interval ?? Duration(milliseconds: AppConfig.throttleInterval);
 
   /// 调用节流函数（前沿触发）
   ///
@@ -92,7 +90,8 @@ class Throttler {
     } else {
       // 更新待执行的 action
       _timer?.cancel();
-      final remaining = interval -
+      final remaining =
+          interval -
           DateTime.now().difference(_lastExecution ?? DateTime.now());
       _timer = Timer(remaining.isNegative ? Duration.zero : remaining, () {
         action();
@@ -135,4 +134,3 @@ extension ThrottledFunction on void Function() {
     return () => throttler.call(this);
   }
 }
-

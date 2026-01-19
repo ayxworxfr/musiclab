@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// 应用颜色定义
-/// 
+///
 /// 统一管理应用中使用的所有颜色
 abstract class AppColors {
   // ==================== 主色调 ====================
@@ -105,4 +105,3 @@ abstract class AppColors {
   /// 透明色
   static const Color transparent = Colors.transparent;
 }
-

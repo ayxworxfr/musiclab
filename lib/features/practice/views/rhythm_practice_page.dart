@@ -54,27 +54,28 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   bool _canTap = false;
   bool _beatHit = false;
   Timer? _tapWindowTimer;
-  
+
   // 键盘焦点
   final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    
+
     // 获取或创建节拍器服务
     if (!Get.isRegistered<MetronomeService>()) {
       Get.put(MetronomeService());
     }
     _metronomeService = Get.find<MetronomeService>();
-    
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 150),
     );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeOut),
-    );
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.15,
+    ).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeOut));
   }
 
   @override
@@ -84,7 +85,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
     _focusNode.dispose();
     super.dispose();
   }
-  
+
   /// 处理键盘事件
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     // 只处理按下事件，避免重复触发
@@ -149,7 +150,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
             '跟着节拍敲击屏幕，训练节奏感',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 32),
@@ -218,7 +221,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : Theme.of(context).cardColor,
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.1)
+                    : Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected ? AppColors.primary : Colors.grey.shade300,
@@ -255,7 +260,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
                           d['desc'] as String,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -290,7 +297,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
               '准备好跟着节拍敲击',
               style: TextStyle(
                 fontSize: 16,
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
             ),
           ],
@@ -308,7 +317,11 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
             children: [
               _buildStatItem('分数', '$_score', AppColors.primary),
               _buildStatItem('连击', '$_combo', AppColors.warning),
-              _buildStatItem('命中', '$_hitBeats/$_totalBeats', AppColors.success),
+              _buildStatItem(
+                '命中',
+                '$_hitBeats/$_totalBeats',
+                AppColors.success,
+              ),
             ],
           ),
         ),
@@ -321,7 +334,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondary,
             ),
           ),
         ),
@@ -355,10 +370,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
         ),
       ],
     );
@@ -384,8 +396,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: (isStrong ? AppColors.primary : AppColors.secondary)
-                          .withValues(alpha: 0.6),
+                      color:
+                          (isStrong ? AppColors.primary : AppColors.secondary)
+                              .withValues(alpha: 0.6),
                       blurRadius: 16,
                       spreadRadius: 4,
                     ),
@@ -432,8 +445,10 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
                 color: isCurrent
                     ? (shouldTap ? AppColors.primary : Colors.grey.shade400)
                     : isPast
-                        ? Colors.grey.shade300
-                        : (shouldTap ? AppColors.primary.withValues(alpha: 0.3) : Colors.grey.shade200),
+                    ? Colors.grey.shade300
+                    : (shouldTap
+                          ? AppColors.primary.withValues(alpha: 0.3)
+                          : Colors.grey.shade200),
                 borderRadius: BorderRadius.circular(8),
                 border: isCurrent
                     ? Border.all(color: AppColors.primary, width: 3)
@@ -443,7 +458,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
                 child: shouldTap
                     ? Icon(
                         Icons.touch_app,
-                        color: isCurrent || isPast ? Colors.white : AppColors.primary,
+                        color: isCurrent || isPast
+                            ? Colors.white
+                            : AppColors.primary,
                         size: 22,
                       )
                     : Text(
@@ -480,8 +497,8 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
                     color: _beatHit
                         ? AppColors.success.withValues(alpha: 0.3)
                         : _canTap
-                            ? AppColors.primary.withValues(alpha: 0.3)
-                            : AppColors.primary.withValues(alpha: 0.15),
+                        ? AppColors.primary.withValues(alpha: 0.3)
+                        : AppColors.primary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: _beatHit ? AppColors.success : AppColors.primary,
@@ -515,10 +532,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
               const SizedBox(width: 8),
               Text(
                 '点击圆圈 或 按空格键',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
               ),
             ],
           ),
@@ -571,10 +585,10 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
     // 配置节拍器
     _metronomeService.setBpm(_bpm);
     _metronomeService.setTimeSignature(_beatsPerMeasure, 4);
-    
+
     // 设置节拍回调
     _metronomeService.onBeat = _onBeat;
-    
+
     // 启动节拍器
     _metronomeService.start();
   }
@@ -584,7 +598,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
     _tapWindowTimer?.cancel();
     _metronomeService.onBeat = null;
     _metronomeService.stop();
-    
+
     setState(() {
       _isPlaying = false;
       _isCountingDown = false;
@@ -612,7 +626,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   /// 节拍触发（由 MetronomeService 回调）
   void _onBeat(int beat, bool isStrong) {
     if (!_isPlaying) return;
-    
+
     // 更新当前拍显示
     setState(() {
       _currentBeat = beat;
@@ -641,9 +655,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
             _combo = 0;
           });
         }
-        
+
         _canTap = false;
-        
+
         setState(() {
           _patternIndex++;
         });
@@ -659,7 +673,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   /// 敲击
   void _onTap() {
     if (!_isPlaying) return;
-    
+
     // 在敲击窗口外也可以敲击，但效果不同
     if (!_canTap || _beatHit) {
       // 错误的敲击（窗口外或重复敲击）
@@ -700,7 +714,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
   void _endGame() {
     _metronomeService.onBeat = null;
     _metronomeService.stop();
-    
+
     setState(() {
       _isPlaying = false;
       _currentBeat = -1;
@@ -712,7 +726,9 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
 
   /// 显示结果对话框
   void _showResultDialog() {
-    final accuracy = _totalBeats > 0 ? (_hitBeats / _totalBeats * 100).round() : 0;
+    final accuracy = _totalBeats > 0
+        ? (_hitBeats / _totalBeats * 100).round()
+        : 0;
 
     showDialog(
       context: context,
@@ -726,14 +742,14 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
               accuracy >= 80
                   ? Icons.emoji_events
                   : accuracy >= 60
-                      ? Icons.thumb_up
-                      : Icons.sentiment_dissatisfied,
+                  ? Icons.thumb_up
+                  : Icons.sentiment_dissatisfied,
               size: 64,
               color: accuracy >= 80
                   ? AppColors.success
                   : accuracy >= 60
-                      ? AppColors.warning
-                      : AppColors.error,
+                  ? AppColors.warning
+                  : AppColors.error,
             ),
             const SizedBox(height: 16),
             Text(

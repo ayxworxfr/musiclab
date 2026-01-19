@@ -97,23 +97,27 @@ class PianoKeyboardPainter extends CustomPainter {
       if (_isBlackKey(midi)) {
         // 黑键位置（在前一个白键右侧）
         final x = whiteKeyIndex * whiteKeyWidth - blackKeyWidth / 2;
-        layouts.add(PianoKeyLayout(
-          midi: midi,
-          rect: Rect.fromLTWH(x, 0, blackKeyWidth, blackKeyHeight),
-          isBlack: true,
-        ));
+        layouts.add(
+          PianoKeyLayout(
+            midi: midi,
+            rect: Rect.fromLTWH(x, 0, blackKeyWidth, blackKeyHeight),
+            isBlack: true,
+          ),
+        );
       } else {
         // 白键
-        layouts.add(PianoKeyLayout(
-          midi: midi,
-          rect: Rect.fromLTWH(
-            whiteKeyIndex * whiteKeyWidth,
-            0,
-            whiteKeyWidth,
-            whiteKeyHeight,
+        layouts.add(
+          PianoKeyLayout(
+            midi: midi,
+            rect: Rect.fromLTWH(
+              whiteKeyIndex * whiteKeyWidth,
+              0,
+              whiteKeyWidth,
+              whiteKeyHeight,
+            ),
+            isBlack: false,
           ),
-          isBlack: false,
-        ));
+        );
         whiteKeyIndex++;
       }
     }
@@ -135,8 +139,8 @@ class PianoKeyboardPainter extends CustomPainter {
       keyColor = hand == Hand.right
           ? config.theme.rightHandColor
           : hand == Hand.left
-              ? config.theme.leftHandColor
-              : config.theme.whiteKeyHighlightColor;
+          ? config.theme.leftHandColor
+          : config.theme.whiteKeyHighlightColor;
     } else {
       keyColor = config.theme.whiteKeyColor;
     }
@@ -172,10 +176,7 @@ class PianoKeyboardPainter extends CustomPainter {
     }
 
     // 键体
-    canvas.drawRRect(
-      rrect,
-      Paint()..shader = gradient,
-    );
+    canvas.drawRRect(rrect, Paint()..shader = gradient);
 
     // 边框
     canvas.drawRRect(
@@ -206,8 +207,8 @@ class PianoKeyboardPainter extends CustomPainter {
       keyColor = hand == Hand.right
           ? config.theme.rightHandColor.withValues(alpha: 0.9)
           : hand == Hand.left
-              ? config.theme.leftHandColor.withValues(alpha: 0.9)
-              : config.theme.blackKeyHighlightColor;
+          ? config.theme.leftHandColor.withValues(alpha: 0.9)
+          : config.theme.blackKeyHighlightColor;
     } else {
       keyColor = config.theme.blackKeyColor;
     }
@@ -242,10 +243,7 @@ class PianoKeyboardPainter extends CustomPainter {
     );
 
     // 键体
-    canvas.drawRRect(
-      rrect,
-      Paint()..shader = topGradient,
-    );
+    canvas.drawRRect(rrect, Paint()..shader = topGradient);
 
     // 高光
     if (isHighlighted || isPressed) {
@@ -281,9 +279,10 @@ class PianoKeyboardPainter extends CustomPainter {
 
   /// 绘制标签（支持简谱高低音点）
   void _drawLabel(Canvas canvas, PianoKeyLayout key, Color keyColor) {
-    final isHighlighted = highlightedNotes.containsKey(key.midi) ||
+    final isHighlighted =
+        highlightedNotes.containsKey(key.midi) ||
         pressedKeys.contains(key.midi);
-    
+
     // 获取标签信息
     final labelInfo = _getLabelWithOctave(key.midi);
     final label = labelInfo['label'] as String;
@@ -293,8 +292,8 @@ class PianoKeyboardPainter extends CustomPainter {
     final textColor = key.isBlack
         ? (isHighlighted ? Colors.white : Colors.grey.shade300)
         : (isHighlighted
-            ? Colors.white
-            : config.theme.textColor.withValues(alpha: 0.7));
+              ? Colors.white
+              : config.theme.textColor.withValues(alpha: 0.7));
 
     final textStyle = TextStyle(
       fontSize: baseFontSize,
@@ -317,26 +316,42 @@ class PianoKeyboardPainter extends CustomPainter {
 
     // 绘制高低音点（仅简谱模式）
     if (labelType == 'jianpu' && octaveDots != 0) {
-      _drawOctaveDots(canvas, Offset(x, y), textPainter.width,
-          textPainter.height, octaveDots, textColor, key.isBlack);
+      _drawOctaveDots(
+        canvas,
+        Offset(x, y),
+        textPainter.width,
+        textPainter.height,
+        octaveDots,
+        textColor,
+        key.isBlack,
+      );
     }
   }
 
   /// 绘制八度点
-  void _drawOctaveDots(Canvas canvas, Offset textTopLeft, double textWidth,
-      double textHeight, int dots, Color color, bool isBlack) {
+  void _drawOctaveDots(
+    Canvas canvas,
+    Offset textTopLeft,
+    double textWidth,
+    double textHeight,
+    int dots,
+    Color color,
+    bool isBlack,
+  ) {
     final dotRadius = isBlack ? 1.2 : 1.5;
     final dotSpacing = isBlack ? 3.0 : 4.0;
     final paint = Paint()..color = color;
-    
-    final absCount = dots.abs().clamp(0, 3);  // 最多显示3个点
+
+    final absCount = dots.abs().clamp(0, 3); // 最多显示3个点
     final isHigh = dots > 0;
     final centerX = textTopLeft.dx + textWidth / 2;
-    
+
     for (var i = 0; i < absCount; i++) {
-      final dotY = isHigh 
-          ? textTopLeft.dy - 3 - (i * dotSpacing)  // 高音点在文字上方
-          : textTopLeft.dy + textHeight + 3 + (i * dotSpacing);  // 低音点在文字下方
+      final dotY = isHigh
+          ? textTopLeft.dy -
+                3 -
+                (i * dotSpacing) // 高音点在文字上方
+          : textTopLeft.dy + textHeight + 3 + (i * dotSpacing); // 低音点在文字下方
       canvas.drawCircle(Offset(centerX, dotY), dotRadius, paint);
     }
   }
@@ -344,19 +359,58 @@ class PianoKeyboardPainter extends CustomPainter {
   /// 获取标签文本和八度信息
   Map<String, dynamic> _getLabelWithOctave(int midi) {
     final noteIndex = midi % 12;
-    final octave = (midi ~/ 12) - 1;  // MIDI 60 = C4
-    
+    final octave = (midi ~/ 12) - 1; // MIDI 60 = C4
+
     switch (labelType) {
       case 'solfege':
-        const solfege = ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'];
+        const solfege = [
+          'Do',
+          'Do#',
+          'Re',
+          'Re#',
+          'Mi',
+          'Fa',
+          'Fa#',
+          'Sol',
+          'Sol#',
+          'La',
+          'La#',
+          'Si',
+        ];
         return {'label': solfege[noteIndex], 'dots': 0};
       case 'jianpu':
         // 简谱：C4 = 1（中央C，无点），C5 = 1̇（高音），C3 = 1̣（低音）
-        const jianpuBase = ['1', '1#', '2', '2#', '3', '4', '4#', '5', '5#', '6', '6#', '7'];
-        final dots = octave - 4;  // C4 = 0点，C5 = 1点（高），C3 = -1点（低）
+        const jianpuBase = [
+          '1',
+          '1#',
+          '2',
+          '2#',
+          '3',
+          '4',
+          '4#',
+          '5',
+          '5#',
+          '6',
+          '6#',
+          '7',
+        ];
+        final dots = octave - 4; // C4 = 0点，C5 = 1点（高），C3 = -1点（低）
         return {'label': jianpuBase[noteIndex], 'dots': dots};
       default:
-        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const notes = [
+          'C',
+          'C#',
+          'D',
+          'D#',
+          'E',
+          'F',
+          'F#',
+          'G',
+          'G#',
+          'A',
+          'A#',
+          'B',
+        ];
         return {'label': '${notes[noteIndex]}$octave', 'dots': 0};
     }
   }
@@ -396,4 +450,3 @@ class PianoKeyboardPainter extends CustomPainter {
         labelType != oldDelegate.labelType;
   }
 }
-

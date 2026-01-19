@@ -13,17 +13,14 @@ class LayoutEngine {
   final RenderConfig config;
   final double availableWidth;
 
-  LayoutEngine({
-    required this.config,
-    required this.availableWidth,
-  });
+  LayoutEngine({required this.config, required this.availableWidth});
 
   /// 计算完整布局
   LayoutResult calculate(Score score) {
     // 1. 分行（先计算行数）
     final lines = _breakIntoLines(score);
     final lineCount = lines.isEmpty ? 1 : lines.length;
-    
+
     // 2. 计算谱表位置
     final staffHeight = config.lineSpacing * 4;
     final trebleY = config.padding.top + 20; // 留空间给标题
@@ -72,14 +69,15 @@ class LayoutEngine {
     const minMeasureWidth = 80.0; // 每小节最小宽度
     const minMeasuresPerLine = 2;
     const maxMeasuresPerLine = 6;
-    
-    final contentWidth = availableWidth - config.padding.left - config.padding.right;
+
+    final contentWidth =
+        availableWidth - config.padding.left - config.padding.right;
     final headerWidth = 100.0; // 谱号、调号、拍号
     final availableLineWidth = contentWidth - headerWidth;
-    
+
     // 根据可用宽度计算每行小节数
     int measuresPerLine = (availableLineWidth / minMeasureWidth).floor();
-    
+
     // 检查音符密度 - 如果有密集的音符，减少每行小节数
     int maxNotesPerBeat = 1;
     for (final track in score.tracks) {
@@ -91,14 +89,14 @@ class LayoutEngine {
         }
       }
     }
-    
+
     // 根据音符密度调整
     if (maxNotesPerBeat > 4) {
       measuresPerLine = (measuresPerLine * 0.6).floor();
     } else if (maxNotesPerBeat > 2) {
       measuresPerLine = (measuresPerLine * 0.8).floor();
     }
-    
+
     return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
   }
 
@@ -109,31 +107,36 @@ class LayoutEngine {
 
     // 动态计算每行小节数
     final measuresPerLine = _calculateMeasuresPerLine(score);
-    
+
     var y = config.padding.top;
     var measureIndex = 0;
 
     while (measureIndex < score.measureCount) {
       final lineIndex = lines.length;
       final isFirstLine = lineIndex == 0;
-      
+
       // 计算这一行的小节
-      final endIndex = (measureIndex + measuresPerLine).clamp(0, score.measureCount);
+      final endIndex = (measureIndex + measuresPerLine).clamp(
+        0,
+        score.measureCount,
+      );
       final measureIndices = List.generate(
-        endIndex - measureIndex, 
+        endIndex - measureIndex,
         (i) => measureIndex + i,
       );
-      
-      lines.add(LineLayout(
-        lineIndex: lineIndex,
-        y: y,
-        height: config.lineHeight,
-        measureIndices: measureIndices,
-        showClef: true, // 每行都显示谱号
-        showKeySignature: isFirstLine,
-        showTimeSignature: isFirstLine,
-      ));
-      
+
+      lines.add(
+        LineLayout(
+          lineIndex: lineIndex,
+          y: y,
+          height: config.lineHeight,
+          measureIndices: measureIndices,
+          showClef: true, // 每行都显示谱号
+          showKeySignature: isFirstLine,
+          showTimeSignature: isFirstLine,
+        ),
+      );
+
       y += config.lineHeight;
       measureIndex = endIndex;
     }
@@ -164,7 +167,8 @@ class LayoutEngine {
   /// 计算小节布局
   Map<int, MeasureLayout> _layoutMeasures(Score score, List<LineLayout> lines) {
     final layouts = <int, MeasureLayout>{};
-    final contentWidth = availableWidth - config.padding.left - config.padding.right;
+    final contentWidth =
+        availableWidth - config.padding.left - config.padding.right;
 
     for (final line in lines) {
       final headerWidth = line.showTimeSignature ? 100.0 : 45.0;
@@ -207,7 +211,11 @@ class LayoutEngine {
       final isTreble = track.clef == Clef.treble;
       final baseStaffY = isTreble ? trebleY : bassY;
 
-      for (var measureIndex = 0; measureIndex < track.measures.length; measureIndex++) {
+      for (
+        var measureIndex = 0;
+        measureIndex < track.measures.length;
+        measureIndex++
+      ) {
         final measure = track.measures[measureIndex];
         final measureLayout = measureLayouts[measureIndex];
         if (measureLayout == null) continue;
@@ -217,39 +225,48 @@ class LayoutEngine {
         final staffY = baseStaffY + lineOffset;
 
         // 计算这个小节的开始时间
-        final measureStartTime = measureIndex * beatsPerMeasure / beatsPerSecond;
+        final measureStartTime =
+            measureIndex * beatsPerMeasure / beatsPerSecond;
 
         // 统计这个小节中每个拍的音符数量（用于细分布局）
         final notesByBeat = <int, List<_NoteInfo>>{};
-        
-        for (var beatArrIndex = 0; beatArrIndex < measure.beats.length; beatArrIndex++) {
+
+        for (
+          var beatArrIndex = 0;
+          beatArrIndex < measure.beats.length;
+          beatArrIndex++
+        ) {
           final beat = measure.beats[beatArrIndex];
           final actualBeatIndex = beat.index; // 使用实际的拍索引
-          
+
           notesByBeat.putIfAbsent(actualBeatIndex, () => []);
-          
+
           for (var noteIndex = 0; noteIndex < beat.notes.length; noteIndex++) {
             final note = beat.notes[noteIndex];
-            notesByBeat[actualBeatIndex]!.add(_NoteInfo(
-              note: note,
-              beatArrIndex: beatArrIndex,
-              noteIndex: noteIndex,
-            ));
+            notesByBeat[actualBeatIndex]!.add(
+              _NoteInfo(
+                note: note,
+                beatArrIndex: beatArrIndex,
+                noteIndex: noteIndex,
+              ),
+            );
           }
         }
 
         // 计算每个音符的位置
         for (var beatIdx = 0; beatIdx < beatsPerMeasure; beatIdx++) {
           final notesInBeat = notesByBeat[beatIdx] ?? [];
-          
+
           // 计算这一拍在小节中的 X 位置
-          final beatStartX = measureLayout.x + 15 + 
+          final beatStartX =
+              measureLayout.x +
+              15 +
               (beatIdx / beatsPerMeasure) * (measureLayout.width - 30);
           final beatWidth = (measureLayout.width - 30) / beatsPerMeasure;
-          
+
           // 这一拍的开始时间（基于拍索引）
           final beatStartTime = measureStartTime + beatIdx / beatsPerSecond;
-          
+
           if (notesInBeat.isEmpty) {
             continue;
           }
@@ -299,21 +316,23 @@ class LayoutEngine {
               height: 20,
             );
 
-            noteLayouts.add(NoteLayout(
-              trackIndex: trackIndex,
-              measureIndex: measureIndex,
-              beatIndex: beatIdx,
-              noteIndex: info.noteIndex,
-              note: note,
-              x: noteX,
-              y: noteY,
-              staffPosition: staffPosition,
-              stemUp: stemUp,
-              hitBox: hitBox,
-              pianoKeyX: pianoKeyX,
-              hand: track.hand,
-              startTime: noteStartTime, // 使用计算出的开始时间（可能有延迟）
-            ));
+            noteLayouts.add(
+              NoteLayout(
+                trackIndex: trackIndex,
+                measureIndex: measureIndex,
+                beatIndex: beatIdx,
+                noteIndex: info.noteIndex,
+                note: note,
+                x: noteX,
+                y: noteY,
+                staffPosition: staffPosition,
+                stemUp: stemUp,
+                hitBox: hitBox,
+                pianoKeyX: pianoKeyX,
+                hand: track.hand,
+                startTime: noteStartTime, // 使用计算出的开始时间（可能有延迟）
+              ),
+            );
           }
         }
       }
@@ -321,7 +340,6 @@ class LayoutEngine {
 
     return noteLayouts;
   }
-
 
   /// 获取五线谱位置
   /// 返回值：0 = 第一线(E4 for treble), 正数向上，负数向下
@@ -428,7 +446,8 @@ class LayoutEngine {
     final notes = indices.map((i) => noteLayouts[i]).toList();
 
     // 确定符干方向
-    final avgPosition = notes.map((n) => n.staffPosition).reduce((a, b) => a + b) /
+    final avgPosition =
+        notes.map((n) => n.staffPosition).reduce((a, b) => a + b) /
         notes.length;
     final stemUp = avgPosition < 4;
 
@@ -439,15 +458,15 @@ class LayoutEngine {
     final stemLength = config.lineSpacing * 3.5;
     final first = notes.first;
     final last = notes.last;
-    
+
     // 计算符干的 X 位置
-    final firstStemX = stemUp 
-        ? first.x + config.noteHeadRadius - 1 
+    final firstStemX = stemUp
+        ? first.x + config.noteHeadRadius - 1
         : first.x - config.noteHeadRadius + 1;
-    final lastStemX = stemUp 
-        ? last.x + config.noteHeadRadius - 1 
+    final lastStemX = stemUp
+        ? last.x + config.noteHeadRadius - 1
         : last.x - config.noteHeadRadius + 1;
-    
+
     // 找到最极端的音符位置来确定符杠高度
     double beamY;
     if (stemUp) {
@@ -497,14 +516,16 @@ class LayoutEngine {
               ? min(startPoint.dy, endPoint.dy) - curveHeight
               : max(startPoint.dy, endPoint.dy) + curveHeight;
 
-          ties.add(TieLayout(
-            startNoteIndex: i,
-            endNoteIndex: j,
-            startPoint: startPoint,
-            endPoint: endPoint,
-            controlPoint1: Offset(midX - 20, controlY),
-            controlPoint2: Offset(midX + 20, controlY),
-          ));
+          ties.add(
+            TieLayout(
+              startNoteIndex: i,
+              endNoteIndex: j,
+              startPoint: startPoint,
+              endPoint: endPoint,
+              controlPoint1: Offset(midX - 20, controlY),
+              controlPoint2: Offset(midX + 20, controlY),
+            ),
+          );
           break;
         }
       }
@@ -546,4 +567,3 @@ class _NoteInfo {
     required this.noteIndex,
   });
 }
-
