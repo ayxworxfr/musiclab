@@ -613,6 +613,10 @@ class ScoreMetadata {
   /// 标签
   final List<String> tags;
 
+  /// MIDI PPQ (Pulses Per Quarter note)
+  /// 用于MIDI导入导出时保持精确的timing，默认480
+  final int ppq;
+
   const ScoreMetadata({
     this.key = MusicKey.C,
     this.beatsPerMeasure = 4,
@@ -622,6 +626,7 @@ class ScoreMetadata {
     this.difficulty = 1,
     this.category = ScoreCategory.children,
     this.tags = const [],
+    this.ppq = 480,
   });
 
   String get timeSignature => '$beatsPerMeasure/$beatUnit';
@@ -657,6 +662,7 @@ class ScoreMetadata {
       difficulty: json['difficulty'] as int? ?? 1,
       category: parseCategory(json['category']),
       tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+      ppq: json['ppq'] as int? ?? 480,
     );
   }
 
@@ -670,6 +676,7 @@ class ScoreMetadata {
       'difficulty': difficulty,
       'category': category.name,
       if (tags.isNotEmpty) 'tags': tags,
+      if (ppq != 480) 'ppq': ppq,
     };
   }
 
@@ -683,6 +690,7 @@ class ScoreMetadata {
     int? difficulty,
     ScoreCategory? category,
     List<String>? tags,
+    int? ppq,
   }) {
     return ScoreMetadata(
       key: key ?? this.key,
@@ -693,6 +701,7 @@ class ScoreMetadata {
       difficulty: difficulty ?? this.difficulty,
       category: category ?? this.category,
       tags: tags ?? this.tags,
+      ppq: ppq ?? this.ppq,
     );
   }
 }

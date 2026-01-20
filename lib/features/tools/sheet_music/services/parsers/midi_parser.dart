@@ -381,6 +381,7 @@ class MidiParser implements SheetParser {
         tempo: tempo,
         difficulty: 1,
         category: ScoreCategory.classical,
+        ppq: ppq,  // 保存原始PPQ
       ),
       tracks: scoreTracks,
       isBuiltIn: false,
@@ -417,26 +418,45 @@ class MidiParser implements SheetParser {
       }
     }
 
+    if (notes.isEmpty) return [];
+
     notes.sort((a, b) => a.startTime.compareTo(b.startTime));
 
     final ticksPerMeasure = ppq * beatsPerMeasure;
     final measures = <Measure>[];
-    var measureNumber = 0;
 
-    var currentMeasureStart = 0;
+    // 计算总时长（以最后一个音符的结束时间为准）
+    final lastNote = notes.last;
+    final totalTicks = lastNote.startTime + lastNote.duration;
+    final totalMeasures = (totalTicks / ticksPerMeasure).ceil();
 
-    while (currentMeasureStart <
-        (notes.lastOrNull?.startTime ?? 0) +
-            (notes.lastOrNull?.duration ?? 0)) {
-      measureNumber++;
+    warnings.add('音符总数: ${notes.length}, 总tick: $totalTicks, 小节数: $totalMeasures');
+
+    // 创建所有小节（包括空小节），确保number连续
+    var totalNotesAssigned = 0;
+    for (var measureIndex = 0; measureIndex < totalMeasures; measureIndex++) {
+      final currentMeasureStart = measureIndex * ticksPerMeasure;
       final measureEnd = currentMeasureStart + ticksPerMeasure;
 
+      // 找到在这个小节内开始的音符
+      // 注意：使用 < 而不是 <= 是正确的，因为 measureEnd 是下一小节的起点
+      // 但最后一个小节要特殊处理，包含所有剩余音符
       final measureNotes = notes
           .where(
-            (n) =>
-                n.startTime >= currentMeasureStart && n.startTime < measureEnd,
+            (n) {
+              if (measureIndex == totalMeasures - 1) {
+                // 最后一个小节：包含所有 >= currentMeasureStart 的音符
+                return n.startTime >= currentMeasureStart;
+              } else {
+                // 其他小节：[currentMeasureStart, measureEnd)
+                return n.startTime >= currentMeasureStart &&
+                    n.startTime < measureEnd;
+              }
+            },
           )
           .toList();
+
+      totalNotesAssigned += measureNotes.length;
 
       final beats = _quantizeToBeats(
         measureNotes,
@@ -445,12 +465,13 @@ class MidiParser implements SheetParser {
         beatsPerMeasure,
       );
 
-      if (beats.isNotEmpty) {
-        measures.add(Measure(number: measureNumber, beats: beats));
-      }
-
-      currentMeasureStart = measureEnd;
+      // 始终创建小节，即使是空的（保证measure.number连续）
+      measures.add(
+        Measure(number: measureIndex + 1, beats: beats),
+      );
     }
+
+    warnings.add('实际分配音符数: $totalNotesAssigned / ${notes.length}');
 
     return measures;
   }
@@ -470,8 +491,17 @@ class MidiParser implements SheetParser {
       final relativeTime = note.startTime - measureStart;
       final exactBeatPosition = relativeTime / ppq; // 精确的拍位置（浮点数）
 
-      // 找到最接近的拍索引（用于分组）
-      final beatIndex = exactBeatPosition.round().clamp(0, beatsPerMeasure - 1);
+      // 使用 floor() 确保音符被分配到正确的拍
+      // 例如：2.5拍 → floor=2 → 第2拍（正确）
+      //      3.9拍 → floor=3 → 第3拍（正确）
+      var beatIndex = exactBeatPosition.floor();
+
+      // 处理边界情况：如果超出范围，归到最后一拍
+      if (beatIndex >= beatsPerMeasure) {
+        beatIndex = beatsPerMeasure - 1;
+      } else if (beatIndex < 0) {
+        beatIndex = 0;
+      }
 
       beatMap.putIfAbsent(beatIndex, () => []).add(note);
     }

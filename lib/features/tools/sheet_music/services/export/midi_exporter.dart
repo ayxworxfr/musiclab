@@ -15,25 +15,28 @@ class MidiExporter {
   Uint8List export(Score score) {
     final buffer = BytesBuilder();
 
+    // 使用score中保存的ppq
+    final ppq = score.metadata.ppq;
+
     // 计算轨道数量
     final trackCount = score.tracks.length + 1; // +1 for tempo track
 
     // 写入 Header Chunk
-    _writeHeader(buffer, trackCount, score.metadata.tempo);
+    _writeHeader(buffer, trackCount, ppq);
 
     // 写入 Tempo Track (Track 0)
-    _writeTempoTrack(buffer, score.metadata);
+    _writeTempoTrack(buffer, score.metadata, ppq);
 
     // 写入每个轨道
     for (var i = 0; i < score.tracks.length; i++) {
-      _writeTrack(buffer, score.tracks[i], score.metadata, i);
+      _writeTrack(buffer, score.tracks[i], score.metadata, i, ppq);
     }
 
     return buffer.toBytes();
   }
 
   /// 写入 MIDI Header
-  void _writeHeader(BytesBuilder buffer, int trackCount, int tempo) {
+  void _writeHeader(BytesBuilder buffer, int trackCount, int ppq) {
     // "MThd"
     buffer.add([0x4D, 0x54, 0x68, 0x64]);
     // Header length: 6 bytes
@@ -42,12 +45,12 @@ class MidiExporter {
     buffer.add([0x00, 0x01]);
     // Number of tracks
     buffer.add(_int16ToBytes(trackCount));
-    // Division: ticks per quarter note (480 is common)
-    buffer.add([0x01, 0xE0]); // 480
+    // Division: ticks per quarter note (使用传入的ppq)
+    buffer.add(_int16ToBytes(ppq));
   }
 
   /// 写入 Tempo Track
-  void _writeTempoTrack(BytesBuilder buffer, ScoreMetadata metadata) {
+  void _writeTempoTrack(BytesBuilder buffer, ScoreMetadata metadata, int ppq) {
     final trackBuffer = BytesBuilder();
 
     // Tempo event: microseconds per quarter note
@@ -87,9 +90,10 @@ class MidiExporter {
     Track track,
     ScoreMetadata metadata,
     int trackIndex,
+    int ppq,  // 使用传入的ppq
   ) {
     final trackBuffer = BytesBuilder();
-    final ticksPerBeat = 480;
+    final ticksPerBeat = ppq;  // 使用传入的ppq而非硬编码480
     final ticksPerMeasure = ticksPerBeat * metadata.beatsPerMeasure;
 
     // Track name
@@ -112,7 +116,10 @@ class MidiExporter {
       measureIndex++
     ) {
       final measure = track.measures[measureIndex];
-      final measureStartTick = measureIndex * ticksPerMeasure;
+
+      // 使用 measure.number - 1 计算真实的tick位置，确保与parser一致
+      // measure.number从1开始，所以减1得到从0开始的索引
+      final measureStartTick = (measure.number - 1) * ticksPerMeasure;
 
       for (final beat in measure.beats) {
         // 计算拍的起始tick
