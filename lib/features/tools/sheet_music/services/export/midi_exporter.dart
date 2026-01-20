@@ -105,7 +105,6 @@ class MidiExporter {
 
     // 收集所有音符事件
     final events = <_MidiEvent>[];
-    var currentTick = 0;
 
     for (
       var measureIndex = 0;
@@ -116,28 +115,46 @@ class MidiExporter {
       final measureStartTick = measureIndex * ticksPerMeasure;
 
       for (final beat in measure.beats) {
-        final beatStartTick = measureStartTick + (beat.index * ticksPerBeat);
+        // 计算拍的起始tick
+        // 优先使用精确起始位置，否则使用beat.index
+        final beatStartTick = measureStartTick +
+            ((beat.preciseStartBeats ?? beat.index.toDouble()) * ticksPerBeat)
+                .round();
 
         for (var noteIndex = 0; noteIndex < beat.notes.length; noteIndex++) {
           final note = beat.notes[noteIndex];
           if (note.isRest) continue;
 
-          // 计算音符开始时间：
-          // - 短时值音符(beamCount > 0)按顺序播放
-          // - 长时值音符(beamCount = 0)同时播放(和弦)
-          int noteOnTick = beatStartTick;
-          if (beat.notes.length > 1 && note.duration.beamCount > 0) {
-            // 短时值音符按顺序播放，每个音符占据 (1/notesCount) 拍
-            final subBeatDuration = ticksPerBeat ~/ beat.notes.length;
-            noteOnTick += noteIndex * subBeatDuration;
+          // 计算音符开始时间
+          // 优先使用精确偏移量，否则根据noteIndex估算
+          int noteOnTick;
+          if (note.preciseOffsetBeats != null) {
+            // 使用精确偏移量（以拍为单位）
+            noteOnTick =
+                beatStartTick + (note.preciseOffsetBeats! * ticksPerBeat).round();
+          } else {
+            // 回退到原有逻辑：短时值音符按顺序播放
+            noteOnTick = beatStartTick;
+            if (beat.notes.length > 1 && note.duration.beamCount > 0) {
+              final subBeatDuration = ticksPerBeat ~/ beat.notes.length;
+              noteOnTick += noteIndex * subBeatDuration;
+            }
           }
-          // beamCount == 0 的音符保持 noteOnTick = beatStartTick，实现同时播放
 
-          final noteDuration = _getDurationTicks(
-            note.duration,
-            ticksPerBeat,
-            note.dots,
-          );
+          // 计算音符时长
+          int noteDuration;
+          if (note.preciseDurationBeats != null) {
+            // 使用精确时长（以拍为单位）
+            noteDuration = (note.preciseDurationBeats! * ticksPerBeat).round();
+          } else {
+            // 使用duration字段计算
+            noteDuration = _getDurationTicks(
+              note.duration,
+              ticksPerBeat,
+              note.dots,
+            );
+          }
+
           final noteOffTick = noteOnTick + noteDuration;
 
           // Note On
@@ -169,7 +186,7 @@ class MidiExporter {
     events.sort((a, b) => a.tick.compareTo(b.tick));
 
     // 写入事件
-    currentTick = 0;
+    var currentTick = 0;
     for (final event in events) {
       final deltaTick = event.tick - currentTick;
       currentTick = event.tick;

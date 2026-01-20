@@ -455,48 +455,113 @@ class MidiParser implements SheetParser {
     return measures;
   }
 
-  /// 量化到拍
+  /// 量化到拍 - 保留精确timing信息
   List<Beat> _quantizeToBeats(
     List<_NoteWithTiming> notes,
     int measureStart,
     int ppq,
     int beatsPerMeasure,
   ) {
-    // 使用更精确的量化算法：量化到最近的 1/4 拍
-    final quantizationGrid = ppq ~/ 4; // 每1/4拍的tick数
-    final beatMap = <int, List<Note>>{};
+    // 将notes按照精确的startTime分组到最接近的拍
+    // 同时保存每个note在该拍内的精确偏移和精确时长
+    final beatMap = <int, List<_NoteWithTiming>>{};
 
     for (final note in notes) {
       final relativeTime = note.startTime - measureStart;
+      final exactBeatPosition = relativeTime / ppq; // 精确的拍位置（浮点数）
 
-      // 量化到最近的1/4拍
-      final quantizedTime =
-          ((relativeTime + quantizationGrid ~/ 2) ~/ quantizationGrid) *
-          quantizationGrid;
-      final beatIndex = (quantizedTime / ppq).floor();
+      // 找到最接近的拍索引（用于分组）
+      final beatIndex = exactBeatPosition.round().clamp(0, beatsPerMeasure - 1);
 
-      if (beatIndex < 0 || beatIndex >= beatsPerMeasure) continue;
-
-      // 计算时值（基于实际持续时间）
-      final duration = _ticksToDuration(note.duration, ppq);
-
-      final scoreNote = Note(pitch: note.pitch, duration: duration, dots: 0);
-
-      beatMap.putIfAbsent(beatIndex, () => []).add(scoreNote);
+      beatMap.putIfAbsent(beatIndex, () => []).add(note);
     }
 
     final beats = <Beat>[];
-    for (var i = 0; i < beatsPerMeasure; i++) {
-      final beatNotes = beatMap[i] ?? [];
-      if (beatNotes.isNotEmpty) {
-        beats.add(Beat(index: i, notes: beatNotes));
+    for (var beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
+      final beatNotes = beatMap[beatIndex];
+      if (beatNotes == null || beatNotes.isEmpty) continue;
+
+      // 计算该拍的精确起始位置（以该拍开始处的平均位置）
+      final beatStartTick = measureStart + beatIndex * ppq;
+
+      // 按startTime排序，保持音符的先后顺序
+      beatNotes.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+      final scoreNotes = <Note>[];
+      for (final note in beatNotes) {
+        // 计算在该拍内的精确偏移（以拍为单位，0.0-1.0+）
+        final preciseOffset = (note.startTime - beatStartTick) / ppq;
+
+        // 计算精确时长（以拍为单位）
+        final preciseDuration = note.duration / ppq;
+
+        // 估算最接近的NoteDuration（用于显示）
+        final displayDuration = _ticksToNoteDuration(note.duration, ppq);
+
+        final scoreNote = Note(
+          pitch: note.pitch,
+          duration: displayDuration.duration,
+          dots: displayDuration.dots,
+          preciseOffsetBeats: preciseOffset,
+          preciseDurationBeats: preciseDuration,
+        );
+
+        scoreNotes.add(scoreNote);
       }
+
+      // 计算该拍的精确起始位置（相对于小节开始）
+      final firstNoteOffset = (beatNotes.first.startTime - measureStart) / ppq;
+
+      beats.add(Beat(
+        index: beatIndex,
+        notes: scoreNotes,
+        preciseStartBeats: firstNoteOffset,
+      ));
     }
 
     return beats;
   }
 
-  /// Ticks 转时值
+  /// Ticks 转时值 - 返回最接近的音符时值和附点数
+  _NoteDurationWithDots _ticksToNoteDuration(int ticks, int ppq) {
+    final beats = ticks / ppq;
+
+    // 常见节奏型映射表（按精确度从高到低排序）
+    final rhythmPatterns = [
+      // 附点音符
+      _RhythmPattern(6.0, NoteDuration.whole, 1), // 附点全音符 (6拍)
+      _RhythmPattern(4.0, NoteDuration.whole, 0), // 全音符 (4拍)
+      _RhythmPattern(3.0, NoteDuration.half, 1), // 附点二分音符 (3拍)
+      _RhythmPattern(2.0, NoteDuration.half, 0), // 二分音符 (2拍)
+      _RhythmPattern(1.5, NoteDuration.quarter, 1), // 附点四分音符 (1.5拍)
+      _RhythmPattern(1.0, NoteDuration.quarter, 0), // 四分音符 (1拍)
+      _RhythmPattern(0.75, NoteDuration.eighth, 1), // 附点八分音符 (0.75拍)
+      _RhythmPattern(0.5, NoteDuration.eighth, 0), // 八分音符 (0.5拍)
+      _RhythmPattern(0.375, NoteDuration.sixteenth, 1), // 附点十六分音符
+      _RhythmPattern(0.25, NoteDuration.sixteenth, 0), // 十六分音符 (0.25拍)
+      _RhythmPattern(0.125, NoteDuration.thirtySecond, 0), // 三十二分音符
+    ];
+
+    // 找到误差最小的节奏型
+    _RhythmPattern? closestPattern;
+    var minError = double.infinity;
+
+    for (final pattern in rhythmPatterns) {
+      final error = (pattern.beats - beats).abs();
+      if (error < minError) {
+        minError = error;
+        closestPattern = pattern;
+      }
+    }
+
+    return _NoteDurationWithDots(
+      duration: closestPattern?.duration ?? NoteDuration.quarter,
+      dots: closestPattern?.dots ?? 0,
+    );
+  }
+
+  /// 旧版方法，保留用于兼容性
+  @Deprecated('Use _ticksToNoteDuration instead')
   NoteDuration _ticksToDuration(int ticks, int ppq) {
     final beats = ticks / ppq;
 
@@ -587,4 +652,24 @@ class _NoteWithTiming {
     required this.duration,
     required this.velocity,
   });
+}
+
+/// 音符时值和附点数
+class _NoteDurationWithDots {
+  final NoteDuration duration;
+  final int dots;
+
+  _NoteDurationWithDots({
+    required this.duration,
+    required this.dots,
+  });
+}
+
+/// 节奏型模式
+class _RhythmPattern {
+  final double beats;
+  final NoteDuration duration;
+  final int dots;
+
+  _RhythmPattern(this.beats, this.duration, this.dots);
 }

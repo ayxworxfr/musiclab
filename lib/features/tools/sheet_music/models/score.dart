@@ -37,6 +37,14 @@ class Note {
   /// 力度 (音符级别，可覆盖小节力度)
   final Dynamics? dynamics;
 
+  /// 精确偏移量（在Beat内的精确起始位置，以拍为单位，0.0-1.0）
+  /// 用于MIDI等需要精确timing的场景，null表示使用默认的量化位置
+  final double? preciseOffsetBeats;
+
+  /// 精确时长（以拍为单位）
+  /// 用于MIDI等需要精确timing的场景，null表示使用duration字段计算
+  final double? preciseDurationBeats;
+
   const Note({
     required this.pitch,
     this.duration = NoteDuration.quarter,
@@ -49,6 +57,8 @@ class Note {
     this.tieEnd = false,
     this.ornament = Ornament.none,
     this.dynamics,
+    this.preciseOffsetBeats,
+    this.preciseDurationBeats,
   });
 
   /// 是否为休止符
@@ -199,6 +209,8 @@ class Note {
       dynamics: json['dynamics'] != null
           ? Dynamics.values.byName(json['dynamics'] as String)
           : null,
+      preciseOffsetBeats: json['preciseOffsetBeats'] as double?,
+      preciseDurationBeats: json['preciseDurationBeats'] as double?,
     );
   }
 
@@ -215,6 +227,9 @@ class Note {
       if (tieEnd) 'tieEnd': tieEnd,
       if (ornament != Ornament.none) 'ornament': ornament.name,
       if (dynamics != null) 'dynamics': dynamics!.name,
+      if (preciseOffsetBeats != null) 'preciseOffsetBeats': preciseOffsetBeats,
+      if (preciseDurationBeats != null)
+        'preciseDurationBeats': preciseDurationBeats,
     };
   }
 
@@ -230,6 +245,8 @@ class Note {
     bool? tieEnd,
     Ornament? ornament,
     Dynamics? dynamics,
+    double? preciseOffsetBeats,
+    double? preciseDurationBeats,
   }) {
     return Note(
       pitch: pitch ?? this.pitch,
@@ -243,6 +260,8 @@ class Note {
       tieEnd: tieEnd ?? this.tieEnd,
       ornament: ornament ?? this.ornament,
       dynamics: dynamics ?? this.dynamics,
+      preciseOffsetBeats: preciseOffsetBeats ?? this.preciseOffsetBeats,
+      preciseDurationBeats: preciseDurationBeats ?? this.preciseDurationBeats,
     );
   }
 }
@@ -260,7 +279,16 @@ class Beat {
   /// 三连音标记
   final Tuplet? tuplet;
 
-  const Beat({required this.index, required this.notes, this.tuplet});
+  /// 精确起始位置（在小节内的精确起始位置，以拍为单位）
+  /// 用于MIDI等需要精确timing的场景，null表示使用index作为起始位置
+  final double? preciseStartBeats;
+
+  const Beat({
+    required this.index,
+    required this.notes,
+    this.tuplet,
+    this.preciseStartBeats,
+  });
 
   /// 是否为休止
   bool get isRest => notes.isEmpty || notes.every((n) => n.isRest);
@@ -289,6 +317,7 @@ class Beat {
       tuplet: json['tuplet'] != null
           ? Tuplet.fromJson(json['tuplet'] as Map<String, dynamic>)
           : null,
+      preciseStartBeats: json['preciseStartBeats'] as double?,
     );
   }
 
@@ -297,15 +326,22 @@ class Beat {
       'index': index,
       'notes': notes.map((e) => e.toJson()).toList(),
       if (tuplet != null) 'tuplet': tuplet!.toJson(),
+      if (preciseStartBeats != null) 'preciseStartBeats': preciseStartBeats,
     };
   }
 
   /// Copy with
-  Beat copyWith({int? index, List<Note>? notes, Tuplet? tuplet}) {
+  Beat copyWith({
+    int? index,
+    List<Note>? notes,
+    Tuplet? tuplet,
+    double? preciseStartBeats,
+  }) {
     return Beat(
       index: index ?? this.index,
       notes: notes ?? this.notes,
       tuplet: tuplet ?? this.tuplet,
+      preciseStartBeats: preciseStartBeats ?? this.preciseStartBeats,
     );
   }
 }
