@@ -139,23 +139,163 @@
       "title": "进阶和弦进行练习",
       "difficulty": 4,
       "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_01",
+      "filename": "hanon_01.json",
+      "title": "哈农第1条 - 五指基础练习",
+      "difficulty": 2,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_02",
+      "filename": "hanon_02.json",
+      "title": "哈农第2条 - 五指练习变化",
+      "difficulty": 2,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_03",
+      "filename": "hanon_03.json",
+      "title": "哈农第3条 - 手指独立性练习",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_04",
+      "filename": "hanon_04.json",
+      "title": "哈农第4条 - 手指扩展练习",
+      "difficulty": 2,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_05",
+      "filename": "hanon_05.json",
+      "title": "哈农第5条 - 连续音型练习",
+      "difficulty": 2,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_06",
+      "filename": "hanon_06.json",
+      "title": "哈农第6条 - 2-3-4指组合练习",
+      "difficulty": 2,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_07",
+      "filename": "hanon_07.json",
+      "title": "哈农第7条 - 跳跃练习",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_08",
+      "filename": "hanon_08.json",
+      "title": "哈农第8条 - 扩展跳跃练习",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_09",
+      "filename": "hanon_09.json",
+      "title": "哈农第9条 - 连续模式变化练习",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_10",
+      "filename": "hanon_10.json",
+      "title": "哈农第10条 - 大跨度练习",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_11",
+      "filename": "hanon_11.json",
+      "title": "哈农第11条 - 扩展大跨度练习",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_12",
+      "filename": "hanon_12.json",
+      "title": "哈农第12条 - 进阶跳跃组合",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_13",
+      "filename": "hanon_13.json",
+      "title": "哈农第13条 - 快速跑动练习",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_14",
+      "filename": "hanon_14.json",
+      "title": "哈农第14条 - 进阶流畅性练习",
+      "difficulty": 3,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_15",
+      "filename": "hanon_15.json",
+      "title": "哈农第15条 - 复杂模式练习",
+      "difficulty": 4,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_16",
+      "filename": "hanon_16.json",
+      "title": "哈农第16条 - 三连音准备练习",
+      "difficulty": 4,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_17",
+      "filename": "hanon_17.json",
+      "title": "哈农第17条 - 三连音练习",
+      "difficulty": 4,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_18",
+      "filename": "hanon_18.json",
+      "title": "哈农第18条 - 三连音强化练习",
+      "difficulty": 4,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_19",
+      "filename": "hanon_19.json",
+      "title": "哈农第19条 - 三度音程准备练习",
+      "difficulty": 4,
+      "category": "exercise"
+    },
+    {
+      "id": "practice_hanon_20",
+      "filename": "hanon_20.json",
+      "title": "哈农第20条 - 三度音程练习",
+      "difficulty": 4,
+      "category": "exercise"
     }
   ],
   "metadata": {
-    "total": 20,
-    "lastUpdated": "2026-01-13",
+    "total": 40,
+    "lastUpdated": "2026-01-21",
     "categories": {
       "children": 4,
       "folk": 1,
       "classical": 2,
       "pop": 2,
-      "exercise": 11
+      "exercise": 31
     },
     "difficulties": {
       "1": 7,
-      "2": 4,
-      "3": 6,
-      "4": 3
+      "2": 9,
+      "3": 15,
+      "4": 9
     }
   }
 }

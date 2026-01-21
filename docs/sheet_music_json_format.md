@@ -12,8 +12,6 @@
 {
   "id": "sheet_001",
   "title": "乐曲标题",
-  "difficulty": 1,
-  "category": "classical",
   "metadata": { ... },
   "tracks": [ ... ],
   "isBuiltIn": true
@@ -24,11 +22,9 @@
 |------|------|------|------|
 | `id` | String | 是 | 乐谱唯一标识符 |
 | `title` | String | 是 | 乐曲标题 |
-| `difficulty` | Integer | 是 | 难度等级 (1-5) |
-| `category` | String | 是 | 分类: `classical`(古典), `pop`(流行), `folk`(民歌) 等 |
-| `metadata` | Object | 是 | 乐谱元数据 |
+| `metadata` | Object | 是 | 乐谱元数据（包含难度、分类等信息） |
 | `tracks` | Array | 是 | 音轨数组(通常包含左右手两个音轨) |
-| `isBuiltIn` | Boolean | 否 | 是否为内置乐谱 |
+| `isBuiltIn` | Boolean | 否 | 是否为内置乐谱，默认 true |
 
 ---
 
@@ -38,8 +34,11 @@
 {
   "composer": "作曲家",
   "key": "C",
-  "timeSignature": "4/4",
+  "beatsPerMeasure": 4,
+  "beatUnit": 4,
   "tempo": 120,
+  "difficulty": 1,
+  "category": "exercise",
   "description": "乐曲描述"
 }
 ```
@@ -48,9 +47,14 @@
 |------|------|------|------|
 | `composer` | String | 否 | 作曲家姓名 |
 | `key` | String | 是 | 调号: `C`, `D`, `E`, `F`, `G`, `A`, `B` (大调), `Am`, `Dm` 等(小调) |
-| `timeSignature` | String | 是 | 拍号: `4/4`, `3/4`, `6/8` 等 |
+| `beatsPerMeasure` | Integer | 是 | 拍号分子：每小节拍数，如 4/4 拍中的 4 |
+| `beatUnit` | Integer | 是 | 拍号分母：以几分音符为一拍，如 4/4 拍中的 4 |
 | `tempo` | Integer | 是 | 速度(BPM): 每分钟拍数 |
+| `difficulty` | Integer | 是 | 难度等级 (1-5)：1=入门, 2=初级, 3=中级, 4=进阶, 5=高级 |
+| `category` | String | 是 | 分类: `children`(儿歌), `folk`(民歌), `pop`(流行), `classical`(古典), `exercise`(练习曲) |
 | `description` | String | 否 | 乐曲描述 |
+
+**注意**: `difficulty` 和 `category` 已从顶层移至 metadata 中，以保持数据结构的一致性。
 
 ---
 
@@ -64,6 +68,7 @@
   "name": "右手",
   "clef": "treble",
   "hand": "right",
+  "instrument": "piano",
   "measures": [ ... ]
 }
 ```
@@ -74,6 +79,7 @@
 | `name` | String | 是 | 音轨名称 |
 | `clef` | String | 是 | 谱号: `treble`(高音谱号), `bass`(低音谱号) |
 | `hand` | String | 是 | 演奏手: `right`(右手), `left`(左手) |
+| `instrument` | String | 否 | 乐器: `piano`(钢琴), 默认 piano |
 | `measures` | Array | 是 | 小节数组 |
 
 ---
@@ -99,6 +105,22 @@
 **关键概念**: 同一拍内的音符如何演奏取决于音符时值:
 - **短时值音符**(八分音符、十六分音符等): 按顺序演奏,水平排列显示
 - **长时值音符**(四分音符、二分音符等): 同时演奏(和弦),垂直排列显示
+
+### 简洁格式（推荐）
+
+为保持JSON紧凑，推荐使用以下简洁格式：
+
+```json
+{
+  "number": 1,
+  "beats": [
+    {"index": 0, "notes": [{"pitch": 60, "duration": "quarter"}]},
+    {"index": 1, "notes": [{"pitch": 62, "duration": "quarter"}]},
+    {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
+    {"index": 3, "notes": [{"pitch": 65, "duration": "quarter"}]}
+  ]
+}
+```
 
 ### 顺序演奏示例 (八分音符)
 
@@ -141,22 +163,6 @@
 
 以上三个四分音符会在第0拍**同时演奏**(形成和弦),在简谱中**垂直排列**显示(从低到高)。
 
-### 分拍演奏示例
-
-如果需要在同一小节的不同拍演奏不同音符,使用不同的 `index`:
-
-```json
-{
-  "number": 1,
-  "beats": [
-    {"index": 0, "notes": [{"pitch": 60, "duration": "quarter"}]},
-    {"index": 1, "notes": [{"pitch": 64, "duration": "quarter"}]},
-    {"index": 2, "notes": [{"pitch": 67, "duration": "quarter"}]},
-    {"index": 3, "notes": [{"pitch": 72, "duration": "quarter"}]}
-  ]
-}
-```
-
 **Beat 字段说明**:
 
 | 字段 | 类型 | 必填 | 说明 |
@@ -168,6 +174,14 @@
 
 ## Note 音符
 
+### 基础格式
+
+```json
+{"pitch": 60, "duration": "quarter"}
+```
+
+### 完整格式
+
 ```json
 {
   "pitch": 60,
@@ -175,6 +189,7 @@
   "accidental": "sharp",
   "dots": 1,
   "lyric": "歌词",
+  "fingering": 1,
   "tieStart": false,
   "tieEnd": false
 }
@@ -182,11 +197,12 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `pitch` | Integer | 是 | MIDI音高 (21-108), 例: 60=C4(中央C) |
+| `pitch` | Integer | 是 | MIDI音高 (21-108), 例: 60=C4(中央C), 0=休止符 |
 | `duration` | String | 是 | 时值,见下表 |
 | `accidental` | String | 否 | 临时变音记号: `sharp`(升), `flat`(降), `natural`(还原) |
 | `dots` | Integer | 否 | 附点数量 (0, 1, 2) |
 | `lyric` | String | 否 | 歌词(仅在第一个音轨显示) |
+| `fingering` | Integer | 否 | 指法标记 (1-5) |
 | `tieStart` | Boolean | 否 | 连音线起点 |
 | `tieEnd` | Boolean | 否 | 连音线终点 |
 
@@ -199,10 +215,7 @@
 | `quarter` | 四分音符 | 1.0 | 0 | 同时 |
 | `eighth` | 八分音符 | 0.5 | 1 | 顺序 |
 | `sixteenth` | 十六分音符 | 0.25 | 2 | 顺序 |
-| `thirty-second` | 三十二分音符 | 0.125 | 3 | 顺序 |
-| `dotted-half` | 附点二分音符 | 3.0 | 0 | 同时 |
-| `dotted-quarter` | 附点四分音符 | 1.5 | 0 | 同时 |
-| `dotted-eighth` | 附点八分音符 | 0.75 | 1 | 顺序 |
+| `thirtySecond` | 三十二分音符 | 0.125 | 3 | 顺序 |
 
 **beamCount**: 决定音符的符杠/下划线数量,也决定了演奏方式
 - `beamCount = 0` (长时值): 同一拍内的音符**同时演奏**,垂直排列
@@ -231,20 +244,21 @@
 
 ## 完整示例
 
-### 示例1: 简单旋律(顺序演奏)
+### 示例1: 简单旋律（小星星片段）
 
 ```json
 {
-  "id": "sheet_simple",
-  "title": "简单旋律",
-  "difficulty": 1,
-  "category": "folk",
+  "id": "sheet_001",
+  "title": "小星星",
   "metadata": {
-    "composer": "佚名",
+    "composer": "Mozart",
     "key": "C",
-    "timeSignature": "4/4",
-    "tempo": 120,
-    "description": "简单的旋律示例"
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
+    "tempo": 90,
+    "difficulty": 1,
+    "category": "children",
+    "description": "经典儿歌，旋律简单易学"
   },
   "tracks": [
     {
@@ -252,14 +266,15 @@
       "name": "右手",
       "clef": "treble",
       "hand": "right",
+      "instrument": "piano",
       "measures": [
         {
           "number": 1,
           "beats": [
-            {"index": 0, "notes": [{"pitch": 60, "duration": "quarter", "lyric": "do"}]},
-            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter", "lyric": "re"}]},
-            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter", "lyric": "mi"}]},
-            {"index": 3, "notes": [{"pitch": 65, "duration": "quarter", "lyric": "fa"}]}
+            {"index": 0, "notes": [{"pitch": 72, "duration": "quarter", "lyric": "一"}]},
+            {"index": 1, "notes": [{"pitch": 72, "duration": "quarter", "lyric": "闪"}]},
+            {"index": 2, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "一"}]},
+            {"index": 3, "notes": [{"pitch": 79, "duration": "quarter", "lyric": "闪"}]}
           ]
         }
       ]
@@ -269,48 +284,45 @@
 }
 ```
 
-### 示例2: 和弦伴奏(同时演奏)
+### 示例2: 音阶练习
 
 ```json
 {
-  "id": "sheet_chord",
-  "title": "和弦示例",
-  "difficulty": 2,
-  "category": "classical",
+  "id": "practice_scale_c_major",
+  "title": "C大调音阶练习",
   "metadata": {
+    "composer": "Music Lab",
     "key": "C",
-    "timeSignature": "4/4",
-    "tempo": 100
+    "beatsPerMeasure": 4,
+    "beatUnit": 4,
+    "tempo": 100,
+    "difficulty": 1,
+    "category": "exercise"
   },
   "tracks": [
     {
-      "id": "left",
-      "name": "左手",
-      "clef": "bass",
-      "hand": "left",
+      "id": "right_hand",
+      "name": "右手",
+      "clef": "treble",
+      "hand": "right",
       "measures": [
         {
           "number": 1,
           "beats": [
-            {
-              "index": 0,
-              "notes": [
-                {"pitch": 36, "duration": "quarter"},
-                {"pitch": 48, "duration": "quarter"},
-                {"pitch": 52, "duration": "quarter"}
-              ]
-            }
+            {"index": 0, "notes": [{"pitch": 60, "duration": "quarter"}]},
+            {"index": 1, "notes": [{"pitch": 62, "duration": "quarter"}]},
+            {"index": 2, "notes": [{"pitch": 64, "duration": "quarter"}]},
+            {"index": 3, "notes": [{"pitch": 65, "duration": "quarter"}]}
           ]
         }
       ]
     }
-  ]
+  ],
+  "isBuiltIn": true
 }
 ```
 
-以上C大调和弦(C-E-G: 36-48-52)会同时演奏,在简谱中垂直排列显示。
-
-### 示例3: 琶音(顺序演奏)
+### 示例3: 和弦伴奏
 
 ```json
 {
@@ -319,22 +331,16 @@
     {
       "index": 0,
       "notes": [
-        {"pitch": 36, "duration": "eighth"},
-        {"pitch": 48, "duration": "eighth"}
-      ]
-    },
-    {
-      "index": 1,
-      "notes": [
-        {"pitch": 52, "duration": "eighth"},
-        {"pitch": 55, "duration": "eighth"}
+        {"pitch": 36, "duration": "quarter"},
+        {"pitch": 48, "duration": "quarter"},
+        {"pitch": 52, "duration": "quarter"}
       ]
     }
   ]
 }
 ```
 
-以上C大调琶音会按顺序演奏,在简谱中水平排列显示。
+以上C大调和弦(C-E-G)会同时演奏,在简谱中垂直排列显示。
 
 ---
 
@@ -359,10 +365,12 @@
 - 3/4拍: `index` 可以是 0, 1, 2
 - 6/8拍: `index` 可以是 0, 1, 2, 3, 4, 5
 
-### 3. 音符排序
+### 3. JSON 格式建议
 
-- 和弦音符会自动按音高从低到高排序显示
-- 琶音音符按定义顺序演奏
+- 使用紧凑格式，每个 beat 对象写在一行
+- 省略可选字段（如 accidental, dots, lyric 等）
+- 只在需要时添加额外信息
+- 保持一致的缩进（2空格）
 
 ### 4. 歌词规则
 
@@ -410,6 +418,12 @@
 ---
 
 ## 版本历史
+
+- **v1.1** (2026-01-21): 优化版本
+  - 将 `difficulty` 和 `category` 移至 metadata
+  - 使用 `beatsPerMeasure` 和 `beatUnit` 替代 `timeSignature`
+  - 推荐使用紧凑的 JSON 格式
+  - 添加指法 `fingering` 字段
 
 - **v1.0** (2026-01-15): 初始版本
   - 定义基础JSON格式

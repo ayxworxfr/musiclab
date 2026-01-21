@@ -261,6 +261,25 @@ class FolderStorageService extends GetxService {
       await saveFolder(arpeggioFolder);
       LoggerUtil.info('📁 [FolderStorage] 已创建琶音练习子文件夹');
     }
+
+    // 哈农练习
+    final hanonScoreIds = exerciseScoreIds
+        .where((id) => id.contains('hanon'))
+        .toList();
+    if (hanonScoreIds.isNotEmpty) {
+      final hanonFolder = Folder(
+        id: 'folder_practice_hanon',
+        name: '哈农练习',
+        parentId: 'folder_practice',
+        icon: '✋',
+        isBuiltIn: true,
+        order: 3,
+        scoreIds: hanonScoreIds,
+        createdAt: DateTime.now(),
+      );
+      await saveFolder(hanonFolder);
+      LoggerUtil.info('📁 [FolderStorage] 已创建哈农练习子文件夹');
+    }
   }
 
   /// 清空所有文件夹
