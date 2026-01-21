@@ -1066,79 +1066,116 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     }
   }
 
-  /// 显示添加到文件夹对话框
+  /// 显示添加到文件夹对话框（一对多模式，单选）
   Future<void> _showAddToFolderDialog(BuildContext context, Score score) async {
-    // 获取所有文件夹和已添加的文件夹
+    // 获取所有文件夹和当前所在文件夹
     final allFolders = controller.folders;
-    final containingFolders = await controller.getFoldersContainingScore(score);
-    final containingIds = containingFolders.map((f) => f.id).toSet();
+    final containingFolder = await controller.getFolderContainingScore(score);
 
-    final selectedIds = <String>{...containingIds};
+    String? selectedFolderId = containingFolder?.id;
 
-    final result = await showDialog<Set<String>>(
+    final result = await showDialog<String?>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text('添加《${score.title}》到文件夹'),
+          title: Text('移动《${score.title}》到文件夹'),
           content: SizedBox(
             width: double.maxFinite,
-            child: allFolders.isEmpty
-                ? const Center(child: Text('暂无文件夹'))
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: allFolders.length,
-                    itemBuilder: (context, index) {
-                      final folder = allFolders[index];
-                      final isSelected = selectedIds.contains(folder.id);
-
-                      return CheckboxListTile(
-                        title: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 提示信息
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 20, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '一个乐谱只能在一个文件夹中，选择"无"可从文件夹中移出',
+                          style: TextStyle(fontSize: 12, color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // 文件夹列表
+                Flexible(
+                  child: allFolders.isEmpty
+                      ? const Center(child: Text('暂无文件夹'))
+                      : ListView(
+                          shrinkWrap: true,
                           children: [
-                            Text(folder.icon ?? '📁'),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(folder.name)),
-                            if (folder.isBuiltIn)
-                              Container(
-                                margin: const EdgeInsets.only(left: 8),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 2,
+                            // "无"选项（从所有文件夹移除）
+                            RadioListTile<String?>(
+                              title: const Text('无（根目录）'),
+                              subtitle: const Text('不放在任何文件夹中'),
+                              value: null,
+                              groupValue: selectedFolderId,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedFolderId = value;
+                                });
+                              },
+                            ),
+                            const Divider(),
+                            // 文件夹选项
+                            ...allFolders.map((folder) {
+                              return RadioListTile<String?>(
+                                title: Row(
+                                  children: [
+                                    Text(folder.icon ?? '📁'),
+                                    const SizedBox(width: 8),
+                                    Expanded(child: Text(folder.name)),
+                                    if (folder.isBuiltIn)
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 8),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary
+                                              .withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text(
+                                          '系统',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      AppColors.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text(
-                                  '系统',
+                                subtitle: Text(
+                                  _buildFolderPath(folder, allFolders),
                                   style: TextStyle(
-                                    fontSize: 10,
-                                    color: AppColors.primary,
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
-                              ),
+                                value: folder.id,
+                                groupValue: selectedFolderId,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedFolderId = value;
+                                  });
+                                },
+                              );
+                            }),
                           ],
                         ),
-                        subtitle: Text(
-                          _buildFolderPath(folder, allFolders),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        value: isSelected,
-                        onChanged: (checked) {
-                          setState(() {
-                            if (checked == true) {
-                              selectedIds.add(folder.id);
-                            } else {
-                              selectedIds.remove(folder.id);
-                            }
-                          });
-                        },
-                      );
-                    },
-                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -1146,7 +1183,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
               child: const Text('取消'),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context, selectedIds),
+              onPressed: () => Navigator.pop(context, selectedFolderId),
               child: const Text('确定'),
             ),
           ],
@@ -1154,42 +1191,33 @@ class SheetMusicPage extends GetView<SheetMusicController> {
       ),
     );
 
-    if (result == null) return;
+    // 用户取消
+    if (result == null && result == containingFolder?.id) return;
 
-    // 计算需要添加和移除的文件夹
-    final toAdd = result.difference(containingIds);
-    final toRemove = containingIds.difference(result);
+    bool success = false;
 
-    var successCount = 0;
-    var errorCount = 0;
-
-    // 添加到新文件夹
-    for (final folderId in toAdd) {
-      final folder = allFolders.firstWhereOrNull((f) => f.id == folderId);
-      if (folder != null) {
-        final success = await controller.addScoreToFolder(score, folder);
-        if (success) successCount++;
-        else errorCount++;
+    if (result == null) {
+      // 选择"无"，从所有文件夹移除
+      if (containingFolder != null) {
+        success = await controller.removeScoreFromFolder(score, containingFolder);
+      } else {
+        success = true; // 本来就不在任何文件夹
       }
-    }
-
-    // 从旧文件夹移除
-    for (final folderId in toRemove) {
-      final folder = allFolders.firstWhereOrNull((f) => f.id == folderId);
-      if (folder != null) {
-        final success = await controller.removeScoreFromFolder(score, folder);
-        if (success) successCount++;
-        else errorCount++;
+    } else {
+      // 移动到指定文件夹
+      final targetFolder = allFolders.firstWhereOrNull((f) => f.id == result);
+      if (targetFolder != null) {
+        success = await controller.addScoreToFolder(score, targetFolder);
       }
     }
 
     if (context.mounted) {
-      if (errorCount == 0) {
+      if (success) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('操作完成')));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('操作完成，但有 $errorCount 个失败')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('操作失败')));
       }
     }
   }

@@ -125,16 +125,21 @@ class FolderStorageService extends GetxService {
     return getSubFolders(null);
   }
 
-  /// 添加乐谱到文件夹
+  /// 添加乐谱到文件夹（移动到文件夹，而不是复制）
+  /// 一个乐谱只能在一个文件夹中，如果已在其他文件夹，会先移除
   Future<void> addScoreToFolder(String scoreId, String folderId) async {
     final folder = await getFolderById(folderId);
     if (folder == null) {
       throw Exception('文件夹不存在: $folderId');
     }
 
+    // 先从所有文件夹中移除该乐谱（确保一对多关系）
+    await removeScoreFromAllFolders(scoreId);
+
+    // 添加到目标文件夹
     final updatedFolder = folder.addScore(scoreId);
     await saveFolder(updatedFolder);
-    LoggerUtil.info('📁 [FolderStorage] 已将乐谱 $scoreId 添加到文件夹 $folderId');
+    LoggerUtil.info('📁 [FolderStorage] 已将乐谱 $scoreId 移动到文件夹 $folderId');
   }
 
   /// 从文件夹移除乐谱
@@ -167,61 +172,73 @@ class FolderStorageService extends GetxService {
     }
   }
 
-  /// 获取包含指定乐谱的所有文件夹
-  Future<List<Folder>> getFoldersContainingScore(String scoreId) async {
-    final folders = await getFolders();
-    return folders.where((f) => f.containsScore(scoreId)).toList();
-  }
-
   /// 检查是否有预制文件夹
   Future<bool> hasBuiltInFolder(String folderId) async {
     final folder = await getFolderById(folderId);
     return folder?.isBuiltIn == true;
   }
 
+  /// 获取乐谱所在的文件夹（一对多关系，只会返回一个）
+  Future<Folder?> getFolderContainingScore(String scoreId) async {
+    final folders = await getFolders();
+    try {
+      return folders.firstWhere((f) => f.containsScore(scoreId));
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 初始化预制文件夹
   Future<void> initBuiltInFolders(List<String> exerciseScoreIds) async {
-    LoggerUtil.info('📁 [FolderStorage] 初始化预制文件夹');
+    LoggerUtil.info('📁 [FolderStorage] 初始化预制文件夹，练习曲数量: ${exerciseScoreIds.length}');
 
-    // 检查练习曲文件夹是否已存在
-    final existingFolder = await getFolderById('folder_practice');
-    if (existingFolder != null) {
-      LoggerUtil.info('📁 [FolderStorage] 练习曲文件夹已存在，跳过初始化');
+    if (exerciseScoreIds.isEmpty) {
+      LoggerUtil.warning('📁 [FolderStorage] 练习曲列表为空，跳过初始化');
       return;
     }
 
-    // 创建练习曲文件夹
-    final practiceFolder = Folder(
-      id: 'folder_practice',
-      name: '练习曲',
-      icon: '📝',
-      isBuiltIn: true,
-      order: 0,
-      scoreIds: exerciseScoreIds,
-      createdAt: DateTime.now(),
-    );
+    // 检查练习曲文件夹是否已存在
+    final existingFolder = await getFolderById('folder_practice');
 
-    await saveFolder(practiceFolder);
-    LoggerUtil.info('📁 [FolderStorage] 已创建练习曲文件夹，包含 ${exerciseScoreIds.length} 首乐谱');
+    if (existingFolder != null) {
+      LoggerUtil.info('📁 [FolderStorage] 练习曲主文件夹已存在，检查子文件夹');
+    } else {
+      // 创建练习曲主文件夹（空的，只作为容器）
+      final practiceFolder = Folder(
+        id: 'folder_practice',
+        name: '练习曲',
+        icon: '📝',
+        isBuiltIn: true,
+        order: 0,
+        scoreIds: [], // 主文件夹为空，乐谱都在子文件夹中
+        createdAt: DateTime.now(),
+      );
 
-    // 可选：创建子文件夹
+      await saveFolder(practiceFolder);
+      LoggerUtil.info('📁 [FolderStorage] 已创建练习曲主文件夹（作为分类容器）');
+    }
+
+    // 创建子文件夹
     // 音阶练习
     final scaleScoreIds = exerciseScoreIds
         .where((id) => id.contains('scale'))
         .toList();
     if (scaleScoreIds.isNotEmpty) {
-      final scaleFolder = Folder(
-        id: 'folder_practice_scale',
-        name: '音阶练习',
-        parentId: 'folder_practice',
-        icon: '🎹',
-        isBuiltIn: true,
-        order: 0,
-        scoreIds: scaleScoreIds,
-        createdAt: DateTime.now(),
-      );
-      await saveFolder(scaleFolder);
-      LoggerUtil.info('📁 [FolderStorage] 已创建音阶练习子文件夹');
+      final existingScale = await getFolderById('folder_practice_scale');
+      if (existingScale == null) {
+        final scaleFolder = Folder(
+          id: 'folder_practice_scale',
+          name: '音阶练习',
+          parentId: 'folder_practice',
+          icon: '🎹',
+          isBuiltIn: true,
+          order: 0,
+          scoreIds: scaleScoreIds,
+          createdAt: DateTime.now(),
+        );
+        await saveFolder(scaleFolder);
+        LoggerUtil.info('📁 [FolderStorage] 已创建音阶练习子文件夹，包含 ${scaleScoreIds.length} 首');
+      }
     }
 
     // 和弦练习
@@ -229,18 +246,21 @@ class FolderStorageService extends GetxService {
         .where((id) => id.contains('chord'))
         .toList();
     if (chordScoreIds.isNotEmpty) {
-      final chordFolder = Folder(
-        id: 'folder_practice_chord',
-        name: '和弦练习',
-        parentId: 'folder_practice',
-        icon: '🎼',
-        isBuiltIn: true,
-        order: 1,
-        scoreIds: chordScoreIds,
-        createdAt: DateTime.now(),
-      );
-      await saveFolder(chordFolder);
-      LoggerUtil.info('📁 [FolderStorage] 已创建和弦练习子文件夹');
+      final existingChord = await getFolderById('folder_practice_chord');
+      if (existingChord == null) {
+        final chordFolder = Folder(
+          id: 'folder_practice_chord',
+          name: '和弦练习',
+          parentId: 'folder_practice',
+          icon: '🎼',
+          isBuiltIn: true,
+          order: 1,
+          scoreIds: chordScoreIds,
+          createdAt: DateTime.now(),
+        );
+        await saveFolder(chordFolder);
+        LoggerUtil.info('📁 [FolderStorage] 已创建和弦练习子文件夹，包含 ${chordScoreIds.length} 首');
+      }
     }
 
     // 琶音练习
@@ -248,18 +268,21 @@ class FolderStorageService extends GetxService {
         .where((id) => id.contains('arpeggio'))
         .toList();
     if (arpeggioScoreIds.isNotEmpty) {
-      final arpeggioFolder = Folder(
-        id: 'folder_practice_arpeggio',
-        name: '琶音练习',
-        parentId: 'folder_practice',
-        icon: '🎵',
-        isBuiltIn: true,
-        order: 2,
-        scoreIds: arpeggioScoreIds,
-        createdAt: DateTime.now(),
-      );
-      await saveFolder(arpeggioFolder);
-      LoggerUtil.info('📁 [FolderStorage] 已创建琶音练习子文件夹');
+      final existingArpeggio = await getFolderById('folder_practice_arpeggio');
+      if (existingArpeggio == null) {
+        final arpeggioFolder = Folder(
+          id: 'folder_practice_arpeggio',
+          name: '琶音练习',
+          parentId: 'folder_practice',
+          icon: '🎵',
+          isBuiltIn: true,
+          order: 2,
+          scoreIds: arpeggioScoreIds,
+          createdAt: DateTime.now(),
+        );
+        await saveFolder(arpeggioFolder);
+        LoggerUtil.info('📁 [FolderStorage] 已创建琶音练习子文件夹，包含 ${arpeggioScoreIds.length} 首');
+      }
     }
 
     // 哈农练习
@@ -267,18 +290,21 @@ class FolderStorageService extends GetxService {
         .where((id) => id.contains('hanon'))
         .toList();
     if (hanonScoreIds.isNotEmpty) {
-      final hanonFolder = Folder(
-        id: 'folder_practice_hanon',
-        name: '哈农练习',
-        parentId: 'folder_practice',
-        icon: '✋',
-        isBuiltIn: true,
-        order: 3,
-        scoreIds: hanonScoreIds,
-        createdAt: DateTime.now(),
-      );
-      await saveFolder(hanonFolder);
-      LoggerUtil.info('📁 [FolderStorage] 已创建哈农练习子文件夹');
+      final existingHanon = await getFolderById('folder_practice_hanon');
+      if (existingHanon == null) {
+        final hanonFolder = Folder(
+          id: 'folder_practice_hanon',
+          name: '哈农练习',
+          parentId: 'folder_practice',
+          icon: '✋',
+          isBuiltIn: true,
+          order: 3,
+          scoreIds: hanonScoreIds,
+          createdAt: DateTime.now(),
+        );
+        await saveFolder(hanonFolder);
+        LoggerUtil.info('📁 [FolderStorage] 已创建哈农练习子文件夹，包含 ${hanonScoreIds.length} 首');
+      }
     }
   }
 
@@ -286,6 +312,27 @@ class FolderStorageService extends GetxService {
   Future<void> clearAllFolders() async {
     await _storage.saveCacheData(StorageKeys.folders, <dynamic>[]);
     LoggerUtil.info('📁 [FolderStorage] 已清空所有文件夹');
+  }
+
+  /// 重置预制文件夹（用于开发和测试）
+  Future<void> resetBuiltInFolders() async {
+    LoggerUtil.info('📁 [FolderStorage] 开始重置预制文件夹');
+
+    // 删除所有预制文件夹（直接操作存储，绕过保护检查）
+    final folders = await getFolders();
+    final builtInFolderIds = {
+      'folder_practice',
+      'folder_practice_scale',
+      'folder_practice_chord',
+      'folder_practice_arpeggio',
+      'folder_practice_hanon',
+    };
+
+    // 过滤掉预制文件夹
+    final remainingFolders = folders.where((f) => !builtInFolderIds.contains(f.id)).toList();
+    await _saveFoldersList(remainingFolders);
+
+    LoggerUtil.info('📁 [FolderStorage] 预制文件夹重置完成，保留 ${remainingFolders.length} 个用户文件夹');
   }
 
   /// 获取文件夹数量

@@ -54,8 +54,13 @@ class SheetMusicController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _loadScores();
-    _loadFolders();
+    _initialize();
+  }
+
+  /// 初始化数据
+  Future<void> _initialize() async {
+    await _loadScores();  // 先加载乐谱
+    await _loadFolders(); // 再加载文件夹（需要用到乐谱数据）
   }
 
   @override
@@ -132,6 +137,13 @@ class SheetMusicController extends GetxController {
       // 在文件夹内，只显示该文件夹中的乐谱
       final folderScoreIds = currentFolder.value!.scoreIds.toSet();
       result = result.where((s) => folderScoreIds.contains(s.id)).toList();
+    } else {
+      // 在根目录，只显示未分配到任何文件夹的乐谱
+      final allFolderScoreIds = <String>{};
+      for (final folder in folders) {
+        allFolderScoreIds.addAll(folder.scoreIds);
+      }
+      result = result.where((s) => !allFolderScoreIds.contains(s.id)).toList();
     }
 
     // 分类过滤
@@ -229,6 +241,9 @@ class SheetMusicController extends GetxController {
     try {
       await _storageService.deleteUserSheet(score.id);
 
+      // 从所有文件夹中移除
+      await _folderService.removeScoreFromAllFolders(score.id);
+
       // 从列表中移除
       scores.removeWhere((s) => s.id == score.id);
       if (selectedScore.value?.id == score.id) {
@@ -241,6 +256,34 @@ class SheetMusicController extends GetxController {
     } catch (e) {
       LoggerUtil.error('删除用户乐谱失败', e);
       return false;
+    }
+  }
+
+  /// 拷贝乐谱（创建副本）
+  Future<Score?> copyScore(Score score) async {
+    try {
+      // 创建副本（新ID，新标题，非预制）
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final copiedScore = score.copyWith(
+        id: 'score_copy_$timestamp',
+        title: '${score.title} - 副本',
+        isBuiltIn: false,
+      );
+
+      // 保存副本
+      await _storageService.saveUserSheet(copiedScore);
+
+      // 添加到列表
+      scores.add(copiedScore);
+      _updateFilteredScores();
+
+      LoggerUtil.info('拷贝乐谱成功: ${copiedScore.title}');
+      Get.snackbar('成功', '已创建乐谱副本');
+      return copiedScore;
+    } catch (e) {
+      LoggerUtil.error('拷贝乐谱失败', e);
+      Get.snackbar('错误', '拷贝乐谱失败');
+      return null;
     }
   }
 
@@ -388,13 +431,18 @@ class SheetMusicController extends GetxController {
   /// 加载文件夹列表
   Future<void> _loadFolders() async {
     try {
+      // 临时：重置预制文件夹（用于修复错误的文件夹结构，用完注释掉）
+      // await _folderService.resetBuiltInFolders();
+
       final loadedFolders = await _folderService.getFolders();
       folders.assignAll(loadedFolders);
 
-      // 初始化预制文件夹（如果不存在）
-      if (loadedFolders.isEmpty || !await _folderService.hasBuiltInFolder('folder_practice')) {
-        await _initBuiltInFolders();
-      }
+      // 总是尝试初始化预制文件夹（service内部会判断是否需要更新）
+      await _initBuiltInFolders();
+
+      // 重新加载（可能有新创建的文件夹）
+      final updatedFolders = await _folderService.getFolders();
+      folders.assignAll(updatedFolders);
 
       _updateDisplayedFolders();
       LoggerUtil.info('加载文件夹: ${folders.length} 个');
@@ -609,13 +657,13 @@ class SheetMusicController extends GetxController {
     folderPath.assignAll(path);
   }
 
-  /// 获取包含指定乐谱的所有文件夹
-  Future<List<Folder>> getFoldersContainingScore(Score score) async {
+  /// 获取包含指定乐谱的文件夹（一对多关系）
+  Future<Folder?> getFolderContainingScore(Score score) async {
     try {
-      return await _folderService.getFoldersContainingScore(score.id);
+      return await _folderService.getFolderContainingScore(score.id);
     } catch (e) {
       LoggerUtil.error('获取乐谱所属文件夹失败', e);
-      return [];
+      return null;
     }
   }
 
