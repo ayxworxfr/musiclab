@@ -39,7 +39,7 @@ class LayoutEngine {
     final noteLayouts = _layoutNotes(score, measureLayouts, trebleY, bassY);
 
     // 6. 计算符杠
-    final beamGroups = _calculateBeamGroups(noteLayouts);
+    final beamGroups = _calculateBeamGroups(score, noteLayouts);
 
     // 7. 计算连音线
     final ties = _calculateTies(noteLayouts);
@@ -414,8 +414,8 @@ class LayoutEngine {
     return blackKeys.contains(midi % 12);
   }
 
-  /// 计算符杠组
-  List<BeamGroup> _calculateBeamGroups(List<NoteLayout> noteLayouts) {
+  /// 计算符杠组（智能分组）
+  List<BeamGroup> _calculateBeamGroups(Score score, List<NoteLayout> noteLayouts) {
     final groups = <BeamGroup>[];
 
     // 按轨道和小节分组
@@ -427,31 +427,101 @@ class LayoutEngine {
     }
 
     for (final indices in byTrackAndMeasure.values) {
-      var currentGroup = <int>[];
+      if (indices.isEmpty) continue;
 
+      // 获取这个小节的拍数信息
+      final firstNote = noteLayouts[indices.first];
+      final beatsPerMeasure = score.metadata.beatsPerMeasure;
+
+      // 按拍收集短音符
+      final beatGroups = <int, List<int>>{};
       for (final i in indices) {
-        final note = noteLayouts[i].note;
-        final beamCount = note.duration.beamCount;
+        final noteLayout = noteLayouts[i];
+        final note = noteLayout.note;
+        final beatIndex = noteLayout.beatIndex;
 
-        // 休止符或长音符打断分组
-        if (note.isRest || beamCount == 0) {
-          if (currentGroup.length >= 2) {
-            groups.add(_createBeamGroup(noteLayouts, currentGroup));
-          }
-          currentGroup = [];
-          continue;
+        // 只处理短音符（有符杠的音符）
+        if (!note.isRest && note.duration.beamCount > 0) {
+          beatGroups.putIfAbsent(beatIndex, () => []).add(i);
         }
-
-        currentGroup.add(i);
       }
 
-      // 处理最后一组
-      if (currentGroup.length >= 2) {
-        groups.add(_createBeamGroup(noteLayouts, currentGroup));
+      // 智能合并拍组
+      final mergedGroups = _mergeBeamGroups(beatGroups, beatsPerMeasure);
+
+      // 创建符杠组
+      for (final group in mergedGroups) {
+        if (group.length >= 2) {
+          groups.add(_createBeamGroup(noteLayouts, group));
+        }
       }
     }
 
     return groups;
+  }
+
+  /// 智能合并拍组
+  /// 规则：同一半小节的连续短音符拍可以合并
+  List<List<int>> _mergeBeamGroups(
+    Map<int, List<int>> beatGroups,
+    int beatsPerMeasure,
+  ) {
+    if (beatGroups.isEmpty) return [];
+
+    final result = <List<int>>[];
+    final sortedBeats = beatGroups.keys.toList()..sort();
+
+    // 判断拍是否在同一半小节
+    bool inSameHalf(int beat1, int beat2) {
+      if (beatsPerMeasure == 4) {
+        // 4/4拍：0-1前半，2-3后半
+        return (beat1 < 2 && beat2 < 2) || (beat1 >= 2 && beat2 >= 2);
+      } else if (beatsPerMeasure == 3) {
+        // 3/4拍：0前，1-2后
+        return (beat1 == 0 && beat2 == 0) || (beat1 >= 1 && beat2 >= 1);
+      } else if (beatsPerMeasure == 2) {
+        // 2/4拍：0前，1后
+        return beat1 == beat2;
+      } else {
+        // 其他拍号：每拍独立
+        return beat1 == beat2;
+      }
+    }
+
+    var currentGroup = <int>[];
+    var lastBeat = -1;
+
+    for (final beat in sortedBeats) {
+      final notesInBeat = beatGroups[beat]!;
+
+      if (currentGroup.isEmpty) {
+        // 开始新组
+        currentGroup.addAll(notesInBeat);
+        lastBeat = beat;
+      } else {
+        // 判断是否可以合并
+        final isConsecutive = (beat == lastBeat + 1); // 连续的拍
+        final isInSameHalf = inSameHalf(lastBeat, beat); // 同一半小节
+
+        if (isConsecutive && isInSameHalf) {
+          // 合并到当前组
+          currentGroup.addAll(notesInBeat);
+          lastBeat = beat;
+        } else {
+          // 保存当前组，开始新组
+          result.add(List.from(currentGroup));
+          currentGroup = List.from(notesInBeat);
+          lastBeat = beat;
+        }
+      }
+    }
+
+    // 保存最后一组
+    if (currentGroup.isNotEmpty) {
+      result.add(currentGroup);
+    }
+
+    return result;
   }
 
   BeamGroup _createBeamGroup(List<NoteLayout> noteLayouts, List<int> indices) {
