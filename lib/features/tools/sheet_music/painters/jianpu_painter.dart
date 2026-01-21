@@ -191,7 +191,10 @@ class JianpuPainter extends CustomPainter {
 
             if (allAreSameShortDuration) {
               // 短时值音符：水平排列（顺序演奏）
-              final horizontalSpacing = 12.0; // 水平间距
+              // 使用配置的固定间距，确保一致性
+              final horizontalSpacing = config.minNoteSpacing * 0.5; // 拍内间距为拍间距的一半
+              final noteFontSize = 20.0; // 固定字号
+
               final totalWidth = (noteCount - 1) * horizontalSpacing;
               final startXInBeat = beatX - totalWidth / 2;
 
@@ -219,7 +222,7 @@ class JianpuPainter extends CustomPainter {
                   track.hand,
                   noteInfo.isHighlighted,
                   drawUnderline: false, // 不在这里画下划线
-                  fontSize: 20.0,
+                  fontSize: noteFontSize,
                 );
               }
 
@@ -238,7 +241,7 @@ class JianpuPainter extends CustomPainter {
                 final linePaint = Paint()
                   ..color = underlineColor
                   ..strokeWidth = 1.5;
-                final baseLineY = trackY + 20.0 * 0.55; // fontSize = 20.0
+                final baseLineY = trackY + noteFontSize * 0.55;
                 final firstNoteX = startXInBeat;
                 final lastNoteX =
                     startXInBeat + (noteCount - 1) * horizontalSpacing;
@@ -405,25 +408,18 @@ class JianpuPainter extends CustomPainter {
   }
 
   /// 动态计算每行小节数
-  /// 根据屏幕宽度和音符密度自动调整
+  /// 根据屏幕宽度和密度模式自动调整
   int _calculateMeasuresPerLine(double contentWidth, int beatsPerMeasure) {
-    // 基础参数
-    const minBeatWidth = 25.0; // 每拍最小宽度
+    // 基础参数从配置获取
     const minMeasuresPerLine = 2; // 每行最少小节数
-    const maxMeasuresPerLine = 6; // 每行最多小节数
+    final maxMeasuresPerLine = config.maxMeasuresPerLine;
+    final minBeatWidth = config.minNoteSpacing;
 
     // 计算每小节需要的最小宽度
     final minMeasureWidth = minBeatWidth * beatsPerMeasure;
 
     // 根据内容宽度计算可以放多少小节
     int measuresPerLine = (contentWidth / minMeasureWidth).floor();
-
-    // 检查音符密度 - 如果有复杂和弦，减少每行小节数
-    final maxNotesInChord = _getMaxNotesInChord();
-    if (maxNotesInChord > 3) {
-      // 复杂和弦，减少每行小节数
-      measuresPerLine = (measuresPerLine * 0.75).floor();
-    }
 
     // 限制范围
     return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
@@ -795,18 +791,13 @@ class JianpuPainter extends CustomPainter {
     int beatsPerMeasure,
     Score score,
   ) {
-    const minBeatWidth = 25.0;
+    // 使用默认配置
+    const minBeatWidth = 32.0; // comfortable 模式的默认值
     const minMeasuresPerLine = 2;
-    const maxMeasuresPerLine = 6;
+    const maxMeasuresPerLine = 5;
 
     final minMeasureWidth = minBeatWidth * beatsPerMeasure;
     int measuresPerLine = (contentWidth / minMeasureWidth).floor();
-
-    // 检查音符密度
-    final maxNotesInChord = _staticGetMaxNotesInChord(score);
-    if (maxNotesInChord > 3) {
-      measuresPerLine = (measuresPerLine * 0.75).floor();
-    }
 
     return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
   }

@@ -37,6 +37,9 @@ class RenderConfig {
   /// 主题
   final RenderTheme theme;
 
+  /// 音符密度模式
+  final NoteDensityMode densityMode;
+
   const RenderConfig({
     this.padding = const EdgeInsets.all(16),
     this.lineSpacing = 10,
@@ -49,6 +52,7 @@ class RenderConfig {
     this.pianoHeight = 100,
     this.whiteKeyAspectRatio = 4.5,
     this.theme = const RenderTheme(),
+    this.densityMode = NoteDensityMode.comfortable,
   });
 
   RenderConfig copyWith({
@@ -63,6 +67,7 @@ class RenderConfig {
     double? pianoHeight,
     double? whiteKeyAspectRatio,
     RenderTheme? theme,
+    NoteDensityMode? densityMode,
   }) {
     return RenderConfig(
       padding: padding ?? this.padding,
@@ -76,7 +81,42 @@ class RenderConfig {
       pianoHeight: pianoHeight ?? this.pianoHeight,
       whiteKeyAspectRatio: whiteKeyAspectRatio ?? this.whiteKeyAspectRatio,
       theme: theme ?? this.theme,
+      densityMode: densityMode ?? this.densityMode,
     );
+  }
+
+  /// 获取密度模式对应的配置值
+  double get noteSpacingMultiplier {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 1.0;
+      case NoteDensityMode.comfortable:
+        return 1.5;
+      case NoteDensityMode.spacious:
+        return 2.0;
+    }
+  }
+
+  double get minNoteSpacing {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 25.0;
+      case NoteDensityMode.comfortable:
+        return 32.0;
+      case NoteDensityMode.spacious:
+        return 40.0;
+    }
+  }
+
+  int get maxMeasuresPerLine {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 6;
+      case NoteDensityMode.comfortable:
+        return 5;
+      case NoteDensityMode.spacious:
+        return 4;
+    }
   }
 }
 
@@ -238,4 +278,18 @@ class RenderTheme {
       expressionColor: Color(0xFFFF9800),
     );
   }
+}
+
+/// ═══════════════════════════════════════════════════════════════
+/// 音符密度模式
+/// ═══════════════════════════════════════════════════════════════
+enum NoteDensityMode {
+  /// 紧凑模式：原有逻辑，适合桌面端大屏
+  compact,
+
+  /// 舒适模式（默认）：增加音符间距，适合平板和小屏电脑
+  comfortable,
+
+  /// 宽松模式：大幅增加间距，适合手机端
+  spacious,
 }

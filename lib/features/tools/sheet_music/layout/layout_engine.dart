@@ -65,38 +65,24 @@ class LayoutEngine {
 
   /// 动态计算每行小节数
   int _calculateMeasuresPerLine(Score score) {
-    // 基础参数
-    const minMeasureWidth = 80.0; // 每小节最小宽度
-    const minMeasuresPerLine = 2;
-    const maxMeasuresPerLine = 6;
-
     final contentWidth =
         availableWidth - config.padding.left - config.padding.right;
     final headerWidth = 100.0; // 谱号、调号、拍号
     final availableLineWidth = contentWidth - headerWidth;
 
-    // 根据可用宽度计算每行小节数
+    // 根据密度模式确定基础参数
+    const minMeasuresPerLine = 2;
+    final maxMeasuresPerLine = config.maxMeasuresPerLine;
+    final minBeatWidth = config.minNoteSpacing;
+
+    // 计算每小节最小宽度
+    final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    final minMeasureWidth = minBeatWidth * beatsPerMeasure;
+
+    // 计算可以放多少小节
     int measuresPerLine = (availableLineWidth / minMeasureWidth).floor();
 
-    // 检查音符密度 - 如果有密集的音符，减少每行小节数
-    int maxNotesPerBeat = 1;
-    for (final track in score.tracks) {
-      for (final measure in track.measures) {
-        for (final beat in measure.beats) {
-          if (beat.notes.length > maxNotesPerBeat) {
-            maxNotesPerBeat = beat.notes.length;
-          }
-        }
-      }
-    }
-
-    // 根据音符密度调整
-    if (maxNotesPerBeat > 4) {
-      measuresPerLine = (measuresPerLine * 0.6).floor();
-    } else if (maxNotesPerBeat > 2) {
-      measuresPerLine = (measuresPerLine * 0.8).floor();
-    }
-
+    // 限制范围
     return measuresPerLine.clamp(minMeasuresPerLine, maxMeasuresPerLine);
   }
 
@@ -146,22 +132,9 @@ class LayoutEngine {
 
   /// 估算小节宽度
   double _estimateMeasureWidth(Score score, int measureIndex) {
-    double maxWidth = config.minMeasureWidth;
-
-    for (final track in score.tracks) {
-      if (measureIndex < track.measures.length) {
-        final measure = track.measures[measureIndex];
-        double width = 20; // 小节线
-        for (final beat in measure.beats) {
-          for (final note in beat.notes) {
-            width += 25 * note.actualBeats;
-          }
-        }
-        maxWidth = max(maxWidth, width);
-      }
-    }
-
-    return maxWidth.clamp(config.minMeasureWidth, 250.0);
+    // 简化：使用配置的最小小节宽度
+    // 音符间距由 noteSpacingMultiplier 统一控制
+    return config.minMeasureWidth * config.noteSpacingMultiplier;
   }
 
   /// 计算小节布局
