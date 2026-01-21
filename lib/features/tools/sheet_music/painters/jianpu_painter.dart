@@ -193,7 +193,12 @@ class JianpuPainter extends CustomPainter {
               // 短时值音符：水平排列（顺序演奏）
               // 使用配置的固定间距，确保一致性
               final horizontalSpacing = config.minNoteSpacing * 0.5; // 拍内间距为拍间距的一半
-              final noteFontSize = 20.0; // 固定字号
+
+              // 根据音符密度调整字号
+              final isDense = noteCount > config.denseNoteThreshold;
+              final noteFontSize = isDense
+                  ? config.jianpuBaseFontSize - config.denseBeatFontSizeReduction
+                  : config.jianpuBaseFontSize;
 
               final totalWidth = (noteCount - 1) * horizontalSpacing;
               final startXInBeat = beatX - totalWidth / 2;
@@ -247,10 +252,10 @@ class JianpuPainter extends CustomPainter {
                     startXInBeat + (noteCount - 1) * horizontalSpacing;
 
                 for (var i = 0; i < underlineCount; i++) {
-                  final lineY = baseLineY + i * 5; // 增加间距从3到5像素
+                  final lineY = baseLineY + i * 5;
                   canvas.drawLine(
-                    Offset(firstNoteX - 3, lineY), // 从第一个音符左边一点开始
-                    Offset(lastNoteX + 3, lineY), // 到最后一个音符右边一点结束
+                    Offset(firstNoteX - 3, lineY),
+                    Offset(lastNoteX + 3, lineY),
                     linePaint,
                   );
                 }
@@ -260,7 +265,7 @@ class JianpuPainter extends CustomPainter {
               if (showLyrics && lyricText != null && trackIndex == 0) {
                 final underlineSpace = underlineCount > 0
                     ? underlineCount * 5 + 6
-                    : 0; // 更新为5像素间距
+                    : 0;
                 final lyricY = trackY + 10 + underlineSpace + 8;
                 _drawLyric(canvas, beatX, lyricY, lyricText);
               }
@@ -288,10 +293,16 @@ class JianpuPainter extends CustomPainter {
               final firstNote = allNotesInBeat.first.note;
               final underlineCount = firstNote.duration.underlineCount;
 
-              // 计算自适应字号
-              final fontSize = noteCount > 4
-                  ? 16.0
-                  : (noteCount > 2 ? 18.0 : 20.0);
+              // 计算自适应字号（使用配置的基础字号）
+              final isDense = noteCount > config.denseNoteThreshold;
+              final baseFontSize = config.jianpuBaseFontSize;
+              final fontSize = isDense
+                  ? (noteCount > 4
+                      ? baseFontSize - config.denseBeatFontSizeReduction - 1.0
+                      : baseFontSize - config.denseBeatFontSizeReduction)
+                  : (noteCount > 4
+                      ? baseFontSize - 2.0
+                      : (noteCount > 2 ? baseFontSize - 1.0 : baseFontSize));
 
               // 计算和弦底部位置（用于歌词定位）
               final lastNoteY = startY + (noteCount - 1) * verticalSpacing;
@@ -327,7 +338,7 @@ class JianpuPainter extends CustomPainter {
               if (showLyrics && lyricText != null && trackIndex == 0) {
                 final underlineSpace = underlineCount > 0
                     ? underlineCount * 5 + 6
-                    : 0; // 更新为5像素间距
+                    : 0;
                 final lyricY = chordBottomY + underlineSpace + 8;
                 _drawLyric(canvas, beatX, lyricY, lyricText);
               }
@@ -460,7 +471,7 @@ class JianpuPainter extends CustomPainter {
       text: TextSpan(
         text: '-',
         style: TextStyle(
-          fontSize: 20,
+          fontSize: config.jianpuBaseFontSize,
           color: color,
           fontWeight: FontWeight.w600,
         ),
@@ -633,7 +644,7 @@ class JianpuPainter extends CustomPainter {
       text: TextSpan(
         text: '0',
         style: TextStyle(
-          fontSize: 22,
+          fontSize: config.jianpuBaseFontSize,
           color: color,
           fontWeight: FontWeight.w600,
         ),
@@ -653,7 +664,7 @@ class JianpuPainter extends CustomPainter {
         ..color = color
         ..strokeWidth = 1.5;
       for (var i = 0; i < underlineCount; i++) {
-        final lineY = y + 14 + i * 5; // 增加间距从3到5像素
+        final lineY = y + config.jianpuBaseFontSize * 0.7 + i * 5;
         canvas.drawLine(Offset(x - 8, lineY), Offset(x + 8, lineY), linePaint);
       }
     }

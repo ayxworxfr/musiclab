@@ -370,8 +370,9 @@ class GrandStaffPainter extends CustomPainter {
     );
 
     // 绘制附加符杠（16分音符等）
+    final beamSpacing = config.beamSpacing;
     for (var i = 1; i < beamGroup.beamCount; i++) {
-      final offset = beamGroup.stemUp ? i * 8.0 : -i * 8.0; // 增加间距从6.0到8.0像素
+      final offset = beamGroup.stemUp ? i * beamSpacing : -i * beamSpacing;
       canvas.drawLine(
         Offset(beamGroup.startX, beamGroup.startY + offset),
         Offset(beamGroup.endX, beamGroup.endY + offset),
@@ -526,19 +527,16 @@ class GrandStaffPainter extends CustomPainter {
     Color color,
   ) {
     String symbol;
-    double fontSize;
+    final fontSize = config.staffNoteHeadBaseFontSize;
 
     // 根据时值选择符号
     if (duration == NoteDuration.whole) {
       symbol = SMuFLGlyphs.noteheadWhole;
-      fontSize = 38;
     } else if (duration == NoteDuration.half) {
       symbol = SMuFLGlyphs.noteheadHalf;
-      fontSize = 38;
     } else {
       // 四分音符及更短音符使用实心符头
       symbol = SMuFLGlyphs.noteheadBlack;
-      fontSize = 38;
     }
 
     final textPainter = TextPainter(
@@ -584,7 +582,7 @@ class GrandStaffPainter extends CustomPainter {
           : 0.0;
       endY = beamGroup.startY + progress * (beamGroup.endY - beamGroup.startY);
     } else {
-      endY = stemUp ? y - config.stemLength : y + config.stemLength;
+      endY = stemUp ? y - config.actualStemLength : y + config.actualStemLength;
     }
 
     canvas.drawLine(Offset(stemX, y), Offset(stemX, endY), stemPaint);
@@ -600,7 +598,7 @@ class GrandStaffPainter extends CustomPainter {
     final stemX = stemUp
         ? x + config.noteHeadRadius - 1
         : x - config.noteHeadRadius + 1;
-    final stemEndY = stemUp ? y - config.stemLength : y + config.stemLength;
+    final stemEndY = stemUp ? y - config.actualStemLength : y + config.actualStemLength;
 
     // 使用 SMuFL 字体符号绘制符尾
     final flagGlyph = SMuFLGlyphs.getFlag(beamCount, stemUp);
@@ -610,7 +608,7 @@ class GrandStaffPainter extends CustomPainter {
       text: TextSpan(
         text: flagGlyph,
         style: TextStyle(
-          fontSize: 38,
+          fontSize: config.staffNoteHeadBaseFontSize,
           fontFamily: SMuFLGlyphs.fontFamily,
           color: color,
         ),

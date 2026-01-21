@@ -22,10 +22,10 @@ class RenderConfig {
   /// 最小小节宽度
   final double minMeasureWidth;
 
-  /// 符头半径
+  /// 符头半径（已弃用，由 noteHeadFontSize 控制）
   final double noteHeadRadius;
 
-  /// 符干长度
+  /// 符干长度（已弃用，由密度模式控制）
   final double stemLength;
 
   /// 钢琴键盘高度
@@ -116,6 +116,83 @@ class RenderConfig {
         return 5;
       case NoteDensityMode.spacious:
         return 4;
+    }
+  }
+
+  /// 简谱基础字号
+  double get jianpuBaseFontSize {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 20.0;
+      case NoteDensityMode.comfortable:
+        return 18.0;
+      case NoteDensityMode.spacious:
+        return 17.0;
+    }
+  }
+
+  /// 五线谱符头基础字体大小（SMuFL）
+  double get staffNoteHeadBaseFontSize {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 38.0;
+      case NoteDensityMode.comfortable:
+        return 34.0;
+      case NoteDensityMode.spacious:
+        return 32.0;
+    }
+  }
+
+  /// 符干长度
+  double get actualStemLength {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 35.0;
+      case NoteDensityMode.comfortable:
+        return 33.0;
+      case NoteDensityMode.spacious:
+        return 32.0;
+    }
+  }
+
+  /// 符杠间距
+  double get beamSpacing {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 8.0;
+      case NoteDensityMode.comfortable:
+        return 7.0;
+      case NoteDensityMode.spacious:
+        return 7.0;
+    }
+  }
+
+  /// 密集拍检测阈值（一拍内音符数）
+  int get denseNoteThreshold {
+    return 6;
+  }
+
+  /// 密集拍字号缩减量
+  double get denseBeatFontSizeReduction {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 2.0; // 20 → 18
+      case NoteDensityMode.comfortable:
+        return 1.0; // 18 → 17
+      case NoteDensityMode.spacious:
+        return 1.0; // 17 → 16
+    }
+  }
+
+  /// 密集拍符头字号缩减量
+  double get denseBeatNoteHeadFontSizeReduction {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 4.0; // 38 → 34
+      case NoteDensityMode.comfortable:
+        return 2.0; // 34 → 32
+      case NoteDensityMode.spacious:
+        return 2.0; // 32 → 30
     }
   }
 }

@@ -428,7 +428,7 @@ class LayoutEngine {
     final beamCount = notes.map((n) => n.note.duration.beamCount).reduce(min);
 
     // 计算符杠位置
-    final stemLength = config.lineSpacing * 3.5;
+    final stemLength = config.actualStemLength;
     final first = notes.first;
     final last = notes.last;
 
