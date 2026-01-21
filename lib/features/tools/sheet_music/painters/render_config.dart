@@ -195,6 +195,42 @@ class RenderConfig {
         return 2.0; // 32 → 30
     }
   }
+
+  /// 简谱分组间距 - 组内（符杠组、附点组）
+  double get jianpuGroupInnerSpacing {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 8.0;
+      case NoteDensityMode.comfortable:
+        return 10.0;
+      case NoteDensityMode.spacious:
+        return 12.0;
+    }
+  }
+
+  /// 简谱分组间距 - 组间（不同组之间）
+  double get jianpuGroupOuterSpacing {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 20.0;
+      case NoteDensityMode.comfortable:
+        return 24.0;
+      case NoteDensityMode.spacious:
+        return 28.0;
+    }
+  }
+
+  /// 简谱分组间距 - 独立音符（不属于任何组）
+  double get jianpuIndependentSpacing {
+    switch (densityMode) {
+      case NoteDensityMode.compact:
+        return 16.0;
+      case NoteDensityMode.comfortable:
+        return 20.0;
+      case NoteDensityMode.spacious:
+        return 24.0;
+    }
+  }
 }
 
 /// ═══════════════════════════════════════════════════════════════

@@ -191,8 +191,7 @@ class JianpuPainter extends CustomPainter {
 
             if (allAreSameShortDuration) {
               // 短时值音符：水平排列（顺序演奏）
-              // 使用配置的固定间距，确保一致性
-              final horizontalSpacing = config.minNoteSpacing * 0.5; // 拍内间距为拍间距的一半
+              // 使用分组间距逻辑
 
               // 根据音符密度调整字号
               final isDense = noteCount > config.denseNoteThreshold;
@@ -200,18 +199,79 @@ class JianpuPainter extends CustomPainter {
                   ? config.jianpuBaseFontSize - config.denseBeatFontSizeReduction
                   : config.jianpuBaseFontSize;
 
-              final totalWidth = (noteCount - 1) * horizontalSpacing;
-              final startXInBeat = beatX - totalWidth / 2;
-
               // 获取第一个音符的时值（用于下划线）
               final firstNote = allNotesInBeat.first.note;
               final underlineCount = firstNote.duration.underlineCount;
 
-              String? lyricText;
+              // 计算每个音符的位置（使用分组间距）
+              final positions = <double>[];
+              double currentX = 0;
 
               for (var i = 0; i < noteCount; i++) {
+                if (i == 0) {
+                  // 第一个音符位置为0
+                  positions.add(0);
+                } else {
+                  // 获取前一个和当前音符的信息
+                  final prevNoteInfo = allNotesInBeat[i - 1];
+                  final currNoteInfo = allNotesInBeat[i];
+
+                  // 查找符杠组索引
+                  final prevLayoutIndex = _findNoteLayoutIndex(
+                    trackIndex,
+                    measureIndex,
+                    beatIndex,
+                    prevNoteInfo.noteIdx,
+                    prevNoteInfo.note,
+                  );
+                  final currLayoutIndex = _findNoteLayoutIndex(
+                    trackIndex,
+                    measureIndex,
+                    beatIndex,
+                    currNoteInfo.noteIdx,
+                    currNoteInfo.note,
+                  );
+
+                  final prevBeamGroup = prevLayoutIndex != null
+                      ? layout.noteLayouts[prevLayoutIndex].beamGroupIndex
+                      : -1;
+                  final currBeamGroup = currLayoutIndex != null
+                      ? layout.noteLayouts[currLayoutIndex].beamGroupIndex
+                      : -1;
+
+                  // 判断应该使用哪种间距
+                  double spacing;
+
+                  // 情况1：在同一符杠组
+                  if (prevBeamGroup != -1 &&
+                      prevBeamGroup == currBeamGroup) {
+                    spacing = config.jianpuGroupInnerSpacing;
+                  }
+                  // 情况2：前一个有附点 && 当前是短音符
+                  else if (prevNoteInfo.note.dots > 0 &&
+                      currNoteInfo.note.duration.beamCount > 0) {
+                    spacing = config.jianpuGroupInnerSpacing;
+                  }
+                  // 情况3：不同组
+                  else {
+                    spacing = config.jianpuGroupOuterSpacing;
+                  }
+
+                  currentX += spacing;
+                  positions.add(currentX);
+                }
+              }
+
+              // 计算总宽度并居中
+              final totalWidth = positions.last;
+              final startXInBeat = beatX - totalWidth / 2;
+
+              String? lyricText;
+
+              // 绘制每个音符
+              for (var i = 0; i < noteCount; i++) {
                 final noteInfo = allNotesInBeat[i];
-                final noteXInBeat = startXInBeat + i * horizontalSpacing;
+                final noteXInBeat = startXInBeat + positions[i];
 
                 // 记录歌词（取最后一个有歌词的）
                 if (noteInfo.note.lyric != null && trackIndex == 0) {
@@ -226,7 +286,7 @@ class JianpuPainter extends CustomPainter {
                   trackY,
                   track.hand,
                   noteInfo.isHighlighted,
-                  drawUnderline: false, // 不在这里画下划线
+                  drawUnderline: false,
                   fontSize: noteFontSize,
                 );
               }
@@ -247,9 +307,8 @@ class JianpuPainter extends CustomPainter {
                   ..color = underlineColor
                   ..strokeWidth = 1.5;
                 final baseLineY = trackY + noteFontSize * 0.55;
-                final firstNoteX = startXInBeat;
-                final lastNoteX =
-                    startXInBeat + (noteCount - 1) * horizontalSpacing;
+                final firstNoteX = startXInBeat + positions.first;
+                final lastNoteX = startXInBeat + positions.last;
 
                 for (var i = 0; i < underlineCount; i++) {
                   final lineY = baseLineY + i * 5;
