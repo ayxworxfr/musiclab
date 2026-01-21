@@ -226,7 +226,7 @@ class LayoutEngine {
           }
         }
 
-        // 计算每个音符的位置
+        // 计算每个音符的位置（使用分组间距逻辑）
         for (var beatIdx = 0; beatIdx < beatsPerMeasure; beatIdx++) {
           final notesInBeat = notesByBeat[beatIdx] ?? [];
 
@@ -244,7 +244,49 @@ class LayoutEngine {
             continue;
           }
 
-          // 在一拍内均匀分布音符
+          // 计算每个音符的位置（应用分组间距）
+          final positions = <double>[];
+          double currentX = 0;
+
+          for (var i = 0; i < notesInBeat.length; i++) {
+            if (i == 0) {
+              // 第一个音符位置为0
+              positions.add(0);
+            } else {
+              // 获取前一个和当前音符
+              final prevNote = notesInBeat[i - 1].note;
+              final currNote = notesInBeat[i].note;
+
+              // 判断应该使用哪种间距
+              double spacing;
+
+              // 检查是否都是短时值音符（会被符杠连接）
+              final bothShortNotes = prevNote.duration.beamCount > 0 &&
+                  currNote.duration.beamCount > 0;
+
+              // 情况1：都是短时值音符（同一潜在符杠组）
+              if (bothShortNotes) {
+                spacing = config.minNoteSpacing * 0.3; // 紧凑间距
+              }
+              // 情况2：前一个有附点 && 当前是短音符
+              else if (prevNote.dots > 0 && currNote.duration.beamCount > 0) {
+                spacing = config.minNoteSpacing * 0.3; // 紧凑间距
+              }
+              // 情况3：不同组或独立音符
+              else {
+                spacing = config.minNoteSpacing * 0.8; // 正常间距
+              }
+
+              currentX += spacing;
+              positions.add(currentX);
+            }
+          }
+
+          // 计算总宽度并在拍内居中
+          final totalWidth = positions.isEmpty ? 0 : positions.last;
+          final startX = beatStartX + (beatWidth - totalWidth) / 2;
+
+          // 在一拍内根据计算的位置放置音符
           for (var i = 0; i < notesInBeat.length; i++) {
             final info = notesInBeat[i];
             final note = info.note;
@@ -253,11 +295,8 @@ class LayoutEngine {
               continue;
             }
 
-            // 计算 X 坐标：在拍内均匀分布
-            final noteProgress = notesInBeat.length > 1
-                ? (i + 0.5) / notesInBeat.length
-                : 0.5;
-            final noteX = beatStartX + noteProgress * beatWidth;
+            // 使用计算好的位置
+            final noteX = startX + positions[i];
 
             // 计算开始时间：
             // - 短时值音符(beamCount > 0，如八分、十六分)按顺序播放
