@@ -89,8 +89,17 @@ class PlaybackController extends GetxController {
   int _scheduledNoteIndex = 0;
   final List<_ScheduledNote> _scheduledNotes = [];
 
+  /// 高精度计时器（消除时间累积误差）
+  Stopwatch? _playbackStopwatch;
+
+  /// 播放开始时的时间偏移
+  double _playbackStartOffset = 0.0;
+
   /// 上一次节拍的拍号（用于检测新拍）
   int _lastBeatNumber = -1;
+
+  /// UI更新计数器（用于降低更新频率）
+  int _tickCount = 0;
 
   @override
   void onInit() {
@@ -251,7 +260,15 @@ class PlaybackController extends GetxController {
       currentTime.value * speedMultiplier.value,
     );
 
-    const tickInterval = Duration(milliseconds: 16); // ~60fps
+    // 初始化高精度计时器
+    if (_playbackStopwatch == null) {
+      _playbackStopwatch = Stopwatch();
+    }
+    _playbackStopwatch!.start();
+    _playbackStartOffset = currentTime.value;
+
+    // 保持16ms tick（与lookahead匹配）
+    const tickInterval = Duration(milliseconds: 16);
     _playTimer = Timer.periodic(tickInterval, _onTick);
   }
 
@@ -260,6 +277,7 @@ class PlaybackController extends GetxController {
     isPlaying.value = false;
     _playTimer?.cancel();
     _playTimer = null;
+    _playbackStopwatch?.stop();
     _stopAllNotes();
   }
 
@@ -272,6 +290,9 @@ class PlaybackController extends GetxController {
     highlightedPianoKeys.clear();
     _scheduledNoteIndex = 0;
     _lastBeatNumber = -1; // 重置节拍器
+    _playbackStopwatch?.reset();
+    _playbackStartOffset = 0.0;
+    _tickCount = 0;
     update();
   }
 
@@ -303,6 +324,10 @@ class PlaybackController extends GetxController {
         _score!.measureCount,
       );
     }
+
+    // 重置计时器
+    _playbackStopwatch?.reset();
+    _playbackStartOffset = currentTime.value;
 
     if (wasPlaying) {
       play();
@@ -361,6 +386,14 @@ class PlaybackController extends GetxController {
 
     isPlaying.value = true;
     _scheduledNoteIndex = 0;
+
+    // 初始化高精度计时器
+    if (_playbackStopwatch == null) {
+      _playbackStopwatch = Stopwatch();
+    }
+    _playbackStopwatch!.start();
+    _playbackStartOffset = currentTime.value;
+
     const tickInterval = Duration(milliseconds: 16);
     _playTimer = Timer.periodic(tickInterval, _onTick);
   }
@@ -369,12 +402,12 @@ class PlaybackController extends GetxController {
   void _onTick(Timer timer) {
     if (!isPlaying.value) return;
 
-    // 更新时间（考虑速度倍率）
-    const delta = 0.016; // 16ms
-    currentTime.value += delta;
+    // 使用Stopwatch获取精确的已播放时间（消除累积误差）
+    final elapsedSeconds =
+        (_playbackStopwatch?.elapsedMilliseconds ?? 0) / 1000.0;
+    currentTime.value = _playbackStartOffset + elapsedSeconds;
 
     // 检查是否到达结尾或循环终点
-    // 使用 baseTempo 计算总时长（考虑临时速度调整）
     final totalDuration = getTotalDuration();
     if (loopEnabled.value) {
       final loopEndTime =
@@ -386,6 +419,10 @@ class PlaybackController extends GetxController {
         _scheduledNoteIndex = _findNoteIndexAtTime(
           loopStartTime * speedMultiplier.value,
         );
+        // 重置计时器
+        _playbackStopwatch?.reset();
+        _playbackStopwatch?.start();
+        _playbackStartOffset = loopStartTime;
         // 清除所有高亮，避免最后一个音符一直高亮
         highlightedNoteIndices.clear();
         highlightedPianoKeys.clear();
@@ -412,8 +449,11 @@ class PlaybackController extends GetxController {
       _checkMetronome();
     }
 
-    // 触发 UI 更新
-    update();
+    // 优化UI更新频率：每32ms更新一次（约30fps）
+    _tickCount++;
+    if (_tickCount % 2 == 0) {
+      update();
+    }
   }
 
   /// 触发音符

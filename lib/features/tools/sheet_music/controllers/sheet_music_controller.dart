@@ -59,25 +59,30 @@ class SheetMusicController extends GetxController {
 
   /// 初始化数据
   Future<void> _initialize() async {
-    await _loadScores();  // 先加载乐谱
+    await _loadScores(updateFilter: false);  // 先加载乐谱（不更新过滤）
     await _loadFolders(); // 再加载文件夹（需要用到乐谱数据）
+    _updateFilteredScores(); // 最后统一更新过滤列表
   }
 
   @override
   void onReady() {
     super.onReady();
-    // 页面准备好后，确保数据是最新的
-    refreshScores();
+    // 页面准备好后，确保过滤列表是最新的
+    // 注意：不重新加载数据，只更新过滤
+    _updateFilteredScores();
   }
 
   /// 刷新乐谱列表（公共方法）
   Future<void> refreshScores() async {
     print('🔄 [SheetMusicController] 刷新乐谱列表');
-    await _loadScores();
+    await _loadScores(updateFilter: false);
+    // 确保过滤列表基于最新的文件夹状态
+    _updateFilteredScores();
   }
 
   /// 加载乐谱数据
-  Future<void> _loadScores() async {
+  /// [updateFilter] 是否在加载完成后更新过滤列表，默认为 true
+  Future<void> _loadScores({bool updateFilter = true}) async {
     isLoading.value = true;
     try {
       final loadedScores = <Score>[];
@@ -124,7 +129,11 @@ class SheetMusicController extends GetxController {
       // 如果加载失败，使用示例数据
       scores.assignAll(_getSampleScores());
     }
-    _updateFilteredScores();
+
+    // 根据参数决定是否更新过滤列表
+    if (updateFilter) {
+      _updateFilteredScores();
+    }
     isLoading.value = false;
   }
 
