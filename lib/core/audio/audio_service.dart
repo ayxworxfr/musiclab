@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -311,12 +312,20 @@ class AudioService extends GetxService {
     }
 
     try {
-      // 创建播放器池（不预加载音频数据）
+      // 创建播放器池并预加载音频
       _pianoPlayerPools[midiNumber] = [];
-      for (int i = 0; i < playersPerNote; i++) {
+      for (var i = 0; i < playersPerNote; i++) {
         final player = AudioPlayer();
         await player.setPlayerMode(PlayerMode.lowLatency);
         await player.setReleaseMode(ReleaseMode.stop);
+
+        // 预加载音频：设置源以触发加载
+        try {
+          await player.setSource(AssetSource(_buildAudioPath(midiNumber)));
+        } catch (e) {
+          LoggerUtil.debug('预加载音频失败: $midiNumber - $e');
+        }
+
         _pianoPlayerPools[midiNumber]!.add(player);
       }
       _pianoPlayerIndex[midiNumber] = 0;
@@ -327,6 +336,30 @@ class AudioService extends GetxService {
       LoggerUtil.warning('加载音符失败: $midiNumber');
       return false;
     }
+  }
+
+  /// 批量预加载音符（用于避免首次播放卡顿）
+  Future<void> preloadNotes(List<int> midiNumbers) async {
+    final toLoad = <int>[];
+
+    // 找出尚未加载的音符
+    for (final midi in midiNumbers) {
+      if (midi >= pianoMidiMin &&
+          midi <= pianoMidiMax &&
+          !_pianoPlayerPools.containsKey(midi)) {
+        toLoad.add(midi);
+      }
+    }
+
+    if (toLoad.isEmpty) return;
+
+    // 并行加载所有音符（不等待完成，让它在后台执行）
+    unawaited(
+      Future.wait(
+        toLoad.map((midi) => _ensurePianoNoteLoaded(midi)),
+        eagerError: false,
+      ),
+    );
   }
 
   /// 计算智能混音音量

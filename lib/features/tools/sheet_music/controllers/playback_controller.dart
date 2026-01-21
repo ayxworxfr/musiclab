@@ -141,6 +141,9 @@ class PlaybackController extends GetxController {
     baseTempo.value = score.metadata.tempo;
     loopEndMeasure.value = score.measureCount - 1;
     _buildSchedule();
+
+    // 后台预加载开头的音符（不阻塞UI）
+    Future.microtask(() => _preloadInitialNotes());
   }
 
   /// 构建播放时间表
@@ -270,6 +273,32 @@ class PlaybackController extends GetxController {
     // 保持16ms tick（与lookahead匹配）
     const tickInterval = Duration(milliseconds: 16);
     _playTimer = Timer.periodic(tickInterval, _onTick);
+  }
+
+  /// 预加载开头的音符（避免首次播放卡顿）
+  void _preloadInitialNotes() {
+    if (_scheduledNotes.isEmpty) return;
+
+    // 收集开头3秒内的所有音符
+    const preloadDuration = 3.0; // 预加载3秒
+    final startTime = currentTime.value * speedMultiplier.value;
+    final endTime = startTime + preloadDuration;
+
+    final notesToPreload = <int>{};
+    for (final note in _scheduledNotes) {
+      if (note.startTime >= startTime && note.startTime <= endTime) {
+        if (note.midi > 0) {
+          notesToPreload.add(note.midi);
+        }
+      }
+      // 超过预加载范围就停止
+      if (note.startTime > endTime) break;
+    }
+
+    if (notesToPreload.isEmpty) return;
+
+    // 使用AudioService的预加载方法（后台执行）
+    _audioService.preloadNotes(notesToPreload.toList());
   }
 
   /// 暂停
