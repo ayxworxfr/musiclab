@@ -64,6 +64,9 @@ abstract class StorageKeys {
   /// 最近打开的乐谱ID列表
   static const String recentSheets = 'recent_sheets';
 
+  /// 文件夹数据
+  static const String folders = 'folders';
+
   // ========== 工具设置 ==========
   /// 钢琴 - 起始MIDI编号
   static const String pianoStartMidi = 'piano_start_midi';

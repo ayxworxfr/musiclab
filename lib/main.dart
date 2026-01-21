@@ -10,6 +10,7 @@ import 'core/storage/storage_service.dart';
 import 'core/utils/logger_util.dart';
 import 'core/utils/font_loader_service.dart';
 import 'features/tools/sheet_music/services/sheet_storage_service.dart';
+import 'features/tools/sheet_music/services/folder_storage_service.dart';
 
 /// 应用入口
 void main() async {
@@ -67,6 +68,10 @@ Future<void> _initServices() async {
   // 初始化乐谱存储服务（依赖StorageService）
   Get.put<SheetStorageService>(SheetStorageService());
   LoggerUtil.info('乐谱存储服务初始化完成');
+
+  // 初始化文件夹存储服务（依赖StorageService）
+  Get.put<FolderStorageService>(FolderStorageService());
+  LoggerUtil.info('文件夹存储服务初始化完成');
 
   // 初始化音频服务
   await Get.putAsync<AudioService>(() => AudioService().init());
