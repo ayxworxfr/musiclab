@@ -670,11 +670,16 @@ class JianpuPainter extends CustomPainter {
       }
     }
 
-    // 附点
+    // 附点（紧贴数字右侧）
     if (note.dots > 0) {
+      // 计算数字的实际宽度
+      final numberWidth = textPainter.width;
+      // 附点起始位置：数字右边缘 + 2px小间距
+      final dotStartX = x + numberWidth / 2 + 2;
+
       for (var i = 0; i < note.dots; i++) {
         canvas.drawCircle(
-          Offset(x + fontSize * 0.6 + i * 5, y),
+          Offset(dotStartX + i * 4, y),  // 多个附点间距4px
           2,
           Paint()..color = color,
         );
