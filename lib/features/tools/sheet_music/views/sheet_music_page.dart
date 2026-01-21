@@ -602,6 +602,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                           case 'export':
                             _exportScore(context, score);
                             break;
+                          case 'copy':
+                            controller.copyScore(score);
+                            break;
                           case 'rename':
                             _renameScore(context, score);
                             break;
@@ -628,6 +631,16 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               Icon(Icons.download, size: 18),
                               SizedBox(width: 8),
                               Text('导出'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'copy',
+                          child: Row(
+                            children: [
+                              Icon(Icons.content_copy, size: 18),
+                              SizedBox(width: 8),
+                              Text('复制'),
                             ],
                           ),
                         ),
