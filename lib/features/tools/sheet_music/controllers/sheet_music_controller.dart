@@ -682,6 +682,20 @@ class SheetMusicController extends GetxController {
       ..sort((a, b) => a.order.compareTo(b.order));
   }
 
+  /// 获取文件夹的总乐谱数（递归计算，包括子文件夹）
+  int getTotalScoreCount(Folder folder) {
+    // 计算当前文件夹的乐谱数
+    var total = folder.scoreIds.length;
+
+    // 递归计算所有子文件夹的乐谱数
+    final subFolders = getSubFolders(folder.id);
+    for (final subFolder in subFolders) {
+      total += getTotalScoreCount(subFolder);
+    }
+
+    return total;
+  }
+
   /// 刷新文件夹列表
   Future<void> refreshFolders() async {
     await _loadFolders();

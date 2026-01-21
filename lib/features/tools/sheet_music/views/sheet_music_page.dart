@@ -390,7 +390,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${folder.scoreCount} 首乐谱',
+                        '${controller.getTotalScoreCount(folder)} 首乐谱',
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark
