@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
@@ -269,7 +267,7 @@ class GrandStaffPainter extends CustomPainter {
 
     for (var i = 0; i < count; i++) {
       final pos = positions[i];
-      final y = staffY + 4 * config.lineSpacing - pos * config.lineSpacing / 2;
+      final y = staffY + 2 * config.lineSpacing - pos * config.lineSpacing / 2;
 
       final textPainter = TextPainter(
         text: TextSpan(
