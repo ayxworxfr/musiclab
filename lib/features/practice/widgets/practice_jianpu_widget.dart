@@ -145,6 +145,10 @@ class PracticeJianpuWidget extends StatelessWidget {
     final highDots = parts['highDots'] as int;
     final lowDots = parts['lowDots'] as int;
 
+    // 点的大小和间距（参考 JianpuNoteText 的专业实现）
+    final dotSize = noteFontSize * 0.18;
+    final dotSpacing = noteFontSize * 0.15;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -157,16 +161,13 @@ class PracticeJianpuWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 highDots,
-                (index) => Padding(
-                  padding: EdgeInsets.symmetric(horizontal: noteFontSize * 0.02),
-                  child: Text(
-                    '·',
-                    style: TextStyle(
-                      fontSize: noteFontSize * 0.4,
-                      fontWeight: FontWeight.bold,
-                      color: noteColor,
-                      height: 1,
-                    ),
+                (index) => Container(
+                  width: dotSize,
+                  height: dotSize,
+                  margin: EdgeInsets.symmetric(horizontal: dotSpacing / 4),
+                  decoration: BoxDecoration(
+                    color: noteColor,
+                    shape: BoxShape.circle,
                   ),
                 ),
               ),
@@ -193,16 +194,13 @@ class PracticeJianpuWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 lowDots,
-                (index) => Padding(
-                  padding: EdgeInsets.symmetric(horizontal: noteFontSize * 0.02),
-                  child: Text(
-                    '•',
-                    style: TextStyle(
-                      fontSize: noteFontSize * 0.4,
-                      fontWeight: FontWeight.bold,
-                      color: noteColor,
-                      height: 1,
-                    ),
+                (index) => Container(
+                  width: dotSize,
+                  height: dotSize,
+                  margin: EdgeInsets.symmetric(horizontal: dotSpacing / 4),
+                  decoration: BoxDecoration(
+                    color: noteColor,
+                    shape: BoxShape.circle,
                   ),
                 ),
               ),
@@ -215,17 +213,25 @@ class PracticeJianpuWidget extends StatelessWidget {
   /// 解析简谱字符串
   ///
   /// 返回：
-  /// - note: 主音符（1-7 或 #1 等）
+  /// - note: 主音符（1-7 或 1# 等）
   /// - dots: 所有点的字符串
   /// - highDots: 高音点数量
   /// - lowDots: 低音点数量
   Map<String, dynamic> _parseJianpu(String jianpu) {
-    // 统计高音点和低音点
-    final highDots = '·'.allMatches(jianpu).length;
-    final lowDots = '•'.allMatches(jianpu).length;
+    // Unicode 组合字符
+    const String highDot = '\u0307'; // ̇ 上加点
+    const String lowDot = '\u0323'; // ̣ 下加点
 
-    // 提取主音符
-    final note = jianpu.replaceAll('·', '').replaceAll('•', '');
+    // 统计高音点和低音点（支持 Unicode 组合字符和普通字符）
+    final highDots = highDot.allMatches(jianpu).length + '·'.allMatches(jianpu).length;
+    final lowDots = lowDot.allMatches(jianpu).length + '•'.allMatches(jianpu).length;
+
+    // 提取主音符（移除所有点标记）
+    final note = jianpu
+        .replaceAll(highDot, '')
+        .replaceAll(lowDot, '')
+        .replaceAll('·', '')
+        .replaceAll('•', '');
 
     return {
       'note': note,
