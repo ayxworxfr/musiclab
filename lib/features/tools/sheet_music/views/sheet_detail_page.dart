@@ -42,6 +42,9 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
   // 横屏 AppBar 控制
   bool _showAppBar = true;
 
+  // 焦点节点（用于键盘监听）
+  final FocusNode _focusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -60,16 +63,37 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+
+    // 页面加载后自动获取焦点
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
+    _focusNode.dispose();
     // 恢复仅竖屏
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
     super.dispose();
+  }
+
+  /// 处理键盘按键
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.space) {
+        // 空格键切换播放/暂停
+        final playbackController = Get.find<PlaybackController>();
+        if (playbackController.isPlaying.value) {
+          playbackController.pause();
+        } else {
+          playbackController.play();
+        }
+      }
+    }
   }
 
   void _loadScore() {
@@ -245,66 +269,76 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
       );
     }
 
-    return Scaffold(
-      appBar: _shouldShowAppBar
-          ? AppBar(
-              title: GestureDetector(
-                onTap:
-                    _currentScore!.isBuiltIn ? null : () => _showRenameDialog(),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        _currentScore!.title,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+    return KeyboardListener(
+      focusNode: _focusNode,
+      onKeyEvent: _handleKeyEvent,
+      child: GestureDetector(
+        onTap: () {
+          // 点击任何地方都重新获取焦点，确保键盘监听生效
+          _focusNode.requestFocus();
+        },
+        child: Scaffold(
+          appBar: _shouldShowAppBar
+              ? AppBar(
+                  title: GestureDetector(
+                    onTap:
+                        _currentScore!.isBuiltIn ? null : () => _showRenameDialog(),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            _currentScore!.title,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (!_currentScore!.isBuiltIn) ...[
+                          const SizedBox(width: 4),
+                          const Icon(Icons.edit, size: 16),
+                        ],
+                      ],
                     ),
-                    if (!_currentScore!.isBuiltIn) ...[
-                      const SizedBox(width: 4),
-                      const Icon(Icons.edit, size: 16),
-                    ],
-                  ],
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    _currentScore!.isFavorite
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: _currentScore!.isFavorite ? Colors.red : null,
                   ),
-                  onPressed: () {
-                    // TODO: 收藏功能
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.tune),
-                  onPressed: _showSettingsSheet,
-                ),
-              ],
-            )
-          : null,
-      body: GestureDetector(
-        onTapUp: _handleScreenTap,
-        child: SheetMusicView(
-          key: ValueKey(
-            '${_currentScore!.id}_${_notationMode.name}_$_selectedThemeIndex',
+                  actions: [
+                    IconButton(
+                      icon: Icon(
+                        _currentScore!.isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: _currentScore!.isFavorite ? Colors.red : null,
+                      ),
+                      onPressed: () {
+                        // TODO: 收藏功能
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.tune),
+                      onPressed: _showSettingsSheet,
+                    ),
+                  ],
+                )
+              : null,
+          body: GestureDetector(
+            onTapUp: _handleScreenTap,
+            child: SheetMusicView(
+              key: ValueKey(
+                '${_currentScore!.id}_${_notationMode.name}_$_selectedThemeIndex',
+              ),
+              score: _currentScore!,
+              config: _config,
+              initialMode: _notationMode,
+              showFingering: _showFingering,
+              showLyrics: _showLyrics,
+              showPiano: _showPiano,
+              pianoLabelType: _pianoLabelType,
+              onNoteTap: (note) {
+                debugPrint('Tapped note: ${note.note.pitch}');
+              },
+              onPianoKeyTap: (midi) {
+                debugPrint('Tapped piano key: $midi');
+              },
+            ),
           ),
-          score: _currentScore!,
-          config: _config,
-          initialMode: _notationMode,
-          showFingering: _showFingering,
-          showLyrics: _showLyrics,
-          showPiano: _showPiano,
-          pianoLabelType: _pianoLabelType,
-          onNoteTap: (note) {
-            debugPrint('Tapped note: ${note.note.pitch}');
-          },
-          onPianoKeyTap: (midi) {
-            debugPrint('Tapped piano key: $midi');
-          },
         ),
       ),
     );

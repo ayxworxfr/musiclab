@@ -146,6 +146,26 @@ class AudioService extends GetxService {
     try {
       LoggerUtil.info('开始初始化音频服务...');
 
+      // 设置全局音频上下文（支持后台播放）
+      await AudioPlayer.global.setGlobalAudioContext(
+        AudioContext(
+          iOS: AudioContextIOS(
+            category: AVAudioSessionCategory.playback,
+            options: [
+              AVAudioSessionOptions.mixWithOthers,
+            ],
+          ),
+          android: AudioContextAndroid(
+            isSpeakerphoneOn: false,
+            stayAwake: true,
+            contentType: AndroidContentType.music,
+            usageType: AndroidUsageType.media,
+            audioFocus: AndroidAudioFocus.gain,
+          ),
+        ),
+      );
+      LoggerUtil.info('音频上下文配置完成（支持后台播放）');
+
       // 加载音频设置
       try {
         _settingsService = Get.find<SettingsService>();

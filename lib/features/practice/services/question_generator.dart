@@ -96,7 +96,7 @@ class QuestionGenerator {
     for (int i = 0; i < count; i++) {
       // 根据难度生成不同类型的听音题
       if (difficulty <= 2) {
-        // 初级：单音识别
+        // 入门和初级：单音识别
         final midi = minMidi + _random.nextInt(maxMidi - minMidi + 1);
         final jianpu = MusicUtils.midiToJianpu(midi);
         final options = _generateJianpuOptions(midi, minMidi, maxMidi);
@@ -108,16 +108,16 @@ class QuestionGenerator {
             difficulty: difficulty,
             content: QuestionContent(
               type: 'audio',
-              description: '听音辨别：这是哪个音？',
+              description: difficulty == 1 ? '听音辨别：这是哪个音？' : '听音识别：这是哪个音？',
               notes: [midi],
             ),
             correctAnswer: jianpu,
             options: options,
           ),
         );
-      } else {
-        // 中高级：音程识别
-        final midi1 = minMidi + _random.nextInt(maxMidi - minMidi - 7);
+      } else if (difficulty == 3) {
+        // 中级：音程识别（两个音）
+        final midi1 = minMidi + _random.nextInt(maxMidi - minMidi - 12);
         final interval = _random.nextInt(8) + 1; // 1-8 度
         final midi2 = midi1 + _getIntervalSemitones(interval);
 
@@ -137,6 +137,29 @@ class QuestionGenerator {
             correctAnswer: intervalName,
             options: options,
             explanation: '这是一个$intervalName',
+          ),
+        );
+      } else {
+        // 高级：和弦识别（三个或更多音）
+        final chordType = _random.nextInt(4); // 0-3: 大三和弦、小三和弦、减三和弦、属七和弦
+        final rootNote = minMidi + _random.nextInt(maxMidi - minMidi - 12);
+        final chordNotes = _getChordNotes(rootNote, chordType);
+        final chordName = _getChordName(chordType);
+        final options = _generateChordOptions(chordType);
+
+        questions.add(
+          PracticeQuestion(
+            id: 'ear_chord_${DateTime.now().millisecondsSinceEpoch}_$i',
+            type: PracticeType.earTraining,
+            difficulty: difficulty,
+            content: QuestionContent(
+              type: 'audio',
+              description: '和弦识别：这是什么和弦？',
+              notes: chordNotes,
+            ),
+            correctAnswer: chordName,
+            options: options,
+            explanation: '这是一个$chordName',
           ),
         );
       }
@@ -718,5 +741,55 @@ class QuestionGenerator {
   /// 将 MIDI 音符列表转换为简谱字符串（专业格式）
   String _notesToJianpuString(List<int> notes) {
     return notes.map((n) => MusicUtils.midiToJianpu(n)).join(' ');
+  }
+
+  /// 获取和弦音符
+  /// [rootNote] 根音的 MIDI 编号
+  /// [chordType] 和弦类型 (0: 大三和弦, 1: 小三和弦, 2: 减三和弦, 3: 属七和弦)
+  List<int> _getChordNotes(int rootNote, int chordType) {
+    return switch (chordType) {
+      0 => [rootNote, rootNote + 4, rootNote + 7], // 大三和弦 (1-3-5)
+      1 => [rootNote, rootNote + 3, rootNote + 7], // 小三和弦 (1-b3-5)
+      2 => [rootNote, rootNote + 3, rootNote + 6], // 减三和弦 (1-b3-b5)
+      3 => [
+          rootNote,
+          rootNote + 4,
+          rootNote + 7,
+          rootNote + 10
+        ], // 属七和弦 (1-3-5-b7)
+      _ => [rootNote, rootNote + 4, rootNote + 7], // 默认大三和弦
+    };
+  }
+
+  /// 获取和弦名称
+  String _getChordName(int chordType) {
+    return switch (chordType) {
+      0 => '大三和弦',
+      1 => '小三和弦',
+      2 => '减三和弦',
+      3 => '属七和弦',
+      _ => '大三和弦',
+    };
+  }
+
+  /// 生成和弦选项（4个选项，包含正确答案）
+  List<String> _generateChordOptions(int correctChordType) {
+    final allChordTypes = [0, 1, 2, 3]; // 大三、小三、减三、属七
+    final options = <int>[correctChordType];
+
+    // 生成3个干扰项
+    final candidates =
+        allChordTypes.where((i) => i != correctChordType).toList()
+          ..shuffle(_random);
+
+    while (options.length < 4 && candidates.isNotEmpty) {
+      options.add(candidates.removeAt(0));
+    }
+
+    // 打乱选项顺序
+    options.shuffle(_random);
+
+    // 转换为中文名称
+    return options.map(_getChordName).toList();
   }
 }

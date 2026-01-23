@@ -164,11 +164,17 @@ class PracticeController extends GetxController {
     }
   }
 
-  /// 依次播放音符
+  /// 依次播放音符（或同时播放和弦）
   Future<void> _playNotesSequentially(List<int> notes) async {
-    for (final note in notes) {
-      await _audioService.playPianoNote(note);
-      await Future.delayed(const Duration(milliseconds: 500));
+    // 如果是和弦（3个或更多音符），同时播放
+    if (notes.length >= 3) {
+      await _audioService.playChord(notes);
+    } else {
+      // 单音或音程，依次播放
+      for (final note in notes) {
+        await _audioService.playPianoNote(note);
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      }
     }
   }
 
