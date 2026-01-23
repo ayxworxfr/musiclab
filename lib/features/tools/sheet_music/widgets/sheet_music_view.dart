@@ -175,13 +175,13 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   /// 计算播放控制区高度
   double _getControlsHeight(bool isLandscape) {
     if (isLandscape) {
-      // 横屏：单行紧凑布局
-      // 进度条(~10) + 时间显示(~12) + 控制按钮(32) + padding(4) = ~58，给足余量
-      return 80.0;
+      // 横屏：两行布局（进度条 + 时间 + 播放按钮行 + 音量控制行）
+      // 进度条(~10) + 时间(~12) + 第一行按钮(30) + 第二行控制(28) + padding(6) = ~86
+      return 90.0;
     } else {
-      // 竖屏：两行布局
-      // 进度条(~10) + 时间(~12) + 控制按钮(~30) + 速度音量(~30) + spacing(4) + padding(8) = ~94，给足余量
-      return 140.0;
+      // 竖屏：两行布局（进度条 + 时间 + 播放按钮行 + 音量控制行）
+      // 进度条(~10) + 时间(~12) + 第一行按钮(~32) + 第二行控制(~32) + spacing(4) + padding(8) = ~98
+      return 145.0;
     }
   }
 
@@ -324,13 +324,27 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     if (isLandscape) {
-      // 横屏简化版：只显示模式切换按钮
+      // 横屏优化版：紧凑显示重要信息
       return Container(
-        key: _headerKey, // 添加 key
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        key: _headerKey,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [_buildModeToggle()],
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // 左侧：调号、拍号、速度
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildKeyChip(),
+                const SizedBox(width: 6),
+                _buildTimeSignatureChip(),
+                const SizedBox(width: 6),
+                _buildTempoChip(),
+              ],
+            ),
+            // 右侧：模式切换
+            _buildModeToggle(),
+          ],
         ),
       );
     }
@@ -363,15 +377,14 @@ class _SheetMusicViewState extends State<SheetMusicView> {
             ),
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 6,
               children: [
                 _buildKeyChip(),
-                const SizedBox(width: 12),
                 _buildTimeSignatureChip(),
-                const SizedBox(width: 12),
                 _buildTempoChip(),
-                const SizedBox(width: 12),
                 // 五线谱/简谱切换按钮
                 _buildModeToggle(),
               ],
@@ -1265,6 +1278,12 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   void _scrollToHighlightedKey(int midi, double totalWidth) {
     if (!_pianoScrollController.hasClients) return;
 
+    // 检查 position 是否已经初始化完成
+    final position = _pianoScrollController.position;
+    if (!position.hasContentDimensions || !position.hasViewportDimension) {
+      return;
+    }
+
     // 计算这个 MIDI 键在钢琴上的相对位置
     var whiteKeysBefore = 0;
     var totalWhiteKeys = 0;
@@ -1279,10 +1298,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
     // 计算目标滚动位置（让高亮键显示在中间）
     final keyPosition = (whiteKeysBefore / totalWhiteKeys) * totalWidth;
-    final viewportWidth = _pianoScrollController.position.viewportDimension;
+    final viewportWidth = position.viewportDimension;
     final targetScroll = (keyPosition - viewportWidth / 2).clamp(
       0.0,
-      _pianoScrollController.position.maxScrollExtent,
+      position.maxScrollExtent,
     );
 
     // 平滑滚动
@@ -1471,7 +1490,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     // 如果无法获取实际高度，返回估算值
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    return isLandscape ? 50.0 : 120.0;
+    return isLandscape ? 40.0 : 120.0; // 横屏增加到40，适应新的内容
   }
 
   Widget _buildPlaybackControls() {
@@ -1496,7 +1515,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           final totalDuration = controller.getTotalDuration();
 
           if (isLandscape) {
-            // 横屏：超紧凑单行布局
+            // 横屏：优化对称布局
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1551,20 +1570,13 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   ),
                 ),
 
-                // 单行控制（居中对齐）
+                // 第一行：播放控制按钮（居中）
                 SizedBox(
-                  height: 32,
+                  height: 30,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // 播放模式
-                      _buildCompactChip(
-                        controller.playMode.value.label,
-                        _getPlayModeColor(controller.playMode.value),
-                        () => controller.togglePlayMode(),
-                      ),
-                      const SizedBox(width: 4),
                       // 循环
                       _buildIconButton(
                         Icons.repeat,
@@ -1575,6 +1587,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         },
                         size: 18,
                       ),
+                      const SizedBox(width: 2),
                       // 上一曲
                       _buildIconButton(
                         Icons.skip_previous,
@@ -1587,6 +1600,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         ),
                         size: 18,
                       ),
+                      const SizedBox(width: 4),
                       // 播放按钮
                       Container(
                         width: 32,
@@ -1621,6 +1635,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 4),
                       // 下一曲
                       _buildIconButton(
                         Icons.skip_next,
@@ -1633,6 +1648,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         ),
                         size: 18,
                       ),
+                      const SizedBox(width: 2),
                       // 节拍器
                       _buildIconButton(
                         Icons.timer,
@@ -1643,8 +1659,52 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         },
                         size: 18,
                       ),
-                      const SizedBox(width: 8),
-                      // 速度控制（紧凑）
+                    ],
+                  ),
+                ),
+
+                // 第二行：对称布局（左音量 - 中间控制 - 右音量）
+                SizedBox(
+                  height: 28,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // 左手音量（L在左边）
+                      Text(
+                        'L',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: widget.config.theme.leftHandColor,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 85, // 增加宽度
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor:
+                                widget.config.theme.leftHandColor,
+                            inactiveTrackColor: widget.config.theme
+                                .leftHandColor
+                                .withValues(alpha: 0.2),
+                            thumbColor: widget.config.theme.leftHandColor,
+                            trackHeight: 2,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 3,
+                            ),
+                          ),
+                          child: Slider(
+                            value: controller.leftHandVolume.value.toDouble(),
+                            min: 0,
+                            max: 100,
+                            onChanged: (v) =>
+                                controller.setLeftHandVolume(v.round()),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // 中间：速度控制（移到前面）
                       IconButton(
                         onPressed: () => controller.prevSpeed(),
                         icon: const Icon(Icons.remove, size: 14),
@@ -1687,51 +1747,17 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           minHeight: 20,
                         ),
                       ),
+                      const SizedBox(width: 6),
+                      // 中间：播放模式（移到后面）
+                      _buildCompactChip(
+                        controller.playMode.value.label,
+                        _getPlayModeColor(controller.playMode.value),
+                        () => controller.togglePlayMode(),
+                      ),
                       const SizedBox(width: 4),
-                      // 左手音量
-                      Text(
-                        'L',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          color: widget.config.theme.leftHandColor,
-                        ),
-                      ),
+                      // 右手音量（R在右边）
                       SizedBox(
-                        width: 40,
-                        child: SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            activeTrackColor:
-                                widget.config.theme.leftHandColor,
-                            inactiveTrackColor: widget.config.theme
-                                .leftHandColor
-                                .withValues(alpha: 0.2),
-                            thumbColor: widget.config.theme.leftHandColor,
-                            trackHeight: 2,
-                            thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 3,
-                            ),
-                          ),
-                          child: Slider(
-                            value: controller.leftHandVolume.value.toDouble(),
-                            min: 0,
-                            max: 100,
-                            onChanged: (v) =>
-                                controller.setLeftHandVolume(v.round()),
-                          ),
-                        ),
-                      ),
-                      // 右手音量
-                      Text(
-                        'R',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          color: widget.config.theme.rightHandColor,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 40,
+                        width: 85, // 增加宽度
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor:
@@ -1755,6 +1781,14 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           ),
                         ),
                       ),
+                      Text(
+                        'R',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: widget.config.theme.rightHandColor,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1762,11 +1796,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
             );
           }
 
-          // 竖屏：紧凑两行布局
+          // 竖屏：优化对称布局
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 进度条（减少高度）
+              // 进度条
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: widget.config.theme.rightHandColor,
@@ -1791,7 +1825,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 ),
               ),
 
-              // 时间显示（减少间距）
+              // 时间显示（左右分开）
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -1819,41 +1853,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
               const SizedBox(height: 2),
 
-              // 控制按钮
+              // 第一行：播放控制按钮
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 播放模式切换
-                  GestureDetector(
-                    onTap: () => controller.togglePlayMode(),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getPlayModeColor(
-                          controller.playMode.value,
-                        ).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: _getPlayModeColor(
-                            controller.playMode.value,
-                          ).withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Text(
-                        controller.playMode.value.label,
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: _getPlayModeColor(controller.playMode.value),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
                   IconButton(
                     onPressed: () {
                       controller.loopEnabled.toggle();
@@ -1950,19 +1954,44 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
               const SizedBox(height: 2),
 
-              // 速度和音量控制（更紧凑）
+              // 第二行：对称布局（左音量 - 中间控制 - 右音量）
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 速度控制
+                  // 左手音量（L在左边）
                   Text(
-                    '速度: ',
+                    'L',
                     style: TextStyle(
                       fontSize: 9,
-                      color: widget.config.theme.textColor.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.bold,
+                      color: widget.config.theme.leftHandColor,
                     ),
                   ),
+                  SizedBox(
+                    width: 75, // 增加宽度
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: widget.config.theme.leftHandColor,
+                        inactiveTrackColor: widget.config.theme.leftHandColor
+                            .withValues(alpha: 0.2),
+                        thumbColor: widget.config.theme.leftHandColor,
+                        trackHeight: 2,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 3,
+                        ),
+                      ),
+                      child: Slider(
+                        value: controller.leftHandVolume.value.toDouble(),
+                        min: 0,
+                        max: 100,
+                        onChanged: (v) =>
+                            controller.setLeftHandVolume(v.round()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  // 中间：速度控制（移到前面）
                   IconButton(
                     onPressed: () => controller.prevSpeed(),
                     icon: const Icon(Icons.remove, size: 12),
@@ -2005,50 +2034,40 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       minHeight: 20,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  // 左手音量
-                  Text(
-                    'L',
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: widget.config.theme.leftHandColor,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 55,
-                    child: SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: widget.config.theme.leftHandColor,
-                        inactiveTrackColor: widget.config.theme.leftHandColor
-                            .withValues(alpha: 0.2),
-                        thumbColor: widget.config.theme.leftHandColor,
-                        trackHeight: 2,
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 3,
+                  const SizedBox(width: 2),
+                  // 中间：播放模式（移到后面）
+                  GestureDetector(
+                    onTap: () => controller.togglePlayMode(),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getPlayModeColor(
+                          controller.playMode.value,
+                        ).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _getPlayModeColor(
+                            controller.playMode.value,
+                          ).withValues(alpha: 0.3),
                         ),
                       ),
-                      child: Slider(
-                        value: controller.leftHandVolume.value.toDouble(),
-                        min: 0,
-                        max: 100,
-                        onChanged: (v) =>
-                            controller.setLeftHandVolume(v.round()),
+                      child: Text(
+                        controller.playMode.value.label,
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: _getPlayModeColor(controller.playMode.value),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 2),
-                  // 右手音量
-                  Text(
-                    'R',
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: widget.config.theme.rightHandColor,
-                    ),
-                  ),
+                  // 右手音量（R在右边）
                   SizedBox(
-                    width: 55,
+                    width: 75, // 增加宽度
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         activeTrackColor: widget.config.theme.rightHandColor,
@@ -2067,6 +2086,14 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         onChanged: (v) =>
                             controller.setRightHandVolume(v.round()),
                       ),
+                    ),
+                  ),
+                  Text(
+                    'R',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: widget.config.theme.rightHandColor,
                     ),
                   ),
                 ],
