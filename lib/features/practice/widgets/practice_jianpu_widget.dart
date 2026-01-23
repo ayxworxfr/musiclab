@@ -142,14 +142,37 @@ class PracticeJianpuWidget extends StatelessWidget {
     // 解析音符和高低音点
     final parts = _parseJianpu(jianpu);
     final note = parts['note'] as String;
-    final dots = parts['dots'] as String;
     final highDots = parts['highDots'] as int;
     final lowDots = parts['lowDots'] as int;
 
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // 高音点（上方）
+        if (highDots > 0)
+          SizedBox(
+            height: noteFontSize * 0.3,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                highDots,
+                (index) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: noteFontSize * 0.02),
+                  child: Text(
+                    '·',
+                    style: TextStyle(
+                      fontSize: noteFontSize * 0.4,
+                      fontWeight: FontWeight.bold,
+                      color: noteColor,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
         // 主音符
         Text(
           note,
@@ -161,48 +184,31 @@ class PracticeJianpuWidget extends StatelessWidget {
           ),
         ),
 
-        // 高低音点
-        if (dots.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(left: 2),
-            child: Column(
+        // 低音点（下方）
+        if (lowDots > 0)
+          SizedBox(
+            height: noteFontSize * 0.3,
+            child: Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (highDots > 0) _buildDots(highDots, isHigh: true),
-                if (lowDots > 0)
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: highDots > 0 ? noteFontSize * 0.6 : noteFontSize * 0.4,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                lowDots,
+                (index) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: noteFontSize * 0.02),
+                  child: Text(
+                    '•',
+                    style: TextStyle(
+                      fontSize: noteFontSize * 0.4,
+                      fontWeight: FontWeight.bold,
+                      color: noteColor,
+                      height: 1,
                     ),
-                    child: _buildDots(lowDots, isHigh: false),
                   ),
-              ],
+                ),
+              ),
             ),
           ),
       ],
-    );
-  }
-
-  /// 高低音点
-  Widget _buildDots(int count, {required bool isHigh}) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(
-        count,
-        (index) => Padding(
-          padding: EdgeInsets.only(left: index > 0 ? 2 : 0),
-          child: Text(
-            isHigh ? '·' : '•',
-            style: TextStyle(
-              fontSize: noteFontSize * 0.3,
-              fontWeight: FontWeight.bold,
-              color: noteColor,
-              height: 1,
-            ),
-          ),
-        ),
-      ),
     );
   }
 
