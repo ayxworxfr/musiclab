@@ -71,7 +71,7 @@ class LayoutEngine {
     final availableLineWidth = contentWidth - headerWidth;
 
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    final signatureWidth = 10.0; // 调号 + 拍号区域
+    final signatureWidth = score.metadata.key.signatureCount * 10.0 + 10.0; // 调号区域宽度
 
     // 根据屏幕宽度动态计算参数
     double minBeatWidth;
@@ -98,22 +98,20 @@ class LayoutEngine {
     // 计算最小小节宽度(每拍至少需要的宽度 = 可能的最大音符数 * 最小间距 + 边距)
     final minMeasureWidth = minBeatWidth * beatsPerMeasure + 30;
 
-    // 1. 先计算普通行的小节数
-    int normalLineMeasures = (availableLineWidth / minMeasureWidth).floor();
-    normalLineMeasures =
-        normalLineMeasures.clamp(minMeasuresPerLine, config.maxMeasuresPerLine);
+    // 计算可用的小节布局宽度（所有行都要显示调号，所以都需要扣除调号空间）
+    final availableMeasureWidth = availableLineWidth - signatureWidth;
 
-    // 2. 计算标准小节宽度（普通行均分得到）
-    final standardMeasureWidth = availableLineWidth / normalLineMeasures;
+    // 计算每行能放的小节数（所有行统一）
+    int measuresPerLine = (availableMeasureWidth / minMeasureWidth).floor();
+    measuresPerLine =
+        measuresPerLine.clamp(minMeasuresPerLine, config.maxMeasuresPerLine);
 
-    // 3. 第一行：用标准宽度计算能放几个小节
-    final firstLineAvailable = availableLineWidth - signatureWidth;
-    int firstLineMeasures = (firstLineAvailable / standardMeasureWidth).floor();
-    firstLineMeasures = firstLineMeasures.clamp(1, normalLineMeasures);
+    // 计算标准小节宽度
+    final standardMeasureWidth = availableMeasureWidth / measuresPerLine;
 
     return _LineLayoutParams(
-      firstLineMeasures: firstLineMeasures,
-      normalLineMeasures: normalLineMeasures,
+      firstLineMeasures: measuresPerLine,
+      normalLineMeasures: measuresPerLine,
       signatureWidth: signatureWidth,
       standardMeasureWidth: standardMeasureWidth,
     );
@@ -154,7 +152,7 @@ class LayoutEngine {
           height: config.lineHeight,
           measureIndices: measureIndices,
           showClef: true,
-          showKeySignature: isFirstLine,
+          showKeySignature: true,
           showTimeSignature: isFirstLine,
         ),
       );
@@ -179,8 +177,8 @@ class LayoutEngine {
       final headerWidth = line.showTimeSignature ? 100.0 : 45.0;
       double lineStartX = config.padding.left + headerWidth;
 
-      // 第一行要跳过调号区域
-      if (isFirstLine) {
+      // 显示调号的行需要预留调号空间
+      if (line.showKeySignature) {
         lineStartX += layoutParams.signatureWidth;
       }
 

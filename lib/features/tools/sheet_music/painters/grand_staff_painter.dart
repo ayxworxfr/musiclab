@@ -96,7 +96,7 @@ class GrandStaffPainter extends CustomPainter {
     }
 
     // 调号
-    if (line.showKeySignature && line.lineIndex == 0) {
+    if (line.showKeySignature) {
       _drawKeySignature(
         canvas,
         currentX,
