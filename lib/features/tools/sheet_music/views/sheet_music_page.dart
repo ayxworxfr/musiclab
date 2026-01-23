@@ -317,9 +317,18 @@ class SheetMusicPage extends GetView<SheetMusicController> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => controller.enterFolder(folder),
+          onTap: () {
+            // 延迟一帧执行，确保水波纹效果不会传递到下一页
+            Future.delayed(const Duration(milliseconds: 50), () {
+              if (context.mounted) {
+                controller.enterFolder(folder);
+              }
+            });
+          },
           onLongPress: () => _showFolderMenu(context, folder),
           borderRadius: BorderRadius.circular(16),
+          splashColor: AppColors.primary.withValues(alpha: 0.1),
+          highlightColor: AppColors.primary.withValues(alpha: 0.05),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -892,36 +901,60 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                 autofocus: true,
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Text('图标: '),
-                  const SizedBox(width: 8),
-                  ...[
-                    '📁',
-                    '📂',
-                    '📚',
-                    '🎼',
-                    '🎵',
-                    '🎹',
-                    '🎸'
-                  ].map((icon) => GestureDetector(
-                        onTap: () => setState(() => selectedIcon = icon),
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: selectedIcon == icon
-                                  ? AppColors.primary
-                                  : Colors.grey.shade300,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('选择图标:', style: TextStyle(fontSize: 14)),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 60,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      '📁',
+                      '📂',
+                      '📚',
+                      '🎼',
+                      '🎵',
+                      '🎹',
+                      '🎸',
+                      '🎻',
+                      '🎺',
+                      '🎷',
+                      '🥁',
+                      '🎤',
+                      '🎧',
+                      '🎬',
+                      '📝',
+                      '✏️',
+                      '📖',
+                      '📓',
+                      '🎯',
+                      '⭐',
+                      '💫',
+                      '🌟',
+                      '✨',
+                      '🎨',
+                    ].map((icon) => GestureDetector(
+                      onTap: () => setState(() => selectedIcon = icon),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: selectedIcon == icon
+                                ? AppColors.primary
+                                : Colors.grey.shade300,
+                            width: 2,
                           ),
-                          child: Text(icon, style: const TextStyle(fontSize: 24)),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      )),
-                ],
+                        child: Text(icon, style: const TextStyle(fontSize: 24)),
+                      ),
+                    )).toList(),
+                  ),
+                ),
               ),
             ],
           ),
