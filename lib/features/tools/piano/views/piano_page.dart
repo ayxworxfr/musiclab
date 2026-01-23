@@ -185,6 +185,8 @@ class _PianoPageState extends State<PianoPage> {
         return RenderTheme.warmSunset();
       case 4:
         return RenderTheme.forest();
+      case 5:
+        return RenderTheme.sakura();
       default:
         return const RenderTheme();
     }

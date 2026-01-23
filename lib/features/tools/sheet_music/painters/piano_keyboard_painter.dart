@@ -288,17 +288,37 @@ class PianoKeyboardPainter extends CustomPainter {
     final label = labelInfo['label'] as String;
     final octaveDots = labelInfo['dots'] as int; // 正数为高音点，负数为低音点
 
-    final baseFontSize = key.isBlack ? 10.0 : 13.0;
-    final textColor = key.isBlack
-        ? (isHighlighted ? Colors.white : Colors.grey.shade300)
-        : (isHighlighted
-              ? Colors.white
-              : config.theme.textColor.withValues(alpha: 0.7));
+    // 增大字号，提高可读性
+    final baseFontSize = key.isBlack ? 12.0 : 14.0;
+
+    // 改进颜色逻辑：确保在任何背景上都有良好的对比度
+    final Color textColor;
+    if (key.isBlack) {
+      // 黑键标签：高亮时用白色，不高亮时用浅灰
+      textColor = isHighlighted ? Colors.white : Colors.grey.shade200;
+    } else {
+      // 白键标签：高亮时用深色（更好的对比度），不高亮时用主题颜色
+      if (isHighlighted) {
+        // 使用深色文字，确保在浅色高亮背景上清晰可见
+        textColor = const Color(0xFF1F2937);
+      } else {
+        // 不高亮时使用主题的指法颜色，确保对比度
+        textColor = config.theme.fingeringColor;
+      }
+    }
 
     final textStyle = TextStyle(
       fontSize: baseFontSize,
       fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
       color: textColor,
+      // 添加轻微阴影，提高在任何背景上的可读性
+      shadows: isHighlighted && !key.isBlack ? [
+        const Shadow(
+          offset: Offset(0, 0.5),
+          blurRadius: 1.0,
+          color: Color(0x40000000),
+        ),
+      ] : null,
     );
 
     final textPainter = TextPainter(

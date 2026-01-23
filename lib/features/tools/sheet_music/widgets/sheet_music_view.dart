@@ -64,8 +64,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   String _pianoLabelType = 'jianpu'; // 'jianpu' | 'note'
   final ScrollController _pianoScrollController = ScrollController();
 
-  // 钢琴展开/收起状态
-  bool _pianoExpanded = true;
+  // 钢琴和播放栏的显示状态（独立控制）
+  bool _pianoVisible = true;
+  bool _controlsVisible = true;
 
   // 乐谱滚动控制器
   final ScrollController _scoreScrollController = ScrollController();
@@ -89,6 +90,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
   // 存储当前绘制宽度，用于滚动计算
   double? _currentDrawWidth;
+
+  // 缓存上次的 config 和 width，避免不必要的重新计算
+  RenderConfig? _lastConfig;
+  double? _lastWidth;
 
   @override
   void initState() {
@@ -141,12 +146,26 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   }
 
   /// 判断是否应该显示钢琴
-  bool _shouldShowPiano(bool isLandscape) {
-    if (!widget.showPiano) return false;
+  bool _shouldShowPiano() {
+    return widget.showPiano && _pianoVisible;
+  }
+
+  /// 判断是否应该显示播放控制
+  bool _shouldShowControls() {
+    return _controlsVisible;
+  }
+
+  /// 计算播放控制区高度
+  double _getControlsHeight(bool isLandscape) {
     if (isLandscape) {
-      return _pianoExpanded;
+      // 横屏：单行紧凑布局
+      // 进度条(~10) + 时间显示(~12) + 控制按钮(32) + padding(4) = ~58，给足余量
+      return 80.0;
+    } else {
+      // 竖屏：两行布局
+      // 进度条(~10) + 时间(~12) + 控制按钮(~30) + 速度音量(~30) + spacing(4) + padding(8) = ~94，给足余量
+      return 140.0;
     }
-    return true;
   }
 
   @override
@@ -154,22 +173,26 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     return SafeArea(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // 计算布局
-          final layoutEngine = LayoutEngine(
-            config: widget.config,
-            availableWidth: constraints.maxWidth,
-          );
-          _layout = layoutEngine.calculate(widget.score);
+          // 只有在 config 或 width 变化时才重新计算布局
+          if (_layout == null ||
+              _lastConfig != widget.config ||
+              _lastWidth != constraints.maxWidth) {
+            final layoutEngine = LayoutEngine(
+              config: widget.config,
+              availableWidth: constraints.maxWidth,
+            );
+            _layout = layoutEngine.calculate(widget.score);
+            _lastConfig = widget.config;
+            _lastWidth = constraints.maxWidth;
 
-          // 加载到播放控制器（只在布局变化时重新加载，避免重置速度）
-          if (_playbackController != null &&
-              (_playbackController!.score != widget.score ||
-                  _playbackController!.layout != _layout)) {
-            _playbackController!.loadScore(widget.score, _layout!);
-            // 如果设置了临时速度，恢复它
-            if (_overrideTempo != null) {
-              _playbackController!.baseTempo.value = _overrideTempo!;
-              _playbackController!.rebuildSchedule();
+            // 加载到播放控制器
+            if (_playbackController != null) {
+              _playbackController!.loadScore(widget.score, _layout!);
+              // 如果设置了临时速度，恢复它
+              if (_overrideTempo != null) {
+                _playbackController!.baseTempo.value = _overrideTempo!;
+                _playbackController!.rebuildSchedule();
+              }
             }
           }
 
@@ -177,60 +200,127 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           final isLandscape =
               MediaQuery.of(context).orientation == Orientation.landscape;
 
-          // 判断是否显示钢琴
-          final shouldShowPiano = _shouldShowPiano(isLandscape);
+          // 判断是否显示钢琴和播放控制
+          final shouldShowPiano = _shouldShowPiano();
+          final shouldShowControls = _shouldShowControls();
 
-          // 底部固定区域高度（钢琴 + 键位提示 + 控制区）
-          final double bottomHeight =
-              shouldShowPiano ? widget.config.pianoHeight + 220.0 : 190.0;
+          // 计算钢琴高度（增加高度）
+          final pianoHeight = isLandscape ? 100.0 : 120.0;
+
+          // 底部固定区域高度（包含所有 padding 和一些余量）
+          double bottomHeight = 0.0;
+          if (shouldShowPiano && shouldShowControls) {
+            bottomHeight = pianoHeight + 40.0 + _getControlsHeight(isLandscape) + (isLandscape ? 6 : 10);
+          } else if (shouldShowPiano) {
+            bottomHeight = pianoHeight + 40.0;
+          } else if (shouldShowControls) {
+            bottomHeight = _getControlsHeight(isLandscape) + (isLandscape ? 6 : 10);
+          }
 
           // 存储底部高度供滚动计算使用
           _bottomFixedHeight = bottomHeight;
 
-          return Column(
+          return Stack(
             children: [
-              // 可滚动的乐谱区域
-              Expanded(
-                child: Listener(
-                  onPointerDown: (_) => _isUserScrolling = true,
-                  onPointerUp: (_) {
-                    // 延迟一点再设置为 false，确保滚动惯性完成
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      if (mounted) {
-                        _isUserScrolling = false;
-                      }
-                    });
-                  },
-                  child: SingleChildScrollView(
-                    controller: _scoreScrollController,
-                    child: Column(
-                      children: [_buildHeader(), _buildScoreArea(constraints)],
+              Column(
+                children: [
+                  // 可滚动的乐谱区域
+                  Expanded(
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        // 只在用户主动滚动时才设置标志
+                        if (notification is ScrollStartNotification) {
+                          // 用户开始滚动
+                          if (notification.dragDetails != null) {
+                            _isUserScrolling = true;
+                          }
+                        } else if (notification is ScrollEndNotification) {
+                          // 滚动结束，延迟一点再允许自动滚动
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            if (mounted) {
+                              _isUserScrolling = false;
+                            }
+                          });
+                        }
+                        return false; // 允许通知继续传播
+                      },
+                      child: SingleChildScrollView(
+                        controller: _scoreScrollController,
+                        child: Column(
+                          children: [_buildHeader(), _buildScoreArea(constraints)],
+                        ),
+                      ),
                     ),
                   ),
-                ),
+
+                  // 固定底部：钢琴 + 控制
+                  if (shouldShowPiano || shouldShowControls)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: widget.config.theme.backgroundColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            offset: const Offset(0, -2),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (shouldShowPiano)
+                            _buildPianoArea(constraints, pianoHeight, isLandscape),
+                          if (shouldShowControls)
+                            _buildPlaybackControls(),
+                        ],
+                      ),
+                    ),
+                ],
               ),
 
-              // 固定底部：钢琴 + 控制（使用 Flexible 避免溢出）
-              Container(
-                constraints: BoxConstraints(maxHeight: bottomHeight),
-                decoration: BoxDecoration(
-                  color: widget.config.theme.backgroundColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      offset: const Offset(0, -2),
-                      blurRadius: 8,
+              // 浮动按钮：控制钢琴和播放栏的显示
+              Positioned(
+                right: 16,
+                bottom: (shouldShowPiano || shouldShowControls) ? bottomHeight + 16 : 16,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.showPiano)
+                      FloatingActionButton(
+                        mini: true,
+                        heroTag: 'piano_toggle',
+                        onPressed: () {
+                          setState(() {
+                            _pianoVisible = !_pianoVisible;
+                          });
+                        },
+                        backgroundColor: widget.config.theme.rightHandColor
+                            .withValues(alpha: _pianoVisible ? 1.0 : 0.5),
+                        child: Icon(
+                          _pianoVisible ? Icons.piano : Icons.piano_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: 'controls_toggle',
+                      onPressed: () {
+                        setState(() {
+                          _controlsVisible = !_controlsVisible;
+                        });
+                      },
+                      backgroundColor: widget.config.theme.rightHandColor
+                          .withValues(alpha: _controlsVisible ? 1.0 : 0.5),
+                      child: Icon(
+                        _controlsVisible ? Icons.play_circle_filled : Icons.play_circle_outline,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ],
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (shouldShowPiano) _buildPianoArea(constraints),
-                      _buildPlaybackControls(),
-                    ],
-                  ),
                 ),
               ),
             ],
@@ -247,6 +337,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     if (isLandscape) {
       // 横屏简化版：只显示模式切换按钮
       return Container(
+        key: _headerKey, // 添加 key
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -862,9 +953,13 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     );
   }
 
-  Widget _buildPianoArea(BoxConstraints constraints) {
+  Widget _buildPianoArea(
+    BoxConstraints constraints,
+    double pianoHeight,
+    bool isLandscape,
+  ) {
     if (_playbackController == null) {
-      return SizedBox(height: widget.config.pianoHeight);
+      return SizedBox(height: pianoHeight);
     }
 
     // 计算钢琴实际宽度
@@ -880,109 +975,69 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       children: [
         // 钢琴键盘（可滚动）
         SizedBox(
-          height: widget.config.pianoHeight,
+          height: pianoHeight,
           child: needsScroll
               ? SingleChildScrollView(
                   controller: _pianoScrollController,
                   scrollDirection: Axis.horizontal,
-                  child: _buildPianoCanvas(pianoWidth),
+                  child: _buildPianoCanvas(pianoWidth, pianoHeight),
                 )
-              : _buildPianoCanvas(constraints.maxWidth),
+              : _buildPianoCanvas(constraints.maxWidth, pianoHeight),
         ),
-        // 钢琴控制栏
+        // 钢琴控制栏（简化版）
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          padding: EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: isLandscape ? 1 : 2,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // 键位范围显示和设置
+              // 键位范围显示
               GestureDetector(
                 onTap: () => _showPianoSettings(),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isLandscape ? 6 : 8,
+                    vertical: isLandscape ? 2 : 3,
                   ),
                   decoration: BoxDecoration(
-                    color: widget.config.theme.rightHandColor.withValues(
-                      alpha: 0.1,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
+                    color:
+                        widget.config.theme.rightHandColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.piano,
-                        size: 14,
+                        size: isLandscape ? 12 : 14,
                         color: widget.config.theme.rightHandColor,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: isLandscape ? 3 : 4),
                       Text(
                         '${_getMidiNoteName(_pianoStartMidi)} - ${_getMidiNoteName(_pianoEndMidi)}',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: isLandscape ? 10 : 11,
                           fontWeight: FontWeight.w500,
                           color: widget.config.theme.rightHandColor,
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        Icons.settings,
-                        size: 12,
-                        color: widget.config.theme.rightHandColor.withValues(
-                          alpha: 0.6,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              // 快捷键位按钮 + 标签切换
+              // 快捷键位按钮
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildQuickRangeButton('2八度', 48, 72),
-                  const SizedBox(width: 4),
-                  _buildQuickRangeButton('3八度', 48, 84),
-                  const SizedBox(width: 4),
-                  _buildQuickRangeButton('全键', 36, 96),
-                  const SizedBox(width: 8),
-                  // 标签切换按钮
-                  GestureDetector(
-                    onTap: _togglePianoLabel,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: widget.config.theme.leftHandColor.withValues(
-                          alpha: 0.2,
-                        ),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        _pianoLabelType == 'jianpu' ? '简谱' : '音名',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w500,
-                          color: widget.config.theme.leftHandColor,
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildQuickRangeButton('2八', 48, 72, isLandscape),
+                  SizedBox(width: isLandscape ? 2 : 4),
+                  _buildQuickRangeButton('3八', 48, 84, isLandscape),
+                  SizedBox(width: isLandscape ? 2 : 4),
+                  _buildQuickRangeButton('全键', 36, 96, isLandscape),
                 ],
               ),
-              // 滚动提示
-              if (needsScroll)
-                Text(
-                  '← 滑动 →',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: widget.config.theme.textColor.withValues(alpha: 0.4),
-                  ),
-                ),
             ],
           ),
         ),
@@ -990,22 +1045,30 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     );
   }
 
-  Widget _buildQuickRangeButton(String label, int start, int end) {
+  Widget _buildQuickRangeButton(
+    String label,
+    int start,
+    int end,
+    bool isLandscape,
+  ) {
     final isActive = _pianoStartMidi == start && _pianoEndMidi == end;
     return GestureDetector(
       onTap: () => _setPianoRange(start, end),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        padding: EdgeInsets.symmetric(
+          horizontal: isLandscape ? 4 : 6,
+          vertical: isLandscape ? 1 : 2,
+        ),
         decoration: BoxDecoration(
           color: isActive
               ? widget.config.theme.rightHandColor
               : widget.config.theme.textColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(3),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 9,
+            fontSize: isLandscape ? 8 : 9,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             color: isActive
                 ? Colors.white
@@ -1174,12 +1237,12 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     );
   }
 
-  Widget _buildPianoCanvas(double width) {
+  Widget _buildPianoCanvas(double width, double height) {
     return GestureDetector(
-      onPanStart: (details) => _handlePianoTouch(details.localPosition, width),
-      onPanUpdate: (details) => _handlePianoTouch(details.localPosition, width),
+      onPanStart: (details) => _handlePianoTouch(details.localPosition, width, height),
+      onPanUpdate: (details) => _handlePianoTouch(details.localPosition, width, height),
       onPanEnd: (_) => _handlePianoRelease(),
-      onTapDown: (details) => _handlePianoTouch(details.localPosition, width),
+      onTapDown: (details) => _handlePianoTouch(details.localPosition, width, height),
       onTapUp: (_) => _handlePianoRelease(),
       child: GetBuilder<PlaybackController>(
         builder: (controller) {
@@ -1193,11 +1256,11 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           }
 
           return CustomPaint(
-            size: Size(width, widget.config.pianoHeight),
+            size: Size(width, height),
             painter: PianoKeyboardPainter(
               startMidi: _pianoStartMidi,
               endMidi: _pianoEndMidi,
-              config: widget.config,
+              config: RenderConfig(pianoHeight: height, theme: widget.config.theme),
               highlightedNotes: highlightedMap.cast(),
               showLabels: true,
               labelType: _pianoLabelType,
@@ -1416,8 +1479,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
         return headerBox.size.height;
       }
     }
-    // 如果无法获取实际高度，返回估算值（基于实际header内容）
-    return 120.0;
+    // 如果无法获取实际高度，返回估算值
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    return isLandscape ? 50.0 : 120.0;
   }
 
   Widget _buildPlaybackControls() {
@@ -1428,7 +1493,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: 16,
+        horizontal: isLandscape ? 8 : 16,
         vertical: isLandscape ? 2 : 4,
       ),
       child: GetBuilder<PlaybackController>(
@@ -1439,13 +1504,264 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           final metronomeEnabled = controller.metronomeEnabled.value;
           final speedMultiplier = controller.speedMultiplier.value;
           final currentMeasure = controller.currentMeasureIndex.value;
-          // 使用播放控制器的总时长计算方法（考虑临时速度调整）
           final totalDuration = controller.getTotalDuration();
 
+          if (isLandscape) {
+            // 横屏：超紧凑单行布局
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 进度条（极薄）
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: widget.config.theme.rightHandColor,
+                    inactiveTrackColor: widget.config.theme.rightHandColor
+                        .withValues(alpha: 0.2),
+                    thumbColor: widget.config.theme.rightHandColor,
+                    overlayColor: widget.config.theme.rightHandColor
+                        .withValues(alpha: 0.1),
+                    trackHeight: 2,
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 4,
+                    ),
+                  ),
+                  child: Slider(
+                    value: currentTime.clamp(
+                      0,
+                      totalDuration > 0 ? totalDuration : 1,
+                    ),
+                    min: 0,
+                    max: totalDuration > 0 ? totalDuration : 1,
+                    onChanged: (value) => controller.seekTo(value),
+                  ),
+                ),
+
+                // 时间显示（左右分开）
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _formatTime(currentTime),
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: widget.config.theme.textColor
+                              .withValues(alpha: 0.6),
+                        ),
+                      ),
+                      Text(
+                        _formatTime(totalDuration),
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: widget.config.theme.textColor
+                              .withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 单行控制（居中对齐）
+                SizedBox(
+                  height: 32,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // 播放模式
+                      _buildCompactChip(
+                        controller.playMode.value.label,
+                        _getPlayModeColor(controller.playMode.value),
+                        () => controller.togglePlayMode(),
+                      ),
+                      const SizedBox(width: 4),
+                      // 循环
+                      _buildIconButton(
+                        Icons.repeat,
+                        loopEnabled,
+                        () {
+                          controller.loopEnabled.toggle();
+                          controller.update();
+                        },
+                        size: 18,
+                      ),
+                      // 上一曲
+                      _buildIconButton(
+                        Icons.skip_previous,
+                        true,
+                        () => controller.seekToMeasure(
+                          (currentMeasure - 1).clamp(
+                            0,
+                            widget.score.measureCount - 1,
+                          ),
+                        ),
+                        size: 18,
+                      ),
+                      // 播放按钮
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: widget.config.theme.rightHandColor,
+                        ),
+                        child: IconButton(
+                          onPressed: () => controller.togglePlay(),
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      // 下一曲
+                      _buildIconButton(
+                        Icons.skip_next,
+                        true,
+                        () => controller.seekToMeasure(
+                          (currentMeasure + 1).clamp(
+                            0,
+                            widget.score.measureCount - 1,
+                          ),
+                        ),
+                        size: 18,
+                      ),
+                      // 节拍器
+                      _buildIconButton(
+                        Icons.timer,
+                        metronomeEnabled,
+                        () {
+                          controller.metronomeEnabled.toggle();
+                          controller.update();
+                        },
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      // 速度控制（紧凑）
+                      IconButton(
+                        onPressed: () => controller.prevSpeed(),
+                        icon: const Icon(Icons.remove, size: 14),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 20,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => _showSpeedPicker(controller),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: widget.config.theme.rightHandColor
+                                .withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '${speedMultiplier}x',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: widget.config.theme.rightHandColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => controller.nextSpeed(),
+                        icon: const Icon(Icons.add, size: 14),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // 左手音量
+                      Text(
+                        'L',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: widget.config.theme.leftHandColor,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 40,
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor:
+                                widget.config.theme.leftHandColor,
+                            inactiveTrackColor: widget.config.theme
+                                .leftHandColor
+                                .withValues(alpha: 0.2),
+                            thumbColor: widget.config.theme.leftHandColor,
+                            trackHeight: 2,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 3,
+                            ),
+                          ),
+                          child: Slider(
+                            value: controller.leftHandVolume.value.toDouble(),
+                            min: 0,
+                            max: 100,
+                            onChanged: (v) =>
+                                controller.setLeftHandVolume(v.round()),
+                          ),
+                        ),
+                      ),
+                      // 右手音量
+                      Text(
+                        'R',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: widget.config.theme.rightHandColor,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 40,
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor:
+                                widget.config.theme.rightHandColor,
+                            inactiveTrackColor: widget.config.theme
+                                .rightHandColor
+                                .withValues(alpha: 0.2),
+                            thumbColor: widget.config.theme.rightHandColor,
+                            trackHeight: 2,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 3,
+                            ),
+                          ),
+                          child: Slider(
+                            value:
+                                controller.rightHandVolume.value.toDouble(),
+                            min: 0,
+                            max: 100,
+                            onChanged: (v) =>
+                                controller.setRightHandVolume(v.round()),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+
+          // 竖屏：紧凑两行布局
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 进度条
+              // 进度条（减少高度）
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: widget.config.theme.rightHandColor,
@@ -1454,7 +1770,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   thumbColor: widget.config.theme.rightHandColor,
                   overlayColor:
                       widget.config.theme.rightHandColor.withValues(alpha: 0.1),
-                  trackHeight: isLandscape ? 3 : 4,
+                  trackHeight: 2,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 4,
+                  ),
                 ),
                 child: Slider(
                   value: currentTime.clamp(
@@ -1467,7 +1786,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 ),
               ),
 
-              // 时间显示
+              // 时间显示（减少间距）
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -1476,7 +1795,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     Text(
                       _formatTime(currentTime),
                       style: TextStyle(
-                        fontSize: isLandscape ? 11 : 12,
+                        fontSize: 10,
                         color:
                             widget.config.theme.textColor.withValues(alpha: 0.6),
                       ),
@@ -1484,7 +1803,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     Text(
                       _formatTime(totalDuration),
                       style: TextStyle(
-                        fontSize: isLandscape ? 11 : 12,
+                        fontSize: 10,
                         color:
                             widget.config.theme.textColor.withValues(alpha: 0.6),
                       ),
@@ -1493,23 +1812,26 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 ),
               ),
 
+              const SizedBox(height: 2),
+
               // 控制按钮
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 播放模式切换
                   GestureDetector(
                     onTap: () => controller.togglePlayMode(),
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isLandscape ? 6 : 8,
-                        vertical: isLandscape ? 2 : 4,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
                         color: _getPlayModeColor(
                           controller.playMode.value,
                         ).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: _getPlayModeColor(
                             controller.playMode.value,
@@ -1519,14 +1841,14 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       child: Text(
                         controller.playMode.value.label,
                         style: TextStyle(
-                          fontSize: isLandscape ? 10 : 11,
+                          fontSize: 9,
                           color: _getPlayModeColor(controller.playMode.value),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   IconButton(
                     onPressed: () {
                       controller.loopEnabled.toggle();
@@ -1534,14 +1856,12 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     },
                     icon: Icon(
                       Icons.repeat,
-                      size: isLandscape ? 20 : 24,
+                      size: 18,
                       color: loopEnabled
                           ? widget.config.theme.rightHandColor
                           : widget.config.theme.textColor.withValues(alpha: 0.4),
                     ),
-                    visualDensity: isLandscape
-                        ? VisualDensity.compact
-                        : VisualDensity.standard,
+                    visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
                   ),
                   IconButton(
@@ -1553,12 +1873,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     ),
                     icon: Icon(
                       Icons.skip_previous,
-                      size: isLandscape ? 20 : 24,
+                      size: 20,
                       color: widget.config.theme.textColor,
                     ),
-                    visualDensity: isLandscape
-                        ? VisualDensity.compact
-                        : VisualDensity.standard,
+                    visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
                   ),
                   Container(
@@ -1571,11 +1889,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       icon: Icon(
                         isPlaying ? Icons.pause : Icons.play_arrow,
                         color: Colors.white,
-                        size: isLandscape ? 24 : 28,
+                        size: 22,
                       ),
-                      visualDensity: isLandscape
-                          ? VisualDensity.compact
-                          : VisualDensity.standard,
+                      visualDensity: VisualDensity.compact,
                     ),
                   ),
                   IconButton(
@@ -1587,12 +1903,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     ),
                     icon: Icon(
                       Icons.skip_next,
-                      size: isLandscape ? 20 : 24,
+                      size: 20,
                       color: widget.config.theme.textColor,
                     ),
-                    visualDensity: isLandscape
-                        ? VisualDensity.compact
-                        : VisualDensity.standard,
+                    visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
                   ),
                   IconButton(
@@ -1602,78 +1916,58 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     },
                     icon: Icon(
                       Icons.timer,
-                      size: isLandscape ? 20 : 24,
+                      size: 18,
                       color: metronomeEnabled
                           ? widget.config.theme.rightHandColor
                           : widget.config.theme.textColor.withValues(alpha: 0.4),
                     ),
-                    visualDensity: isLandscape
-                        ? VisualDensity.compact
-                        : VisualDensity.standard,
+                    visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
                   ),
-                  // 横屏时显示钢琴展开/收起按钮
-                  if (isLandscape && widget.showPiano)
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _pianoExpanded = !_pianoExpanded;
-                        });
-                      },
-                      icon: Icon(
-                        _pianoExpanded ? Icons.keyboard_hide : Icons.piano,
-                        size: 20,
-                        color: _pianoExpanded
-                            ? widget.config.theme.rightHandColor
-                            : widget.config.theme.textColor.withValues(
-                                alpha: 0.4,
-                              ),
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      tooltip: _pianoExpanded ? '隐藏钢琴' : '显示钢琴',
-                    ),
                 ],
               ),
 
-              // 速度和音量控制
+              const SizedBox(height: 2),
+
+              // 速度和音量控制（更紧凑）
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 速度控制
                   Text(
                     '速度: ',
                     style: TextStyle(
-                      fontSize: isLandscape ? 10 : 11,
+                      fontSize: 9,
                       color: widget.config.theme.textColor.withValues(alpha: 0.7),
                     ),
                   ),
                   IconButton(
                     onPressed: () => controller.prevSpeed(),
-                    icon: Icon(Icons.remove, size: isLandscape ? 14 : 16),
+                    icon: const Icon(Icons.remove, size: 12),
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(
-                      minWidth: isLandscape ? 24 : 28,
-                      minHeight: isLandscape ? 24 : 28,
+                    constraints: const BoxConstraints(
+                      minWidth: 20,
+                      minHeight: 20,
                     ),
                   ),
                   GestureDetector(
                     onTap: () => _showSpeedPicker(controller),
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isLandscape ? 6 : 8,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
                         color: widget.config.theme.rightHandColor
                             .withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         '${speedMultiplier}x',
                         style: TextStyle(
-                          fontSize: isLandscape ? 11 : 12,
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: widget.config.theme.rightHandColor,
                         ),
@@ -1682,26 +1976,26 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   ),
                   IconButton(
                     onPressed: () => controller.nextSpeed(),
-                    icon: Icon(Icons.add, size: isLandscape ? 14 : 16),
+                    icon: const Icon(Icons.add, size: 12),
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(
-                      minWidth: isLandscape ? 24 : 28,
-                      minHeight: isLandscape ? 24 : 28,
+                    constraints: const BoxConstraints(
+                      minWidth: 20,
+                      minHeight: 20,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  // 左手音量（L = Left）- 在左边
+                  const SizedBox(width: 8),
+                  // 左手音量
                   Text(
                     'L',
                     style: TextStyle(
-                      fontSize: isLandscape ? 10 : 11,
+                      fontSize: 9,
                       fontWeight: FontWeight.bold,
                       color: widget.config.theme.leftHandColor,
                     ),
                   ),
                   SizedBox(
-                    width: isLandscape ? 50 : 70,
+                    width: 55,
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         activeTrackColor: widget.config.theme.leftHandColor,
@@ -1709,8 +2003,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                             .withValues(alpha: 0.2),
                         thumbColor: widget.config.theme.leftHandColor,
                         trackHeight: 2,
-                        thumbShape: RoundSliderThumbShape(
-                          enabledThumbRadius: isLandscape ? 4 : 5,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 3,
                         ),
                       ),
                       child: Slider(
@@ -1722,18 +2016,18 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  // 右手音量（R = Right）- 在右边
+                  const SizedBox(width: 2),
+                  // 右手音量
                   Text(
                     'R',
                     style: TextStyle(
-                      fontSize: isLandscape ? 10 : 11,
+                      fontSize: 9,
                       fontWeight: FontWeight.bold,
                       color: widget.config.theme.rightHandColor,
                     ),
                   ),
                   SizedBox(
-                    width: isLandscape ? 50 : 70,
+                    width: 55,
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         activeTrackColor: widget.config.theme.rightHandColor,
@@ -1741,8 +2035,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                             .withValues(alpha: 0.2),
                         thumbColor: widget.config.theme.rightHandColor,
                         trackHeight: 2,
-                        thumbShape: RoundSliderThumbShape(
-                          enabledThumbRadius: isLandscape ? 4 : 5,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 3,
                         ),
                       ),
                       child: Slider(
@@ -1759,6 +2053,54 @@ class _SheetMusicViewState extends State<SheetMusicView> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  // 辅助方法：紧凑芯片
+  Widget _buildCompactChip(String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 辅助方法：紧凑图标按钮
+  Widget _buildIconButton(
+    IconData icon,
+    bool active,
+    VoidCallback onTap, {
+    double size = 20,
+  }) {
+    return IconButton(
+      onPressed: onTap,
+      icon: Icon(
+        icon,
+        size: size,
+        color: active
+            ? widget.config.theme.rightHandColor
+            : widget.config.theme.textColor.withValues(alpha: 0.4),
+      ),
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: BoxConstraints(
+        minWidth: size + 4,
+        minHeight: size + 4,
       ),
     );
   }
@@ -1823,15 +2165,15 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     }
   }
 
-  void _handlePianoTouch(Offset position, double width) {
+  void _handlePianoTouch(Offset position, double width, double height) {
     final painter = PianoKeyboardPainter(
       startMidi: _pianoStartMidi,
       endMidi: _pianoEndMidi,
-      config: widget.config,
+      config: RenderConfig(pianoHeight: height, theme: widget.config.theme),
     );
     final midi = painter.findKeyAtPosition(
       position,
-      Size(width, widget.config.pianoHeight),
+      Size(width, height),
     );
 
     if (midi != null && !_pressedKeys.contains(midi)) {

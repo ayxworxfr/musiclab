@@ -50,7 +50,7 @@ class PianoController extends GetxController {
   int _playbackIndex = 0;
 
   /// 可用主题列表
-  static const themes = ['默认', '深色', '午夜蓝', '暖阳', '森林'];
+  static const themes = ['默认', '深色', '午夜蓝', '暖阳', '森林', '樱花'];
 
   @override
   void onInit() {
