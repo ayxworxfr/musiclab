@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../controllers/sheet_music_controller.dart';
@@ -38,6 +39,9 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
     ('森林', RenderTheme.forest()),
   ];
 
+  // 横屏 AppBar 控制
+  bool _showAppBar = true;
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +52,24 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
     if (!Get.isRegistered<PlaybackController>()) {
       Get.put(PlaybackController());
     }
+
+    // 允许横屏（仅此页面）
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
+
+  @override
+  void dispose() {
+    // 恢复仅竖屏
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    super.dispose();
   }
 
   void _loadScore() {
@@ -71,6 +93,28 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
             _currentScore = found;
           });
         }
+      }
+    }
+  }
+
+  /// 判断当前是否为横屏
+  bool get _isLandscape {
+    return MediaQuery.of(context).orientation == Orientation.landscape;
+  }
+
+  /// 判断是否应该显示 AppBar
+  bool get _shouldShowAppBar {
+    return !_isLandscape || _showAppBar;
+  }
+
+  /// 处理屏幕点击事件（用于显示/隐藏 AppBar）
+  void _handleScreenTap(TapUpDetails details) {
+    if (_isLandscape) {
+      final tapY = details.globalPosition.dy;
+      if (tapY < 100) {
+        setState(() {
+          _showAppBar = !_showAppBar;
+        });
       }
     }
   }
@@ -200,60 +244,66 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: _currentScore!.isBuiltIn ? null : () => _showRenameDialog(),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Text(
-                  _currentScore!.title,
-                  overflow: TextOverflow.ellipsis,
+      appBar: _shouldShowAppBar
+          ? AppBar(
+              title: GestureDetector(
+                onTap:
+                    _currentScore!.isBuiltIn ? null : () => _showRenameDialog(),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        _currentScore!.title,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (!_currentScore!.isBuiltIn) ...[
+                      const SizedBox(width: 4),
+                      const Icon(Icons.edit, size: 16),
+                    ],
+                  ],
                 ),
               ),
-              if (!_currentScore!.isBuiltIn) ...[
-                const SizedBox(width: 4),
-                const Icon(Icons.edit, size: 16),
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    _currentScore!.isFavorite
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: _currentScore!.isFavorite ? Colors.red : null,
+                  ),
+                  onPressed: () {
+                    // TODO: 收藏功能
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.tune),
+                  onPressed: _showSettingsSheet,
+                ),
               ],
-            ],
+            )
+          : null,
+      body: GestureDetector(
+        onTapUp: _handleScreenTap,
+        child: SheetMusicView(
+          key: ValueKey(
+            '${_currentScore!.id}_${_notationMode.name}_$_selectedThemeIndex',
           ),
+          score: _currentScore!,
+          config: _config,
+          initialMode: _notationMode,
+          showFingering: _showFingering,
+          showLyrics: _showLyrics,
+          showPiano: _showPiano,
+          pianoLabelType: _pianoLabelType,
+          onNoteTap: (note) {
+            debugPrint('Tapped note: ${note.note.pitch}');
+          },
+          onPianoKeyTap: (midi) {
+            debugPrint('Tapped piano key: $midi');
+          },
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _currentScore!.isFavorite
-                  ? Icons.favorite
-                  : Icons.favorite_border,
-              color: _currentScore!.isFavorite ? Colors.red : null,
-            ),
-            onPressed: () {
-              // TODO: 收藏功能
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.tune),
-            onPressed: _showSettingsSheet,
-          ),
-        ],
-      ),
-      body: SheetMusicView(
-        key: ValueKey(
-          '${_currentScore!.id}_${_notationMode.name}_$_selectedThemeIndex',
-        ),
-        score: _currentScore!,
-        config: _config,
-        initialMode: _notationMode,
-        showFingering: _showFingering,
-        showLyrics: _showLyrics,
-        showPiano: _showPiano,
-        pianoLabelType: _pianoLabelType,
-        onNoteTap: (note) {
-          debugPrint('Tapped note: ${note.note.pitch}');
-        },
-        onPianoKeyTap: (midi) {
-          debugPrint('Tapped piano key: $midi');
-        },
       ),
     );
   }
