@@ -21,8 +21,11 @@ class NotePracticePage extends GetView<PracticeController> {
   final _sheetType = 'jianpu'.obs;
 
   // 钢琴标签显示模式
-  // 'jianpu' - 显示简谱, 'note' - 显示音名, 'do-only' - 只显示Do/1, 'none' - 不显示
-  final _pianoLabelMode = 'jianpu'.obs;
+  // 'jianpu-c-only' - 简谱只显示1 (默认)
+  // 'note-c-only' - 只显示C
+  // 'jianpu-all' - 全部简谱
+  // 'note-all' - 全部音名
+  final _pianoLabelMode = 'jianpu-c-only'.obs;
 
   // 最后播放的 MIDI（防止重复触发）
   int? _lastPlayedMidi;
@@ -249,17 +252,13 @@ class NotePracticePage extends GetView<PracticeController> {
                 ),
                 const SizedBox(height: 16),
 
-                // 谱子类型切换按钮
-                _buildSheetTypeSwitch(context, isDark),
+                // 谱子类型和标签模式切换
+                _buildSheetControls(context, isDark),
                 const SizedBox(height: 16),
 
                 // 谱子显示
                 _buildSheet(context, question, isDark),
                 const SizedBox(height: 24),
-
-                // 钢琴标签模式切换
-                _buildPianoLabelModeSwitch(context, isDark),
-                const SizedBox(height: 16),
 
                 // 已弹奏的音符显示
                 Obx(() => _buildPlayedNotes(context, notes, isDark)),
@@ -287,124 +286,129 @@ class NotePracticePage extends GetView<PracticeController> {
     );
   }
 
-  /// 谱子类型切换按钮
-  Widget _buildSheetTypeSwitch(BuildContext context, bool isDark) {
+  /// 谱子和标签控制区域
+  Widget _buildSheetControls(BuildContext context, bool isDark) {
     return Obx(() {
-      return Column(
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            '谱子类型',
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondary,
-            ),
+          // 谱子类型切换
+          _buildSwitchButton(
+            '简谱',
+            _sheetType.value == 'jianpu',
+            () => _sheetType.value = 'jianpu',
+            isDark,
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSwitchButton(
-                '简谱',
-                _sheetType.value == 'jianpu',
-                () => _sheetType.value = 'jianpu',
-                isDark,
-              ),
-              const SizedBox(width: 12),
-              _buildSwitchButton(
-                '五线谱',
-                _sheetType.value == 'staff',
-                () => _sheetType.value = 'staff',
-                isDark,
-              ),
-            ],
+          const SizedBox(width: 12),
+          _buildSwitchButton(
+            '五线谱',
+            _sheetType.value == 'staff',
+            () => _sheetType.value = 'staff',
+            isDark,
           ),
+          const SizedBox(width: 20),
+
+          // 钢琴标签模式按钮
+          _buildLabelModeButton(context, isDark),
         ],
       );
     });
   }
 
-  /// 钢琴标签模式切换
-  Widget _buildPianoLabelModeSwitch(BuildContext context, bool isDark) {
+  /// 标签模式按钮
+  Widget _buildLabelModeButton(BuildContext context, bool isDark) {
     return Obx(() {
-      return Column(
-        children: [
-          Text(
-            '钢琴标签显示',
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondary,
+      final mode = _pianoLabelMode.value;
+
+      // 根据当前模式显示不同图标和提示
+      IconData icon;
+      String tooltip;
+      Color color;
+
+      switch (mode) {
+        case 'jianpu-all':
+          icon = Icons.filter_1_rounded;
+          tooltip = '全部简谱';
+          color = AppColors.primary;
+          break;
+        case 'note-all':
+          icon = Icons.abc;
+          tooltip = '全部音名';
+          color = AppColors.success;
+          break;
+        case 'jianpu-c-only':
+          icon = Icons.looks_one_outlined;
+          tooltip = '只显示1';
+          color = AppColors.warning;
+          break;
+        case 'note-c-only':
+        default:
+          icon = Icons.text_fields;
+          tooltip = '只显示C';
+          color = const Color(0xFFE91E63);
+          break;
+      }
+
+      return GestureDetector(
+        onTap: _cycleLabelMode,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+              width: 2,
             ),
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildSwitchButton(
-                '简谱',
-                _pianoLabelMode.value == 'jianpu',
-                () => _pianoLabelMode.value = 'jianpu',
-                isDark,
-                compact: true,
-              ),
-              _buildSwitchButton(
-                '音名',
-                _pianoLabelMode.value == 'note',
-                () => _pianoLabelMode.value = 'note',
-                isDark,
-                compact: true,
-              ),
-              _buildSwitchButton(
-                '只显示1/Do',
-                _pianoLabelMode.value == 'do-only',
-                () => _pianoLabelMode.value = 'do-only',
-                isDark,
-                compact: true,
-              ),
-              _buildSwitchButton(
-                '不显示',
-                _pianoLabelMode.value == 'none',
-                () => _pianoLabelMode.value = 'none',
-                isDark,
-                compact: true,
-              ),
-            ],
-          ),
-        ],
+          child: Icon(icon, color: color, size: 24),
+        ),
       );
     });
+  }
+
+  /// 循环切换标签模式（4种模式）
+  void _cycleLabelMode() {
+    switch (_pianoLabelMode.value) {
+      case 'jianpu-c-only':
+        _pianoLabelMode.value = 'note-c-only';
+        break;
+      case 'note-c-only':
+        _pianoLabelMode.value = 'jianpu-all';
+        break;
+      case 'jianpu-all':
+        _pianoLabelMode.value = 'note-all';
+        break;
+      case 'note-all':
+      default:
+        _pianoLabelMode.value = 'jianpu-c-only';
+        break;
+    }
   }
 
   Widget _buildSwitchButton(
     String label,
     bool isActive,
     VoidCallback onTap,
-    bool isDark, {
-    bool compact = false,
-  }) {
+    bool isDark,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: compact
-            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
-            : const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           color: isActive
               ? AppColors.primary
               : isDark
                   ? Colors.grey.shade800
                   : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(compact ? 16 : 20),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: compact ? 12 : 14,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             color: isActive
                 ? Colors.white
@@ -526,23 +530,24 @@ class NotePracticePage extends GetView<PracticeController> {
           if (playedNotes.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 6,
+              runSpacing: 6,
               alignment: WrapAlignment.center,
               children: playedNotes.map((midi) {
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: AppColors.primary.withValues(alpha: 0.3),
                     ),
                   ),
+                  alignment: Alignment.center,
                   child: JianpuNoteText.fromMidi(
                     midi,
-                    fontSize: 18,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
@@ -637,26 +642,57 @@ class NotePracticePage extends GetView<PracticeController> {
                   child: Obx(() {
                     // 根据标签模式确定显示设置
                     final mode = _pianoLabelMode.value;
-                    final showLabels = mode != 'none';
-                    final labelType =
-                        mode == 'note' ? 'note' : 'jianpu';
+
+                    bool showLabels;
+                    String labelType;
+                    Set<int>? selectiveLabelMidi;
+                    bool hideOctaveInfo;
+
+                    switch (mode) {
+                      case 'jianpu-all':
+                        // 全部简谱：显示所有音的简谱（1, 2, 3...带高低音点）
+                        showLabels = true;
+                        labelType = 'jianpu';
+                        selectiveLabelMidi = null;
+                        hideOctaveInfo = false;
+                      case 'note-all':
+                        // 全部音名：显示所有音的音名（C3, D4, E5...带八度数字）
+                        showLabels = true;
+                        labelType = 'note';
+                        selectiveLabelMidi = null;
+                        hideOctaveInfo = false;
+                      case 'jianpu-c-only':
+                        // 简谱只显示1：只显示C音，显示为"1"（带高低音点：1̇, 1, 1̣）
+                        showLabels = true;
+                        labelType = 'jianpu';
+                        selectiveLabelMidi = {
+                          for (int i = startMidi; i <= endMidi; i++)
+                            if (i % 12 == 0) i
+                        };
+                        hideOctaveInfo = false;
+                      case 'note-c-only':
+                      default:
+                        // 只显示C：只显示C音，显示为"C"（带八度数字：C3, C4, C5）
+                        showLabels = true;
+                        labelType = 'note';
+                        selectiveLabelMidi = {
+                          for (int i = startMidi; i <= endMidi; i++)
+                            if (i % 12 == 0) i
+                        };
+                        hideOctaveInfo = false;
+                    }
 
                     return CustomPaint(
                       size: Size(displayWidth, 160),
-                      painter: mode == 'do-only'
-                          ? _DoOnlyPianoKeyboardPainter(
-                              startMidi: startMidi,
-                              endMidi: endMidi,
-                              config: config,
-                              labelType: labelType,
-                            )
-                          : PianoKeyboardPainter(
-                              startMidi: startMidi,
-                              endMidi: endMidi,
-                              config: config,
-                              showLabels: showLabels,
-                              labelType: labelType,
-                            ),
+                      painter: PianoKeyboardPainter(
+                        startMidi: startMidi,
+                        endMidi: endMidi,
+                        config: config,
+                        showLabels: showLabels,
+                        labelType: labelType,
+                        selectiveLabelMidi: selectiveLabelMidi,
+                        hideOctaveInfo: hideOctaveInfo,
+                      ),
                     );
                   }),
                 ),
@@ -975,41 +1011,5 @@ class NotePracticePage extends GetView<PracticeController> {
       difficulty: difficulty,
       questionCount: 10,
     );
-  }
-}
-
-/// 只显示 Do/1 的钢琴键盘 Painter
-/// 暂时实现：显示完整键盘但不带标签
-/// TODO: 实现只显示特定音符（C音）标签的逻辑
-class _DoOnlyPianoKeyboardPainter extends CustomPainter {
-  final int startMidi;
-  final int endMidi;
-  final RenderConfig config;
-  final String labelType;
-
-  _DoOnlyPianoKeyboardPainter({
-    required this.startMidi,
-    required this.endMidi,
-    required this.config,
-    required this.labelType,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // 当前简化实现：绘制不带标签的钢琴键盘
-    // 后续可以优化为只显示 C 音的标签
-    PianoKeyboardPainter(
-      startMidi: startMidi,
-      endMidi: endMidi,
-      config: config,
-      showLabels: false,
-    ).paint(canvas, size);
-  }
-
-  @override
-  bool shouldRepaint(covariant _DoOnlyPianoKeyboardPainter oldDelegate) {
-    return startMidi != oldDelegate.startMidi ||
-        endMidi != oldDelegate.endMidi ||
-        labelType != oldDelegate.labelType;
   }
 }

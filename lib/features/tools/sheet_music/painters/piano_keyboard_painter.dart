@@ -44,6 +44,12 @@ class PianoKeyboardPainter extends CustomPainter {
   /// 按下状态
   final Set<int> pressedKeys;
 
+  /// 只显示这些MIDI音符的标签（null=显示所有，empty=不显示，指定MIDI列表=只显示这些）
+  final Set<int>? selectiveLabelMidi;
+
+  /// 隐藏八度信息（只显示C/1，不显示C3/C4或高低音点）
+  final bool hideOctaveInfo;
+
   /// 键盘布局缓存
   List<PianoKeyLayout>? _keyLayouts;
 
@@ -55,6 +61,8 @@ class PianoKeyboardPainter extends CustomPainter {
     this.showLabels = true,
     this.labelType = 'note',
     this.pressedKeys = const {},
+    this.selectiveLabelMidi,
+    this.hideOctaveInfo = false,
   });
 
   @override
@@ -206,9 +214,17 @@ class PianoKeyboardPainter extends CustomPainter {
     );
 
     // 标签（所有白键都显示）
-    if (showLabels) {
+    if (showLabels && _shouldShowLabel(key.midi)) {
       _drawLabel(canvas, key, keyColor);
     }
+  }
+
+  /// 判断是否应该显示标签
+  bool _shouldShowLabel(int midi) {
+    if (selectiveLabelMidi == null) {
+      return true; // null 表示显示所有
+    }
+    return selectiveLabelMidi!.contains(midi);
   }
 
   /// 绘制黑键
@@ -304,7 +320,7 @@ class PianoKeyboardPainter extends CustomPainter {
     }
 
     // 黑键也显示标签
-    if (showLabels) {
+    if (showLabels && _shouldShowLabel(key.midi)) {
       _drawLabel(canvas, key, keyColor);
     }
   }
@@ -446,7 +462,8 @@ class PianoKeyboardPainter extends CustomPainter {
           '6#',
           '7',
         ];
-        final dots = octave - 4; // C4 = 0点，C5 = 1点（高），C3 = -1点（低）
+        // 如果隐藏八度信息，不显示高低音点
+        final dots = hideOctaveInfo ? 0 : octave - 4;
         return {'label': jianpuBase[noteIndex], 'dots': dots};
       default:
         const notes = [
@@ -463,7 +480,9 @@ class PianoKeyboardPainter extends CustomPainter {
           'A#',
           'B',
         ];
-        return {'label': '${notes[noteIndex]}$octave', 'dots': 0};
+        // 如果隐藏八度信息，不显示八度数字
+        final label = hideOctaveInfo ? notes[noteIndex] : '${notes[noteIndex]}$octave';
+        return {'label': label, 'dots': 0};
     }
   }
 
@@ -499,6 +518,8 @@ class PianoKeyboardPainter extends CustomPainter {
     return highlightedNotes != oldDelegate.highlightedNotes ||
         pressedKeys != oldDelegate.pressedKeys ||
         showLabels != oldDelegate.showLabels ||
-        labelType != oldDelegate.labelType;
+        labelType != oldDelegate.labelType ||
+        selectiveLabelMidi != oldDelegate.selectiveLabelMidi ||
+        hideOctaveInfo != oldDelegate.hideOctaveInfo;
   }
 }

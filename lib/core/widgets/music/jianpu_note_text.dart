@@ -50,19 +50,19 @@ class JianpuNoteText extends StatelessWidget {
     final octave = (midi ~/ 12) - 1;
     final noteIndex = midi % 12;
 
-    // 简谱数字映射
+    // 简谱数字映射（变音记号在右侧，符合简谱规范）
     const numbers = [
       '1',
-      '#1',
+      '1#',
       '2',
-      '#2',
+      '2#',
       '3',
       '4',
-      '#4',
+      '4#',
       '5',
-      '#5',
+      '5#',
       '6',
-      '#6',
+      '6#',
       '7',
     ];
     final number = numbers[noteIndex];
