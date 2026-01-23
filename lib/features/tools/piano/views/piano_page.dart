@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/audio/audio_service.dart';
@@ -9,96 +10,169 @@ import '../../../tools/sheet_music/models/enums.dart';
 import '../controllers/piano_controller.dart';
 
 /// 虚拟钢琴页面（使用新的 Canvas 绘制）
-class PianoPage extends GetView<PianoController> {
+class PianoPage extends StatefulWidget {
   const PianoPage({super.key});
+
+  @override
+  State<PianoPage> createState() => _PianoPageState();
+}
+
+class _PianoPageState extends State<PianoPage> {
+  // 横屏 AppBar 控制
+  bool _showAppBar = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // 允许横屏
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
+
+  @override
+  void dispose() {
+    // 恢复仅竖屏
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    super.dispose();
+  }
+
+  /// 判断当前是否为横屏
+  bool get _isLandscape {
+    return MediaQuery.of(context).orientation == Orientation.landscape;
+  }
+
+  /// 判断是否应该显示 AppBar
+  bool get _shouldShowAppBar {
+    return !_isLandscape || _showAppBar;
+  }
+
+  /// 处理屏幕点击事件（用于显示/隐藏 AppBar）
+  void _handleScreenTap(TapUpDetails details) {
+    if (_isLandscape) {
+      final tapY = details.globalPosition.dy;
+      if (tapY < 100) {
+        setState(() {
+          _showAppBar = !_showAppBar;
+        });
+      }
+    }
+  }
+
+  PianoController get controller => Get.find<PianoController>();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isLandscape = _isLandscape;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('虚拟钢琴'),
-        centerTitle: true,
-        elevation: 0,
-        actions: [
-          // 主题切换
-          Obx(
-            () => IconButton(
-              icon: const Icon(Icons.palette),
-              onPressed: () => _showThemeSelector(context),
-              tooltip:
-                  '切换主题 (${PianoController.themes[controller.themeIndex.value]})',
-            ),
-          ),
-          // 标签显示切换
-          Obx(
-            () => IconButton(
-              icon: Icon(
-                controller.showLabels.value ? Icons.label : Icons.label_off,
-              ),
-              onPressed: controller.toggleLabels,
-              tooltip: '显示/隐藏标签',
-            ),
-          ),
-          // 标签类型切换
-          Obx(
-            () => IconButton(
-              icon: Icon(
-                controller.labelType.value == 'jianpu'
-                    ? Icons.music_note
-                    : Icons.abc,
-              ),
-              onPressed: controller.toggleLabelType,
-              tooltip: controller.labelType.value == 'jianpu' ? '简谱' : '音名',
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // 控制区域
-          _buildControlPanel(context, isDark),
+      appBar: _shouldShowAppBar
+          ? AppBar(
+              title: const Text('虚拟钢琴'),
+              centerTitle: true,
+              elevation: 0,
+              actions: [
+                // 主题切换
+                Obx(
+                  () => IconButton(
+                    icon: const Icon(Icons.palette),
+                    onPressed: () => _showThemeSelector(context),
+                    tooltip:
+                        '切换主题 (${PianoController.themes[controller.themeIndex.value]})',
+                  ),
+                ),
+                // 标签显示切换
+                Obx(
+                  () => IconButton(
+                    icon: Icon(
+                      controller.showLabels.value
+                          ? Icons.label
+                          : Icons.label_off,
+                    ),
+                    onPressed: controller.toggleLabels,
+                    tooltip: '显示/隐藏标签',
+                  ),
+                ),
+                // 标签类型切换
+                Obx(
+                  () => IconButton(
+                    icon: Icon(
+                      controller.labelType.value == 'jianpu'
+                          ? Icons.music_note
+                          : Icons.abc,
+                    ),
+                    onPressed: controller.toggleLabelType,
+                    tooltip:
+                        controller.labelType.value == 'jianpu' ? '简谱' : '音名',
+                  ),
+                ),
+              ],
+            )
+          : null,
+      body: GestureDetector(
+        onTapUp: _handleScreenTap,
+        child: Column(
+          children: [
+            // 控制区域
+            _buildControlPanel(context, isDark, isLandscape),
 
-          // 钢琴键盘区域（限制高度）
-          Obx(
-            () => Container(
-              height: _getPianoHeight(context),
-              color: _getTheme().backgroundColor,
-              child: _buildPianoArea(context),
-            ),
-          ),
-
-          // 间隔区域
-          Expanded(
-            child: Container(
-              color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
-              child: Center(
-                child: Obx(() {
-                  if (controller.isRecording.value) {
-                    return _buildRecordingIndicator();
-                  } else if (controller.recordedNotes.isNotEmpty) {
-                    return _buildRecordedInfo();
-                  } else {
-                    return _buildTips();
-                  }
-                }),
+            // 钢琴键盘区域（限制高度）
+            Obx(
+              () => Container(
+                height: _getPianoHeight(context, isLandscape),
+                color: _getTheme().backgroundColor,
+                child: _buildPianoArea(context),
               ),
             ),
-          ),
 
-          // 底部工具栏
-          _buildBottomToolbar(context, isDark),
-        ],
+            // 间隔区域（横屏时缩小）
+            if (!isLandscape ||
+                controller.isRecording.value ||
+                controller.recordedNotes.isNotEmpty)
+              Expanded(
+                child: Container(
+                  color: isDark ? Colors.grey.shade900 : Colors.grey.shade100,
+                  child: Center(
+                    child: Obx(() {
+                      if (controller.isRecording.value) {
+                        return _buildRecordingIndicator(isLandscape);
+                      } else if (controller.recordedNotes.isNotEmpty) {
+                        return _buildRecordedInfo(isLandscape);
+                      } else if (!isLandscape) {
+                        return _buildTips();
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    }),
+                  ),
+                ),
+              ),
+
+            // 底部工具栏
+            _buildBottomToolbar(context, isDark, isLandscape),
+          ],
+        ),
       ),
     );
   }
 
-  double _getPianoHeight(BuildContext context) {
+  double _getPianoHeight(BuildContext context, bool isLandscape) {
     final screenHeight = MediaQuery.of(context).size.height;
-    // 钢琴高度为屏幕高度的 35-45%
-    return (screenHeight * 0.38).clamp(200.0, 350.0);
+    if (isLandscape) {
+      // 横屏时使用更大比例的高度
+      return (screenHeight * 0.55).clamp(200.0, 450.0);
+    } else {
+      // 竖屏时保持原有逻辑
+      return (screenHeight * 0.38).clamp(200.0, 350.0);
+    }
   }
 
   RenderTheme _getTheme() {
@@ -116,71 +190,83 @@ class PianoPage extends GetView<PianoController> {
     }
   }
 
-  Widget _buildRecordingIndicator() {
+  Widget _buildRecordingIndicator(bool isLandscape) {
+    final iconSize = isLandscape ? 48.0 : 60.0;
+    final fontSize = isLandscape ? 14.0 : 16.0;
+    final smallFontSize = isLandscape ? 12.0 : 14.0;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 60,
-          height: 60,
+          width: iconSize,
+          height: iconSize,
           decoration: BoxDecoration(
             color: AppColors.error.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.mic, color: AppColors.error, size: 32),
+          child: Icon(
+            Icons.mic,
+            color: AppColors.error,
+            size: iconSize * 0.53,
+          ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: isLandscape ? 8 : 12),
         Obx(
           () => Text(
             '录制中... ${controller.recordedNotes.length} 个音符',
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: fontSize,
               color: AppColors.error,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        const Text(
+        SizedBox(height: isLandscape ? 4 : 8),
+        Text(
           '点击钢琴键录制音符',
-          style: TextStyle(fontSize: 14, color: Colors.grey),
+          style: TextStyle(fontSize: smallFontSize, color: Colors.grey),
         ),
       ],
     );
   }
 
-  Widget _buildRecordedInfo() {
+  Widget _buildRecordedInfo(bool isLandscape) {
+    final iconSize = isLandscape ? 48.0 : 60.0;
+    final fontSize = isLandscape ? 14.0 : 16.0;
+    final smallFontSize = isLandscape ? 12.0 : 14.0;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 60,
-          height: 60,
+          width: iconSize,
+          height: iconSize,
           decoration: BoxDecoration(
             color: AppColors.success.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
+          child: Icon(
             Icons.music_note,
             color: AppColors.success,
-            size: 32,
+            size: iconSize * 0.53,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: isLandscape ? 8 : 12),
         Obx(
           () => Text(
             '已录制 ${controller.recordedNotes.length} 个音符',
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: fontSize,
               color: AppColors.success,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        const Text(
+        SizedBox(height: isLandscape ? 4 : 8),
+        Text(
           '点击播放按钮回放',
-          style: TextStyle(fontSize: 14, color: Colors.grey),
+          style: TextStyle(fontSize: smallFontSize, color: Colors.grey),
         ),
       ],
     );
@@ -362,9 +448,16 @@ class PianoPage extends GetView<PianoController> {
     return blackKeys.contains(midi % 12);
   }
 
-  Widget _buildControlPanel(BuildContext context, bool isDark) {
+  Widget _buildControlPanel(
+    BuildContext context,
+    bool isDark,
+    bool isLandscape,
+  ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: isLandscape ? 6 : 10,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         boxShadow: [
@@ -380,9 +473,10 @@ class PianoPage extends GetView<PianoController> {
           // 向左移动
           IconButton(
             onPressed: controller.shiftLeft,
-            icon: const Icon(Icons.chevron_left),
+            icon: Icon(Icons.chevron_left, size: isLandscape ? 20 : 24),
             tooltip: '向左移动一个八度',
             visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
           ),
 
           // 当前音域显示
@@ -391,9 +485,9 @@ class PianoPage extends GetView<PianoController> {
               return GestureDetector(
                 onTap: () => _showRangeSettings(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isLandscape ? 8 : 12,
+                    vertical: isLandscape ? 4 : 6,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
@@ -403,17 +497,17 @@ class PianoPage extends GetView<PianoController> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.piano,
-                        size: 16,
+                        size: isLandscape ? 14 : 16,
                         color: AppColors.primary,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: isLandscape ? 4 : 6),
                       Flexible(
                         child: Text(
                           '${_getMidiNoteName(controller.startMidi.value)} - ${_getMidiNoteName(controller.endMidi.value)}',
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: isLandscape ? 12 : 14,
                             fontWeight: FontWeight.w600,
                             color: AppColors.primary,
                           ),
@@ -421,10 +515,10 @@ class PianoPage extends GetView<PianoController> {
                           maxLines: 1,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: isLandscape ? 2 : 4),
                       Icon(
                         Icons.tune,
-                        size: 12,
+                        size: isLandscape ? 10 : 12,
                         color: AppColors.primary.withValues(alpha: 0.6),
                       ),
                     ],
@@ -437,24 +531,25 @@ class PianoPage extends GetView<PianoController> {
           // 向右移动
           IconButton(
             onPressed: controller.shiftRight,
-            icon: const Icon(Icons.chevron_right),
+            icon: Icon(Icons.chevron_right, size: isLandscape ? 20 : 24),
             tooltip: '向右移动一个八度',
             visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width: isLandscape ? 4 : 8),
 
           // 分隔线
           Container(
-            height: 24,
+            height: isLandscape ? 20 : 24,
             width: 1,
             color: Colors.grey.withValues(alpha: 0.3),
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width: isLandscape ? 4 : 8),
 
           // 键数选择
-          Obx(() => _buildOctaveSelector(context)),
+          Obx(() => _buildOctaveSelector(context, isLandscape)),
         ],
       ),
     );
@@ -539,28 +634,31 @@ class PianoPage extends GetView<PianoController> {
     return '${notes[midi % 12]}$octave';
   }
 
-  Widget _buildOctaveSelector(BuildContext context) {
+  Widget _buildOctaveSelector(BuildContext context, bool isLandscape) {
+    final fontSize = isLandscape ? 11.0 : 13.0;
+    final buttonSize = isLandscape ? 24.0 : 28.0;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           '键数：',
           style: TextStyle(
-            fontSize: 13,
+            fontSize: fontSize,
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
-        const SizedBox(width: 4),
+        SizedBox(width: isLandscape ? 2 : 4),
         ...List.generate(4, (index) {
           final octaves = index + 1;
           final isSelected = controller.octaveCount.value == octaves;
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
+            padding: EdgeInsets.symmetric(horizontal: isLandscape ? 1 : 2),
             child: GestureDetector(
               onTap: () => controller.setOctaveCount(octaves),
               child: Container(
-                width: 28,
-                height: 28,
+                width: buttonSize,
+                height: buttonSize,
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.primary
@@ -576,7 +674,7 @@ class PianoPage extends GetView<PianoController> {
                   child: Text(
                     '$octaves',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: fontSize,
                       fontWeight: FontWeight.bold,
                       color: isSelected ? Colors.white : Colors.grey,
                     ),
@@ -586,11 +684,11 @@ class PianoPage extends GetView<PianoController> {
             ),
           );
         }),
-        const SizedBox(width: 2),
+        SizedBox(width: isLandscape ? 1 : 2),
         Text(
           '八度',
           style: TextStyle(
-            fontSize: 11,
+            fontSize: isLandscape ? 10 : 11,
             color: Theme.of(context).textTheme.bodySmall?.color,
           ),
         ),
@@ -598,9 +696,16 @@ class PianoPage extends GetView<PianoController> {
     );
   }
 
-  Widget _buildBottomToolbar(BuildContext context, bool isDark) {
+  Widget _buildBottomToolbar(
+    BuildContext context,
+    bool isDark,
+    bool isLandscape,
+  ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: isLandscape ? 16 : 24,
+        vertical: isLandscape ? 8 : 16,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         boxShadow: [
@@ -629,6 +734,7 @@ class PianoPage extends GetView<PianoController> {
                 onTap: controller.isRecording.value
                     ? controller.stopRecording
                     : controller.startRecording,
+                isLandscape: isLandscape,
               ),
             ),
 
@@ -636,15 +742,14 @@ class PianoPage extends GetView<PianoController> {
             Obx(
               () => _buildToolButton(
                 context,
-                icon: controller.isPlaying.value
-                    ? Icons.stop
-                    : Icons.play_arrow,
+                icon:
+                    controller.isPlaying.value ? Icons.stop : Icons.play_arrow,
                 label: controller.isPlaying.value ? '停止' : '播放',
                 color: AppColors.success,
                 onTap: controller.playRecording,
-                enabled:
-                    controller.recordedNotes.isNotEmpty ||
+                enabled: controller.recordedNotes.isNotEmpty ||
                     controller.isPlaying.value,
+                isLandscape: isLandscape,
               ),
             ),
 
@@ -657,6 +762,7 @@ class PianoPage extends GetView<PianoController> {
                 color: Colors.grey,
                 onTap: controller.clearRecording,
                 enabled: controller.recordedNotes.isNotEmpty,
+                isLandscape: isLandscape,
               ),
             ),
           ],
@@ -672,24 +778,29 @@ class PianoPage extends GetView<PianoController> {
     required Color color,
     required VoidCallback onTap,
     bool enabled = true,
+    bool isLandscape = false,
   }) {
     final effectiveColor = enabled ? color : color.withValues(alpha: 0.3);
+    final buttonSize = isLandscape ? 44.0 : 56.0;
+    final iconSize = isLandscape ? 22.0 : 28.0;
+    final fontSize = isLandscape ? 11.0 : 12.0;
+
     return GestureDetector(
       onTap: enabled ? onTap : null,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: buttonSize,
+            height: buttonSize,
             decoration: BoxDecoration(
               color: effectiveColor.withValues(alpha: enabled ? 0.1 : 0.05),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(isLandscape ? 12 : 16),
             ),
-            child: Icon(icon, color: effectiveColor, size: 28),
+            child: Icon(icon, color: effectiveColor, size: iconSize),
           ),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 12, color: effectiveColor)),
+          SizedBox(height: isLandscape ? 2 : 4),
+          Text(label, style: TextStyle(fontSize: fontSize, color: effectiveColor)),
         ],
       ),
     );
