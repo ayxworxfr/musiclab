@@ -490,13 +490,13 @@ class PlaybackController extends GetxController {
     // 当前实际时间（考虑速度倍率）
     final currentRealTime = currentTime.value * speedMultiplier.value;
 
-    // 清除过期的高亮（不在这里清除钢琴键，最后统一处理）
+    // 清除过期的高亮（提前50ms释放，让重复音之间有明显的视觉间隙）
     final toRemove = <int>[];
     for (final idx in highlightedNoteIndices) {
       final note = _scheduledNotes.firstWhereOrNull(
         (n) => n.layoutIndex == idx,
       );
-      if (note == null || currentRealTime > note.endTime) {
+      if (note == null || currentRealTime > note.endTime - 0.05) {
         toRemove.add(idx);
       }
     }

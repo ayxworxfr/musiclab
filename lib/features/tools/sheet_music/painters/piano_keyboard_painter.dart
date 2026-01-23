@@ -145,15 +145,21 @@ class PianoKeyboardPainter extends CustomPainter {
       keyColor = config.theme.whiteKeyColor;
     }
 
-    // 渐变效果
     final rect = key.rect;
+
+    // 高亮时增加亮度
+    if (isHighlighted || isPressed) {
+      keyColor = Color.lerp(keyColor, Colors.white, 0.2)!;
+    }
+
+    // 渐变效果
     final gradient = ui.Gradient.linear(
       Offset(rect.left, rect.top),
       Offset(rect.left, rect.bottom),
       [
         keyColor,
         isHighlighted || isPressed
-            ? keyColor.withValues(alpha: 0.8)
+            ? keyColor.withValues(alpha: 0.85)
             : Color.lerp(keyColor, Colors.grey.shade300, 0.15)!,
       ],
     );
@@ -170,21 +176,33 @@ class PianoKeyboardPainter extends CustomPainter {
       canvas.drawRRect(
         rrect.shift(const Offset(0, 2)),
         Paint()
-          ..color = Colors.black.withValues(alpha: 0.15)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+          ..color = Colors.black.withValues(alpha: isHighlighted ? 0.25 : 0.15)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, isHighlighted ? 4 : 2),
       );
     }
 
     // 键体
     canvas.drawRRect(rrect, Paint()..shader = gradient);
 
+    // 高亮时添加内发光效果
+    if (isHighlighted || isPressed) {
+      canvas.drawRRect(
+        rrect.deflate(3),
+        Paint()
+          ..color = keyColor.withValues(alpha: 0.4)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+      );
+    }
+
     // 边框
     canvas.drawRRect(
       rrect,
       Paint()
-        ..color = config.theme.whiteKeyBorderColor
+        ..color = isHighlighted
+            ? keyColor.withValues(alpha: 0.8)
+            : config.theme.whiteKeyBorderColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1,
+        ..strokeWidth = isHighlighted ? 2 : 1,
     );
 
     // 标签（所有白键都显示）
@@ -205,15 +223,20 @@ class PianoKeyboardPainter extends CustomPainter {
       keyColor = config.theme.playingColor;
     } else if (isHighlighted) {
       keyColor = hand == Hand.right
-          ? config.theme.rightHandColor.withValues(alpha: 0.9)
+          ? config.theme.rightHandColor.withValues(alpha: 0.95)
           : hand == Hand.left
-          ? config.theme.leftHandColor.withValues(alpha: 0.9)
+          ? config.theme.leftHandColor.withValues(alpha: 0.95)
           : config.theme.blackKeyHighlightColor;
     } else {
       keyColor = config.theme.blackKeyColor;
     }
 
     final rect = key.rect;
+
+    // 高亮时增加亮度
+    if (isHighlighted || isPressed) {
+      keyColor = Color.lerp(keyColor, Colors.white, 0.3)!;
+    }
 
     // 3D 效果：顶面更亮
     final topGradient = ui.Gradient.linear(
@@ -223,7 +246,7 @@ class PianoKeyboardPainter extends CustomPainter {
         isHighlighted || isPressed
             ? keyColor
             : Color.lerp(keyColor, Colors.grey.shade700, 0.3)!,
-        keyColor,
+        keyColor.withValues(alpha: 0.9),
       ],
     );
 
@@ -238,24 +261,33 @@ class PianoKeyboardPainter extends CustomPainter {
     canvas.drawRRect(
       rrect.shift(const Offset(2, 2)),
       Paint()
-        ..color = Colors.black.withValues(alpha: 0.4)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+        ..color = Colors.black.withValues(alpha: isHighlighted ? 0.5 : 0.4)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, isHighlighted ? 5 : 3),
     );
 
     // 键体
     canvas.drawRRect(rrect, Paint()..shader = topGradient);
 
-    // 高光
+    // 高光效果
     if (isHighlighted || isPressed) {
+      // 高亮时的强烈高光
       final highlightRect = Rect.fromLTWH(
         rect.left + 2,
         rect.top + 2,
         rect.width - 4,
-        rect.height * 0.15,
+        rect.height * 0.2,
       );
       canvas.drawRRect(
         RRect.fromRectAndRadius(highlightRect, const Radius.circular(2)),
-        Paint()..color = Colors.white.withValues(alpha: 0.3),
+        Paint()..color = Colors.white.withValues(alpha: 0.5),
+      );
+
+      // 内发光效果
+      canvas.drawRRect(
+        rrect.deflate(2),
+        Paint()
+          ..color = keyColor.withValues(alpha: 0.3)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
       );
     } else {
       // 正常状态的高光
