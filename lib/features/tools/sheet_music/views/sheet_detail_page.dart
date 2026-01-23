@@ -126,107 +126,109 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
         builder: (context, setModalState) {
           return Container(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '显示设置',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '显示设置',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
 
-                // 谱面模式切换
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('谱面模式'),
-                    SegmentedButton<NotationMode>(
-                      segments: const [
-                        ButtonSegment(
-                          value: NotationMode.staff,
-                          label: Text('五线谱'),
-                          icon: Icon(Icons.queue_music, size: 16),
-                        ),
-                        ButtonSegment(
-                          value: NotationMode.jianpu,
-                          label: Text('简谱'),
-                          icon: Icon(Icons.pin, size: 16),
-                        ),
-                      ],
-                      selected: {_notationMode},
-                      onSelectionChanged: (Set<NotationMode> selected) {
-                        setModalState(() {
-                          _notationMode = selected.first;
-                        });
-                        setState(() {});
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // 指法显示
-                SwitchListTile(
-                  title: const Text('显示指法'),
-                  value: _showFingering,
-                  onChanged: (v) {
-                    setModalState(() => _showFingering = v);
-                    setState(() {});
-                  },
-                  contentPadding: EdgeInsets.zero,
-                ),
-
-                // 歌词显示
-                SwitchListTile(
-                  title: const Text('显示歌词'),
-                  value: _showLyrics,
-                  onChanged: (v) {
-                    setModalState(() => _showLyrics = v);
-                    setState(() {});
-                  },
-                  contentPadding: EdgeInsets.zero,
-                ),
-
-                // 钢琴显示
-                SwitchListTile(
-                  title: const Text('显示钢琴键盘'),
-                  value: _showPiano,
-                  onChanged: (v) {
-                    setModalState(() => _showPiano = v);
-                    setState(() {});
-                  },
-                  contentPadding: EdgeInsets.zero,
-                ),
-
-                const Divider(),
-                const Text(
-                  '主题',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: List.generate(_themes.length, (index) {
-                    final (name, theme) = _themes[index];
-                    final isSelected = _selectedThemeIndex == index;
-                    return ChoiceChip(
-                      label: Text(name),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setModalState(() => _selectedThemeIndex = index);
-                          setState(() {
-                            _config = RenderConfig(theme: theme);
+                  // 谱面模式切换
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('谱面模式'),
+                      SegmentedButton<NotationMode>(
+                        segments: const [
+                          ButtonSegment(
+                            value: NotationMode.staff,
+                            label: Text('五线谱'),
+                            icon: Icon(Icons.queue_music, size: 16),
+                          ),
+                          ButtonSegment(
+                            value: NotationMode.jianpu,
+                            label: Text('简谱'),
+                            icon: Icon(Icons.pin, size: 16),
+                          ),
+                        ],
+                        selected: {_notationMode},
+                        onSelectionChanged: (Set<NotationMode> selected) {
+                          setModalState(() {
+                            _notationMode = selected.first;
                           });
-                        }
-                      },
-                    );
-                  }),
-                ),
-                const SizedBox(height: 20),
-              ],
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 指法显示
+                  SwitchListTile(
+                    title: const Text('显示指法'),
+                    value: _showFingering,
+                    onChanged: (v) {
+                      setModalState(() => _showFingering = v);
+                      setState(() {});
+                    },
+                    contentPadding: EdgeInsets.zero,
+                  ),
+
+                  // 歌词显示
+                  SwitchListTile(
+                    title: const Text('显示歌词'),
+                    value: _showLyrics,
+                    onChanged: (v) {
+                      setModalState(() => _showLyrics = v);
+                      setState(() {});
+                    },
+                    contentPadding: EdgeInsets.zero,
+                  ),
+
+                  // 钢琴显示
+                  SwitchListTile(
+                    title: const Text('显示钢琴键盘'),
+                    value: _showPiano,
+                    onChanged: (v) {
+                      setModalState(() => _showPiano = v);
+                      setState(() {});
+                    },
+                    contentPadding: EdgeInsets.zero,
+                  ),
+
+                  const Divider(),
+                  const Text(
+                    '主题',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(_themes.length, (index) {
+                      final (name, theme) = _themes[index];
+                      final isSelected = _selectedThemeIndex == index;
+                      return ChoiceChip(
+                        label: Text(name),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setModalState(() => _selectedThemeIndex = index);
+                            setState(() {
+                              _config = RenderConfig(theme: theme);
+                            });
+                          }
+                        },
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           );
         },

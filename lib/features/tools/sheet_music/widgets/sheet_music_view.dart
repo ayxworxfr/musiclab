@@ -64,9 +64,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   String _pianoLabelType = 'jianpu'; // 'jianpu' | 'note'
   final ScrollController _pianoScrollController = ScrollController();
 
-  // 钢琴和播放栏的显示状态（独立控制）
-  bool _pianoVisible = true;
-  bool _controlsVisible = true;
+  // 显示模式：全展示 -> 只钢琴 -> 只播放栏 -> 全隐藏 -> 全展示...
+  int _displayMode = 0; // 0=全展示, 1=只钢琴, 2=只播放栏, 3=全隐藏
 
   // 乐谱滚动控制器
   final ScrollController _scoreScrollController = ScrollController();
@@ -147,12 +146,30 @@ class _SheetMusicViewState extends State<SheetMusicView> {
 
   /// 判断是否应该显示钢琴
   bool _shouldShowPiano() {
-    return widget.showPiano && _pianoVisible;
+    return widget.showPiano && (_displayMode == 0 || _displayMode == 1);
   }
 
   /// 判断是否应该显示播放控制
   bool _shouldShowControls() {
-    return _controlsVisible;
+    return _displayMode == 0 || _displayMode == 2;
+  }
+
+  /// 切换显示模式
+  void _toggleDisplayMode() {
+    setState(() {
+      _displayMode = (_displayMode + 1) % 4;
+    });
+  }
+
+  /// 获取显示模式图标
+  IconData _getDisplayModeIcon() {
+    switch (_displayMode) {
+      case 0: return Icons.visibility; // 全展示
+      case 1: return Icons.piano; // 只钢琴
+      case 2: return Icons.tune; // 只播放栏
+      case 3: return Icons.visibility_off; // 全隐藏
+      default: return Icons.visibility;
+    }
   }
 
   /// 计算播放控制区高度
@@ -279,48 +296,20 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                 ],
               ),
 
-              // 浮动按钮：控制钢琴和播放栏的显示
+              // 浮动按钮：切换显示模式（带透明度）
               Positioned(
                 right: 16,
-                bottom: (shouldShowPiano || shouldShowControls) ? bottomHeight + 16 : 16,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (widget.showPiano)
-                      FloatingActionButton(
-                        mini: true,
-                        heroTag: 'piano_toggle',
-                        onPressed: () {
-                          setState(() {
-                            _pianoVisible = !_pianoVisible;
-                          });
-                        },
-                        backgroundColor: widget.config.theme.rightHandColor
-                            .withValues(alpha: _pianoVisible ? 1.0 : 0.5),
-                        child: Icon(
-                          _pianoVisible ? Icons.piano : Icons.piano_outlined,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    const SizedBox(height: 8),
-                    FloatingActionButton(
-                      mini: true,
-                      heroTag: 'controls_toggle',
-                      onPressed: () {
-                        setState(() {
-                          _controlsVisible = !_controlsVisible;
-                        });
-                      },
-                      backgroundColor: widget.config.theme.rightHandColor
-                          .withValues(alpha: _controlsVisible ? 1.0 : 0.5),
-                      child: Icon(
-                        _controlsVisible ? Icons.play_circle_filled : Icons.play_circle_outline,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ],
+                bottom: bottomHeight + 8, // 稍微靠近底部栏，不管什么模式都在底部栏上方一点点
+                child: FloatingActionButton(
+                  mini: true,
+                  heroTag: 'display_toggle',
+                  onPressed: _toggleDisplayMode,
+                  backgroundColor: widget.config.theme.rightHandColor.withValues(alpha: 0.7),
+                  child: Icon(
+                    _getDisplayModeIcon(),
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
             ],
@@ -1607,7 +1596,23 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           color: widget.config.theme.rightHandColor,
                         ),
                         child: IconButton(
-                          onPressed: () => controller.togglePlay(),
+                          onPressed: () {
+                            final wasPlaying = controller.isPlaying.value;
+                            controller.togglePlay();
+                            // 横屏时，开始播放后自动切换到只显示钢琴模式（隐藏播放栏）
+                            if (!wasPlaying && MediaQuery.of(context).orientation == Orientation.landscape) {
+                              Future.delayed(const Duration(milliseconds: 300), () {
+                                if (mounted && controller.isPlaying.value) {
+                                  setState(() {
+                                    // 如果当前显示了播放栏，切换到只显示钢琴
+                                    if (_displayMode == 0 || _displayMode == 2) {
+                                      _displayMode = 1; // 只显示钢琴
+                                    }
+                                  });
+                                }
+                              });
+                            }
+                          },
                           padding: EdgeInsets.zero,
                           icon: Icon(
                             isPlaying ? Icons.pause : Icons.play_arrow,
@@ -1885,7 +1890,23 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       color: widget.config.theme.rightHandColor,
                     ),
                     child: IconButton(
-                      onPressed: () => controller.togglePlay(),
+                      onPressed: () {
+                        final wasPlaying = controller.isPlaying.value;
+                        controller.togglePlay();
+                        // 横屏时，开始播放后自动切换到只显示钢琴模式（隐藏播放栏）
+                        if (!wasPlaying && MediaQuery.of(context).orientation == Orientation.landscape) {
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            if (mounted && controller.isPlaying.value) {
+                              setState(() {
+                                // 如果当前显示了播放栏，切换到只显示钢琴
+                                if (_displayMode == 0 || _displayMode == 2) {
+                                  _displayMode = 1; // 只显示钢琴
+                                }
+                              });
+                            }
+                          });
+                        }
+                      },
                       icon: Icon(
                         isPlaying ? Icons.pause : Icons.play_arrow,
                         color: Colors.white,
