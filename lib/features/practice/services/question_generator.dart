@@ -22,12 +22,17 @@ class QuestionGenerator {
     final (minMidi, maxMidi) = _getMidiRangeForDifficulty(difficulty);
 
     for (int i = 0; i < count; i++) {
-      // 随机选择一个音符
-      final midi = minMidi + _random.nextInt(maxMidi - minMidi + 1);
-      final jianpu = MusicUtils.midiToJianpu(midi);
+      // 根据难度生成不同数量的音符
+      final noteCount = difficulty <= 2 ? 1 : difficulty == 3 ? 2 : 3;
+      final notes = <int>[];
 
-      // 生成选项
-      final options = _generateJianpuOptions(midi, minMidi, maxMidi);
+      for (int j = 0; j < noteCount; j++) {
+        final midi = minMidi + _random.nextInt(maxMidi - minMidi + 1);
+        notes.add(midi);
+      }
+
+      // 转换为简谱字符串
+      final jianpu = notes.map((n) => MusicUtils.midiToJianpu(n)).join(' ');
 
       questions.add(
         PracticeQuestion(
@@ -35,13 +40,13 @@ class QuestionGenerator {
           type: PracticeType.noteRecognition,
           difficulty: difficulty,
           content: QuestionContent(
-            type: 'audio',
-            description: '听音识谱：听一听这是哪个音？',
-            notes: [midi],
+            type: 'jianpu',
+            description: '看着简谱，在钢琴上弹出来',
+            notes: notes,
+            jianpuData: jianpu,
           ),
-          correctAnswer: jianpu,
-          options: options,
-          explanation: '这个音是 $jianpu，对应 ${MusicUtils.midiToNoteName(midi)}',
+          correctAnswer: notes,
+          explanation: '正确答案是 $jianpu',
         ),
       );
     }
@@ -59,10 +64,17 @@ class QuestionGenerator {
     final (minMidi, maxMidi) = _getMidiRangeForDifficulty(difficulty);
 
     for (int i = 0; i < count; i++) {
-      final midi = minMidi + _random.nextInt(maxMidi - minMidi + 1);
-      final jianpu = MusicUtils.midiToJianpu(midi);
+      // 根据难度生成不同数量的音符
+      final noteCount = difficulty <= 2 ? 1 : difficulty == 3 ? 2 : 3;
+      final notes = <int>[];
 
-      final options = _generateJianpuOptions(midi, minMidi, maxMidi);
+      for (int j = 0; j < noteCount; j++) {
+        final midi = minMidi + _random.nextInt(maxMidi - minMidi + 1);
+        notes.add(midi);
+      }
+
+      // 转换为简谱字符串（用于解释）
+      final jianpu = notes.map((n) => MusicUtils.midiToJianpu(n)).join(' ');
 
       questions.add(
         PracticeQuestion(
@@ -71,12 +83,11 @@ class QuestionGenerator {
           difficulty: difficulty,
           content: QuestionContent(
             type: 'staff',
-            description: '看谱识音：这个音符对应简谱哪个音？',
-            staffData: StaffData(clef: 'treble', notes: [midi]),
+            description: '看着五线谱，在钢琴上弹出来',
+            staffData: StaffData(clef: 'treble', notes: notes),
           ),
-          correctAnswer: jianpu,
-          options: options,
-          explanation: '这个音符是 $jianpu (${MusicUtils.midiToNoteName(midi)})',
+          correctAnswer: notes,
+          explanation: '正确答案是 $jianpu',
         ),
       );
     }

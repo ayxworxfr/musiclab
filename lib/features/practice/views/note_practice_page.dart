@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../app/routes/app_routes.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/music/jianpu_note_text.dart';
@@ -11,10 +10,18 @@ import '../../tools/sheet_music/painters/piano_keyboard_painter.dart';
 import '../../tools/sheet_music/painters/render_config.dart';
 import '../controllers/practice_controller.dart';
 import '../models/practice_model.dart';
+import '../widgets/practice_jianpu_widget.dart';
 
 /// 识谱练习页面
+/// 看着谱子，在钢琴上弹出来
 class NotePracticePage extends GetView<PracticeController> {
-  const NotePracticePage({super.key});
+  NotePracticePage({super.key});
+
+  // 谱子类型：'jianpu' 或 'staff'
+  final _sheetType = 'jianpu'.obs;
+
+  // 最后播放的 MIDI（防止重复触发）
+  int? _lastPlayedMidi;
 
   @override
   Widget build(BuildContext context) {
@@ -27,23 +34,24 @@ class NotePracticePage extends GetView<PracticeController> {
         centerTitle: true,
         elevation: 0,
         actions: [
-          // 进度指示
           Obx(
-            () => Center(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Text(
-                  '${controller.currentIndex.value + 1}/${controller.questions.length}',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondary,
-                  ),
-                ),
-              ),
-            ),
+            () => controller.questions.isNotEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Text(
+                        '${controller.currentIndex.value + 1}/${controller.questions.length}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
@@ -69,7 +77,7 @@ class NotePracticePage extends GetView<PracticeController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '选择难度',
+            '识谱练习',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -78,7 +86,7 @@ class NotePracticePage extends GetView<PracticeController> {
           ),
           const SizedBox(height: 8),
           Text(
-            '根据你的水平选择合适的难度',
+            '看着谱子，在钢琴上弹出来',
             style: TextStyle(
               fontSize: 14,
               color: isDark
@@ -99,29 +107,29 @@ class NotePracticePage extends GetView<PracticeController> {
     final difficulties = [
       {
         'level': 1,
-        'title': '入门',
-        'desc': '中央 C 附近 8 个音，适合刚开始学习',
+        'title': '入门 - 单音识谱',
+        'desc': '中央 C 附近 8 个音，一次一个音符',
         'icon': '⭐',
         'color': AppColors.success,
       },
       {
         'level': 2,
-        'title': '初级',
+        'title': '初级 - 单音练习',
         'desc': '一个八度范围，包含所有基本音',
         'icon': '⭐⭐',
         'color': const Color(0xFF4facfe),
       },
       {
         'level': 3,
-        'title': '中级',
-        'desc': '扩展音域，加入升降音',
+        'title': '中级 - 双音识谱',
+        'desc': '扩展音域，同时弹奏两个音',
         'icon': '⭐⭐⭐',
         'color': const Color(0xFFf093fb),
       },
       {
         'level': 4,
-        'title': '高级',
-        'desc': '两个八度，快速识谱',
+        'title': '高级 - 多音识谱',
+        'desc': '两个八度，快速识谱三个音',
         'icon': '⭐⭐⭐⭐',
         'color': AppColors.warning,
       },
@@ -175,7 +183,7 @@ class NotePracticePage extends GetView<PracticeController> {
                         Text(
                           d['title'] as String,
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).textTheme.bodyLarge?.color,
                           ),
@@ -208,6 +216,9 @@ class NotePracticePage extends GetView<PracticeController> {
     final question = controller.currentQuestion;
     if (question == null) return const SizedBox.shrink();
 
+    final notes = question.content.notes ?? [];
+    if (notes.isEmpty) return const SizedBox.shrink();
+
     return Column(
       children: [
         // 进度条
@@ -224,7 +235,7 @@ class NotePracticePage extends GetView<PracticeController> {
               children: [
                 // 题目描述
                 Text(
-                  question.content.description ?? '请回答以下问题',
+                  question.content.description ?? '看着谱子，在钢琴上弹出来',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -232,21 +243,30 @@ class NotePracticePage extends GetView<PracticeController> {
                   ),
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 16),
+
+                // 谱子类型切换按钮
+                _buildSheetTypeSwitch(context, isDark),
+                const SizedBox(height: 16),
+
+                // 谱子显示
+                _buildSheet(context, question, isDark),
                 const SizedBox(height: 24),
 
-                // 题目内容
-                _buildQuestionContent(context, question, isDark),
-                const SizedBox(height: 24),
+                // 已弹奏的音符显示
+                Obx(() => _buildPlayedNotes(context, notes, isDark)),
+                const SizedBox(height: 16),
 
-                // 选项
-                if (question.options != null)
-                  _buildOptions(context, question, isDark),
+                // 交互式钢琴键盘
+                _buildInteractivePiano(context, notes, isDark),
+                const SizedBox(height: 16),
 
                 // 反馈
                 Obx(() {
-                  if (!controller.hasAnswered.value)
+                  if (!controller.hasAnswered.value) {
                     return const SizedBox.shrink();
-                  return _buildFeedback(context, question, isDark);
+                  }
+                  return _buildFeedback(context, isDark);
                 }),
               ],
             ),
@@ -259,77 +279,232 @@ class NotePracticePage extends GetView<PracticeController> {
     );
   }
 
-  /// 题目内容
-  Widget _buildQuestionContent(
+  /// 谱子类型切换按钮
+  Widget _buildSheetTypeSwitch(BuildContext context, bool isDark) {
+    return Obx(() {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildSwitchButton(
+            '简谱',
+            _sheetType.value == 'jianpu',
+            () => _sheetType.value = 'jianpu',
+            isDark,
+          ),
+          const SizedBox(width: 12),
+          _buildSwitchButton(
+            '五线谱',
+            _sheetType.value == 'staff',
+            () => _sheetType.value = 'staff',
+            isDark,
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildSwitchButton(
+    String label,
+    bool isActive,
+    VoidCallback onTap,
+    bool isDark,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppColors.primary
+              : isDark
+                  ? Colors.grey.shade800
+                  : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: isActive
+                ? Colors.white
+                : isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 谱子显示
+  Widget _buildSheet(
     BuildContext context,
     PracticeQuestion question,
     bool isDark,
   ) {
-    final content = question.content;
-
-    switch (content.type) {
-      case 'audio':
-        return _buildAudioContent(context, content, isDark);
-      case 'staff':
-        return _buildStaffContent(context, content, isDark);
-      default:
-        return const SizedBox.shrink();
-    }
+    return Obx(() {
+      if (_sheetType.value == 'staff') {
+        // 五线谱
+        return _buildStaffSheet(context, question, isDark);
+      } else {
+        // 简谱
+        return _buildJianpuSheet(context, question, isDark);
+      }
+    });
   }
 
-  /// 音频内容（使用新的 Canvas 钢琴组件）
-  Widget _buildAudioContent(
+  /// 五线谱显示
+  Widget _buildStaffSheet(
     BuildContext context,
-    QuestionContent content,
+    PracticeQuestion question,
     bool isDark,
   ) {
+    final notes = question.content.notes ?? [];
+    if (notes.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // 调号显示
+          Text(
+            'C 调',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // 五线谱
+          StaffWidget(
+            clef: 'treble',
+            notes: notes,
+            width: 280,
+            height: 150,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 简谱显示
+  Widget _buildJianpuSheet(
+    BuildContext context,
+    PracticeQuestion question,
+    bool isDark,
+  ) {
+    final notes = question.content.notes ?? [];
+    if (notes.isEmpty) return const SizedBox.shrink();
+
+    return PracticeJianpuWidget(
+      notes: notes,
+      keySignature: 'C',
+      noteColor: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+      backgroundColor: isDark ? Colors.grey.shade800 : Colors.white,
+    );
+  }
+
+  /// 已弹奏的音符显示
+  Widget _buildPlayedNotes(
+    BuildContext context,
+    List<int> targetNotes,
+    bool isDark,
+  ) {
+    final playedNotes = controller.userPlayedNotes;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            '已弹奏 ${playedNotes.length}/${targetNotes.length} 个音',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondary,
+            ),
+          ),
+          if (playedNotes.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: playedNotes.map((midi) {
+                final jianpu = _midiToJianpu(midi);
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: JianpuNoteText.fromString(
+                    jianpu,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 交互式钢琴键盘
+  Widget _buildInteractivePiano(
+    BuildContext context,
+    List<int> targetNotes,
+    bool isDark,
+  ) {
+    final audioService = Get.find<AudioService>();
     final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
-    final config = RenderConfig(pianoHeight: 120, theme: renderTheme);
+    final config = RenderConfig(pianoHeight: 160, theme: renderTheme);
+
+    // 确定钢琴范围
+    final startMidi = 48; // C3
+    final endMidi = 84; // C6
 
     return Column(
       children: [
-        // 播放按钮
-        GestureDetector(
-          onTap: () {
-            // 标记用户交互，确保音频可以播放
-            final audioService = Get.find<AudioService>();
-            audioService.markUserInteracted();
-            controller.playCurrentAudio();
-          },
-          child: Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-                width: 3,
-              ),
-            ),
-            child: const Icon(
-              Icons.volume_up,
-              size: 56,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
         Text(
-          '点击播放音频',
+          '在钢琴上弹奏',
           style: TextStyle(
             fontSize: 14,
+            fontWeight: FontWeight.bold,
             color: isDark
                 ? AppColors.textSecondaryDark
                 : AppColors.textSecondary,
           ),
         ),
-
-        // 显示钢琴键盘供参考（Canvas 版本）
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
         Container(
-          height: 120,
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          height: 160,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
@@ -343,14 +518,53 @@ class NotePracticePage extends GetView<PracticeController> {
           clipBehavior: Clip.antiAlias,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return CustomPaint(
-                size: Size(constraints.maxWidth, 120),
-                painter: PianoKeyboardPainter(
-                  startMidi: 60,
-                  endMidi: 72,
-                  config: config,
-                  showLabels: true,
-                  labelType: 'jianpu',
+              final whiteKeyWidth = config.pianoHeight / config.whiteKeyAspectRatio;
+              final pianoWidth = whiteKeyWidth * 21.0; // 3个八度
+              final displayWidth =
+                  pianoWidth < constraints.maxWidth
+                      ? pianoWidth
+                      : constraints.maxWidth;
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: GestureDetector(
+                  onTapDown: (details) => _handlePianoTap(
+                    details,
+                    config,
+                    targetNotes,
+                    audioService,
+                    startMidi,
+                    endMidi,
+                    pianoWidth,
+                  ),
+                  onPanStart: (details) => _handlePianoTap(
+                    details,
+                    config,
+                    targetNotes,
+                    audioService,
+                    startMidi,
+                    endMidi,
+                    pianoWidth,
+                  ),
+                  onPanUpdate: (details) => _handlePianoTap(
+                    details,
+                    config,
+                    targetNotes,
+                    audioService,
+                    startMidi,
+                    endMidi,
+                    pianoWidth,
+                  ),
+                  child: CustomPaint(
+                    size: Size(displayWidth, 160),
+                    painter: PianoKeyboardPainter(
+                      startMidi: startMidi,
+                      endMidi: endMidi,
+                      config: config,
+                      showLabels: true,
+                      labelType: 'jianpu',
+                    ),
+                  ),
                 ),
               );
             },
@@ -360,127 +574,68 @@ class NotePracticePage extends GetView<PracticeController> {
     );
   }
 
-  /// 五线谱内容
-  Widget _buildStaffContent(
-    BuildContext context,
-    QuestionContent content,
-    bool isDark,
+  /// 处理钢琴点击
+  void _handlePianoTap(
+    dynamic details,
+    RenderConfig config,
+    List<int> targetNotes,
+    AudioService audioService,
+    int startMidi,
+    int endMidi,
+    double pianoWidth,
   ) {
-    final staffData = content.staffData;
-    if (staffData == null) return const SizedBox.shrink();
+    Offset position;
+    if (details is TapDownDetails) {
+      position = details.localPosition;
+    } else if (details is DragStartDetails) {
+      position = details.localPosition;
+    } else if (details is DragUpdateDetails) {
+      position = details.localPosition;
+    } else {
+      return;
+    }
 
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: StaffWidget(
-            clef: staffData.clef,
-            notes: staffData.notes,
-            width: 280,
-            height: 150,
-          ),
-        ),
-        const SizedBox(height: 16),
-        // 播放音频按钮
-        TextButton.icon(
-          onPressed: controller.playCurrentAudio,
-          icon: const Icon(Icons.volume_up),
-          label: const Text('听一听'),
-        ),
-      ],
+    final painter = PianoKeyboardPainter(
+      startMidi: startMidi,
+      endMidi: endMidi,
+      config: config,
     );
+
+    final midi = painter.findKeyAtPosition(position, Size(pianoWidth, 160));
+
+    if (midi != null && midi != _lastPlayedMidi) {
+      _lastPlayedMidi = midi;
+      audioService
+        ..markUserInteracted()
+        ..playPianoNote(midi);
+      _onNotePlayed(midi, targetNotes);
+
+      // 重置
+      Future<void>.delayed(const Duration(milliseconds: 100), () {
+        _lastPlayedMidi = null;
+      });
+    }
   }
 
-  /// 选项
-  Widget _buildOptions(
-    BuildContext context,
-    PracticeQuestion question,
-    bool isDark,
-  ) {
-    return Obx(() {
-      final hasAnswered = controller.hasAnswered.value;
+  /// 音符被弹奏
+  void _onNotePlayed(int midi, List<int> targetNotes) {
+    if (controller.hasAnswered.value) return;
 
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        alignment: WrapAlignment.center,
-        children: question.options!.map((option) {
-          final isCorrect = option == question.correctAnswer;
-          final isSelected =
-              hasAnswered &&
-              controller.answers.isNotEmpty &&
-              controller.answers.last.userAnswer == option;
+    controller.addPlayedNote(midi);
 
-          Color bgColor = Theme.of(context).cardColor;
-          Color borderColor = Colors.grey.shade300;
-          Color textColor =
-              Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
-
-          if (hasAnswered) {
-            if (isCorrect) {
-              bgColor = AppColors.success.withValues(alpha: 0.1);
-              borderColor = AppColors.success;
-              textColor = AppColors.success;
-            } else if (isSelected) {
-              bgColor = AppColors.error.withValues(alpha: 0.1);
-              borderColor = AppColors.error;
-              textColor = AppColors.error;
-            }
-          }
-
-          return GestureDetector(
-            onTap: hasAnswered ? null : () => controller.submitAnswer(option),
-            child: Container(
-              constraints: const BoxConstraints(minWidth: 100, minHeight: 80),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: borderColor, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: JianpuNoteText.fromString(
-                  option,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      );
-    });
+    // 检查是否完成
+    if (controller.userPlayedNotes.length >= targetNotes.length) {
+      // 提交答案
+      controller.submitAnswer(controller.userPlayedNotes.toList());
+    }
   }
 
   /// 反馈
-  Widget _buildFeedback(
-    BuildContext context,
-    PracticeQuestion question,
-    bool isDark,
-  ) {
+  Widget _buildFeedback(BuildContext context, bool isDark) {
     final isCorrect = controller.isCurrentCorrect.value;
 
     return Container(
-      margin: const EdgeInsets.only(top: 24),
+      margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isCorrect
@@ -491,39 +646,22 @@ class NotePracticePage extends GetView<PracticeController> {
           color: isCorrect ? AppColors.success : AppColors.error,
         ),
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isCorrect ? Icons.check_circle : Icons.cancel,
-                color: isCorrect ? AppColors.success : AppColors.error,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                isCorrect ? '回答正确！' : '回答错误',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isCorrect ? AppColors.success : AppColors.error,
-                ),
-              ),
-            ],
+          Icon(
+            isCorrect ? Icons.check_circle : Icons.cancel,
+            color: isCorrect ? AppColors.success : AppColors.error,
           ),
-          if (question.explanation != null && !isCorrect) ...[
-            const SizedBox(height: 12),
-            Text(
-              question.explanation!,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
+          const SizedBox(width: 8),
+          Text(
+            isCorrect ? '太棒了，完全正确！' : '不对哦，再试一次吧',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isCorrect ? AppColors.success : AppColors.error,
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -548,21 +686,17 @@ class NotePracticePage extends GetView<PracticeController> {
           if (!controller.hasAnswered.value) {
             return Row(
               children: [
-                // 跳过按钮
-                OutlinedButton(
-                  onPressed: () => controller.submitAnswer(''),
-                  child: const Text('跳过'),
+                // 重置按钮
+                OutlinedButton.icon(
+                  onPressed: controller.clearPlayedNotes,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('重置'),
                 ),
                 const Spacer(),
-                // 播放音频
-                ElevatedButton.icon(
-                  onPressed: controller.playCurrentAudio,
-                  icon: const Icon(Icons.volume_up),
-                  label: const Text('再听一次'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                  ),
+                // 跳过按钮
+                OutlinedButton(
+                  onPressed: () => controller.submitAnswer(<int>[]),
+                  child: const Text('跳过'),
                 ),
               ],
             );
@@ -609,33 +743,32 @@ class NotePracticePage extends GetView<PracticeController> {
                 color: controller.accuracy >= 0.8
                     ? AppColors.success.withValues(alpha: 0.1)
                     : controller.accuracy >= 0.6
-                    ? AppColors.warning.withValues(alpha: 0.1)
-                    : AppColors.error.withValues(alpha: 0.1),
+                        ? AppColors.warning.withValues(alpha: 0.1)
+                        : AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 controller.accuracy >= 0.8
                     ? Icons.emoji_events
                     : controller.accuracy >= 0.6
-                    ? Icons.thumb_up
-                    : Icons.sentiment_dissatisfied,
+                        ? Icons.thumb_up
+                        : Icons.sentiment_dissatisfied,
                 size: 48,
                 color: controller.accuracy >= 0.8
                     ? AppColors.success
                     : controller.accuracy >= 0.6
-                    ? AppColors.warning
-                    : AppColors.error,
+                        ? AppColors.warning
+                        : AppColors.error,
               ),
             ),
             const SizedBox(height: 24),
 
-            // 标题
             Text(
               controller.accuracy >= 0.8
                   ? '太棒了！🎉'
                   : controller.accuracy >= 0.6
-                  ? '继续加油！💪'
-                  : '还需努力！📚',
+                      ? '继续加油！💪'
+                      : '还需努力！📚',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -679,7 +812,7 @@ class NotePracticePage extends GetView<PracticeController> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Get.back(),
+                    onPressed: Get.back<void>,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -748,5 +881,36 @@ class NotePracticePage extends GetView<PracticeController> {
       difficulty: difficulty,
       questionCount: 10,
     );
+  }
+
+  /// MIDI 转简谱
+  String _midiToJianpu(int midi) {
+    const jianpu = [
+      '1',
+      '#1',
+      '2',
+      '#2',
+      '3',
+      '4',
+      '#4',
+      '5',
+      '#5',
+      '6',
+      '#6',
+      '7',
+    ];
+    final noteIndex = midi % 12;
+    final octave = (midi / 12).floor() - 1;
+
+    String note = jianpu[noteIndex];
+
+    // 添加高低音点
+    if (octave < 4) {
+      note = note + '•' * (4 - octave);
+    } else if (octave > 4) {
+      note = note + '·' * (octave - 4);
+    }
+
+    return note;
   }
 }

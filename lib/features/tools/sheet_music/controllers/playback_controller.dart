@@ -184,36 +184,52 @@ class PlaybackController extends GetxController {
     _scheduledNotes.sort((a, b) => a.startTime.compareTo(b.startTime));
   }
 
-  /// 重新构建播放时间表（公共方法，用于速度变化时）
-  void rebuildSchedule() {
+  /// 设置基础速度 (BPM)
+  void setBaseTempo(int tempo) {
     if (_score == null) return;
 
-    // 如果正在播放，需要同步调整 currentTime 以保持相对进度不变
-    final wasPlaying = isPlaying.value;
+    // 1. 保存旧的总时长（在修改 baseTempo 之前）
+    final oldTotalDuration = getTotalDuration();
+
+    // 2. 保存当前进度比例
     double? savedProgress;
-    if (wasPlaying && currentTime.value > 0) {
-      // 保存当前进度比例（0.0-1.0）
-      final oldTotalDuration = getTotalDuration();
-      if (oldTotalDuration > 0) {
-        savedProgress = currentTime.value / oldTotalDuration;
-      }
+    if (currentTime.value > 0 && oldTotalDuration > 0) {
+      savedProgress = currentTime.value / oldTotalDuration;
     }
 
-    // 重新构建时间表
+    // 3. 更新 BPM
+    baseTempo.value = tempo;
+
+    // 4. 重新构建时间表（音符时间会根据新 BPM 重新计算）
     _buildSchedule();
 
-    // 如果正在播放，根据新的总时长调整 currentTime
-    if (wasPlaying && savedProgress != null) {
+    // 5. 根据新的总时长调整 currentTime（保持进度比例不变）
+    if (savedProgress != null) {
       final newTotalDuration = getTotalDuration();
       if (newTotalDuration > 0) {
         currentTime.value = savedProgress * newTotalDuration;
-        // 更新播放索引
+
+        // 6. 如果正在播放，重置计时器
+        if (isPlaying.value) {
+          _playbackStopwatch?.reset();
+          _playbackStopwatch?.start();
+          _playbackStartOffset = currentTime.value;
+        }
+
+        // 7. 更新播放索引
         _scheduledNoteIndex = _findNoteIndexAtTime(
           currentTime.value * speedMultiplier.value,
         );
       }
     }
 
+    update();
+  }
+
+  /// 重新构建播放时间表（内部使用，不调整时间）
+  void rebuildSchedule() {
+    if (_score == null) return;
+    _buildSchedule();
     update();
   }
 
@@ -267,7 +283,10 @@ class PlaybackController extends GetxController {
     if (_playbackStopwatch == null) {
       _playbackStopwatch = Stopwatch();
     }
-    _playbackStopwatch!.start();
+    // 重置并启动计时器（避免累积之前的时间）
+    _playbackStopwatch!
+      ..reset()
+      ..start();
     _playbackStartOffset = currentTime.value;
 
     // 保持16ms tick（与lookahead匹配）
@@ -375,7 +394,31 @@ class PlaybackController extends GetxController {
 
   /// 设置速度倍率
   void setSpeedMultiplier(double multiplier) {
-    speedMultiplier.value = multiplier;
+    // 如果正在播放，需要保持音符时间轴位置不变
+    if (isPlaying.value) {
+      // 1. 计算当前在音符时间轴上的位置（不随倍速变化）
+      final currentRealTime = currentTime.value * speedMultiplier.value;
+
+      // 2. 更新倍速
+      speedMultiplier.value = multiplier;
+
+      // 3. 根据新倍速计算新的 currentTime（保持音符位置不变）
+      currentTime.value = currentRealTime / multiplier;
+
+      // 4. 重置计时器，从新的 currentTime 开始
+      _playbackStopwatch?.reset();
+      _playbackStopwatch?.start();
+      _playbackStartOffset = currentTime.value;
+
+      // 5. 重新计算音符索引（使用音符时间轴位置）
+      _scheduledNoteIndex = _findNoteIndexAtTime(currentRealTime);
+    } else {
+      // 暂停状态下切换倍速，也需要调整 currentTime
+      final currentRealTime = currentTime.value * speedMultiplier.value;
+      speedMultiplier.value = multiplier;
+      currentTime.value = currentRealTime / multiplier;
+    }
+
     update();
   }
 
@@ -420,7 +463,10 @@ class PlaybackController extends GetxController {
     if (_playbackStopwatch == null) {
       _playbackStopwatch = Stopwatch();
     }
-    _playbackStopwatch!.start();
+    // 重置并启动计时器
+    _playbackStopwatch!
+      ..reset()
+      ..start();
     _playbackStartOffset = currentTime.value;
 
     const tickInterval = Duration(milliseconds: 16);

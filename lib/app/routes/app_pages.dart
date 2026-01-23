@@ -85,7 +85,7 @@ class AppPages {
     // 识谱练习
     GetPage(
       name: AppRoutes.notePractice,
-      page: () => const NotePracticePage(),
+      page: () => NotePracticePage(),
       binding: PracticeBinding(),
       transition: Transition.rightToLeft,
     ),

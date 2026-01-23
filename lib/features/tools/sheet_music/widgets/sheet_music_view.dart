@@ -207,8 +207,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
               _playbackController!.loadScore(widget.score, _layout!);
               // 如果设置了临时速度，恢复它
               if (_overrideTempo != null) {
-                _playbackController!.baseTempo.value = _overrideTempo!;
-                _playbackController!.rebuildSchedule();
+                _playbackController!.setBaseTempo(_overrideTempo!);
               }
             }
           }
@@ -832,8 +831,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           });
                           // 立即更新播放控制器
                           if (_playbackController != null) {
-                            _playbackController!.baseTempo.value = tempo;
-                            _playbackController!.rebuildSchedule();
+                            _playbackController!.setBaseTempo(tempo);
                           }
                         }
                       },
@@ -858,9 +856,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           });
                           // 更新播放控制器的速度
                           if (_playbackController != null) {
-                            _playbackController!.baseTempo.value = tempo;
-                            // 重新构建时间表以应用新速度
-                            _playbackController!.rebuildSchedule();
+                            _playbackController!.setBaseTempo(tempo);
                           }
                           setState(() {});
                           Navigator.pop(context);
