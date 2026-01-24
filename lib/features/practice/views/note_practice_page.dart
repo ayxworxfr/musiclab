@@ -570,9 +570,14 @@ class NotePracticePage extends GetView<PracticeController> {
     final renderTheme = isDark ? RenderTheme.dark() : const RenderTheme();
     final config = RenderConfig(pianoHeight: 160, theme: renderTheme);
 
-    // 确定钢琴范围
-    final startMidi = 48; // C3
-    final endMidi = 84; // C6
+    // 根据题目音符范围动态确定钢琴范围（左右各扩展5个半音）
+    if (targetNotes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final minNote = targetNotes.reduce((a, b) => a < b ? a : b);
+    final maxNote = targetNotes.reduce((a, b) => a > b ? a : b);
+    final startMidi = (minNote - 5).clamp(21, 108); // 最低音向下扩展5个半音
+    final endMidi = (maxNote + 5).clamp(21, 108); // 最高音向上扩展5个半音
 
     return Column(
       children: [
@@ -603,7 +608,9 @@ class NotePracticePage extends GetView<PracticeController> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final whiteKeyWidth = config.pianoHeight / config.whiteKeyAspectRatio;
-              final pianoWidth = whiteKeyWidth * 21.0; // 3个八度
+              // 动态计算钢琴宽度（根据音符范围）
+              final whiteKeyCount = _countWhiteKeys(startMidi, endMidi);
+              final pianoWidth = whiteKeyWidth * whiteKeyCount;
               final displayWidth =
                   pianoWidth < constraints.maxWidth
                       ? pianoWidth
@@ -682,8 +689,10 @@ class NotePracticePage extends GetView<PracticeController> {
                         hideOctaveInfo = false;
                     }
 
+                    // 关键修复：使用完整的 pianoWidth，而不是 displayWidth
+                    // 这样才能在 SingleChildScrollView 中正确滚动和计算坐标
                     return CustomPaint(
-                      size: Size(displayWidth, 160),
+                      size: Size(pianoWidth, 160),
                       painter: PianoKeyboardPainter(
                         startMidi: startMidi,
                         endMidi: endMidi,
@@ -1011,5 +1020,19 @@ class NotePracticePage extends GetView<PracticeController> {
       difficulty: difficulty,
       questionCount: 10,
     );
+  }
+
+  /// 计算两个 MIDI 音符之间的白键数量（包含起止）
+  int _countWhiteKeys(int startMidi, int endMidi) {
+    // 白键对应的 MIDI % 12 的值
+    const whiteKeyIndices = {0, 2, 4, 5, 7, 9, 11}; // C D E F G A B
+
+    int count = 0;
+    for (int midi = startMidi; midi <= endMidi; midi++) {
+      if (whiteKeyIndices.contains(midi % 12)) {
+        count++;
+      }
+    }
+    return count;
   }
 }

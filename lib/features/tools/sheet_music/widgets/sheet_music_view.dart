@@ -158,7 +158,28 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   /// 切换显示模式
   void _toggleDisplayMode() {
     setState(() {
-      _displayMode = (_displayMode + 1) % 4;
+      final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+      if (isLandscape) {
+        // 横屏模式：只在 1（只钢琴）、2（只播放器）、3（全隐藏）之间切换
+        switch (_displayMode) {
+          case 0: // 从全展示切换到只钢琴
+            _displayMode = 1;
+            break;
+          case 1: // 从只钢琴切换到只播放器
+            _displayMode = 2;
+            break;
+          case 2: // 从只播放器切换到全隐藏
+            _displayMode = 3;
+            break;
+          case 3: // 从全隐藏切换到只钢琴
+            _displayMode = 1;
+            break;
+        }
+      } else {
+        // 竖屏模式：正常循环所有模式（0->1->2->3->0）
+        _displayMode = (_displayMode + 1) % 4;
+      }
     });
   }
 
@@ -229,6 +250,18 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           // 判断是否为横屏
           final isLandscape =
               MediaQuery.of(context).orientation == Orientation.landscape;
+
+          // 横屏时自动跳过全展示模式（mode 0）
+          if (isLandscape && _displayMode == 0) {
+            // 延迟到下一帧执行，避免在 build 中调用 setState
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && _displayMode == 0) {
+                setState(() {
+                  _displayMode = 1; // 切换到只显示钢琴
+                });
+              }
+            });
+          }
 
           // 判断是否显示钢琴和播放控制
           final shouldShowPiano = _shouldShowPiano();

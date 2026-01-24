@@ -219,8 +219,8 @@ class PracticeJianpuWidget extends StatelessWidget {
   /// - lowDots: 低音点数量
   Map<String, dynamic> _parseJianpu(String jianpu) {
     // Unicode 组合字符
-    const String highDot = '\u0307'; // ̇ 上加点
-    const String lowDot = '\u0323'; // ̣ 下加点
+    const highDot = '\u0307'; // ̇ 上加点
+    const lowDot = '\u0323'; // ̣ 下加点
 
     // 统计高音点和低音点（支持 Unicode 组合字符和普通字符）
     final highDots = highDot.allMatches(jianpu).length + '·'.allMatches(jianpu).length;
