@@ -56,6 +56,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   LayoutResult? _layout;
   PlaybackController? _playbackController;
   final Set<int> _pressedKeys = {};
+  final Map<int, int> _pointerToKey = {}; // 触摸点ID -> MIDI键映射
   late NotationMode _currentMode;
 
   // 钢琴设置
@@ -1236,12 +1237,21 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   }
 
   Widget _buildPianoCanvas(double width, double height) {
-    return GestureDetector(
-      onPanStart: (details) => _handlePianoTouch(details.localPosition, width, height),
-      onPanUpdate: (details) => _handlePianoTouch(details.localPosition, width, height),
-      onPanEnd: (_) => _handlePianoRelease(),
-      onTapDown: (details) => _handlePianoTouch(details.localPosition, width, height),
-      onTapUp: (_) => _handlePianoRelease(),
+    return Listener(
+      onPointerDown: (event) => _handlePianoPointerDown(
+        event.pointer,
+        event.localPosition,
+        width,
+        height,
+      ),
+      onPointerMove: (event) => _handlePianoPointerMove(
+        event.pointer,
+        event.localPosition,
+        width,
+        height,
+      ),
+      onPointerUp: (event) => _handlePianoPointerUp(event.pointer),
+      onPointerCancel: (event) => _handlePianoPointerUp(event.pointer),
       child: GetBuilder<PlaybackController>(
         builder: (controller) {
           final highlightedMap = Map<int, dynamic>.from(
@@ -2209,7 +2219,13 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     }
   }
 
-  void _handlePianoTouch(Offset position, double width, double height) {
+  /// 处理触摸按下事件（支持多点触摸）
+  void _handlePianoPointerDown(
+    int pointer,
+    Offset position,
+    double width,
+    double height,
+  ) {
     final painter = PianoKeyboardPainter(
       startMidi: _pianoStartMidi,
       endMidi: _pianoEndMidi,
@@ -2220,8 +2236,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       Size(width, height),
     );
 
-    if (midi != null && !_pressedKeys.contains(midi)) {
+    if (midi != null) {
       setState(() {
+        _pointerToKey[pointer] = midi;
         _pressedKeys.add(midi);
       });
       _playbackController?.playNote(midi);
@@ -2229,10 +2246,60 @@ class _SheetMusicViewState extends State<SheetMusicView> {
     }
   }
 
-  void _handlePianoRelease() {
-    setState(() {
-      _pressedKeys.clear();
-    });
+  /// 处理触摸移动事件（支持滑动到其他键）
+  void _handlePianoPointerMove(
+    int pointer,
+    Offset position,
+    double width,
+    double height,
+  ) {
+    final painter = PianoKeyboardPainter(
+      startMidi: _pianoStartMidi,
+      endMidi: _pianoEndMidi,
+      config: RenderConfig(pianoHeight: height, theme: widget.config.theme),
+    );
+    final newMidi = painter.findKeyAtPosition(
+      position,
+      Size(width, height),
+    );
+
+    final oldMidi = _pointerToKey[pointer];
+
+    // 如果移动到了不同的键
+    if (newMidi != oldMidi) {
+      setState(() {
+        // 释放旧键
+        if (oldMidi != null) {
+          _pointerToKey.remove(pointer);
+          // 只有当没有其他触摸点按着这个键时才移除高亮
+          if (!_pointerToKey.containsValue(oldMidi)) {
+            _pressedKeys.remove(oldMidi);
+          }
+        }
+
+        // 按下新键
+        if (newMidi != null) {
+          _pointerToKey[pointer] = newMidi;
+          _pressedKeys.add(newMidi);
+          _playbackController?.playNote(newMidi);
+          widget.onPianoKeyTap?.call(newMidi);
+        }
+      });
+    }
+  }
+
+  /// 处理触摸抬起事件
+  void _handlePianoPointerUp(int pointer) {
+    final midi = _pointerToKey[pointer];
+    if (midi != null) {
+      setState(() {
+        _pointerToKey.remove(pointer);
+        // 只有当没有其他触摸点按着这个键时才移除高亮
+        if (!_pointerToKey.containsValue(midi)) {
+          _pressedKeys.remove(midi);
+        }
+      });
+    }
   }
 
   String _formatTime(double seconds) {
