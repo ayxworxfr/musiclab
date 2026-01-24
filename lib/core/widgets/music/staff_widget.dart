@@ -77,17 +77,17 @@ class _StaffPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 1.5
+      ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
 
-    final lineSpacing = size.height / 8; // 线间距
-    final startY = size.height / 2 - 2 * lineSpacing; // 第一条线的 Y 坐标
-    final leftMargin = 60.0; // 左边距（留给谱号）
+    final lineSpacing = 10.0; // 线间距（固定值，更紧凑）
+    final startY = 25.0; // 第一条线的 Y 坐标（固定值）
+    final leftMargin = 40.0; // 左边距（留给谱号，更紧凑）
 
     // 绘制五条线
     for (int i = 0; i < 5; i++) {
       final y = startY + i * lineSpacing;
-      canvas.drawLine(Offset(leftMargin, y), Offset(size.width - 20, y), paint);
+      canvas.drawLine(Offset(leftMargin, y), Offset(size.width - 10, y), paint);
     }
 
     // 绘制谱号
@@ -95,9 +95,9 @@ class _StaffPainter extends CustomPainter {
 
     // 绘制音符
     if (notes.isNotEmpty) {
-      final noteSpacing = (size.width - leftMargin - 60) / notes.length;
+      final noteSpacing = (size.width - leftMargin - 40) / notes.length;
       for (int i = 0; i < notes.length; i++) {
-        final x = leftMargin + 40 + i * noteSpacing;
+        final x = leftMargin + 30 + i * noteSpacing;
         _drawNote(canvas, notes[i], x, startY, lineSpacing);
       }
     }
@@ -111,18 +111,18 @@ class _StaffPainter extends CustomPainter {
       // 高音谱号（简化用 G 表示）
       textPainter.text = const TextSpan(
         text: '𝄞',
-        style: TextStyle(fontSize: 80, color: Colors.black),
+        style: TextStyle(fontSize: 55, color: Colors.black),
       );
       textPainter.layout();
-      textPainter.paint(canvas, Offset(10, startY - 25));
+      textPainter.paint(canvas, Offset(5, startY - 15));
     } else {
       // 低音谱号（简化用 F 表示）
       textPainter.text = const TextSpan(
         text: '𝄢',
-        style: TextStyle(fontSize: 60, color: Colors.black),
+        style: TextStyle(fontSize: 45, color: Colors.black),
       );
       textPainter.layout();
-      textPainter.paint(canvas, Offset(15, startY - 10));
+      textPainter.paint(canvas, Offset(8, startY - 5));
     }
   }
 
@@ -153,12 +153,15 @@ class _StaffPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     // 绘制音符椭圆
-    final noteRadius = lineSpacing * 0.4;
+    // 音符高度应占满一间（lineSpacing），宽度略大于高度
+    final noteHeight = lineSpacing * 0.9; // 占满一间的 90%
+    final noteWidth = lineSpacing * 1.1; // 宽度稍大
+    final noteHalfWidth = noteWidth / 2;
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(x, y),
-        width: noteRadius * 2.2,
-        height: noteRadius * 1.6,
+        width: noteWidth,
+        height: noteHeight,
       ),
       notePaint,
     );
@@ -166,7 +169,7 @@ class _StaffPainter extends CustomPainter {
     // 绘制加线（如果需要）
     final linePaint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 1.2;
 
     // 下加线
     if (position <= -2) {
@@ -174,8 +177,8 @@ class _StaffPainter extends CustomPainter {
       for (int i = 0; i < numLines; i++) {
         final lineY = baseY + (i + 1) * lineSpacing;
         canvas.drawLine(
-          Offset(x - noteRadius * 1.5, lineY),
-          Offset(x + noteRadius * 1.5, lineY),
+          Offset(x - noteHalfWidth * 1.3, lineY),
+          Offset(x + noteHalfWidth * 1.3, lineY),
           linePaint,
         );
       }
@@ -187,8 +190,8 @@ class _StaffPainter extends CustomPainter {
       for (int i = 0; i < numLines; i++) {
         final lineY = startY - (i + 1) * lineSpacing;
         canvas.drawLine(
-          Offset(x - noteRadius * 1.5, lineY),
-          Offset(x + noteRadius * 1.5, lineY),
+          Offset(x - noteHalfWidth * 1.3, lineY),
+          Offset(x + noteHalfWidth * 1.3, lineY),
           linePaint,
         );
       }
@@ -197,20 +200,20 @@ class _StaffPainter extends CustomPainter {
     // 绘制符干
     final stemPaint = Paint()
       ..color = isHighlighted ? AppColors.primary : Colors.black
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 1.2;
 
     if (position < 4) {
       // 音符在第三线以下，符干向上
       canvas.drawLine(
-        Offset(x + noteRadius, y),
-        Offset(x + noteRadius, y - lineSpacing * 3),
+        Offset(x + noteHalfWidth, y),
+        Offset(x + noteHalfWidth, y - lineSpacing * 2.5), // 缩短符干
         stemPaint,
       );
     } else {
       // 音符在第三线及以上，符干向下
       canvas.drawLine(
-        Offset(x - noteRadius, y),
-        Offset(x - noteRadius, y + lineSpacing * 3),
+        Offset(x - noteHalfWidth, y),
+        Offset(x - noteHalfWidth, y + lineSpacing * 2.5), // 缩短符干
         stemPaint,
       );
     }

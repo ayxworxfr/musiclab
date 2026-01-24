@@ -456,15 +456,15 @@ class NotePracticePage extends GetView<PracticeController> {
     final staffHeight = _calculateStaffHeight(notes);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -474,17 +474,17 @@ class NotePracticePage extends GetView<PracticeController> {
           Text(
             'C 调',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               color: Colors.grey.shade600,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           // 五线谱
           StaffWidget(
             clef: 'treble',
             notes: notes,
-            width: 280,
+            width: 240,
             height: staffHeight,
           ),
         ],
@@ -496,14 +496,14 @@ class NotePracticePage extends GetView<PracticeController> {
   ///
   /// 确保所有音符（包括符干和加线）都能完整显示
   double _calculateStaffHeight(List<int> notes) {
-    if (notes.isEmpty) return 150.0;
+    if (notes.isEmpty) return 90.0;
 
     // 获取所有音符的五线谱位置
     final positions = notes.map((midi) {
       return MusicUtils.getStaffPosition(midi, isTrebleClef: true);
     }).toList();
 
-    if (positions.isEmpty) return 150.0;
+    if (positions.isEmpty) return 90.0;
 
     var minPosition = positions.first;
     var maxPosition = positions.first;
@@ -514,23 +514,23 @@ class NotePracticePage extends GetView<PracticeController> {
     }
 
     // 五线谱基础范围：position 0-8（五条线加上下间）
-    // 符干长度约 3 个线间距
+    // 符干长度约 2.5 个线间距（已缩短）
     // 需要额外空间显示符干和加线
 
     // 计算需要的线间距数量
-    // 符干向上延伸 3 个间距，向下延伸 3 个间距
-    final topSpace = (maxPosition > 8 ? maxPosition - 8 : 0) + 3; // 上方需要的空间
-    final bottomSpace = (minPosition < 0 ? -minPosition : 0) + 3; // 下方需要的空间
+    // 符干向上延伸 2.5 个间距，向下延伸 2.5 个间距
+    final topSpace = (maxPosition > 8 ? maxPosition - 8 : 0) + 3; // 上方需要的空间（含符干）
+    final bottomSpace = (minPosition < 0 ? -minPosition : 0) + 3; // 下方需要的空间（含符干）
     final coreSpace = 8; // 五线谱核心（5条线 = 8个半个间距）
 
     final totalSpaces = topSpace + coreSpace + bottomSpace;
 
-    // 每个间距约 18-20 像素比较合适
-    final spaceHeight = 18.0;
+    // 每个间距约 10 像素（更紧凑）
+    final spaceHeight = 10.0;
     final calculatedHeight = totalSpaces * spaceHeight;
 
-    // 最小高度 150，最大高度 400（避免过高）
-    return calculatedHeight.clamp(150.0, 400.0);
+    // 最小高度 90，最大高度 250（更紧凑，避免溢出）
+    return calculatedHeight.clamp(90.0, 250.0);
   }
 
   /// 简谱显示
