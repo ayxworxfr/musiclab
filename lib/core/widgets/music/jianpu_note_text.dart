@@ -189,14 +189,14 @@ class JianpuNoteText extends StatelessWidget {
 
   /// 构建点标记
   Widget _buildDots(int count, double dotSize, double spacing, Color dotColor) {
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (index) {
         return Container(
           width: dotSize,
           height: dotSize,
-          margin: EdgeInsets.symmetric(horizontal: spacing / 4),
+          margin: EdgeInsets.symmetric(vertical: spacing / 4),
           decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
         );
       }),

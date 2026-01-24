@@ -585,7 +585,10 @@ class NotePracticePage extends GetView<PracticeController> {
               children: playedNotes.map((midi) {
                 return Container(
                   width: 36,
-                  height: 36,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  constraints: const BoxConstraints(
+                    minHeight: 36,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),

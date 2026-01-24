@@ -148,7 +148,13 @@ class PracticeJianpuWidget extends StatelessWidget {
     // 点的大小和间距（参考 JianpuNoteText 的专业实现）
     final dotSize = noteFontSize * 0.18;
     final dotSpacing = noteFontSize * 0.15;
-    final dotAreaHeight = noteFontSize * 0.3;
+
+    // 动态计算点区域高度，确保能容纳所有垂直叠加的点
+    // 计算所需高度：点的数量 × (点大小 + 间距) - 最后一个间距
+    final maxDots = highDots > lowDots ? highDots : lowDots;
+    final dotAreaHeight = maxDots > 0
+        ? maxDots * (dotSize + dotSpacing / 2)
+        : noteFontSize * 0.3; // 没有点时保留最小高度以保证对齐
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -157,15 +163,15 @@ class PracticeJianpuWidget extends StatelessWidget {
         SizedBox(
           height: dotAreaHeight,
           child: highDots > 0
-              ? Row(
+              ? Column(
                   mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: List.generate(
                     highDots,
                     (index) => Container(
                       width: dotSize,
                       height: dotSize,
-                      margin: EdgeInsets.symmetric(horizontal: dotSpacing / 4),
+                      margin: EdgeInsets.symmetric(vertical: dotSpacing / 4),
                       decoration: BoxDecoration(
                         color: noteColor,
                         shape: BoxShape.circle,
@@ -191,15 +197,15 @@ class PracticeJianpuWidget extends StatelessWidget {
         SizedBox(
           height: dotAreaHeight,
           child: lowDots > 0
-              ? Row(
+              ? Column(
                   mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: List.generate(
                     lowDots,
                     (index) => Container(
                       width: dotSize,
                       height: dotSize,
-                      margin: EdgeInsets.symmetric(horizontal: dotSpacing / 4),
+                      margin: EdgeInsets.symmetric(vertical: dotSpacing / 4),
                       decoration: BoxDecoration(
                         color: noteColor,
                         shape: BoxShape.circle,
