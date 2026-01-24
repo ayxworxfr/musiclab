@@ -148,31 +148,33 @@ class PracticeJianpuWidget extends StatelessWidget {
     // 点的大小和间距（参考 JianpuNoteText 的专业实现）
     final dotSize = noteFontSize * 0.18;
     final dotSpacing = noteFontSize * 0.15;
+    final dotAreaHeight = noteFontSize * 0.3;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 高音点（上方）
-        if (highDots > 0)
-          SizedBox(
-            height: noteFontSize * 0.3,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                highDots,
-                (index) => Container(
-                  width: dotSize,
-                  height: dotSize,
-                  margin: EdgeInsets.symmetric(horizontal: dotSpacing / 4),
-                  decoration: BoxDecoration(
-                    color: noteColor,
-                    shape: BoxShape.circle,
+        // 高音点区域（始终预留空间，保证数字对齐）
+        SizedBox(
+          height: dotAreaHeight,
+          child: highDots > 0
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    highDots,
+                    (index) => Container(
+                      width: dotSize,
+                      height: dotSize,
+                      margin: EdgeInsets.symmetric(horizontal: dotSpacing / 4),
+                      decoration: BoxDecoration(
+                        color: noteColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-          ),
+                )
+              : null, // 没有高音点时显示空白
+        ),
 
         // 主音符
         Text(
@@ -185,27 +187,28 @@ class PracticeJianpuWidget extends StatelessWidget {
           ),
         ),
 
-        // 低音点（下方）
-        if (lowDots > 0)
-          SizedBox(
-            height: noteFontSize * 0.3,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                lowDots,
-                (index) => Container(
-                  width: dotSize,
-                  height: dotSize,
-                  margin: EdgeInsets.symmetric(horizontal: dotSpacing / 4),
-                  decoration: BoxDecoration(
-                    color: noteColor,
-                    shape: BoxShape.circle,
+        // 低音点区域（始终预留空间，保证数字对齐）
+        SizedBox(
+          height: dotAreaHeight,
+          child: lowDots > 0
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    lowDots,
+                    (index) => Container(
+                      width: dotSize,
+                      height: dotSize,
+                      margin: EdgeInsets.symmetric(horizontal: dotSpacing / 4),
+                      decoration: BoxDecoration(
+                        color: noteColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
-          ),
+                )
+              : null, // 没有低音点时显示空白
+        ),
       ],
     );
   }

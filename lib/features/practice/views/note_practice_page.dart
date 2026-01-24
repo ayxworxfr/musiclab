@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/music_utils.dart';
 import '../../../core/widgets/music/jianpu_note_text.dart';
 import '../../../core/widgets/music/staff_widget.dart';
 import '../../../shared/enums/practice_type.dart';
@@ -29,6 +30,10 @@ class NotePracticePage extends GetView<PracticeController> {
 
   // 最后播放的 MIDI（防止重复触发）
   int? _lastPlayedMidi;
+
+  // 是否启用多音同弹（连续滑动弹奏）
+  // 识谱练习页面默认禁用，避免与滚动手势冲突
+  final _enableContinuousPlay = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -447,6 +452,9 @@ class NotePracticePage extends GetView<PracticeController> {
     final notes = question.content.notes ?? [];
     if (notes.isEmpty) return const SizedBox.shrink();
 
+    // 动态计算五线谱高度，确保所有音符（包括加线）都能显示
+    final staffHeight = _calculateStaffHeight(notes);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -477,11 +485,52 @@ class NotePracticePage extends GetView<PracticeController> {
             clef: 'treble',
             notes: notes,
             width: 280,
-            height: 150,
+            height: staffHeight,
           ),
         ],
       ),
     );
+  }
+
+  /// 根据音符范围动态计算五线谱高度
+  ///
+  /// 确保所有音符（包括符干和加线）都能完整显示
+  double _calculateStaffHeight(List<int> notes) {
+    if (notes.isEmpty) return 150.0;
+
+    // 获取所有音符的五线谱位置
+    final positions = notes.map((midi) {
+      return MusicUtils.getStaffPosition(midi, isTrebleClef: true);
+    }).toList();
+
+    if (positions.isEmpty) return 150.0;
+
+    var minPosition = positions.first;
+    var maxPosition = positions.first;
+
+    for (final position in positions) {
+      if (position < minPosition) minPosition = position;
+      if (position > maxPosition) maxPosition = position;
+    }
+
+    // 五线谱基础范围：position 0-8（五条线加上下间）
+    // 符干长度约 3 个线间距
+    // 需要额外空间显示符干和加线
+
+    // 计算需要的线间距数量
+    // 符干向上延伸 3 个间距，向下延伸 3 个间距
+    final topSpace = (maxPosition > 8 ? maxPosition - 8 : 0) + 3; // 上方需要的空间
+    final bottomSpace = (minPosition < 0 ? -minPosition : 0) + 3; // 下方需要的空间
+    final coreSpace = 8; // 五线谱核心（5条线 = 8个半个间距）
+
+    final totalSpaces = topSpace + coreSpace + bottomSpace;
+
+    // 每个间距约 18-20 像素比较合适
+    final spaceHeight = 18.0;
+    final calculatedHeight = totalSpaces * spaceHeight;
+
+    // 最小高度 150，最大高度 400（避免过高）
+    return calculatedHeight.clamp(150.0, 400.0);
   }
 
   /// 简谱显示
@@ -611,42 +660,49 @@ class NotePracticePage extends GetView<PracticeController> {
               // 动态计算钢琴宽度（根据音符范围）
               final whiteKeyCount = _countWhiteKeys(startMidi, endMidi);
               final pianoWidth = whiteKeyWidth * whiteKeyCount;
-              final displayWidth =
-                  pianoWidth < constraints.maxWidth
-                      ? pianoWidth
-                      : constraints.maxWidth;
 
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: GestureDetector(
-                  onTapDown: (details) => _handlePianoTap(
-                    details,
-                    config,
-                    targetNotes,
-                    audioService,
-                    startMidi,
-                    endMidi,
-                    pianoWidth,
-                  ),
-                  onPanStart: (details) => _handlePianoTap(
-                    details,
-                    config,
-                    targetNotes,
-                    audioService,
-                    startMidi,
-                    endMidi,
-                    pianoWidth,
-                  ),
-                  onPanUpdate: (details) => _handlePianoTap(
-                    details,
-                    config,
-                    targetNotes,
-                    audioService,
-                    startMidi,
-                    endMidi,
-                    pianoWidth,
-                  ),
-                  child: Obx(() {
+                child: Obx(() {
+                  // 根据是否启用连续弹奏来决定手势处理
+                  final enableContinuous = _enableContinuousPlay.value;
+
+                  return GestureDetector(
+                    // 总是支持点击
+                    onTapDown: (details) => _handlePianoTap(
+                      details,
+                      config,
+                      targetNotes,
+                      audioService,
+                      startMidi,
+                      endMidi,
+                      pianoWidth,
+                    ),
+                    // 仅在启用连续弹奏时支持滑动手势
+                    // 禁用时设为 null，避免拦截滚动手势
+                    onPanStart: enableContinuous
+                        ? (details) => _handlePianoTap(
+                              details,
+                              config,
+                              targetNotes,
+                              audioService,
+                              startMidi,
+                              endMidi,
+                              pianoWidth,
+                            )
+                        : null,
+                    onPanUpdate: enableContinuous
+                        ? (details) => _handlePianoTap(
+                              details,
+                              config,
+                              targetNotes,
+                              audioService,
+                              startMidi,
+                              endMidi,
+                              pianoWidth,
+                            )
+                        : null,
+                    child: Obx(() {
                     // 根据标签模式确定显示设置
                     final mode = _pianoLabelMode.value;
 
@@ -703,8 +759,9 @@ class NotePracticePage extends GetView<PracticeController> {
                         hideOctaveInfo: hideOctaveInfo,
                       ),
                     );
-                  }),
-                ),
+                    }),
+                  );
+                }),
               );
             },
           ),

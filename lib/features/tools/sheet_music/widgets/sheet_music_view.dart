@@ -1025,6 +1025,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
               ? SingleChildScrollView(
                   controller: _pianoScrollController,
                   scrollDirection: Axis.horizontal,
+                  physics: const NeverScrollableScrollPhysics(), // 禁用直接滚动，只能通过控制栏拖动
                   child: _buildPianoCanvas(pianoWidth, pianoHeight),
                 )
               : _buildPianoCanvas(constraints.maxWidth, pianoHeight),
@@ -1072,6 +1073,35 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   ),
                 ),
               ),
+
+              // 中间滚动区域（仅在需要滚动时显示）
+              if (needsScroll)
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque, // 确保整个区域都能响应
+                    onHorizontalDragUpdate: (details) {
+                      if (_pianoScrollController.hasClients) {
+                        _pianoScrollController.jumpTo(
+                          (_pianoScrollController.offset - details.delta.dx)
+                              .clamp(0.0, _pianoScrollController.position.maxScrollExtent),
+                        );
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      alignment: Alignment.center, // 确保填充整个区域
+                      child: Icon(
+                        Icons.drag_indicator,
+                        size: isLandscape ? 14 : 16,
+                        color: widget.config.theme.textColor.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                // 如果不需要滚动，显示一个空的 Spacer
+                const Spacer(),
+
               // 快捷键位按钮
               Row(
                 mainAxisSize: MainAxisSize.min,

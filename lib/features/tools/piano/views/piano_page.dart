@@ -355,15 +355,61 @@ class _PianoPageState extends State<PianoPage> {
           final needsScroll = pianoWidth > constraints.maxWidth;
           final displayWidth = needsScroll ? pianoWidth : constraints.maxWidth;
 
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: _buildPianoCanvas(
-              context,
-              displayWidth,
-              constraints.maxHeight,
-              startMidi,
-              endMidi,
-            ),
+          // 创建滚动控制器
+          final scrollController = ScrollController();
+
+          return Column(
+            children: [
+              // 滚动提示区域（仅在需要滚动时显示）
+              if (needsScroll)
+                GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    scrollController.jumpTo(
+                      (scrollController.offset - details.delta.dx)
+                          .clamp(0.0, scrollController.position.maxScrollExtent),
+                    );
+                  },
+                  child: Container(
+                    height: 32,
+                    color: Theme.of(context).cardColor.withValues(alpha: 0.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.drag_indicator,
+                          size: 20,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '左右拖动此区域滚动键盘',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 钢琴键盘区域
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  controller: scrollController,
+                  physics: const NeverScrollableScrollPhysics(), // 禁用直接滚动
+                  child: _buildPianoCanvas(
+                    context,
+                    displayWidth,
+                    constraints.maxHeight - (needsScroll ? 32 : 0),
+                    startMidi,
+                    endMidi,
+                  ),
+                ),
+              ),
+            ],
           );
         });
       },
