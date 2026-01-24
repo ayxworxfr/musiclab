@@ -286,19 +286,17 @@ class PianoPracticePage extends GetView<PracticeController> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 12,
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: notes.map((note) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: JianpuNoteText.fromString(
-              note,
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
+          return JianpuNoteText.fromString(
+            note,
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
           );
         }).toList(),
       ),

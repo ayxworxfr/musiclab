@@ -81,11 +81,11 @@ class _StaffPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final lineSpacing = 10.0; // 线间距（固定值，更紧凑）
-    final startY = 25.0; // 第一条线的 Y 坐标（固定值）
+    final startY = 15.0; // 第一条线的 Y 坐标（进一步减少顶部空间）
     final leftMargin = 40.0; // 左边距（留给谱号，更紧凑）
 
     // 绘制五条线
-    for (int i = 0; i < 5; i++) {
+    for (var i = 0; i < 5; i++) {
       final y = startY + i * lineSpacing;
       canvas.drawLine(Offset(leftMargin, y), Offset(size.width - 10, y), paint);
     }
@@ -96,7 +96,7 @@ class _StaffPainter extends CustomPainter {
     // 绘制音符
     if (notes.isNotEmpty) {
       final noteSpacing = (size.width - leftMargin - 40) / notes.length;
-      for (int i = 0; i < notes.length; i++) {
+      for (var i = 0; i < notes.length; i++) {
         final x = leftMargin + 30 + i * noteSpacing;
         _drawNote(canvas, notes[i], x, startY, lineSpacing);
       }
@@ -113,16 +113,18 @@ class _StaffPainter extends CustomPainter {
         text: '𝄞',
         style: TextStyle(fontSize: 55, color: Colors.black),
       );
-      textPainter.layout();
-      textPainter.paint(canvas, Offset(5, startY - 15));
+      textPainter
+        ..layout()
+        ..paint(canvas, Offset(5, startY - 15));
     } else {
       // 低音谱号（简化用 F 表示）
       textPainter.text = const TextSpan(
         text: '𝄢',
         style: TextStyle(fontSize: 45, color: Colors.black),
       );
-      textPainter.layout();
-      textPainter.paint(canvas, Offset(8, startY - 5));
+      textPainter
+        ..layout()
+        ..paint(canvas, Offset(8, startY - 5));
     }
   }
 
@@ -148,23 +150,29 @@ class _StaffPainter extends CustomPainter {
 
     final isHighlighted = midi == highlightedNote;
 
-    final notePaint = Paint()
-      ..color = isHighlighted ? AppColors.primary : Colors.black
-      ..style = PaintingStyle.fill;
+    // 使用 SMuFL 字体绘制符头
+    final noteheadPainter = TextPainter(textDirection: TextDirection.ltr);
+    final noteColor = isHighlighted ? AppColors.primary : Colors.black;
 
-    // 绘制音符椭圆
-    // 音符高度应占满一间（lineSpacing），宽度略大于高度
-    final noteHeight = lineSpacing * 0.9; // 占满一间的 90%
-    final noteWidth = lineSpacing * 1.1; // 宽度稍大
-    final noteHalfWidth = noteWidth / 2;
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(x, y),
-        width: noteWidth,
-        height: noteHeight,
+    // SMuFL 符头字符 (noteheadBlack)
+    noteheadPainter.text = TextSpan(
+      text: '\uE0A4', // U+E0A4 - noteheadBlack
+      style: TextStyle(
+        fontFamily: 'Bravura',
+        fontSize: lineSpacing * 4, // 调整大小使符头占满一间
+        color: noteColor,
+        height: 1,
       ),
-      notePaint,
     );
+    noteheadPainter
+      ..layout()
+      ..paint(
+        canvas,
+        Offset(x - noteheadPainter.width / 2, y - noteheadPainter.height / 2),
+      );
+
+    final noteWidth = lineSpacing * 1.1;
+    final noteHalfWidth = noteWidth / 2;
 
     // 绘制加线（如果需要）
     final linePaint = Paint()
@@ -174,7 +182,7 @@ class _StaffPainter extends CustomPainter {
     // 下加线
     if (position <= -2) {
       final numLines = (-position - 1) ~/ 2 + 1;
-      for (int i = 0; i < numLines; i++) {
+      for (var i = 0; i < numLines; i++) {
         final lineY = baseY + (i + 1) * lineSpacing;
         canvas.drawLine(
           Offset(x - noteHalfWidth * 1.3, lineY),
@@ -187,7 +195,7 @@ class _StaffPainter extends CustomPainter {
     // 上加线
     if (position >= 10) {
       final numLines = (position - 9) ~/ 2 + 1;
-      for (int i = 0; i < numLines; i++) {
+      for (var i = 0; i < numLines; i++) {
         final lineY = startY - (i + 1) * lineSpacing;
         canvas.drawLine(
           Offset(x - noteHalfWidth * 1.3, lineY),
@@ -199,21 +207,21 @@ class _StaffPainter extends CustomPainter {
 
     // 绘制符干
     final stemPaint = Paint()
-      ..color = isHighlighted ? AppColors.primary : Colors.black
+      ..color = noteColor
       ..strokeWidth = 1.2;
 
     if (position < 4) {
       // 音符在第三线以下，符干向上
       canvas.drawLine(
-        Offset(x + noteHalfWidth, y),
-        Offset(x + noteHalfWidth, y - lineSpacing * 2.5), // 缩短符干
+        Offset(x + noteHalfWidth * 0.85, y),
+        Offset(x + noteHalfWidth * 0.85, y - lineSpacing * 2.5),
         stemPaint,
       );
     } else {
       // 音符在第三线及以上，符干向下
       canvas.drawLine(
-        Offset(x - noteHalfWidth, y),
-        Offset(x - noteHalfWidth, y + lineSpacing * 2.5), // 缩短符干
+        Offset(x - noteHalfWidth * 0.85, y),
+        Offset(x - noteHalfWidth * 0.85, y + lineSpacing * 2.5),
         stemPaint,
       );
     }
@@ -222,25 +230,23 @@ class _StaffPainter extends CustomPainter {
     if (showJianpu || showNoteName) {
       final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
-      String label = '';
-      if (showJianpu) {
-        label = MusicUtils.midiToJianpu(midi);
-      } else if (showNoteName) {
-        label = MusicUtils.midiToNoteName(midi);
-      }
+      final label = showJianpu
+          ? MusicUtils.midiToJianpu(midi)
+          : MusicUtils.midiToNoteName(midi);
 
       textPainter.text = TextSpan(
         text: label,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 10,
           color: isHighlighted ? AppColors.primary : Colors.grey.shade600,
         ),
       );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(x - textPainter.width / 2, baseY + lineSpacing + 5),
-      );
+      textPainter
+        ..layout()
+        ..paint(
+          canvas,
+          Offset(x - textPainter.width / 2, baseY + lineSpacing + 3),
+        );
     }
   }
 

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/music_utils.dart';
 import '../../../core/widgets/music/jianpu_note_text.dart';
 import '../../../core/widgets/music/staff_widget.dart';
 import '../../../shared/enums/practice_type.dart';
@@ -452,11 +451,8 @@ class NotePracticePage extends GetView<PracticeController> {
     final notes = question.content.notes ?? [];
     if (notes.isEmpty) return const SizedBox.shrink();
 
-    // 动态计算五线谱高度，确保所有音符（包括加线）都能显示
-    final staffHeight = _calculateStaffHeight(notes);
-
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -479,58 +475,17 @@ class NotePracticePage extends GetView<PracticeController> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 6),
-          // 五线谱
+          const SizedBox(height: 4),
+          // 五线谱（固定高度）
           StaffWidget(
             clef: 'treble',
             notes: notes,
             width: 240,
-            height: staffHeight,
+            height: 95,
           ),
         ],
       ),
     );
-  }
-
-  /// 根据音符范围动态计算五线谱高度
-  ///
-  /// 确保所有音符（包括符干和加线）都能完整显示
-  double _calculateStaffHeight(List<int> notes) {
-    if (notes.isEmpty) return 90.0;
-
-    // 获取所有音符的五线谱位置
-    final positions = notes.map((midi) {
-      return MusicUtils.getStaffPosition(midi, isTrebleClef: true);
-    }).toList();
-
-    if (positions.isEmpty) return 90.0;
-
-    var minPosition = positions.first;
-    var maxPosition = positions.first;
-
-    for (final position in positions) {
-      if (position < minPosition) minPosition = position;
-      if (position > maxPosition) maxPosition = position;
-    }
-
-    // 五线谱基础范围：position 0-8（五条线加上下间）
-    // 符干长度约 2.5 个线间距（已缩短）
-    // 需要额外空间显示符干和加线
-
-    // 计算需要的线间距数量
-    // 符干向上延伸 2.5 个间距，向下延伸 2.5 个间距
-    final topSpace = (maxPosition > 8 ? maxPosition - 8 : 0) + 3; // 上方需要的空间（含符干）
-    final bottomSpace = (minPosition < 0 ? -minPosition : 0) + 3; // 下方需要的空间（含符干）
-    final coreSpace = 8; // 五线谱核心（5条线 = 8个半个间距）
-
-    final totalSpaces = topSpace + coreSpace + bottomSpace;
-
-    // 每个间距约 10 像素（更紧凑）
-    final spaceHeight = 10.0;
-    final calculatedHeight = totalSpaces * spaceHeight;
-
-    // 最小高度 90，最大高度 250（更紧凑，避免溢出）
-    return calculatedHeight.clamp(90.0, 250.0);
   }
 
   /// 简谱显示
@@ -558,56 +513,41 @@ class NotePracticePage extends GetView<PracticeController> {
   ) {
     final playedNotes = controller.userPlayedNotes;
 
+    if (playedNotes.isEmpty) return const SizedBox.shrink();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        children: [
-          Text(
-            '已弹奏 ${playedNotes.length}/${targetNotes.length} 个音',
-            style: TextStyle(
-              fontSize: 14,
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        alignment: WrapAlignment.center,
+        children: playedNotes.map((midi) {
+          return Container(
+            width: 36,
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            constraints: const BoxConstraints(
+              minHeight: 36,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
+            ),
+            alignment: Alignment.center,
+            child: JianpuNoteText.fromMidi(
+              midi,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondary,
+              color: AppColors.primary,
             ),
-          ),
-          if (playedNotes.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              alignment: WrapAlignment.center,
-              children: playedNotes.map((midi) {
-                return Container(
-                  width: 36,
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  constraints: const BoxConstraints(
-                    minHeight: 36,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: JianpuNoteText.fromMidi(
-                    midi,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ],
+          );
+        }).toList(),
       ),
     );
   }
@@ -633,17 +573,6 @@ class NotePracticePage extends GetView<PracticeController> {
 
     return Column(
       children: [
-        Text(
-          '在钢琴上弹奏',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: isDark
-                ? AppColors.textSecondaryDark
-                : AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 12),
         Container(
           height: 160,
           decoration: BoxDecoration(
