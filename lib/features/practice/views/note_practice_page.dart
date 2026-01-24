@@ -244,16 +244,21 @@ class NotePracticePage extends GetView<PracticeController> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // 题目描述
-                Text(
-                  question.content.description ?? '看着谱子，在钢琴上弹出来',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                // 题目描述（根据当前显示类型动态改变）
+                Obx(() {
+                  final description = _sheetType.value == 'jianpu'
+                      ? '看着简谱，在钢琴上弹出来'
+                      : '看着五线谱，在钢琴上弹出来';
+                  return Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                    textAlign: TextAlign.center,
+                  );
+                }),
                 const SizedBox(height: 16),
 
                 // 谱子类型和标签模式切换

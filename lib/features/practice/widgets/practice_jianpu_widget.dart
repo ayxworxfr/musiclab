@@ -51,19 +51,16 @@ class PracticeJianpuWidget extends StatelessWidget {
         isDark ? Colors.grey.shade700 : Colors.grey.shade300;
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      width: 260,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: backgroundColor ?? defaultBgColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor ?? defaultBorderColor,
-          width: 2,
-        ),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -72,19 +69,25 @@ class PracticeJianpuWidget extends StatelessWidget {
         children: [
           // 调号显示
           _buildKeySignature(context),
-          const SizedBox(height: 24),
+          const SizedBox(height: 4),
 
           // 音符显示
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: notes
-                .map((midi) => _buildNote(context, midi))
-                .expand((widget) => [
-                      widget,
-                      const SizedBox(width: 16),
-                    ])
-                .take(notes.length * 2 - 1)
-                .toList(),
+          SizedBox(
+            height: 85,
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: notes
+                    .map((midi) => _buildNote(context, midi))
+                    .expand((widget) => [
+                          widget,
+                          const SizedBox(width: 16),
+                        ])
+                    .take(notes.length * 2 - 1)
+                    .toList(),
+              ),
+            ),
           ),
         ],
       ),
@@ -93,19 +96,12 @@ class PracticeJianpuWidget extends StatelessWidget {
 
   /// 调号显示
   Widget _buildKeySignature(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        '$keySignature 调 = 1',
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade700,
-        ),
+    return Text(
+      'C 调',
+      style: TextStyle(
+        fontSize: 12,
+        color: Colors.grey.shade600,
+        fontWeight: FontWeight.bold,
       ),
     );
   }
