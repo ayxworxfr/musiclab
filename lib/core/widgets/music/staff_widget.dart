@@ -31,6 +31,9 @@ class StaffWidget extends StatelessWidget {
   /// 是否显示音名标注
   final bool showNoteName;
 
+  /// 调号（C, G, D, A, E, B, F, Bb, Eb, Ab, Db, Gb）
+  final String keySignature;
+
   const StaffWidget({
     super.key,
     this.clef = 'treble',
@@ -40,6 +43,7 @@ class StaffWidget extends StatelessWidget {
     this.height = 150,
     this.showJianpu = false,
     this.showNoteName = false,
+    this.keySignature = 'C',
   });
 
   @override
@@ -52,6 +56,7 @@ class StaffWidget extends StatelessWidget {
         highlightedNote: highlightedNote,
         showJianpu: showJianpu,
         showNoteName: showNoteName,
+        keySignature: keySignature,
       ),
     );
   }
@@ -64,6 +69,7 @@ class _StaffPainter extends CustomPainter {
   final int? highlightedNote;
   final bool showJianpu;
   final bool showNoteName;
+  final String keySignature;
 
   _StaffPainter({
     required this.clef,
@@ -71,6 +77,7 @@ class _StaffPainter extends CustomPainter {
     this.highlightedNote,
     this.showJianpu = false,
     this.showNoteName = false,
+    this.keySignature = 'C',
   });
 
   @override
@@ -93,11 +100,15 @@ class _StaffPainter extends CustomPainter {
     // 绘制谱号
     _drawClef(canvas, startY, lineSpacing);
 
+    // 绘制调号（在谱号后）
+    final keySignatureWidth = _drawKeySignature(canvas, startY, lineSpacing);
+
     // 绘制音符
     if (notes.isNotEmpty) {
-      final noteSpacing = (size.width - leftMargin - 40) / notes.length;
+      final noteSpacing =
+          (size.width - leftMargin - 40 - keySignatureWidth) / notes.length;
       for (var i = 0; i < notes.length; i++) {
-        final x = leftMargin + 30 + i * noteSpacing;
+        final x = leftMargin + 30 + keySignatureWidth + i * noteSpacing;
         _drawNote(canvas, notes[i], x, startY, lineSpacing);
       }
     }
@@ -126,6 +137,155 @@ class _StaffPainter extends CustomPainter {
         ..layout()
         ..paint(canvas, Offset(8, startY - 5));
     }
+  }
+
+  /// 绘制调号（升降记号）
+  ///
+  /// 返回调号占用的宽度
+  double _drawKeySignature(Canvas canvas, double startY, double lineSpacing) {
+    if (keySignature == 'C') return 0; // C 调无升降号
+
+    // 获取调号对应的升降记号信息
+    final accidentals = _getKeySignatureAccidentals(keySignature);
+    if (accidentals.isEmpty) return 0;
+
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    const xStart = 42.0; // 调号起始位置（谱号后）
+    const spacing = 5.0; // 升降号间距
+
+    for (var i = 0; i < accidentals.length; i++) {
+      final accidental = accidentals[i];
+      final x = xStart + i * spacing;
+
+      // 计算 Y 坐标（根据音符位置）
+      final y = _getAccidentalY(accidental['note']!, startY, lineSpacing);
+
+      // 绘制升降号
+      textPainter.text = TextSpan(
+        text: accidental['symbol']!,
+        style: const TextStyle(
+          fontFamily: 'Bravura',
+          fontSize: 20,
+          color: Colors.black,
+        ),
+      );
+      textPainter
+        ..layout()
+        ..paint(canvas, Offset(x, y));
+    }
+
+    // 返回调号占用的宽度
+    return accidentals.length * spacing + 5;
+  }
+
+  /// 获取调号对应的升降记号列表
+  ///
+  /// 返回格式：[{'symbol': '♯', 'note': 'F'}, ...]
+  List<Map<String, String>> _getKeySignatureAccidentals(String key) {
+    // 升号顺序：F C G D A E B
+    // 降号顺序：B E A D G C F
+    const sharpSymbol = '\uE262'; // ♯ (SMuFL)
+    const flatSymbol = '\uE260'; // ♭ (SMuFL)
+
+    return switch (key) {
+      'G' => [
+        {'symbol': sharpSymbol, 'note': 'F'}
+      ],
+      'D' => [
+        {'symbol': sharpSymbol, 'note': 'F'},
+        {'symbol': sharpSymbol, 'note': 'C'}
+      ],
+      'A' => [
+        {'symbol': sharpSymbol, 'note': 'F'},
+        {'symbol': sharpSymbol, 'note': 'C'},
+        {'symbol': sharpSymbol, 'note': 'G'}
+      ],
+      'E' => [
+        {'symbol': sharpSymbol, 'note': 'F'},
+        {'symbol': sharpSymbol, 'note': 'C'},
+        {'symbol': sharpSymbol, 'note': 'G'},
+        {'symbol': sharpSymbol, 'note': 'D'}
+      ],
+      'B' => [
+        {'symbol': sharpSymbol, 'note': 'F'},
+        {'symbol': sharpSymbol, 'note': 'C'},
+        {'symbol': sharpSymbol, 'note': 'G'},
+        {'symbol': sharpSymbol, 'note': 'D'},
+        {'symbol': sharpSymbol, 'note': 'A'}
+      ],
+      'F' => [
+        {'symbol': flatSymbol, 'note': 'B'}
+      ],
+      'Bb' => [
+        {'symbol': flatSymbol, 'note': 'B'},
+        {'symbol': flatSymbol, 'note': 'E'}
+      ],
+      'Eb' => [
+        {'symbol': flatSymbol, 'note': 'B'},
+        {'symbol': flatSymbol, 'note': 'E'},
+        {'symbol': flatSymbol, 'note': 'A'}
+      ],
+      'Ab' => [
+        {'symbol': flatSymbol, 'note': 'B'},
+        {'symbol': flatSymbol, 'note': 'E'},
+        {'symbol': flatSymbol, 'note': 'A'},
+        {'symbol': flatSymbol, 'note': 'D'}
+      ],
+      'Db' => [
+        {'symbol': flatSymbol, 'note': 'B'},
+        {'symbol': flatSymbol, 'note': 'E'},
+        {'symbol': flatSymbol, 'note': 'A'},
+        {'symbol': flatSymbol, 'note': 'D'},
+        {'symbol': flatSymbol, 'note': 'G'}
+      ],
+      'Gb' => [
+        {'symbol': flatSymbol, 'note': 'B'},
+        {'symbol': flatSymbol, 'note': 'E'},
+        {'symbol': flatSymbol, 'note': 'A'},
+        {'symbol': flatSymbol, 'note': 'D'},
+        {'symbol': flatSymbol, 'note': 'G'},
+        {'symbol': flatSymbol, 'note': 'C'}
+      ],
+      'F#' => [
+        {'symbol': sharpSymbol, 'note': 'F'},
+        {'symbol': sharpSymbol, 'note': 'C'},
+        {'symbol': sharpSymbol, 'note': 'G'},
+        {'symbol': sharpSymbol, 'note': 'D'},
+        {'symbol': sharpSymbol, 'note': 'A'},
+        {'symbol': sharpSymbol, 'note': 'E'}
+      ],
+      'C#' => [
+        {'symbol': sharpSymbol, 'note': 'F'},
+        {'symbol': sharpSymbol, 'note': 'C'},
+        {'symbol': sharpSymbol, 'note': 'G'},
+        {'symbol': sharpSymbol, 'note': 'D'},
+        {'symbol': sharpSymbol, 'note': 'A'},
+        {'symbol': sharpSymbol, 'note': 'E'},
+        {'symbol': sharpSymbol, 'note': 'B'}
+      ],
+      _ => [],
+    };
+  }
+
+  /// 获取升降号的 Y 坐标（高音谱号）
+  ///
+  /// 根据音符在五线谱上的位置计算 Y 坐标
+  double _getAccidentalY(String note, double startY, double lineSpacing) {
+    // 高音谱号升降号位置（相对于五线谱）
+    // 第1线 = E4, 第2线 = G4, 第3线 = B4, 第4线 = D5, 第5线 = F5
+    // 第1间 = F4, 第2间 = A4, 第3间 = C5, 第4间 = E5
+
+    final positions = {
+      'F': startY + 4 * lineSpacing, // F4 第1间 -> 第5线
+      'C': startY + 2 * lineSpacing, // C5 第3间
+      'G': startY - 0.5 * lineSpacing, // G5 第5线上方第1间
+      'D': startY + 3 * lineSpacing, // D5 第4线
+      'A': startY + 1 * lineSpacing, // A4 第2间
+      'E': startY + 3.5 * lineSpacing, // E4 第1线下方
+      'B': startY + 2.5 * lineSpacing, // B4 第3线
+    };
+
+    return positions[note] ?? startY - 10;
   }
 
   /// 绘制音符
@@ -254,6 +414,7 @@ class _StaffPainter extends CustomPainter {
   bool shouldRepaint(covariant _StaffPainter oldDelegate) {
     return oldDelegate.notes != notes ||
         oldDelegate.highlightedNote != highlightedNote ||
-        oldDelegate.clef != clef;
+        oldDelegate.clef != clef ||
+        oldDelegate.keySignature != keySignature;
   }
 }

@@ -456,6 +456,8 @@ class NotePracticePage extends GetView<PracticeController> {
     final notes = question.content.notes ?? [];
     if (notes.isEmpty) return const SizedBox.shrink();
 
+    final keySignature = question.content.keySignature ?? 'C';
+
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -473,7 +475,7 @@ class NotePracticePage extends GetView<PracticeController> {
         children: [
           // 调号显示
           Text(
-            'C 调',
+            '$keySignature 调',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
@@ -487,6 +489,7 @@ class NotePracticePage extends GetView<PracticeController> {
             notes: notes,
             width: 240,
             height: 95,
+            keySignature: keySignature,
           ),
         ],
       ),
@@ -502,9 +505,11 @@ class NotePracticePage extends GetView<PracticeController> {
     final notes = question.content.notes ?? [];
     if (notes.isEmpty) return const SizedBox.shrink();
 
+    final keySignature = question.content.keySignature ?? 'C';
+
     return PracticeJianpuWidget(
       notes: notes,
-      keySignature: 'C',
+      keySignature: keySignature,
       noteColor: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
       backgroundColor: isDark ? Colors.grey.shade800 : Colors.white,
     );

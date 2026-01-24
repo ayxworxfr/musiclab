@@ -95,6 +95,9 @@ class QuestionContent {
   /// 音频路径
   final String? audioPath;
 
+  /// 调号（C, G, D, A, E, B, F, Bb, Eb, Ab, Db, Gb）
+  final String? keySignature;
+
   const QuestionContent({
     required this.type,
     this.description,
@@ -104,6 +107,7 @@ class QuestionContent {
     this.jianpuData,
     this.rhythmPattern,
     this.audioPath,
+    this.keySignature,
   });
 
   factory QuestionContent.fromJson(Map<String, dynamic> json) {
@@ -120,6 +124,7 @@ class QuestionContent {
           ?.map((e) => (e as num).toDouble())
           .toList(),
       audioPath: json['audioPath'] as String?,
+      keySignature: json['keySignature'] as String?,
     );
   }
 
@@ -133,6 +138,7 @@ class QuestionContent {
       'jianpuData': jianpuData,
       'rhythmPattern': rhythmPattern,
       'audioPath': audioPath,
+      'keySignature': keySignature,
     };
   }
 }

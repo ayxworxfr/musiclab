@@ -21,6 +21,9 @@ class QuestionGenerator {
     // 根据难度确定音域范围
     final (minMidi, maxMidi) = _getMidiRangeForDifficulty(difficulty);
 
+    // 根据难度选择调号
+    final keySignature = _getKeySignatureForDifficulty(difficulty);
+
     for (int i = 0; i < count; i++) {
       // 根据难度生成不同数量的音符
       final noteCount = difficulty <= 2 ? 1 : difficulty == 3 ? 2 : 3;
@@ -44,6 +47,7 @@ class QuestionGenerator {
             description: '看着简谱，在钢琴上弹出来',
             notes: notes,
             jianpuData: jianpu,
+            keySignature: keySignature,
           ),
           correctAnswer: notes,
           explanation: '正确答案是 $jianpu',
@@ -62,6 +66,9 @@ class QuestionGenerator {
     final questions = <PracticeQuestion>[];
 
     final (minMidi, maxMidi) = _getMidiRangeForDifficulty(difficulty);
+
+    // 根据难度选择调号
+    final keySignature = _getKeySignatureForDifficulty(difficulty);
 
     for (int i = 0; i < count; i++) {
       // 根据难度生成不同数量的音符
@@ -85,6 +92,7 @@ class QuestionGenerator {
             type: 'staff',
             description: '看着五线谱，在钢琴上弹出来',
             staffData: StaffData(clef: 'treble', notes: notes),
+            keySignature: keySignature,
           ),
           correctAnswer: notes,
           explanation: '正确答案是 $jianpu',
@@ -220,6 +228,21 @@ class QuestionGenerator {
       3 => (55, 77), // G3-F5，加入低音和高音
       4 => (48, 84), // C3-C6，两个八度
       _ => (48, 84), // 默认两个八度
+    };
+  }
+
+  /// 根据难度选择调号
+  ///
+  /// 入门和初级使用 C 调
+  /// 中级可以使用 C、G 调
+  /// 高级使用更多调号
+  String _getKeySignatureForDifficulty(int difficulty) {
+    return switch (difficulty) {
+      1 => 'C', // 入门：仅 C 调
+      2 => 'C', // 初级：仅 C 调
+      3 => _random.nextBool() ? 'C' : 'G', // 中级：C 或 G 调
+      4 => ['C', 'G', 'F', 'D'][_random.nextInt(4)], // 高级：C, G, F, D 调
+      _ => 'C', // 默认 C 调
     };
   }
 

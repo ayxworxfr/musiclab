@@ -97,7 +97,7 @@ class PracticeJianpuWidget extends StatelessWidget {
   /// 调号显示
   Widget _buildKeySignature(BuildContext context) {
     return Text(
-      'C 调',
+      '$keySignature 调',
       style: TextStyle(
         fontSize: 12,
         color: Colors.grey.shade600,
