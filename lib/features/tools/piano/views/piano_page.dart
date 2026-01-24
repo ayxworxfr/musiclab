@@ -21,6 +21,9 @@ class _PianoPageState extends State<PianoPage> {
   // 横屏 AppBar 控制
   bool _showAppBar = true;
 
+  // 触摸点ID -> MIDI键映射（用于多点触摸支持）
+  final Map<int, int> _pointerToKey = {};
+
   @override
   void initState() {
     super.initState();
@@ -376,31 +379,27 @@ class _PianoPageState extends State<PianoPage> {
   ) {
     final audioService = Get.find<AudioService>();
 
-    return GestureDetector(
-      onTapDown: (details) => _handleTap(
-        details.localPosition,
+    return Listener(
+      onPointerDown: (event) => _handlePointerDown(
+        event.pointer,
+        event.localPosition,
         width,
         height,
         startMidi,
         endMidi,
         audioService,
       ),
-      onPanStart: (details) => _handleTap(
-        details.localPosition,
+      onPointerMove: (event) => _handlePointerMove(
+        event.pointer,
+        event.localPosition,
         width,
         height,
         startMidi,
         endMidi,
         audioService,
       ),
-      onPanUpdate: (details) => _handleTap(
-        details.localPosition,
-        width,
-        height,
-        startMidi,
-        endMidi,
-        audioService,
-      ),
+      onPointerUp: (event) => _handlePointerUp(event.pointer),
+      onPointerCancel: (event) => _handlePointerUp(event.pointer),
       child: Obx(() {
         final pressedKeys = controller.pressedNotes.toSet();
         final theme = _getTheme();
@@ -422,7 +421,9 @@ class _PianoPageState extends State<PianoPage> {
     );
   }
 
-  void _handleTap(
+  /// 处理触摸按下事件（支持多点触摸）
+  void _handlePointerDown(
+    int pointer,
     Offset position,
     double width,
     double height,
@@ -438,10 +439,68 @@ class _PianoPageState extends State<PianoPage> {
     );
 
     final midi = painter.findKeyAtPosition(position, Size(width, height));
-    if (midi != null && !controller.pressedNotes.contains(midi)) {
+    if (midi != null) {
+      // 记录这个触摸点按下了哪个键
+      _pointerToKey[pointer] = midi;
+
+      // 添加到按下的键集合（如果还没有）
       controller.pressNote(midi);
+
+      // 播放音符
       audioService.markUserInteracted();
       audioService.playPianoNote(midi);
+    }
+  }
+
+  /// 处理触摸移动事件（支持滑动到其他键）
+  void _handlePointerMove(
+    int pointer,
+    Offset position,
+    double width,
+    double height,
+    int startMidi,
+    int endMidi,
+    AudioService audioService,
+  ) {
+    final config = RenderConfig(pianoHeight: height);
+    final painter = PianoKeyboardPainter(
+      startMidi: startMidi,
+      endMidi: endMidi,
+      config: config,
+    );
+
+    final newMidi = painter.findKeyAtPosition(position, Size(width, height));
+    final oldMidi = _pointerToKey[pointer];
+
+    // 如果移动到了不同的键
+    if (newMidi != oldMidi) {
+      // 释放旧键
+      if (oldMidi != null) {
+        _pointerToKey.remove(pointer);
+        // 只有当没有其他触摸点按着这个键时才移除高亮
+        if (!_pointerToKey.containsValue(oldMidi)) {
+          controller.releaseNote(oldMidi);
+        }
+      }
+
+      // 按下新键
+      if (newMidi != null) {
+        _pointerToKey[pointer] = newMidi;
+        controller.pressNote(newMidi);
+        audioService.playPianoNote(newMidi);
+      }
+    }
+  }
+
+  /// 处理触摸抬起事件
+  void _handlePointerUp(int pointer) {
+    final midi = _pointerToKey[pointer];
+    if (midi != null) {
+      _pointerToKey.remove(pointer);
+      // 只有当没有其他触摸点按着这个键时才移除高亮
+      if (!_pointerToKey.containsValue(midi)) {
+        controller.releaseNote(midi);
+      }
     }
   }
 
