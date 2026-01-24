@@ -195,6 +195,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           if (_layout == null ||
               _lastConfig != widget.config ||
               _lastWidth != constraints.maxWidth) {
+            // 保存播放状态（宽度变化时保持播放状态）
+            final wasPlaying = _playbackController?.isPlaying.value ?? false;
+            final savedTime = _playbackController?.currentTime.value ?? 0.0;
+
             final layoutEngine = LayoutEngine(
               config: widget.config,
               availableWidth: constraints.maxWidth,
@@ -209,6 +213,15 @@ class _SheetMusicViewState extends State<SheetMusicView> {
               // 如果设置了临时速度，恢复它
               if (_overrideTempo != null) {
                 _playbackController!.setBaseTempo(_overrideTempo!);
+              }
+
+              // 恢复播放状态（屏幕旋转时不应中断播放）
+              if (wasPlaying && savedTime > 0) {
+                _playbackController!.seekTo(savedTime);
+                _playbackController!.play();
+              } else if (savedTime > 0) {
+                // 即使没有播放，也恢复进度
+                _playbackController!.seekTo(savedTime);
               }
             }
           }

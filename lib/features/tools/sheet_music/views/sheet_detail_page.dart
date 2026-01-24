@@ -39,11 +39,14 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
     ('森林', RenderTheme.forest()),
   ];
 
-  // 横屏 AppBar 控制
-  bool _showAppBar = true;
+  // 横屏 AppBar 控制（横屏时默认隐藏）
+  bool _showAppBar = false;
 
   // 焦点节点（用于键盘监听）
   final FocusNode _focusNode = FocusNode();
+
+  // 当前屏幕方向（用于检测方向变化）
+  Orientation? _currentOrientation;
 
   @override
   void initState() {
@@ -268,6 +271,18 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
         body: const Center(child: CircularProgressIndicator()),
       );
     }
+
+    // 检测屏幕方向变化（但不重置播放状态）
+    final currentOrientation = MediaQuery.of(context).orientation;
+    if (_currentOrientation != null && _currentOrientation != currentOrientation) {
+      // 方向发生了变化
+      if (currentOrientation == Orientation.landscape) {
+        // 切换到横屏时，隐藏 AppBar
+        _showAppBar = false;
+      }
+      // 竖屏时 AppBar 总是显示，不需要设置 _showAppBar
+    }
+    _currentOrientation = currentOrientation;
 
     return KeyboardListener(
       focusNode: _focusNode,
