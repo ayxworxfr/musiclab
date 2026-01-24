@@ -219,11 +219,11 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                                 : FontWeight.normal,
                             color: i == folderPath.length - 1
                                 ? (isDark
-                                    ? AppColors.textPrimaryDark
-                                    : AppColors.textPrimary)
+                                      ? AppColors.textPrimaryDark
+                                      : AppColors.textPrimary)
                                 : (isDark
-                                    ? AppColors.textSecondaryDark
-                                    : AppColors.textSecondary),
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondary),
                           ),
                         ),
                       ),
@@ -363,10 +363,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.color,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.color,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -382,8 +381,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color:
-                                      AppColors.primary.withValues(alpha: 0.1),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: const Text(
@@ -422,10 +422,7 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                   const SizedBox(width: 8),
 
                 // 进入箭头
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey.shade400,
-                ),
+                Icon(Icons.chevron_right, color: Colors.grey.shade400),
               ],
             ),
           ),
@@ -911,48 +908,57 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: [
-                      '📁',
-                      '📂',
-                      '📚',
-                      '🎼',
-                      '🎵',
-                      '🎹',
-                      '🎸',
-                      '🎻',
-                      '🎺',
-                      '🎷',
-                      '🥁',
-                      '🎤',
-                      '🎧',
-                      '🎬',
-                      '📝',
-                      '✏️',
-                      '📖',
-                      '📓',
-                      '🎯',
-                      '⭐',
-                      '💫',
-                      '🌟',
-                      '✨',
-                      '🎨',
-                    ].map((icon) => GestureDetector(
-                      onTap: () => setState(() => selectedIcon = icon),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: selectedIcon == icon
-                                ? AppColors.primary
-                                : Colors.grey.shade300,
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(icon, style: const TextStyle(fontSize: 24)),
-                      ),
-                    )).toList(),
+                    children:
+                        [
+                              '📁',
+                              '📂',
+                              '📚',
+                              '🎼',
+                              '🎵',
+                              '🎹',
+                              '🎸',
+                              '🎻',
+                              '🎺',
+                              '🎷',
+                              '🥁',
+                              '🎤',
+                              '🎧',
+                              '🎬',
+                              '📝',
+                              '✏️',
+                              '📖',
+                              '📓',
+                              '🎯',
+                              '⭐',
+                              '💫',
+                              '🌟',
+                              '✨',
+                              '🎨',
+                            ]
+                            .map(
+                              (icon) => GestureDetector(
+                                onTap: () =>
+                                    setState(() => selectedIcon = icon),
+                                child: Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: selectedIcon == icon
+                                          ? AppColors.primary
+                                          : Colors.grey.shade300,
+                                      width: 2,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    icon,
+                                    style: const TextStyle(fontSize: 24),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                   ),
                 ),
               ),
@@ -977,8 +983,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
 
     if (result == null || result['name']?.toString().trim().isEmpty == true) {
       if (result != null && context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('文件夹名称不能为空')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('文件夹名称不能为空')));
       }
       return;
     }
@@ -990,11 +997,13 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     );
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已创建文件夹 "${result['name']}"')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('已创建文件夹 "${result['name']}"')));
     } else if (!success && context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('创建文件夹失败，请重试')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('创建文件夹失败，请重试')));
     }
   }
 
@@ -1065,8 +1074,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
 
     if (newName == null || newName.trim().isEmpty) {
       if (newName != null && context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('文件夹名称不能为空')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('文件夹名称不能为空')));
       }
       return;
     }
@@ -1074,11 +1084,13 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     final success = await controller.renameFolder(folder, newName.trim());
 
     if (success && context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('已重命名为 "${newName.trim()}"')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('已重命名为 "${newName.trim()}"')));
     } else if (!success && context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('重命名失败，请重试')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('重命名失败，请重试')));
     }
   }
 
@@ -1106,8 +1118,9 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     if (confirmed == true) {
       final success = await controller.deleteFolder(folder);
       if (success && context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('删除成功')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('删除成功')));
       }
     }
   }
@@ -1187,9 +1200,12 @@ class SheetMusicPage extends GetView<SheetMusicController> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: AppColors.primary
-                                              .withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(4),
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                         ),
                                         child: const Text(
                                           '系统',
@@ -1245,7 +1261,10 @@ class SheetMusicPage extends GetView<SheetMusicController> {
     if (result == null) {
       // 选择"无"，从所有文件夹移除
       if (containingFolder != null) {
-        success = await controller.removeScoreFromFolder(score, containingFolder);
+        success = await controller.removeScoreFromFolder(
+          score,
+          containingFolder,
+        );
       } else {
         success = true; // 本来就不在任何文件夹
       }
@@ -1259,11 +1278,13 @@ class SheetMusicPage extends GetView<SheetMusicController> {
 
     if (context.mounted) {
       if (success) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('操作完成')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('操作完成')));
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('操作失败')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('操作失败')));
       }
     }
   }

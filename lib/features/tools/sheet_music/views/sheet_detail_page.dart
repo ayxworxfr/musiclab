@@ -274,7 +274,8 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
 
     // 检测屏幕方向变化（但不重置播放状态）
     final currentOrientation = MediaQuery.of(context).orientation;
-    if (_currentOrientation != null && _currentOrientation != currentOrientation) {
+    if (_currentOrientation != null &&
+        _currentOrientation != currentOrientation) {
       // 方向发生了变化
       if (currentOrientation == Orientation.landscape) {
         // 切换到横屏时，隐藏 AppBar
@@ -296,8 +297,9 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
           appBar: _shouldShowAppBar
               ? AppBar(
                   title: GestureDetector(
-                    onTap:
-                        _currentScore!.isBuiltIn ? null : () => _showRenameDialog(),
+                    onTap: _currentScore!.isBuiltIn
+                        ? null
+                        : () => _showRenameDialog(),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

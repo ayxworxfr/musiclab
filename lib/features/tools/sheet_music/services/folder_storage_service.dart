@@ -44,7 +44,9 @@ class FolderStorageService extends GetxService {
   /// 保存文件夹
   Future<void> saveFolder(Folder folder) async {
     try {
-      LoggerUtil.info('📁 [FolderStorage] 开始保存文件夹: ${folder.id} - ${folder.name}');
+      LoggerUtil.info(
+        '📁 [FolderStorage] 开始保存文件夹: ${folder.id} - ${folder.name}',
+      );
 
       // 获取现有文件夹列表
       final folders = await getFolders();
@@ -87,7 +89,9 @@ class FolderStorageService extends GetxService {
       }
 
       // 递归删除所有子文件夹
-      final childFolders = folders.where((f) => f.parentId == folderId).toList();
+      final childFolders = folders
+          .where((f) => f.parentId == folderId)
+          .toList();
       for (final child in childFolders) {
         await deleteFolder(child.id);
       }
@@ -190,7 +194,9 @@ class FolderStorageService extends GetxService {
 
   /// 初始化预制文件夹
   Future<void> initBuiltInFolders(List<String> exerciseScoreIds) async {
-    LoggerUtil.info('📁 [FolderStorage] 初始化预制文件夹，练习曲数量: ${exerciseScoreIds.length}');
+    LoggerUtil.info(
+      '📁 [FolderStorage] 初始化预制文件夹，练习曲数量: ${exerciseScoreIds.length}',
+    );
 
     if (exerciseScoreIds.isEmpty) {
       LoggerUtil.warning('📁 [FolderStorage] 练习曲列表为空，跳过初始化');
@@ -237,7 +243,9 @@ class FolderStorageService extends GetxService {
           createdAt: DateTime.now(),
         );
         await saveFolder(scaleFolder);
-        LoggerUtil.info('📁 [FolderStorage] 已创建音阶练习子文件夹，包含 ${scaleScoreIds.length} 首');
+        LoggerUtil.info(
+          '📁 [FolderStorage] 已创建音阶练习子文件夹，包含 ${scaleScoreIds.length} 首',
+        );
       }
     }
 
@@ -259,7 +267,9 @@ class FolderStorageService extends GetxService {
           createdAt: DateTime.now(),
         );
         await saveFolder(chordFolder);
-        LoggerUtil.info('📁 [FolderStorage] 已创建和弦练习子文件夹，包含 ${chordScoreIds.length} 首');
+        LoggerUtil.info(
+          '📁 [FolderStorage] 已创建和弦练习子文件夹，包含 ${chordScoreIds.length} 首',
+        );
       }
     }
 
@@ -281,7 +291,9 @@ class FolderStorageService extends GetxService {
           createdAt: DateTime.now(),
         );
         await saveFolder(arpeggioFolder);
-        LoggerUtil.info('📁 [FolderStorage] 已创建琶音练习子文件夹，包含 ${arpeggioScoreIds.length} 首');
+        LoggerUtil.info(
+          '📁 [FolderStorage] 已创建琶音练习子文件夹，包含 ${arpeggioScoreIds.length} 首',
+        );
       }
     }
 
@@ -303,7 +315,9 @@ class FolderStorageService extends GetxService {
           createdAt: DateTime.now(),
         );
         await saveFolder(hanonFolder);
-        LoggerUtil.info('📁 [FolderStorage] 已创建哈农练习子文件夹，包含 ${hanonScoreIds.length} 首');
+        LoggerUtil.info(
+          '📁 [FolderStorage] 已创建哈农练习子文件夹，包含 ${hanonScoreIds.length} 首',
+        );
       }
     }
   }
@@ -329,10 +343,14 @@ class FolderStorageService extends GetxService {
     };
 
     // 过滤掉预制文件夹
-    final remainingFolders = folders.where((f) => !builtInFolderIds.contains(f.id)).toList();
+    final remainingFolders = folders
+        .where((f) => !builtInFolderIds.contains(f.id))
+        .toList();
     await _saveFoldersList(remainingFolders);
 
-    LoggerUtil.info('📁 [FolderStorage] 预制文件夹重置完成，保留 ${remainingFolders.length} 个用户文件夹');
+    LoggerUtil.info(
+      '📁 [FolderStorage] 预制文件夹重置完成，保留 ${remainingFolders.length} 个用户文件夹',
+    );
   }
 
   /// 获取文件夹数量

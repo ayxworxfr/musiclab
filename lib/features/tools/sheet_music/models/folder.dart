@@ -50,7 +50,8 @@ class Folder {
       id: json['id'] as String,
       name: json['name'] as String,
       parentId: json['parentId'] as String?,
-      scoreIds: (json['scoreIds'] as List<dynamic>?)
+      scoreIds:
+          (json['scoreIds'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
@@ -137,21 +138,16 @@ class Folder {
   Folder addScores(List<String> newScoreIds) {
     final uniqueIds = {...scoreIds, ...newScoreIds}.toList();
     if (uniqueIds.length == scoreIds.length) return this;
-    return copyWith(
-      scoreIds: uniqueIds,
-      updatedAt: DateTime.now(),
-    );
+    return copyWith(scoreIds: uniqueIds, updatedAt: DateTime.now());
   }
 
   /// 批量移除乐谱
   Folder removeScores(List<String> scoreIdsToRemove) {
-    final remainingIds =
-        scoreIds.where((id) => !scoreIdsToRemove.contains(id)).toList();
+    final remainingIds = scoreIds
+        .where((id) => !scoreIdsToRemove.contains(id))
+        .toList();
     if (remainingIds.length == scoreIds.length) return this;
-    return copyWith(
-      scoreIds: remainingIds,
-      updatedAt: DateTime.now(),
-    );
+    return copyWith(scoreIds: remainingIds, updatedAt: DateTime.now());
   }
 
   @override

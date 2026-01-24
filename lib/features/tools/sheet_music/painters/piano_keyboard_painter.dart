@@ -185,7 +185,10 @@ class PianoKeyboardPainter extends CustomPainter {
         rrect.shift(const Offset(0, 2)),
         Paint()
           ..color = Colors.black.withValues(alpha: isHighlighted ? 0.25 : 0.15)
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, isHighlighted ? 4 : 2),
+          ..maskFilter = MaskFilter.blur(
+            BlurStyle.normal,
+            isHighlighted ? 4 : 2,
+          ),
       );
     }
 
@@ -360,13 +363,15 @@ class PianoKeyboardPainter extends CustomPainter {
       fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
       color: textColor,
       // 添加轻微阴影，提高在任何背景上的可读性
-      shadows: isHighlighted && !key.isBlack ? [
-        const Shadow(
-          offset: Offset(0, 0.5),
-          blurRadius: 1.0,
-          color: Color(0x40000000),
-        ),
-      ] : null,
+      shadows: isHighlighted && !key.isBlack
+          ? [
+              const Shadow(
+                offset: Offset(0, 0.5),
+                blurRadius: 1.0,
+                color: Color(0x40000000),
+              ),
+            ]
+          : null,
     );
 
     final textPainter = TextPainter(
@@ -481,7 +486,9 @@ class PianoKeyboardPainter extends CustomPainter {
           'B',
         ];
         // 如果隐藏八度信息，不显示八度数字
-        final label = hideOctaveInfo ? notes[noteIndex] : '${notes[noteIndex]}$octave';
+        final label = hideOctaveInfo
+            ? notes[noteIndex]
+            : '${notes[noteIndex]}$octave';
         return {'label': label, 'dots': 0};
     }
   }

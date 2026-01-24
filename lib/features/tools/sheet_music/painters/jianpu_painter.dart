@@ -196,7 +196,8 @@ class JianpuPainter extends CustomPainter {
               // 根据音符密度调整字号
               final isDense = noteCount > config.denseNoteThreshold;
               final noteFontSize = isDense
-                  ? config.jianpuBaseFontSize - config.denseBeatFontSizeReduction
+                  ? config.jianpuBaseFontSize -
+                        config.denseBeatFontSizeReduction
                   : config.jianpuBaseFontSize;
 
               // 获取第一个音符的时值（用于下划线）
@@ -243,8 +244,7 @@ class JianpuPainter extends CustomPainter {
                   double spacing;
 
                   // 情况1：在同一符杠组
-                  if (prevBeamGroup != -1 &&
-                      prevBeamGroup == currBeamGroup) {
+                  if (prevBeamGroup != -1 && prevBeamGroup == currBeamGroup) {
                     spacing = config.jianpuGroupInnerSpacing;
                   }
                   // 情况2：前一个有附点 && 当前是短音符
@@ -357,11 +357,11 @@ class JianpuPainter extends CustomPainter {
               final baseFontSize = config.jianpuBaseFontSize;
               final fontSize = isDense
                   ? (noteCount > 4
-                      ? baseFontSize - config.denseBeatFontSizeReduction - 1.0
-                      : baseFontSize - config.denseBeatFontSizeReduction)
+                        ? baseFontSize - config.denseBeatFontSizeReduction - 1.0
+                        : baseFontSize - config.denseBeatFontSizeReduction)
                   : (noteCount > 4
-                      ? baseFontSize - 2.0
-                      : (noteCount > 2 ? baseFontSize - 1.0 : baseFontSize));
+                        ? baseFontSize - 2.0
+                        : (noteCount > 2 ? baseFontSize - 1.0 : baseFontSize));
 
               // 计算和弦底部位置（用于歌词定位）
               final lastNoteY = startY + (noteCount - 1) * verticalSpacing;
@@ -679,7 +679,7 @@ class JianpuPainter extends CustomPainter {
 
       for (var i = 0; i < note.dots; i++) {
         canvas.drawCircle(
-          Offset(dotStartX + i * 4, y),  // 多个附点间距4px
+          Offset(dotStartX + i * 4, y), // 多个附点间距4px
           2,
           Paint()..color = color,
         );

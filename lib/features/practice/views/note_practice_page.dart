@@ -366,10 +366,7 @@ class NotePracticePage extends GetView<PracticeController> {
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
-              width: 2,
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
           ),
           child: Icon(icon, color: color, size: 24),
         ),
@@ -410,8 +407,8 @@ class NotePracticePage extends GetView<PracticeController> {
           color: isActive
               ? AppColors.primary
               : isDark
-                  ? Colors.grey.shade800
-                  : Colors.grey.shade200,
+              ? Colors.grey.shade800
+              : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
@@ -422,8 +419,8 @@ class NotePracticePage extends GetView<PracticeController> {
             color: isActive
                 ? Colors.white
                 : isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondary,
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondary,
           ),
         ),
       ),
@@ -539,9 +536,7 @@ class NotePracticePage extends GetView<PracticeController> {
           return Container(
             width: 36,
             padding: const EdgeInsets.symmetric(vertical: 4),
-            constraints: const BoxConstraints(
-              minHeight: 36,
-            ),
+            constraints: const BoxConstraints(minHeight: 36),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
@@ -598,7 +593,8 @@ class NotePracticePage extends GetView<PracticeController> {
           clipBehavior: Clip.antiAlias,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final whiteKeyWidth = config.pianoHeight / config.whiteKeyAspectRatio;
+              final whiteKeyWidth =
+                  config.pianoHeight / config.whiteKeyAspectRatio;
               // 动态计算钢琴宽度（根据音符范围）
               final whiteKeyCount = _countWhiteKeys(startMidi, endMidi);
               final pianoWidth = whiteKeyWidth * whiteKeyCount;
@@ -624,83 +620,83 @@ class NotePracticePage extends GetView<PracticeController> {
                     // 禁用时设为 null，避免拦截滚动手势
                     onPanStart: enableContinuous
                         ? (details) => _handlePianoTap(
-                              details,
-                              config,
-                              targetNotes,
-                              audioService,
-                              startMidi,
-                              endMidi,
-                              pianoWidth,
-                            )
+                            details,
+                            config,
+                            targetNotes,
+                            audioService,
+                            startMidi,
+                            endMidi,
+                            pianoWidth,
+                          )
                         : null,
                     onPanUpdate: enableContinuous
                         ? (details) => _handlePianoTap(
-                              details,
-                              config,
-                              targetNotes,
-                              audioService,
-                              startMidi,
-                              endMidi,
-                              pianoWidth,
-                            )
+                            details,
+                            config,
+                            targetNotes,
+                            audioService,
+                            startMidi,
+                            endMidi,
+                            pianoWidth,
+                          )
                         : null,
                     child: Obx(() {
-                    // 根据标签模式确定显示设置
-                    final mode = _pianoLabelMode.value;
+                      // 根据标签模式确定显示设置
+                      final mode = _pianoLabelMode.value;
 
-                    bool showLabels;
-                    String labelType;
-                    Set<int>? selectiveLabelMidi;
-                    bool hideOctaveInfo;
+                      bool showLabels;
+                      String labelType;
+                      Set<int>? selectiveLabelMidi;
+                      bool hideOctaveInfo;
 
-                    switch (mode) {
-                      case 'jianpu-all':
-                        // 全部简谱：显示所有音的简谱（1, 2, 3...带高低音点）
-                        showLabels = true;
-                        labelType = 'jianpu';
-                        selectiveLabelMidi = null;
-                        hideOctaveInfo = false;
-                      case 'note-all':
-                        // 全部音名：显示所有音的音名（C3, D4, E5...带八度数字）
-                        showLabels = true;
-                        labelType = 'note';
-                        selectiveLabelMidi = null;
-                        hideOctaveInfo = false;
-                      case 'jianpu-c-only':
-                        // 简谱只显示1：只显示C音，显示为"1"（带高低音点：1̇, 1, 1̣）
-                        showLabels = true;
-                        labelType = 'jianpu';
-                        selectiveLabelMidi = {
-                          for (int i = startMidi; i <= endMidi; i++)
-                            if (i % 12 == 0) i
-                        };
-                        hideOctaveInfo = false;
-                      case 'note-c-only':
-                      default:
-                        // 只显示C：只显示C音，显示为"C"（带八度数字：C3, C4, C5）
-                        showLabels = true;
-                        labelType = 'note';
-                        selectiveLabelMidi = {
-                          for (int i = startMidi; i <= endMidi; i++)
-                            if (i % 12 == 0) i
-                        };
-                        hideOctaveInfo = false;
-                    }
+                      switch (mode) {
+                        case 'jianpu-all':
+                          // 全部简谱：显示所有音的简谱（1, 2, 3...带高低音点）
+                          showLabels = true;
+                          labelType = 'jianpu';
+                          selectiveLabelMidi = null;
+                          hideOctaveInfo = false;
+                        case 'note-all':
+                          // 全部音名：显示所有音的音名（C3, D4, E5...带八度数字）
+                          showLabels = true;
+                          labelType = 'note';
+                          selectiveLabelMidi = null;
+                          hideOctaveInfo = false;
+                        case 'jianpu-c-only':
+                          // 简谱只显示1：只显示C音，显示为"1"（带高低音点：1̇, 1, 1̣）
+                          showLabels = true;
+                          labelType = 'jianpu';
+                          selectiveLabelMidi = {
+                            for (int i = startMidi; i <= endMidi; i++)
+                              if (i % 12 == 0) i,
+                          };
+                          hideOctaveInfo = false;
+                        case 'note-c-only':
+                        default:
+                          // 只显示C：只显示C音，显示为"C"（带八度数字：C3, C4, C5）
+                          showLabels = true;
+                          labelType = 'note';
+                          selectiveLabelMidi = {
+                            for (int i = startMidi; i <= endMidi; i++)
+                              if (i % 12 == 0) i,
+                          };
+                          hideOctaveInfo = false;
+                      }
 
-                    // 关键修复：使用完整的 pianoWidth，而不是 displayWidth
-                    // 这样才能在 SingleChildScrollView 中正确滚动和计算坐标
-                    return CustomPaint(
-                      size: Size(pianoWidth, 160),
-                      painter: PianoKeyboardPainter(
-                        startMidi: startMidi,
-                        endMidi: endMidi,
-                        config: config,
-                        showLabels: showLabels,
-                        labelType: labelType,
-                        selectiveLabelMidi: selectiveLabelMidi,
-                        hideOctaveInfo: hideOctaveInfo,
-                      ),
-                    );
+                      // 关键修复：使用完整的 pianoWidth，而不是 displayWidth
+                      // 这样才能在 SingleChildScrollView 中正确滚动和计算坐标
+                      return CustomPaint(
+                        size: Size(pianoWidth, 160),
+                        painter: PianoKeyboardPainter(
+                          startMidi: startMidi,
+                          endMidi: endMidi,
+                          config: config,
+                          showLabels: showLabels,
+                          labelType: labelType,
+                          selectiveLabelMidi: selectiveLabelMidi,
+                          hideOctaveInfo: hideOctaveInfo,
+                        ),
+                      );
                     }),
                   );
                 }),
@@ -881,22 +877,22 @@ class NotePracticePage extends GetView<PracticeController> {
                 color: controller.accuracy >= 0.8
                     ? AppColors.success.withValues(alpha: 0.1)
                     : controller.accuracy >= 0.6
-                        ? AppColors.warning.withValues(alpha: 0.1)
-                        : AppColors.error.withValues(alpha: 0.1),
+                    ? AppColors.warning.withValues(alpha: 0.1)
+                    : AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 controller.accuracy >= 0.8
                     ? Icons.emoji_events
                     : controller.accuracy >= 0.6
-                        ? Icons.thumb_up
-                        : Icons.sentiment_dissatisfied,
+                    ? Icons.thumb_up
+                    : Icons.sentiment_dissatisfied,
                 size: 48,
                 color: controller.accuracy >= 0.8
                     ? AppColors.success
                     : controller.accuracy >= 0.6
-                        ? AppColors.warning
-                        : AppColors.error,
+                    ? AppColors.warning
+                    : AppColors.error,
               ),
             ),
             const SizedBox(height: 24),
@@ -905,8 +901,8 @@ class NotePracticePage extends GetView<PracticeController> {
               controller.accuracy >= 0.8
                   ? '太棒了！🎉'
                   : controller.accuracy >= 0.6
-                      ? '继续加油！💪'
-                      : '还需努力！📚',
+                  ? '继续加油！💪'
+                  : '还需努力！📚',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,

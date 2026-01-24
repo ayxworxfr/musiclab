@@ -26,7 +26,11 @@ class QuestionGenerator {
 
     for (int i = 0; i < count; i++) {
       // 根据难度生成不同数量的音符
-      final noteCount = difficulty <= 2 ? 1 : difficulty == 3 ? 2 : 3;
+      final noteCount = difficulty <= 2
+          ? 1
+          : difficulty == 3
+          ? 2
+          : 3;
       final notes = <int>[];
 
       for (int j = 0; j < noteCount; j++) {
@@ -72,7 +76,11 @@ class QuestionGenerator {
 
     for (int i = 0; i < count; i++) {
       // 根据难度生成不同数量的音符
-      final noteCount = difficulty <= 2 ? 1 : difficulty == 3 ? 2 : 3;
+      final noteCount = difficulty <= 2
+          ? 1
+          : difficulty == 3
+          ? 2
+          : 3;
       final notes = <int>[];
 
       for (int j = 0; j < noteCount; j++) {
@@ -786,11 +794,11 @@ class QuestionGenerator {
       1 => [rootNote, rootNote + 3, rootNote + 7], // 小三和弦 (1-b3-5)
       2 => [rootNote, rootNote + 3, rootNote + 6], // 减三和弦 (1-b3-b5)
       3 => [
-          rootNote,
-          rootNote + 4,
-          rootNote + 7,
-          rootNote + 10
-        ], // 属七和弦 (1-3-5-b7)
+        rootNote,
+        rootNote + 4,
+        rootNote + 7,
+        rootNote + 10,
+      ], // 属七和弦 (1-3-5-b7)
       _ => [rootNote, rootNote + 4, rootNote + 7], // 默认大三和弦
     };
   }

@@ -158,7 +158,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   /// 切换显示模式
   void _toggleDisplayMode() {
     setState(() {
-      final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+      final isLandscape =
+          MediaQuery.of(context).orientation == Orientation.landscape;
 
       if (isLandscape) {
         // 横屏模式：只在 1（只钢琴）、2（只播放器）、3（全隐藏）之间切换
@@ -186,11 +187,16 @@ class _SheetMusicViewState extends State<SheetMusicView> {
   /// 获取显示模式图标
   IconData _getDisplayModeIcon() {
     switch (_displayMode) {
-      case 0: return Icons.visibility; // 全展示
-      case 1: return Icons.piano; // 只钢琴
-      case 2: return Icons.tune; // 只播放栏
-      case 3: return Icons.visibility_off; // 全隐藏
-      default: return Icons.visibility;
+      case 0:
+        return Icons.visibility; // 全展示
+      case 1:
+        return Icons.piano; // 只钢琴
+      case 2:
+        return Icons.tune; // 只播放栏
+      case 3:
+        return Icons.visibility_off; // 全隐藏
+      default:
+        return Icons.visibility;
     }
   }
 
@@ -273,11 +279,16 @@ class _SheetMusicViewState extends State<SheetMusicView> {
           // 底部固定区域高度（包含所有 padding 和一些余量）
           double bottomHeight = 0.0;
           if (shouldShowPiano && shouldShowControls) {
-            bottomHeight = pianoHeight + 40.0 + _getControlsHeight(isLandscape) + (isLandscape ? 6 : 10);
+            bottomHeight =
+                pianoHeight +
+                40.0 +
+                _getControlsHeight(isLandscape) +
+                (isLandscape ? 6 : 10);
           } else if (shouldShowPiano) {
             bottomHeight = pianoHeight + 40.0;
           } else if (shouldShowControls) {
-            bottomHeight = _getControlsHeight(isLandscape) + (isLandscape ? 6 : 10);
+            bottomHeight =
+                _getControlsHeight(isLandscape) + (isLandscape ? 6 : 10);
           }
 
           // 存储底部高度供滚动计算使用
@@ -310,7 +321,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       child: SingleChildScrollView(
                         controller: _scoreScrollController,
                         child: Column(
-                          children: [_buildHeader(), _buildScoreArea(constraints)],
+                          children: [
+                            _buildHeader(),
+                            _buildScoreArea(constraints),
+                          ],
                         ),
                       ),
                     ),
@@ -333,9 +347,12 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (shouldShowPiano)
-                            _buildPianoArea(constraints, pianoHeight, isLandscape),
-                          if (shouldShowControls)
-                            _buildPlaybackControls(),
+                            _buildPianoArea(
+                              constraints,
+                              pianoHeight,
+                              isLandscape,
+                            ),
+                          if (shouldShowControls) _buildPlaybackControls(),
                         ],
                       ),
                     ),
@@ -350,7 +367,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                   mini: true,
                   heroTag: 'display_toggle',
                   onPressed: _toggleDisplayMode,
-                  backgroundColor: widget.config.theme.rightHandColor.withValues(alpha: 0.7),
+                  backgroundColor: widget.config.theme.rightHandColor
+                      .withValues(alpha: 0.7),
                   child: Icon(
                     _getDisplayModeIcon(),
                     color: Colors.white,
@@ -1025,7 +1043,8 @@ class _SheetMusicViewState extends State<SheetMusicView> {
               ? SingleChildScrollView(
                   controller: _pianoScrollController,
                   scrollDirection: Axis.horizontal,
-                  physics: const NeverScrollableScrollPhysics(), // 禁用直接滚动，只能通过控制栏拖动
+                  physics:
+                      const NeverScrollableScrollPhysics(), // 禁用直接滚动，只能通过控制栏拖动
                   child: _buildPianoCanvas(pianoWidth, pianoHeight),
                 )
               : _buildPianoCanvas(constraints.maxWidth, pianoHeight),
@@ -1048,8 +1067,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     vertical: isLandscape ? 2 : 3,
                   ),
                   decoration: BoxDecoration(
-                    color:
-                        widget.config.theme.rightHandColor.withValues(alpha: 0.1),
+                    color: widget.config.theme.rightHandColor.withValues(
+                      alpha: 0.1,
+                    ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -1083,7 +1103,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       if (_pianoScrollController.hasClients) {
                         _pianoScrollController.jumpTo(
                           (_pianoScrollController.offset - details.delta.dx)
-                              .clamp(0.0, _pianoScrollController.position.maxScrollExtent),
+                              .clamp(
+                                0.0,
+                                _pianoScrollController.position.maxScrollExtent,
+                              ),
                         );
                       }
                     },
@@ -1093,7 +1116,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       child: Icon(
                         Icons.drag_indicator,
                         size: isLandscape ? 14 : 16,
-                        color: widget.config.theme.textColor.withValues(alpha: 0.4),
+                        color: widget.config.theme.textColor.withValues(
+                          alpha: 0.4,
+                        ),
                       ),
                     ),
                   ),
@@ -1344,7 +1369,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
             painter: PianoKeyboardPainter(
               startMidi: _pianoStartMidi,
               endMidi: _pianoEndMidi,
-              config: RenderConfig(pianoHeight: height, theme: widget.config.theme),
+              config: RenderConfig(
+                pianoHeight: height,
+                theme: widget.config.theme,
+              ),
               highlightedNotes: highlightedMap.cast(),
               showLabels: true,
               labelType: _pianoLabelType,
@@ -1608,8 +1636,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     inactiveTrackColor: widget.config.theme.rightHandColor
                         .withValues(alpha: 0.2),
                     thumbColor: widget.config.theme.rightHandColor,
-                    overlayColor: widget.config.theme.rightHandColor
-                        .withValues(alpha: 0.1),
+                    overlayColor: widget.config.theme.rightHandColor.withValues(
+                      alpha: 0.1,
+                    ),
                     trackHeight: 2,
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 4,
@@ -1636,16 +1665,18 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         _formatTime(currentTime),
                         style: TextStyle(
                           fontSize: 9,
-                          color: widget.config.theme.textColor
-                              .withValues(alpha: 0.6),
+                          color: widget.config.theme.textColor.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                       ),
                       Text(
                         _formatTime(totalDuration),
                         style: TextStyle(
                           fontSize: 9,
-                          color: widget.config.theme.textColor
-                              .withValues(alpha: 0.6),
+                          color: widget.config.theme.textColor.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                       ),
                     ],
@@ -1660,15 +1691,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // 循环
-                      _buildIconButton(
-                        Icons.repeat,
-                        loopEnabled,
-                        () {
-                          controller.loopEnabled.toggle();
-                          controller.update();
-                        },
-                        size: 18,
-                      ),
+                      _buildIconButton(Icons.repeat, loopEnabled, () {
+                        controller.loopEnabled.toggle();
+                        controller.update();
+                      }, size: 18),
                       const SizedBox(width: 2),
                       // 上一曲
                       _buildIconButton(
@@ -1696,17 +1722,23 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                             final wasPlaying = controller.isPlaying.value;
                             controller.togglePlay();
                             // 横屏时，开始播放后自动切换到只显示钢琴模式（隐藏播放栏）
-                            if (!wasPlaying && MediaQuery.of(context).orientation == Orientation.landscape) {
-                              Future.delayed(const Duration(milliseconds: 300), () {
-                                if (mounted && controller.isPlaying.value) {
-                                  setState(() {
-                                    // 如果当前显示了播放栏，切换到只显示钢琴
-                                    if (_displayMode == 0 || _displayMode == 2) {
-                                      _displayMode = 1; // 只显示钢琴
-                                    }
-                                  });
-                                }
-                              });
+                            if (!wasPlaying &&
+                                MediaQuery.of(context).orientation ==
+                                    Orientation.landscape) {
+                              Future.delayed(
+                                const Duration(milliseconds: 300),
+                                () {
+                                  if (mounted && controller.isPlaying.value) {
+                                    setState(() {
+                                      // 如果当前显示了播放栏，切换到只显示钢琴
+                                      if (_displayMode == 0 ||
+                                          _displayMode == 2) {
+                                        _displayMode = 1; // 只显示钢琴
+                                      }
+                                    });
+                                  }
+                                },
+                              );
                             }
                           },
                           padding: EdgeInsets.zero,
@@ -1732,15 +1764,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       ),
                       const SizedBox(width: 2),
                       // 节拍器
-                      _buildIconButton(
-                        Icons.timer,
-                        metronomeEnabled,
-                        () {
-                          controller.metronomeEnabled.toggle();
-                          controller.update();
-                        },
-                        size: 18,
-                      ),
+                      _buildIconButton(Icons.timer, metronomeEnabled, () {
+                        controller.metronomeEnabled.toggle();
+                        controller.update();
+                      }, size: 18),
                     ],
                   ),
                 ),
@@ -1765,9 +1792,10 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         width: 85, // 增加宽度
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            activeTrackColor:
-                                widget.config.theme.leftHandColor,
-                            inactiveTrackColor: widget.config.theme
+                            activeTrackColor: widget.config.theme.leftHandColor,
+                            inactiveTrackColor: widget
+                                .config
+                                .theme
                                 .leftHandColor
                                 .withValues(alpha: 0.2),
                             thumbColor: widget.config.theme.leftHandColor,
@@ -1844,7 +1872,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor:
                                 widget.config.theme.rightHandColor,
-                            inactiveTrackColor: widget.config.theme
+                            inactiveTrackColor: widget
+                                .config
+                                .theme
                                 .rightHandColor
                                 .withValues(alpha: 0.2),
                             thumbColor: widget.config.theme.rightHandColor,
@@ -1854,8 +1884,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                             ),
                           ),
                           child: Slider(
-                            value:
-                                controller.rightHandVolume.value.toDouble(),
+                            value: controller.rightHandVolume.value.toDouble(),
                             min: 0,
                             max: 100,
                             onChanged: (v) =>
@@ -1886,11 +1915,12 @@ class _SheetMusicViewState extends State<SheetMusicView> {
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: widget.config.theme.rightHandColor,
-                  inactiveTrackColor:
-                      widget.config.theme.rightHandColor.withValues(alpha: 0.2),
+                  inactiveTrackColor: widget.config.theme.rightHandColor
+                      .withValues(alpha: 0.2),
                   thumbColor: widget.config.theme.rightHandColor,
-                  overlayColor:
-                      widget.config.theme.rightHandColor.withValues(alpha: 0.1),
+                  overlayColor: widget.config.theme.rightHandColor.withValues(
+                    alpha: 0.1,
+                  ),
                   trackHeight: 2,
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 4,
@@ -1917,16 +1947,18 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       _formatTime(currentTime),
                       style: TextStyle(
                         fontSize: 10,
-                        color:
-                            widget.config.theme.textColor.withValues(alpha: 0.6),
+                        color: widget.config.theme.textColor.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                     Text(
                       _formatTime(totalDuration),
                       style: TextStyle(
                         fontSize: 10,
-                        color:
-                            widget.config.theme.textColor.withValues(alpha: 0.6),
+                        color: widget.config.theme.textColor.withValues(
+                          alpha: 0.6,
+                        ),
                       ),
                     ),
                   ],
@@ -1950,7 +1982,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       size: 18,
                       color: loopEnabled
                           ? widget.config.theme.rightHandColor
-                          : widget.config.theme.textColor.withValues(alpha: 0.4),
+                          : widget.config.theme.textColor.withValues(
+                              alpha: 0.4,
+                            ),
                     ),
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
@@ -1980,7 +2014,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         final wasPlaying = controller.isPlaying.value;
                         controller.togglePlay();
                         // 横屏时，开始播放后自动切换到只显示钢琴模式（隐藏播放栏）
-                        if (!wasPlaying && MediaQuery.of(context).orientation == Orientation.landscape) {
+                        if (!wasPlaying &&
+                            MediaQuery.of(context).orientation ==
+                                Orientation.landscape) {
                           Future.delayed(const Duration(milliseconds: 300), () {
                             if (mounted && controller.isPlaying.value) {
                               setState(() {
@@ -2026,7 +2062,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                       size: 18,
                       color: metronomeEnabled
                           ? widget.config.theme.rightHandColor
-                          : widget.config.theme.textColor.withValues(alpha: 0.4),
+                          : widget.config.theme.textColor.withValues(
+                              alpha: 0.4,
+                            ),
                     ),
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
@@ -2092,8 +2130,9 @@ class _SheetMusicViewState extends State<SheetMusicView> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: widget.config.theme.rightHandColor
-                            .withValues(alpha: 0.1),
+                        color: widget.config.theme.rightHandColor.withValues(
+                          alpha: 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -2228,10 +2267,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       ),
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
-      constraints: BoxConstraints(
-        minWidth: size + 4,
-        minHeight: size + 4,
-      ),
+      constraints: BoxConstraints(minWidth: size + 4, minHeight: size + 4),
     );
   }
 
@@ -2307,10 +2343,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       endMidi: _pianoEndMidi,
       config: RenderConfig(pianoHeight: height, theme: widget.config.theme),
     );
-    final midi = painter.findKeyAtPosition(
-      position,
-      Size(width, height),
-    );
+    final midi = painter.findKeyAtPosition(position, Size(width, height));
 
     if (midi != null) {
       setState(() {
@@ -2334,10 +2367,7 @@ class _SheetMusicViewState extends State<SheetMusicView> {
       endMidi: _pianoEndMidi,
       config: RenderConfig(pianoHeight: height, theme: widget.config.theme),
     );
-    final newMidi = painter.findKeyAtPosition(
-      position,
-      Size(width, height),
-    );
+    final newMidi = painter.findKeyAtPosition(position, Size(width, height));
 
     final oldMidi = _pointerToKey[pointer];
 

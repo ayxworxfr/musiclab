@@ -189,54 +189,54 @@ class _StaffPainter extends CustomPainter {
 
     return switch (key) {
       'G' => [
-        {'symbol': sharpSymbol, 'note': 'F'}
+        {'symbol': sharpSymbol, 'note': 'F'},
       ],
       'D' => [
         {'symbol': sharpSymbol, 'note': 'F'},
-        {'symbol': sharpSymbol, 'note': 'C'}
+        {'symbol': sharpSymbol, 'note': 'C'},
       ],
       'A' => [
         {'symbol': sharpSymbol, 'note': 'F'},
         {'symbol': sharpSymbol, 'note': 'C'},
-        {'symbol': sharpSymbol, 'note': 'G'}
+        {'symbol': sharpSymbol, 'note': 'G'},
       ],
       'E' => [
         {'symbol': sharpSymbol, 'note': 'F'},
         {'symbol': sharpSymbol, 'note': 'C'},
         {'symbol': sharpSymbol, 'note': 'G'},
-        {'symbol': sharpSymbol, 'note': 'D'}
+        {'symbol': sharpSymbol, 'note': 'D'},
       ],
       'B' => [
         {'symbol': sharpSymbol, 'note': 'F'},
         {'symbol': sharpSymbol, 'note': 'C'},
         {'symbol': sharpSymbol, 'note': 'G'},
         {'symbol': sharpSymbol, 'note': 'D'},
-        {'symbol': sharpSymbol, 'note': 'A'}
+        {'symbol': sharpSymbol, 'note': 'A'},
       ],
       'F' => [
-        {'symbol': flatSymbol, 'note': 'B'}
+        {'symbol': flatSymbol, 'note': 'B'},
       ],
       'Bb' => [
         {'symbol': flatSymbol, 'note': 'B'},
-        {'symbol': flatSymbol, 'note': 'E'}
+        {'symbol': flatSymbol, 'note': 'E'},
       ],
       'Eb' => [
         {'symbol': flatSymbol, 'note': 'B'},
         {'symbol': flatSymbol, 'note': 'E'},
-        {'symbol': flatSymbol, 'note': 'A'}
+        {'symbol': flatSymbol, 'note': 'A'},
       ],
       'Ab' => [
         {'symbol': flatSymbol, 'note': 'B'},
         {'symbol': flatSymbol, 'note': 'E'},
         {'symbol': flatSymbol, 'note': 'A'},
-        {'symbol': flatSymbol, 'note': 'D'}
+        {'symbol': flatSymbol, 'note': 'D'},
       ],
       'Db' => [
         {'symbol': flatSymbol, 'note': 'B'},
         {'symbol': flatSymbol, 'note': 'E'},
         {'symbol': flatSymbol, 'note': 'A'},
         {'symbol': flatSymbol, 'note': 'D'},
-        {'symbol': flatSymbol, 'note': 'G'}
+        {'symbol': flatSymbol, 'note': 'G'},
       ],
       'Gb' => [
         {'symbol': flatSymbol, 'note': 'B'},
@@ -244,7 +244,7 @@ class _StaffPainter extends CustomPainter {
         {'symbol': flatSymbol, 'note': 'A'},
         {'symbol': flatSymbol, 'note': 'D'},
         {'symbol': flatSymbol, 'note': 'G'},
-        {'symbol': flatSymbol, 'note': 'C'}
+        {'symbol': flatSymbol, 'note': 'C'},
       ],
       'F#' => [
         {'symbol': sharpSymbol, 'note': 'F'},
@@ -252,7 +252,7 @@ class _StaffPainter extends CustomPainter {
         {'symbol': sharpSymbol, 'note': 'G'},
         {'symbol': sharpSymbol, 'note': 'D'},
         {'symbol': sharpSymbol, 'note': 'A'},
-        {'symbol': sharpSymbol, 'note': 'E'}
+        {'symbol': sharpSymbol, 'note': 'E'},
       ],
       'C#' => [
         {'symbol': sharpSymbol, 'note': 'F'},
@@ -261,7 +261,7 @@ class _StaffPainter extends CustomPainter {
         {'symbol': sharpSymbol, 'note': 'D'},
         {'symbol': sharpSymbol, 'note': 'A'},
         {'symbol': sharpSymbol, 'note': 'E'},
-        {'symbol': sharpSymbol, 'note': 'B'}
+        {'symbol': sharpSymbol, 'note': 'B'},
       ],
       _ => [],
     };

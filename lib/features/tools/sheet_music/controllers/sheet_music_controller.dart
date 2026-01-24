@@ -59,7 +59,7 @@ class SheetMusicController extends GetxController {
 
   /// 初始化数据
   Future<void> _initialize() async {
-    await _loadScores(updateFilter: false);  // 先加载乐谱（不更新过滤）
+    await _loadScores(updateFilter: false); // 先加载乐谱（不更新过滤）
     await _loadFolders(); // 再加载文件夹（需要用到乐谱数据）
     _updateFilteredScores(); // 最后统一更新过滤列表
   }
@@ -701,4 +701,3 @@ class SheetMusicController extends GetxController {
     await _loadFolders();
   }
 }
-

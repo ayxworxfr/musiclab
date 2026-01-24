@@ -381,7 +381,7 @@ class MidiParser implements SheetParser {
         tempo: tempo,
         difficulty: 1,
         category: ScoreCategory.classical,
-        ppq: ppq,  // 保存原始PPQ
+        ppq: ppq, // 保存原始PPQ
       ),
       tracks: scoreTracks,
       isBuiltIn: false,
@@ -430,7 +430,9 @@ class MidiParser implements SheetParser {
     final totalTicks = lastNote.startTime + lastNote.duration;
     final totalMeasures = (totalTicks / ticksPerMeasure).ceil();
 
-    warnings.add('音符总数: ${notes.length}, 总tick: $totalTicks, 小节数: $totalMeasures');
+    warnings.add(
+      '音符总数: ${notes.length}, 总tick: $totalTicks, 小节数: $totalMeasures',
+    );
 
     // 创建所有小节（包括空小节），确保number连续
     var totalNotesAssigned = 0;
@@ -441,20 +443,15 @@ class MidiParser implements SheetParser {
       // 找到在这个小节内开始的音符
       // 注意：使用 < 而不是 <= 是正确的，因为 measureEnd 是下一小节的起点
       // 但最后一个小节要特殊处理，包含所有剩余音符
-      final measureNotes = notes
-          .where(
-            (n) {
-              if (measureIndex == totalMeasures - 1) {
-                // 最后一个小节：包含所有 >= currentMeasureStart 的音符
-                return n.startTime >= currentMeasureStart;
-              } else {
-                // 其他小节：[currentMeasureStart, measureEnd)
-                return n.startTime >= currentMeasureStart &&
-                    n.startTime < measureEnd;
-              }
-            },
-          )
-          .toList();
+      final measureNotes = notes.where((n) {
+        if (measureIndex == totalMeasures - 1) {
+          // 最后一个小节：包含所有 >= currentMeasureStart 的音符
+          return n.startTime >= currentMeasureStart;
+        } else {
+          // 其他小节：[currentMeasureStart, measureEnd)
+          return n.startTime >= currentMeasureStart && n.startTime < measureEnd;
+        }
+      }).toList();
 
       totalNotesAssigned += measureNotes.length;
 
@@ -466,9 +463,7 @@ class MidiParser implements SheetParser {
       );
 
       // 始终创建小节，即使是空的（保证measure.number连续）
-      measures.add(
-        Measure(number: measureIndex + 1, beats: beats),
-      );
+      measures.add(Measure(number: measureIndex + 1, beats: beats));
     }
 
     warnings.add('实际分配音符数: $totalNotesAssigned / ${notes.length}');
@@ -542,11 +537,13 @@ class MidiParser implements SheetParser {
       // 计算该拍的精确起始位置（相对于小节开始）
       final firstNoteOffset = (beatNotes.first.startTime - measureStart) / ppq;
 
-      beats.add(Beat(
-        index: beatIndex,
-        notes: scoreNotes,
-        preciseStartBeats: firstNoteOffset,
-      ));
+      beats.add(
+        Beat(
+          index: beatIndex,
+          notes: scoreNotes,
+          preciseStartBeats: firstNoteOffset,
+        ),
+      );
     }
 
     return beats;
@@ -689,10 +686,7 @@ class _NoteDurationWithDots {
   final NoteDuration duration;
   final int dots;
 
-  _NoteDurationWithDots({
-    required this.duration,
-    required this.dots,
-  });
+  _NoteDurationWithDots({required this.duration, required this.dots});
 }
 
 /// 节奏型模式

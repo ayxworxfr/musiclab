@@ -113,8 +113,9 @@ class _PianoPageState extends State<PianoPage> {
                           : Icons.abc,
                     ),
                     onPressed: controller.toggleLabelType,
-                    tooltip:
-                        controller.labelType.value == 'jianpu' ? '简谱' : '音名',
+                    tooltip: controller.labelType.value == 'jianpu'
+                        ? '简谱'
+                        : '音名',
                   ),
                 ),
               ],
@@ -210,11 +211,7 @@ class _PianoPageState extends State<PianoPage> {
             color: AppColors.error.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            Icons.mic,
-            color: AppColors.error,
-            size: iconSize * 0.53,
-          ),
+          child: Icon(Icons.mic, color: AppColors.error, size: iconSize * 0.53),
         ),
         SizedBox(height: isLandscape ? 8 : 12),
         Obx(
@@ -365,8 +362,10 @@ class _PianoPageState extends State<PianoPage> {
                 GestureDetector(
                   onHorizontalDragUpdate: (details) {
                     scrollController.jumpTo(
-                      (scrollController.offset - details.delta.dx)
-                          .clamp(0.0, scrollController.position.maxScrollExtent),
+                      (scrollController.offset - details.delta.dx).clamp(
+                        0.0,
+                        scrollController.position.maxScrollExtent,
+                      ),
                     );
                   },
                   child: Container(
@@ -849,12 +848,14 @@ class _PianoPageState extends State<PianoPage> {
             Obx(
               () => _buildToolButton(
                 context,
-                icon:
-                    controller.isPlaying.value ? Icons.stop : Icons.play_arrow,
+                icon: controller.isPlaying.value
+                    ? Icons.stop
+                    : Icons.play_arrow,
                 label: controller.isPlaying.value ? '停止' : '播放',
                 color: AppColors.success,
                 onTap: controller.playRecording,
-                enabled: controller.recordedNotes.isNotEmpty ||
+                enabled:
+                    controller.recordedNotes.isNotEmpty ||
                     controller.isPlaying.value,
                 isLandscape: isLandscape,
               ),
@@ -907,7 +908,10 @@ class _PianoPageState extends State<PianoPage> {
             child: Icon(icon, color: effectiveColor, size: iconSize),
           ),
           SizedBox(height: isLandscape ? 2 : 4),
-          Text(label, style: TextStyle(fontSize: fontSize, color: effectiveColor)),
+          Text(
+            label,
+            style: TextStyle(fontSize: fontSize, color: effectiveColor),
+          ),
         ],
       ),
     );

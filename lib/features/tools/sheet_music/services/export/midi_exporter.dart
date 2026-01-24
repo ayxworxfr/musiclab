@@ -90,10 +90,10 @@ class MidiExporter {
     Track track,
     ScoreMetadata metadata,
     int trackIndex,
-    int ppq,  // 使用传入的ppq
+    int ppq, // 使用传入的ppq
   ) {
     final trackBuffer = BytesBuilder();
-    final ticksPerBeat = ppq;  // 使用传入的ppq而非硬编码480
+    final ticksPerBeat = ppq; // 使用传入的ppq而非硬编码480
     final ticksPerMeasure = ticksPerBeat * metadata.beatsPerMeasure;
 
     // Track name
@@ -124,7 +124,8 @@ class MidiExporter {
       for (final beat in measure.beats) {
         // 计算拍的起始tick
         // 优先使用精确起始位置，否则使用beat.index
-        final beatStartTick = measureStartTick +
+        final beatStartTick =
+            measureStartTick +
             ((beat.preciseStartBeats ?? beat.index.toDouble()) * ticksPerBeat)
                 .round();
 
@@ -138,7 +139,8 @@ class MidiExporter {
           if (note.preciseOffsetBeats != null) {
             // 使用精确偏移量（以拍为单位）
             noteOnTick =
-                beatStartTick + (note.preciseOffsetBeats! * ticksPerBeat).round();
+                beatStartTick +
+                (note.preciseOffsetBeats! * ticksPerBeat).round();
           } else {
             // 回退到原有逻辑：短时值音符按顺序播放
             noteOnTick = beatStartTick;

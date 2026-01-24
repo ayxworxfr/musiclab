@@ -596,7 +596,9 @@ class GrandStaffPainter extends CustomPainter {
     final stemX = stemUp
         ? x + config.noteHeadRadius - 1
         : x - config.noteHeadRadius + 1;
-    final stemEndY = stemUp ? y - config.actualStemLength : y + config.actualStemLength;
+    final stemEndY = stemUp
+        ? y - config.actualStemLength
+        : y + config.actualStemLength;
 
     // 使用 SMuFL 字体符号绘制符尾
     final flagGlyph = SMuFLGlyphs.getFlag(beamCount, stemUp);

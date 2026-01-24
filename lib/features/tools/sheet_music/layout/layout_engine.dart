@@ -71,7 +71,8 @@ class LayoutEngine {
     final availableLineWidth = contentWidth - headerWidth;
 
     final beatsPerMeasure = score.metadata.beatsPerMeasure;
-    final signatureWidth = score.metadata.key.signatureCount * 10.0 + 10.0; // 调号区域宽度
+    final signatureWidth =
+        score.metadata.key.signatureCount * 10.0 + 10.0; // 调号区域宽度
 
     // 根据屏幕宽度动态计算参数
     double minBeatWidth;
@@ -79,12 +80,12 @@ class LayoutEngine {
 
     if (availableWidth < 400) {
       // 手机竖屏 - 调大间距
-      minBeatWidth = 28.0;      // 28.0
+      minBeatWidth = 28.0; // 28.0
       minMeasuresPerLine = 1;
     } else if (availableWidth < 600) {
       // 手机横屏 / 小平板 - 调大间距
-      minBeatWidth = 32.0;      // 32.0
-      minMeasuresPerLine = 1;   // 2 → 1，允许只放1个小节
+      minBeatWidth = 32.0; // 32.0
+      minMeasuresPerLine = 1; // 2 → 1，允许只放1个小节
     } else if (availableWidth < 900) {
       // 平板
       minBeatWidth = 32.0;
@@ -103,8 +104,10 @@ class LayoutEngine {
 
     // 计算每行能放的小节数（所有行统一）
     int measuresPerLine = (availableMeasureWidth / minMeasureWidth).floor();
-    measuresPerLine =
-        measuresPerLine.clamp(minMeasuresPerLine, config.maxMeasuresPerLine);
+    measuresPerLine = measuresPerLine.clamp(
+      minMeasuresPerLine,
+      config.maxMeasuresPerLine,
+    );
 
     // 计算标准小节宽度
     final standardMeasureWidth = availableMeasureWidth / measuresPerLine;
@@ -220,9 +223,11 @@ class LayoutEngine {
       final isTreble = track.clef == Clef.treble;
       final baseStaffY = isTreble ? trebleY : bassY;
 
-      for (var measureIndex = 0;
-          measureIndex < track.measures.length;
-          measureIndex++) {
+      for (
+        var measureIndex = 0;
+        measureIndex < track.measures.length;
+        measureIndex++
+      ) {
         final measure = track.measures[measureIndex];
         final measureLayout = measureLayouts[measureIndex];
         if (measureLayout == null) continue;
@@ -232,14 +237,17 @@ class LayoutEngine {
         final staffY = baseStaffY + lineOffset;
 
         // 计算这个小节的开始时间
-        final measureStartTime = measureIndex * beatsPerMeasure / beatsPerSecond;
+        final measureStartTime =
+            measureIndex * beatsPerMeasure / beatsPerSecond;
 
         // 统计这个小节中每个拍的音符数量
         final notesByBeat = <int, List<_NoteInfo>>{};
 
-        for (var beatArrIndex = 0;
-            beatArrIndex < measure.beats.length;
-            beatArrIndex++) {
+        for (
+          var beatArrIndex = 0;
+          beatArrIndex < measure.beats.length;
+          beatArrIndex++
+        ) {
           final beat = measure.beats[beatArrIndex];
           final actualBeatIndex = beat.index;
 
@@ -311,8 +319,9 @@ class LayoutEngine {
           }
 
           // 2. 计算理想总宽度
-          final idealTotalWidth =
-              idealPositions.isEmpty ? noteHeadWidth : idealPositions.last + noteHeadWidth;
+          final idealTotalWidth = idealPositions.isEmpty
+              ? noteHeadWidth
+              : idealPositions.last + noteHeadWidth;
 
           // 3. 计算可用宽度
           final beatPadding = 4.0;
@@ -331,7 +340,9 @@ class LayoutEngine {
 
           // 6. 居中
           final startX =
-              beatStartX + beatPadding + (usableWidth - scaledTotalWidth + noteHeadWidth) / 2;
+              beatStartX +
+              beatPadding +
+              (usableWidth - scaledTotalWidth + noteHeadWidth) / 2;
 
           // 放置音符
           for (var i = 0; i < notesInBeat.length; i++) {
@@ -458,7 +469,10 @@ class LayoutEngine {
   }
 
   /// 计算符杠组（智能分组）
-  List<BeamGroup> _calculateBeamGroups(Score score, List<NoteLayout> noteLayouts) {
+  List<BeamGroup> _calculateBeamGroups(
+    Score score,
+    List<NoteLayout> noteLayouts,
+  ) {
     final groups = <BeamGroup>[];
 
     // 按轨道和小节分组
@@ -682,9 +696,9 @@ class LayoutEngine {
 
 /// 每行布局参数信息
 class _LineLayoutParams {
-  final int firstLineMeasures;       // 第一行小节数
-  final int normalLineMeasures;      // 普通行小节数
-  final double signatureWidth;       // 调号区域宽度
+  final int firstLineMeasures; // 第一行小节数
+  final int normalLineMeasures; // 普通行小节数
+  final double signatureWidth; // 调号区域宽度
   final double standardMeasureWidth; // 标准小节宽度（所有行统一）
 
   const _LineLayoutParams({

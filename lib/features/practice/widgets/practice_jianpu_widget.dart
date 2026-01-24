@@ -47,8 +47,9 @@ class PracticeJianpuWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final defaultBgColor = isDark ? Colors.grey.shade800 : Colors.white;
-    final defaultBorderColor =
-        isDark ? Colors.grey.shade700 : Colors.grey.shade300;
+    final defaultBorderColor = isDark
+        ? Colors.grey.shade700
+        : Colors.grey.shade300;
 
     return Container(
       width: 260,
@@ -80,10 +81,7 @@ class PracticeJianpuWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: notes
                     .map((midi) => _buildNote(context, midi))
-                    .expand((widget) => [
-                          widget,
-                          const SizedBox(width: 16),
-                        ])
+                    .expand((widget) => [widget, const SizedBox(width: 16)])
                     .take(notes.length * 2 - 1)
                     .toList(),
               ),
@@ -228,8 +226,10 @@ class PracticeJianpuWidget extends StatelessWidget {
     const lowDot = '\u0323'; // ̣ 下加点
 
     // 统计高音点和低音点（支持 Unicode 组合字符和普通字符）
-    final highDots = highDot.allMatches(jianpu).length + '·'.allMatches(jianpu).length;
-    final lowDots = lowDot.allMatches(jianpu).length + '•'.allMatches(jianpu).length;
+    final highDots =
+        highDot.allMatches(jianpu).length + '·'.allMatches(jianpu).length;
+    final lowDots =
+        lowDot.allMatches(jianpu).length + '•'.allMatches(jianpu).length;
 
     // 提取主音符（移除所有点标记）
     final note = jianpu
