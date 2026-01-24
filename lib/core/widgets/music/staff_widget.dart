@@ -118,6 +118,8 @@ class _StaffPainter extends CustomPainter {
   void _drawClef(Canvas canvas, double startY, double lineSpacing) {
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
+    // 谱号位置补偿
+    final clefOffset = -2 * lineSpacing;
     if (clef == 'treble') {
       // 高音谱号（简化用 G 表示）
       textPainter.text = const TextSpan(
@@ -126,7 +128,7 @@ class _StaffPainter extends CustomPainter {
       );
       textPainter
         ..layout()
-        ..paint(canvas, Offset(5, startY - 15));
+        ..paint(canvas, Offset(5, startY + clefOffset - 15));
     } else {
       // 低音谱号（简化用 F 表示）
       textPainter.text = const TextSpan(
@@ -135,7 +137,7 @@ class _StaffPainter extends CustomPainter {
       );
       textPainter
         ..layout()
-        ..paint(canvas, Offset(8, startY - 5));
+        ..paint(canvas, Offset(8, startY + clefOffset - 5));
     }
   }
 

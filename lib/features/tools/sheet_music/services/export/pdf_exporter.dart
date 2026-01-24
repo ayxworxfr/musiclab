@@ -1,13 +1,11 @@
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
-
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../../constants/smufl_glyphs.dart';
-import '../../models/score.dart';
 import '../../models/enums.dart';
+import '../../models/score.dart';
 
 /// PDF 导出器（重写版本）
 class PdfExporter {
@@ -554,7 +552,7 @@ class PdfExporter {
                   trebleY +
                   clefOffset +
                   3 * lineSpacing -
-                  20, // 高音谱号居中在第四线（字体基准点补偿）
+                  25, // 高音谱号居中在第四线（字体基准点补偿）
               child: pw.Text(
                 SMuFLGlyphs.gClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
@@ -569,7 +567,7 @@ class PdfExporter {
                   bassY +
                   clefOffset +
                   1 * lineSpacing -
-                  20, // 低音谱号居中在第二线（字体基准点补偿）
+                  23, // 低音谱号居中在第二线（字体基准点补偿）
               child: pw.Text(
                 SMuFLGlyphs.fClef,
                 style: pw.TextStyle(font: _smuflFont, fontSize: 40),
@@ -650,9 +648,9 @@ class PdfExporter {
             pw.Positioned(
               left: 5,
               top: clef == Clef.treble
-                  ? staffY +
-                        3 * lineSpacing -
-                        20 // 高音谱号居中在第四线（字体基准点补偿）
+                  ? staffY -
+                        4 * lineSpacing -
+                        25 // 高音谱号居中在第四线（字体基准点补偿）
                   : staffY + 2 * lineSpacing - 20, // 低音谱号居中在第三线（字体基准点补偿）
               child: pw.Text(
                 clef == Clef.treble ? SMuFLGlyphs.gClef : SMuFLGlyphs.fClef,

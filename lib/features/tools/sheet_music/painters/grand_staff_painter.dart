@@ -234,9 +234,8 @@ class GrandStaffPainter extends CustomPainter {
     // Bravura 字体的谱号符号基准点在底部，需要调整Y坐标使谱号中心对齐到目标线
     final targetLineY = clef == Clef.treble
         ? staffY +
-              3 *
-                  config
-                      .lineSpacing // 第四线
+              3 * config.lineSpacing -
+              3 // 第四线
         : staffY + 1 * config.lineSpacing; // 第二线
 
     // 将谱号中心对齐到目标线（字体高度的一半作为偏移）
