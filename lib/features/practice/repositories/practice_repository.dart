@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 
 import '../../../core/storage/storage_service.dart';
@@ -72,8 +74,8 @@ class PracticeRepositoryImpl implements PracticeRepository {
 
     try {
       final records = data.map((e) {
-        final map = e as Map;
-        return PracticeRecord.fromJson(Map<String, dynamic>.from(map));
+        final json = jsonDecode(jsonEncode(e)) as Map<String, dynamic>;
+        return PracticeRecord.fromJson(json);
       }).toList();
       print('📖 [PracticeRepository] 成功解析 ${records.length} 条记录');
       return records;

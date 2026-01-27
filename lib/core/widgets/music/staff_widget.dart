@@ -288,15 +288,18 @@ class _StaffPainter extends CustomPainter {
     // 升号顺序：F C G D A E B
     // 降号顺序：B E A D G C F
 
+    // 谱号位置补偿
+    final clefOffset = -8 * lineSpacing;
+
     // 计算符号在五线谱上的Y坐标（符号中心应对齐音符位置）
     final positions = {
-      'F': startY + 4 * lineSpacing - 8, // F5 在第5线上
-      'C': startY + 2 * lineSpacing - 8, // C5 在第3间
-      'G': startY + 1 * lineSpacing - 8, // G4 在第2线上
-      'D': startY + 3 * lineSpacing - 8, // D5 在第4线上
-      'A': startY + 1.5 * lineSpacing - 8, // A4 在第2间
-      'E': startY - 0.5 * lineSpacing - 8, // E5 在第5线上方第1间
-      'B': startY + 2.5 * lineSpacing - 8, // B4 在第3线上
+      'F': startY + clefOffset + 4 * lineSpacing, // F5 在第5线上
+      'C': startY + clefOffset + 5.5 * lineSpacing, // C5 在第3间
+      'G': startY + clefOffset + 7 * lineSpacing, // G4 在第2线上
+      'D': startY + clefOffset + 5 * lineSpacing, // D5 在第4线上
+      'A': startY + clefOffset + 6.5 * lineSpacing, // A4 在第2间
+      'E': startY + clefOffset + 3.5 * lineSpacing, // E5 在第5线上方第1间
+      'B': startY + clefOffset + 6 * lineSpacing, // B4 在第3线上
     };
 
     return positions[note] ?? startY - 10;
