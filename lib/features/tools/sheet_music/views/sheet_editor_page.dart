@@ -58,6 +58,14 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     } else {
       _editorController.createNewSheet();
     }
+
+    // 监听编辑器乐谱变化，同步到播放器
+    ever(_editorController.currentScore, (Score? newScore) {
+      if (newScore != null && _showPlaybackBar.value) {
+        _playerController.currentScore.value = newScore;
+        _playerController.reloadCurrentScore();
+      }
+    });
   }
 
   @override
@@ -283,7 +291,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
   Widget _buildLyricInput() {
     return Obx(() {
       final sheet = _editorController.currentSheet.value;
-      final measureIndex = _editorController.selectedMeasureIndex;
+      final measureIndex = _editorController.selectedMeasureIndex.value;
       final noteIndex = _editorController.selectedNoteIndex.value;
 
       // 检测选中音符是否变化，如果变化则更新输入框内容
@@ -439,7 +447,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     if (sheet == null) return;
 
     if (!_showPlaybackBar.value) {
-      // 展开播放栏时加载乐谱
+      // 展开播放栏时加载乐谱（loadScore内部会调用stop重置进度）
       _playerController.loadScore(sheet);
     } else {
       // 收起播放栏时停止播放

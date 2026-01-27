@@ -103,10 +103,12 @@ class ProfessionalJianpuEditor extends StatelessWidget {
               children: [
                 Obx(
                   () => IconButton(
-                    onPressed: controller.canUndo ? controller.undo : null,
+                    onPressed: controller.canUndo.value
+                        ? controller.undo
+                        : null,
                     icon: Icon(Icons.undo, size: isMobile ? 18 : 20),
                     tooltip: '撤销 (Ctrl+Z)',
-                    color: controller.canUndo ? null : Colors.grey,
+                    color: controller.canUndo.value ? null : Colors.grey,
                     padding: EdgeInsets.all(isMobile ? 8 : 12),
                     constraints: BoxConstraints(
                       minWidth: isMobile ? 36 : 48,
@@ -116,10 +118,12 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 ),
                 Obx(
                   () => IconButton(
-                    onPressed: controller.canRedo ? controller.redo : null,
+                    onPressed: controller.canRedo.value
+                        ? controller.redo
+                        : null,
                     icon: Icon(Icons.redo, size: isMobile ? 18 : 20),
                     tooltip: '重做 (Ctrl+Y)',
-                    color: controller.canRedo ? null : Colors.grey,
+                    color: controller.canRedo.value ? null : Colors.grey,
                     padding: EdgeInsets.all(isMobile ? 8 : 12),
                     constraints: BoxConstraints(
                       minWidth: isMobile ? 36 : 48,
@@ -474,7 +478,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   ) {
     return Obx(() {
       // 使用响应式变量确保UI能够响应小节选择的变化
-      final currentSelectedMeasure = controller.selectedMeasureIndexRx.value;
+      final currentSelectedMeasure = controller.selectedMeasureIndex.value;
       final isSelected = currentSelectedMeasure == measureIndex;
 
       return Container(
@@ -565,7 +569,6 @@ class ProfessionalJianpuEditor extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         controller.selectMeasure(measureIndex);
-        controller.selectedBeatIndex = 0.0;
       },
       child: Container(
         height: 80,
@@ -661,17 +664,14 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   Widget _buildInsertArea(int measureIndex, int beatIndex, bool isDark) {
     return Obx(() {
       final isSelected =
-          controller.selectedMeasureIndex == measureIndex &&
-          controller.selectedBeatIndex.floor() == beatIndex &&
+          controller.selectedMeasureIndex.value == measureIndex &&
+          controller.selectedBeatIndex.value == beatIndex &&
           controller.selectedNoteIndex.value < 0;
 
       return GestureDetector(
         onTap: () {
-          // 设置插入位置
-          controller.selectMeasure(measureIndex);
-          controller.selectedBeatIndex = beatIndex.toDouble();
-          controller.selectedNoteIndex.value = -1;
-          controller.selectedJianpuNoteIndex.value = -1;
+          // 设置插入位置（使用selectNote，noteIndex为-1表示beat位置）
+          controller.selectNote(measureIndex, beatIndex, -1);
         },
         child: Container(
           width: 40,
@@ -738,7 +738,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
       } else {
         // 编辑模式：根据编辑器选中状态高亮
         isSelected =
-            controller.selectedMeasureIndex == measureIndex &&
+            controller.selectedMeasureIndex.value == measureIndex &&
             controller.selectedJianpuNoteIndex.value == noteIndex;
       }
 
@@ -758,8 +758,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
             // 确保使用正确的轨道索引
             controller.selectNote(measureIndex, beatIndex, noteIndexInBeat);
             // 验证选择是否成功后再删除
-            if (controller.selectedMeasureIndex == measureIndex &&
-                controller.selectedBeatIndex.floor() == beatIndex &&
+            if (controller.selectedMeasureIndex.value == measureIndex &&
+                controller.selectedBeatIndex.value == beatIndex &&
                 controller.selectedNoteIndex.value == noteIndexInBeat) {
               controller.deleteSelectedNote();
             }

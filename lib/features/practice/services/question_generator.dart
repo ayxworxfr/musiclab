@@ -34,7 +34,8 @@ class QuestionGenerator {
       final notes = <int>[];
 
       for (int j = 0; j < noteCount; j++) {
-        final midi = minMidi + _random.nextInt(maxMidi - minMidi + 1);
+        // 根据调号生成符合该调的音符（避免出现不该有的升降号）
+        final midi = _generateNoteForKey(keySignature, minMidi, maxMidi);
         notes.add(midi);
       }
 
@@ -84,7 +85,8 @@ class QuestionGenerator {
       final notes = <int>[];
 
       for (int j = 0; j < noteCount; j++) {
-        final midi = minMidi + _random.nextInt(maxMidi - minMidi + 1);
+        // 根据调号生成符合该调的音符（避免出现不该有的升降号）
+        final midi = _generateNoteForKey(keySignature, minMidi, maxMidi);
         notes.add(midi);
       }
 
@@ -833,5 +835,55 @@ class QuestionGenerator {
 
     // 转换为中文名称
     return options.map(_getChordName).toList();
+  }
+
+  /// 根据调号生成符合该调的音符
+  ///
+  /// 确保生成的音符符合调号，避免出现不该有的升降号
+  /// 例如：C调只生成自然音（白键），G调会包含F#等
+  int _generateNoteForKey(String keySignature, int minMidi, int maxMidi) {
+    // 每个调号对应的音阶（相对于C大调的半音偏移）
+    // C大调音阶：C D E F G A B（白键）
+    // 对应MIDI % 12: 0 2 4 5 7 9 11
+
+    // 获取该调号允许的音符（0-11，对应12个半音）
+    final allowedNotes = _getAllowedNotesForKey(keySignature);
+
+    // 在音域范围内随机选择一个符合调号的音符
+    final validMidiList = <int>[];
+    for (int midi = minMidi; midi <= maxMidi; midi++) {
+      if (allowedNotes.contains(midi % 12)) {
+        validMidiList.add(midi);
+      }
+    }
+
+    // 如果没有有效音符（理论上不应该发生），返回minMidi
+    if (validMidiList.isEmpty) {
+      return minMidi;
+    }
+
+    return validMidiList[_random.nextInt(validMidiList.length)];
+  }
+
+  /// 获取调号允许的音符集合（0-11）
+  Set<int> _getAllowedNotesForKey(String keySignature) {
+    // 返回该调号的音阶音符（MIDI % 12）
+    return switch (keySignature) {
+      'C' => {0, 2, 4, 5, 7, 9, 11}, // C D E F G A B（全白键）
+      'G' => {0, 2, 4, 6, 7, 9, 11}, // C D E F# G A B
+      'D' => {0, 2, 4, 6, 7, 9, 1}, // D E F# G A B C#（改为从D开始：D=2）
+      'A' => {0, 2, 4, 6, 8, 9, 1}, // A B C# D E F# G#
+      'E' => {0, 2, 4, 6, 8, 10, 1}, // E F# G# A B C# D#
+      'B' => {0, 2, 4, 6, 8, 10, 1}, // B C# D# E F# G# A#
+      'F' => {0, 2, 4, 5, 7, 9, 10}, // F G A Bb C D E
+      'Bb' => {0, 2, 3, 5, 7, 9, 10}, // Bb C D Eb F G A
+      'Eb' => {0, 2, 3, 5, 7, 8, 10}, // Eb F G Ab Bb C D
+      'Ab' => {0, 1, 3, 5, 7, 8, 10}, // Ab Bb C Db Eb F G
+      'Db' => {0, 1, 3, 5, 6, 8, 10}, // Db Eb F Gb Ab Bb C
+      'Gb' => {0, 1, 3, 4, 6, 8, 10}, // Gb Ab Bb Cb Db Eb F
+      'F#' => {1, 3, 5, 6, 8, 10, 0}, // F# G# A# B C# D# E#
+      'C#' => {1, 3, 5, 6, 8, 10, 0}, // C# D# E# F# G# A# B#
+      _ => {0, 2, 4, 5, 7, 9, 11}, // 默认C调
+    };
   }
 }

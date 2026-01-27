@@ -5,6 +5,16 @@
 // 数据模型
 export 'models/score.dart';
 export 'models/enums.dart';
+export 'models/position.dart';
+export 'models/selection.dart';
+
+// 文档模型
+export 'document/track_document.dart';
+export 'document/score_document.dart';
+
+// 命令系统
+export 'commands/edit_command.dart';
+export 'commands/command_manager.dart';
 
 // 布局引擎
 export 'layout/layout_engine.dart';

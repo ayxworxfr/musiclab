@@ -576,7 +576,11 @@ class NotePracticePage extends GetView<PracticeController> {
     final startMidi = (minNote - 5).clamp(21, 108); // 最低音向下扩展5个半音
     final endMidi = (maxNote + 5).clamp(21, 108); // 最高音向上扩展5个半音
 
+    // 使用题目ID作为key，确保切换题目时钢琴组件完全重建
+    final questionKey = controller.currentQuestion?.id ?? 'default';
+
     return Column(
+      key: ValueKey(questionKey), // 使用题目ID作为key，强制重建
       children: [
         Container(
           height: 160,

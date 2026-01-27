@@ -58,6 +58,36 @@ class SheetPlayerController extends GetxController {
     loadScore(score);
   }
 
+  /// 重新加载当前乐谱（用于编辑后更新）
+  void reloadCurrentScore() {
+    final score = currentScore.value;
+    if (score != null) {
+      // 保存播放状态
+      final wasPlaying = playbackState.value.isPlaying;
+
+      // 停止当前播放并重置
+      if (wasPlaying) {
+        pause();
+      }
+
+      // 重新构建播放列表
+      _buildPlayableNotes();
+
+      // 重置播放索引到开头
+      _currentPlayIndex = 0;
+      _currentPlayTime = 0.0;
+
+      // 更新播放状态
+      playbackState.value = playbackState.value.copyWith(
+        totalDuration: _calculateTotalDuration(score),
+        currentTime: 0,
+        currentMeasureIndex: 0,
+        currentBeatIndex: 0,
+        currentNoteIndex: 0,
+      );
+    }
+  }
+
   /// 计算总时长
   double _calculateTotalDuration(Score score) {
     if (score.tracks.isEmpty) return 0.0;
@@ -90,7 +120,7 @@ class SheetPlayerController extends GetxController {
 
     // 为每个轨道单独计算音符时间，然后合并
     for (final track in score.tracks) {
-      double currentTime = 0; // 每个轨道独立计时
+      final beatsPerSecond = score.metadata.tempo / 60.0;
 
       for (var mIdx = 0; mIdx < track.measures.length; mIdx++) {
         final measure = track.measures[mIdx];
@@ -99,48 +129,35 @@ class SheetPlayerController extends GetxController {
         final currentTempo = measure.tempoChange ?? score.metadata.tempo;
         final currentSecondsPerBeat = 60.0 / currentTempo;
 
-        for (var bIdx = 0; bIdx < measure.beats.length; bIdx++) {
-          final beat = measure.beats[bIdx];
-          final beatDuration = beat.totalBeats * currentSecondsPerBeat;
+        // 计算小节开始时间（使用 LayoutEngine 的算法）
+        final beatsPerMeasure = score.metadata.beatsPerMeasure;
+        final measureStartTime = mIdx * beatsPerMeasure / beatsPerSecond;
+
+        for (
+          var beatArrIndex = 0;
+          beatArrIndex < measure.beats.length;
+          beatArrIndex++
+        ) {
+          final beat = measure.beats[beatArrIndex];
+
+          // 使用 beat.index 计算时间，而不是累加（关键修复）
+          final beatStartTime = measureStartTime + beat.index / beatsPerSecond;
 
           for (var nIdx = 0; nIdx < beat.notes.length; nIdx++) {
             final note = beat.notes[nIdx];
+            final noteDuration = note.actualBeats * currentSecondsPerBeat;
 
-            if (beat.isChord && note.duration.beamCount == 0) {
-              _playableNotes.add(
-                _PlayableNote(
-                  measureIndex: mIdx,
-                  beatIndex: beat.index,
-                  noteIndex: nIdx,
-                  note: note,
-                  startTime: currentTime,
-                  duration: beatDuration,
-                  hand: track.hand, // 添加手标记
-                ),
-              );
-            } else {
-              final noteDuration = note.actualBeats * currentSecondsPerBeat;
-              _playableNotes.add(
-                _PlayableNote(
-                  measureIndex: mIdx,
-                  beatIndex: beat.index,
-                  noteIndex: nIdx,
-                  note: note,
-                  startTime: currentTime,
-                  duration: noteDuration,
-                  hand: track.hand, // 添加手标记
-                ),
-              );
-              if (!beat.isChord || note.duration.beamCount > 0) {
-                currentTime += noteDuration;
-              }
-            }
-          }
-
-          if (beat.isChord &&
-              beat.notes.isNotEmpty &&
-              beat.notes.first.duration.beamCount == 0) {
-            currentTime += beatDuration;
+            _playableNotes.add(
+              _PlayableNote(
+                measureIndex: mIdx,
+                beatIndex: beat.index,
+                noteIndex: nIdx,
+                note: note,
+                startTime: beatStartTime,
+                duration: noteDuration,
+                hand: track.hand,
+              ),
+            );
           }
         }
       }
@@ -166,6 +183,8 @@ class SheetPlayerController extends GetxController {
     if (playbackState.value.isPlaying) {
       pause();
     } else {
+      // 播放前重新加载乐谱，确保包含最新的编辑
+      reloadCurrentScore();
       play();
     }
   }

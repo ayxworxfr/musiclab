@@ -56,7 +56,7 @@ class JianpuEditorWidget extends StatelessWidget {
         children: [
           // 撤销/重做
           Obx(() {
-            final canUndo = controller.canUndo;
+            final canUndo = controller.canUndo.value;
             return IconButton(
               onPressed: canUndo ? controller.undo : null,
               icon: const Icon(Icons.undo),
@@ -64,7 +64,7 @@ class JianpuEditorWidget extends StatelessWidget {
             );
           }),
           Obx(() {
-            final canRedo = controller.canRedo;
+            final canRedo = controller.canRedo.value;
             return IconButton(
               onPressed: canRedo ? controller.redo : null,
               icon: const Icon(Icons.redo),

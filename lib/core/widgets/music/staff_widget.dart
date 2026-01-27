@@ -272,19 +272,31 @@ class _StaffPainter extends CustomPainter {
   /// 获取升降号的 Y 坐标（高音谱号）
   ///
   /// 根据音符在五线谱上的位置计算 Y 坐标
+  /// 升降号应该画在对应音符所在的线或间上
   double _getAccidentalY(String note, double startY, double lineSpacing) {
-    // 高音谱号升降号位置（相对于五线谱）
-    // 第1线 = E4, 第2线 = G4, 第3线 = B4, 第4线 = D5, 第5线 = F5
-    // 第1间 = F4, 第2间 = A4, 第3间 = C5, 第4间 = E5
+    // 高音谱号五线谱的音符位置：
+    // 第1线（底线）= E4
+    // 第1间 = F4
+    // 第2线 = G4
+    // 第2间 = A4
+    // 第3线（中间线）= B4
+    // 第3间 = C5
+    // 第4线 = D5
+    // 第4间 = E5
+    // 第5线（顶线）= F5
 
+    // 升号顺序：F C G D A E B
+    // 降号顺序：B E A D G C F
+
+    // 计算符号在五线谱上的Y坐标（符号中心应对齐音符位置）
     final positions = {
-      'F': startY + 4 * lineSpacing, // F4 第1间 -> 第5线
-      'C': startY + 2 * lineSpacing, // C5 第3间
-      'G': startY - 0.5 * lineSpacing, // G5 第5线上方第1间
-      'D': startY + 3 * lineSpacing, // D5 第4线
-      'A': startY + 1 * lineSpacing, // A4 第2间
-      'E': startY + 3.5 * lineSpacing, // E4 第1线下方
-      'B': startY + 2.5 * lineSpacing, // B4 第3线
+      'F': startY + 4 * lineSpacing - 8, // F5 在第5线上
+      'C': startY + 2 * lineSpacing - 8, // C5 在第3间
+      'G': startY + 1 * lineSpacing - 8, // G4 在第2线上
+      'D': startY + 3 * lineSpacing - 8, // D5 在第4线上
+      'A': startY + 1.5 * lineSpacing - 8, // A4 在第2间
+      'E': startY - 0.5 * lineSpacing - 8, // E5 在第5线上方第1间
+      'B': startY + 2.5 * lineSpacing - 8, // B4 在第3线上
     };
 
     return positions[note] ?? startY - 10;
