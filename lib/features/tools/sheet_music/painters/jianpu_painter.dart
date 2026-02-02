@@ -802,15 +802,30 @@ class JianpuPainter extends CustomPainter {
 
     if (playheadPosition == null) return;
 
-    final paint = Paint()
-      ..color = config.theme.playingColor.withValues(alpha: 0.4)
-      ..strokeWidth = 2;
+    // 绘制播放指示线（加粗，更明显）
+    final linePaint = Paint()
+      ..color = config.theme.playingColor.withValues(alpha: 0.7)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
 
     canvas.drawLine(
       Offset(playheadPosition.x, playheadPosition.y),
       Offset(playheadPosition.x, playheadPosition.y + playheadPosition.height),
-      paint,
+      linePaint,
     );
+
+    // 添加顶部三角形指示器
+    final trianglePaint = Paint()
+      ..color = config.theme.playingColor.withValues(alpha: 0.9)
+      ..style = PaintingStyle.fill;
+
+    final trianglePath = Path()
+      ..moveTo(playheadPosition.x, playheadPosition.y)
+      ..lineTo(playheadPosition.x - 6, playheadPosition.y - 8)
+      ..lineTo(playheadPosition.x + 6, playheadPosition.y - 8)
+      ..close();
+
+    canvas.drawPath(trianglePath, trianglePaint);
   }
 
   /// 计算播放指示线位置
@@ -826,21 +841,23 @@ class JianpuPainter extends CustomPainter {
   }) {
     if (totalDuration <= 0) return null;
 
-    // 直接使用进度比例计算位置，避免重复计算速度
-    // currentTime 和 totalDuration 已经考虑了倍速和临时速度调整
-    final progress = (currentTime / totalDuration).clamp(0.0, 1.0);
+    // 基于实际时间计算位置，而不是进度百分比
+    // 这样可以确保竖线位置和音符播放时间完全同步
+    final tempo = score.metadata.tempo;
+    final secondsPerBeat = 60.0 / tempo;
+    final secondsPerMeasure = params.beatsPerMeasure * secondsPerBeat;
 
     // 计算当前小节索引
-    final measureIndex = (progress * score.measureCount).floor().clamp(
+    final measureIndex = (currentTime / secondsPerMeasure).floor().clamp(
       0,
       score.measureCount - 1,
     );
 
-    // 计算小节内的进度
-    final measureProgress = (progress * score.measureCount) - measureIndex;
+    // 计算小节内的时间
+    final timeInMeasure = currentTime % secondsPerMeasure;
 
     // 计算拍内位置
-    final beatInMeasure = measureProgress * params.beatsPerMeasure;
+    final beatInMeasure = timeInMeasure / secondsPerBeat;
 
     // 计算行位置
     final measureInLine = measureIndex % params.measuresPerLine;

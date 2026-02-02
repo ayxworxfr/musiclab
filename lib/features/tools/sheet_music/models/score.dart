@@ -297,13 +297,22 @@ class Beat {
   bool get isChord => notes.length > 1;
 
   /// 获取该拍总时值（考虑三连音）
+  /// 对于多个音符，累加它们的时值（顺序播放）
   double get totalBeats {
     if (notes.isEmpty) return 1.0;
-    final baseBeats = notes.first.actualBeats;
-    if (tuplet != null) {
-      return baseBeats * tuplet!.timeMultiplier;
+
+    // 累加所有音符的时值
+    double total = 0.0;
+    for (final note in notes) {
+      total += note.actualBeats;
     }
-    return baseBeats;
+
+    // 如果有三连音标记，应用时间倍数
+    if (tuplet != null) {
+      total *= tuplet!.timeMultiplier;
+    }
+
+    return total;
   }
 
   factory Beat.fromJson(Map<String, dynamic> json) {

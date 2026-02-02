@@ -331,21 +331,43 @@ class TrackDocument {
     final measure = track.measures[measureIndex];
     final totalBeats = measure.beats.fold<double>(
       0.0,
-      (sum, beat) => sum + beat.totalBeats,
+      (sum, beat) {
+        // 只计算有音符的beat，忽略空beat
+        if (beat.notes.isEmpty) return sum;
+        return sum + beat.totalBeats;
+      },
     );
 
     return totalBeats >= metadata.beatsPerMeasure;
   }
 
-  /// 获取小节当前的拍数
+  /// 获取小节当前的拍数（只计算有音符的beat）
   double getMeasureBeats(int measureIndex) {
     if (measureIndex >= track.measures.length) return 0.0;
 
     final measure = track.measures[measureIndex];
     return measure.beats.fold<double>(
       0.0,
-      (sum, beat) => sum + beat.totalBeats,
+      (sum, beat) {
+        // 只计算有音符的beat，忽略空beat
+        if (beat.notes.isEmpty) return sum;
+        return sum + beat.totalBeats;
+      },
     );
+  }
+
+  /// 获取指定beat当前的拍数
+  double getBeatBeats(int measureIndex, int beatIndex) {
+    if (measureIndex >= track.measures.length) return 0.0;
+
+    final measure = track.measures[measureIndex];
+    final beat = measure.beats.cast<Beat?>().firstWhere(
+      (b) => b?.index == beatIndex,
+      orElse: () => null,
+    );
+
+    if (beat == null || beat.notes.isEmpty) return 0.0;
+    return beat.totalBeats;
   }
 
   /// 获取下一个可用的beat索引

@@ -18,6 +18,9 @@ class ScoreDocument {
   /// 当前选区
   Selection _selection;
 
+  /// 每个轨道的编辑位置（记忆功能）
+  final Map<int, Position> _trackPositions = {};
+
   /// 命令管理器（撤销/重做）
   final CommandManager _commandManager = CommandManager();
 
@@ -86,10 +89,13 @@ class ScoreDocument {
     final position = at ?? _selection.currentPosition;
     if (!_isValidTrackAndMeasure(position)) return;
 
-    // 检查小节是否已满（在插入前检查）
+    // 检查插入后是否会超出小节容量
     final trackDoc = getTrack(position.trackIndex);
-    if (trackDoc.isMeasureFull(position.measureIndex)) {
-      // 小节已满，自动移动到下一小节
+    final currentBeats = trackDoc.getMeasureBeats(position.measureIndex);
+    final noteBeats = note.actualBeats;
+
+    if (currentBeats + noteBeats > trackDoc.metadata.beatsPerMeasure) {
+      // 插入后会超出小节容量，自动移动到下一小节
       _moveToNextMeasureOrCreate();
       // 递归调用，在新位置插入
       insertNote(note);
@@ -142,10 +148,13 @@ class ScoreDocument {
     final position = at ?? _selection.currentPosition;
     if (!_isValidTrackAndMeasure(position)) return;
 
-    // 检查小节是否已满（在插入前检查）
+    // 检查插入后是否会超出小节容量
     final trackDoc = getTrack(position.trackIndex);
-    if (trackDoc.isMeasureFull(position.measureIndex)) {
-      // 小节已满，自动移动到下一小节
+    final currentBeats = trackDoc.getMeasureBeats(position.measureIndex);
+    final noteBeats = notes.first.actualBeats; // 和弦中所有音符时值相同
+
+    if (currentBeats + noteBeats > trackDoc.metadata.beatsPerMeasure) {
+      // 插入后会超出小节容量，自动移动到下一小节
       _moveToNextMeasureOrCreate();
       // 递归调用，在新位置插入
       insertChord(notes);
@@ -373,15 +382,43 @@ class ScoreDocument {
     if (trackIndex < 0 || trackIndex >= _score.tracks.length) return;
 
     final current = _selection.currentPosition;
-    final newTrackDoc = getTrack(trackIndex);
-    final newMeasureIndex = current.measureIndex.clamp(
-      0,
-      newTrackDoc.track.measures.length - 1,
-    );
 
-    moveSelectionTo(
-      current.copyWith(trackIndex: trackIndex, measureIndex: newMeasureIndex),
-    );
+    // 保存当前轨道的编辑位置
+    _trackPositions[current.trackIndex] = current;
+
+    // 获取目标轨道之前保存的位置，如果没有则使用默认位置
+    Position? savedPosition = _trackPositions[trackIndex];
+
+    // 如果目标轨道没有保存过位置，找到第一个音符或使用开头
+    if (savedPosition == null) {
+      final newTrackDoc = getTrack(trackIndex);
+      savedPosition = newTrackDoc.firstNoteInMeasure(0) ??
+          Position(
+            trackIndex: trackIndex,
+            measureIndex: 0,
+            beatIndex: 0,
+            noteIndex: -1,
+          );
+    } else {
+      // 确保保存的位置仍然有效（轨道可能被修改）
+      final newTrackDoc = getTrack(trackIndex);
+      if (savedPosition.measureIndex >= newTrackDoc.track.measures.length) {
+        // 如果保存的小节索引超出范围，使用最后一个小节
+        final lastMeasureIndex = newTrackDoc.track.measures.length - 1;
+        savedPosition = Position(
+          trackIndex: trackIndex,
+          measureIndex: lastMeasureIndex.clamp(0, 999),
+          beatIndex: 0,
+          noteIndex: -1,
+        );
+      } else {
+        // 更新 trackIndex（因为保存的是旧的 trackIndex）
+        savedPosition = savedPosition.copyWith(trackIndex: trackIndex);
+      }
+    }
+
+    // 移动到目标轨道的保存位置
+    moveSelectionTo(savedPosition);
   }
 
   // =========== 查询操作 ===========
@@ -403,14 +440,22 @@ class ScoreDocument {
   }
 
   /// 将简谱索引转换为Position
+  /// 如果指定了trackIndex，使用指定轨道；否则使用当前轨道
   Position? positionFromSequentialIndex(
     int measureIndex,
-    int sequentialNoteIndex,
-  ) {
-    return currentTrack.positionFromSequentialIndex(
+    int sequentialNoteIndex, {
+    int? trackIndex,
+  }) {
+    final track = trackIndex != null ? getTrack(trackIndex) : currentTrack;
+    final position = track.positionFromSequentialIndex(
       measureIndex,
       sequentialNoteIndex,
     );
+    // 如果指定了trackIndex，需要确保返回的Position也包含正确的trackIndex
+    if (position != null && trackIndex != null) {
+      return position.copyWith(trackIndex: trackIndex);
+    }
+    return position;
   }
 
   /// 将Position转换为简谱索引
@@ -493,18 +538,47 @@ class ScoreDocument {
   }
 
   /// 插入音符后智能移动光标
-  /// 根据小节剩余空间决定移动到下一拍还是下一小节
+  /// 根据小节剩余空间和音符时值决定移动位置
   void _moveAfterInsert(Note note) {
     final current = _selection.currentPosition;
     final trackDoc = getTrack(current.trackIndex);
 
-    // 检查插入后小节是否已满
-    if (trackDoc.isMeasureFull(current.measureIndex)) {
+    // 检查插入后小节是否已满（使用实际拍数计算）
+    final currentBeats = trackDoc.getMeasureBeats(current.measureIndex);
+    final beatsPerMeasure = trackDoc.metadata.beatsPerMeasure;
+
+    if (currentBeats >= beatsPerMeasure) {
       // 小节已满，移动到下一小节
       _moveToNextMeasureOrCreate();
     } else {
-      // 小节未满，移动到下一拍
-      moveToNextBeat();
+      // 小节未满，根据音符时值决定移动方式
+      final noteBeats = note.actualBeats;
+
+      if (noteBeats >= 1.0) {
+        // 音符占据1拍或更多，移动到下一拍
+        moveToNextBeat();
+      } else {
+        // 音符不足1拍（如8分、16分音符）
+        // 检查当前beat插入后是否还有空间容纳更多音符
+        final currentBeatBeats = trackDoc.getBeatBeats(
+          current.measureIndex,
+          current.beatIndex,
+        );
+
+        // currentBeatBeats 已经包含了刚插入的音符
+        if (currentBeatBeats < 1.0) {
+          // 当前拍还有空间，保持在当前拍，增加noteIndex
+          final measure = trackDoc.track.measures[current.measureIndex];
+          final beat = measure.beats.firstWhere(
+            (b) => b.index == current.beatIndex,
+            orElse: () => Beat(index: current.beatIndex, notes: []),
+          );
+          moveSelectionTo(current.copyWith(noteIndex: beat.notes.length));
+        } else {
+          // 当前拍已满（正好1拍），移动到下一拍
+          moveToNextBeat();
+        }
+      }
     }
   }
 

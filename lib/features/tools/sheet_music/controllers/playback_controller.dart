@@ -524,11 +524,8 @@ class PlaybackController extends GetxController {
       _checkMetronome();
     }
 
-    // 优化UI更新频率：每32ms更新一次（约30fps）
-    _tickCount++;
-    if (_tickCount % 2 == 0) {
-      update();
-    }
+    // 优化UI更新频率：每16ms更新一次（约60fps），让播放指示线更流畅
+    update();
   }
 
   /// 触发音符

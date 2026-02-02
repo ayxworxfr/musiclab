@@ -481,11 +481,19 @@ class SheetEditorController extends GetxController {
 
   /// 从简谱索引查找Beat和Note索引
   /// 返回 (beatIndex, noteIndexInBeat)，如果找不到返回 null
-  (int, int)? findBeatAndNoteIndex(int measureIndex, int jianpuNoteIndex) {
+  /// 如果不指定trackIndex，则使用当前选中的轨道
+  (int, int)? findBeatAndNoteIndex(
+    int measureIndex,
+    int jianpuNoteIndex, {
+    int? trackIndex,
+  }) {
     if (_document == null) return null;
+    // 使用指定的轨道索引，如果没有指定则使用当前选中的轨道
+    final targetTrackIndex = trackIndex ?? selectedTrackIndex.value;
     final position = _document!.positionFromSequentialIndex(
       measureIndex,
       jianpuNoteIndex,
+      trackIndex: targetTrackIndex,
     );
     if (position == null) return null;
     return (position.beatIndex, position.noteIndex);

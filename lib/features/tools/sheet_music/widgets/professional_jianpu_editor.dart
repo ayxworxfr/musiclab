@@ -727,11 +727,14 @@ class ProfessionalJianpuEditor extends StatelessWidget {
         );
 
         if (beatAndNote != null) {
-          final (beatIndex, _) = beatAndNote;
-          // 多音（和弦）支持：只要在同一小节的同一拍即高亮（同一拍内的所有音符都高亮）
-          isSelected =
-              playbackState.currentMeasureIndex == measureIndex &&
-              _isCurrentBeat(playbackState, beatIndex);
+          final (beatIndex, noteIndexInBeat) = beatAndNote;
+          // 检查该音符是否应该高亮（基于实际播放时间）
+          isSelected = _isNoteCurrentlyPlaying(
+            playbackState,
+            measureIndex,
+            beatIndex,
+            noteIndexInBeat,
+          );
         } else {
           isSelected = false;
         }
@@ -1594,5 +1597,41 @@ class ProfessionalJianpuEditor extends StatelessWidget {
   bool _isCurrentBeat(SheetPlaybackState playbackState, int beatIndex) {
     // 直接比较 beatIndex
     return playbackState.currentBeatIndex == beatIndex;
+  }
+
+  /// 判断指定的音符是否正在播放（基于实际播放时间）
+  /// 直接使用 SheetPlayerController 中已经计算好的时间，确保一致性
+  /// 参考详情页面的实现：提前50ms释放高亮，让重复音之间有明显的视觉间隙
+  bool _isNoteCurrentlyPlaying(
+    SheetPlaybackState playbackState,
+    int measureIndex,
+    int beatIndex,
+    int noteIndexInBeat,
+  ) {
+    // 尝试获取播放控制器
+    final playerController = Get.isRegistered<SheetPlayerController>()
+        ? Get.find<SheetPlayerController>()
+        : null;
+
+    if (playerController == null) return false;
+
+    // 从播放控制器获取该音符的准确时间范围
+    final timeRange = playerController.getNoteTimeRange(
+      measureIndex,
+      beatIndex,
+      noteIndexInBeat,
+    );
+
+    if (timeRange == null) return false;
+
+    final (noteStartTime, noteEndTime) = timeRange;
+
+    // 提前50ms释放高亮（与详情页面PlaybackController保持一致）
+    // 这样可以让重复音之间有明显的视觉间隙
+    final adjustedEndTime = noteEndTime - 0.05;
+
+    // 检查当前播放时间是否在该音符的时间范围内
+    final currentTime = playbackState.currentTime;
+    return currentTime >= noteStartTime && currentTime < adjustedEndTime;
   }
 }
