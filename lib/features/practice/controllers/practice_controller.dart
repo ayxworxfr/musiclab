@@ -19,10 +19,14 @@ class PracticeController extends GetxController {
   /// 当前练习类型
   final currentType = PracticeType.noteRecognition.obs;
 
-  /// 当前难度
+  /// 当前识谱练习配置
+  final Rx<NotePracticeConfig> notePracticeConfig =
+      NotePracticeConfig.defaultConfig().obs;
+
+  /// 当前难度（用于其他练习类型）
   final currentDifficulty = 1.obs;
 
-  /// 默认题目数量
+  /// 默认题目数量（用于其他练习类型）
   final defaultQuestionCount = 10.obs;
 
   /// 题目列表
@@ -79,12 +83,50 @@ class PracticeController extends GetxController {
 
   /// 加载练习设置
   void _loadSettings() {
+    // 加载识谱练习配置
+    final savedConfig = _settingsService.getNotePracticeConfig();
+    if (savedConfig != null) {
+      try {
+        notePracticeConfig.value = NotePracticeConfig.fromJson(savedConfig);
+      } catch (e) {
+        LoggerUtil.warning('加载识谱练习配置失败', e);
+        notePracticeConfig.value = NotePracticeConfig.defaultConfig();
+      }
+    }
+
+    // 加载其他练习类型的设置
     currentDifficulty.value = _settingsService.getPracticeDefaultDifficulty();
-    defaultQuestionCount.value = _settingsService
-        .getPracticeDefaultQuestionCount();
+    defaultQuestionCount.value =
+        _settingsService.getPracticeDefaultQuestionCount();
   }
 
-  /// 开始练习
+  /// 开始识谱练习（使用配置对象）
+  void startNotePractice({required NotePracticeConfig config}) {
+    currentType.value = PracticeType.noteRecognition;
+    notePracticeConfig.value = config;
+
+    // 保存配置到本地
+    _settingsService.saveNotePracticeConfig(config.toJson());
+
+    // 生成题目
+    questions.value = _questionGenerator.generateJianpuRecognition(
+      config: config,
+    );
+
+    // 重置状态
+    _resetPracticeState();
+
+    // 记录开始时间
+    _startTime = DateTime.now();
+    _questionStartTime = DateTime.now();
+
+    LoggerUtil.info(
+      '开始识谱练习: 难度: ${config.difficulty}, 谱号: ${config.clef}, '
+      '题数: ${questions.length}, 调号: ${config.keySignature ?? "自动"}',
+    );
+  }
+
+  /// 开始其他类型练习（兼容旧接口）
   void startPractice({
     required PracticeType type,
     required int difficulty,
@@ -109,12 +151,7 @@ class PracticeController extends GetxController {
     questions.value = _generateQuestions(type, difficulty, count);
 
     // 重置状态
-    currentIndex.value = 0;
-    answers.clear();
-    hasAnswered.value = false;
-    isCurrentCorrect.value = false;
-    isCompleted.value = false;
-    userPlayedNotes.clear();
+    _resetPracticeState();
 
     // 记录开始时间
     _startTime = DateTime.now();
@@ -125,18 +162,29 @@ class PracticeController extends GetxController {
     );
   }
 
-  /// 生成题目
+  /// 重置练习状态
+  void _resetPracticeState() {
+    currentIndex.value = 0;
+    answers.clear();
+    hasAnswered.value = false;
+    isCurrentCorrect.value = false;
+    isCompleted.value = false;
+    userPlayedNotes.clear();
+  }
+
+  /// 生成题目（用于非识谱练习）
   List<PracticeQuestion> _generateQuestions(
     PracticeType type,
     int difficulty,
     int count,
   ) {
     return switch (type) {
-      PracticeType.noteRecognition =>
-        _questionGenerator.generateJianpuRecognition(
+      PracticeType.noteRecognition => _questionGenerator.generateJianpuRecognition(
+        config: NotePracticeConfig(
           difficulty: difficulty,
-          count: count,
+          questionCount: count,
         ),
+      ),
       PracticeType.earTraining => _questionGenerator.generateEarTraining(
         difficulty: difficulty,
         count: count,
@@ -146,8 +194,10 @@ class PracticeController extends GetxController {
         count: count,
       ),
       _ => _questionGenerator.generateJianpuRecognition(
-        difficulty: difficulty,
-        count: count,
+        config: NotePracticeConfig(
+          difficulty: difficulty,
+          questionCount: count,
+        ),
       ),
     };
   }
@@ -281,10 +331,14 @@ class PracticeController extends GetxController {
 
   /// 获取练习记录
   PracticeRecord getPracticeRecord() {
+    final difficulty = currentType.value == PracticeType.noteRecognition
+        ? notePracticeConfig.value.difficulty
+        : currentDifficulty.value;
+
     return PracticeRecord(
       id: 'practice_${DateTime.now().millisecondsSinceEpoch}',
       type: currentType.value,
-      difficulty: currentDifficulty.value,
+      difficulty: difficulty,
       totalQuestions: questions.length,
       correctCount: correctCount,
       durationSeconds: totalSeconds.value,
@@ -295,11 +349,15 @@ class PracticeController extends GetxController {
 
   /// 重新开始
   void restart() {
-    startPractice(
-      type: currentType.value,
-      difficulty: currentDifficulty.value,
-      questionCount: questions.length,
-    );
+    if (currentType.value == PracticeType.noteRecognition) {
+      startNotePractice(config: notePracticeConfig.value);
+    } else {
+      startPractice(
+        type: currentType.value,
+        difficulty: currentDifficulty.value,
+        questionCount: questions.length,
+      );
+    }
   }
 
   /// 比较两个列表是否相等

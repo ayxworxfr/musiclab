@@ -128,23 +128,21 @@ class JianpuNoteText extends StatelessWidget {
   Widget build(BuildContext context) {
     final textColor =
         color ?? Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
+
     final dotSize = fontSize * 0.18;
     final dotSpacing = fontSize * 0.15;
 
-    // 计算点区域的高度（用于预留空间）
-    final dotsHeight = octaveOffset.abs() * (dotSize + dotSpacing * 0.5);
+    // 预留固定的八度点区域高度（最多支持3个点）
+    final maxDots = 3;
+    final dotAreaHeight = maxDots * (dotSize + dotSpacing / 2);
 
-    // 使用 Stack 确保数字对齐，点叠加在上方或下方
-    // 增加宽度以容纳 # 符号等变音记号
-    final textWidth = fontSize * (number.length > 1 ? 1.4 : 0.8);
+    // 使用 Stack 固定布局，确保数字始终在中心位置
     return SizedBox(
-      width: textWidth,
-      height: fontSize + dotsHeight * 2, // 预留上下点的空间
+      height: fontSize + dotAreaHeight * 2, // 固定总高度
       child: Stack(
         alignment: Alignment.center,
-        clipBehavior: Clip.none,
         children: [
-          // 数字（居中）
+          // 数字（始终在中心）
           Text(
             number,
             style: TextStyle(
@@ -155,12 +153,10 @@ class JianpuNoteText extends StatelessWidget {
             ),
           ),
 
-          // 高音点（上方）
+          // 高音点（数字上方固定位置）
           if (octaveOffset > 0)
             Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
+              top: dotAreaHeight - (octaveOffset * (dotSize + dotSpacing / 2)),
               child: _buildDots(
                 octaveOffset,
                 dotSize,
@@ -169,12 +165,10 @@ class JianpuNoteText extends StatelessWidget {
               ),
             ),
 
-          // 低音点（下方）
+          // 低音点（数字下方固定位置）
           if (octaveOffset < 0)
             Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
+              bottom: dotAreaHeight - ((-octaveOffset) * (dotSize + dotSpacing / 2)),
               child: _buildDots(
                 -octaveOffset,
                 dotSize,

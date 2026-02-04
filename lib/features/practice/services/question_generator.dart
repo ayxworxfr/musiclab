@@ -10,32 +10,30 @@ class QuestionGenerator {
 
   /// 生成识谱练习题目（简谱）
   ///
-  /// [difficulty] 难度等级 1-5
-  /// [count] 题目数量
+  /// [config] 练习配置对象
   List<PracticeQuestion> generateJianpuRecognition({
-    required int difficulty,
-    required int count,
+    required NotePracticeConfig config,
   }) {
     final questions = <PracticeQuestion>[];
 
-    // 根据难度确定音域范围
-    final (minMidi, maxMidi) = _getMidiRangeForDifficulty(difficulty);
+    // 从配置获取音域范围
+    final minMidi = config.getMinNote();
+    final maxMidi = config.getMaxNote();
 
-    // 根据难度选择调号
-    final keySignature = _getKeySignatureForDifficulty(difficulty);
+    // 从配置获取调号，如果未指定则根据难度选择
+    final keySignature =
+        config.keySignature ?? _getKeySignatureForDifficulty(config.difficulty);
 
-    for (int i = 0; i < count; i++) {
-      // 根据难度生成不同数量的音符
-      final noteCount = difficulty <= 2
-          ? 1
-          : difficulty == 3
-          ? 2
-          : 3;
+    for (int i = 0; i < config.questionCount; i++) {
+      // 从配置获取音符数量
+      final noteCount = config.getNoteCount();
       final notes = <int>[];
 
       for (int j = 0; j < noteCount; j++) {
-        // 根据调号生成符合该调的音符（避免出现不该有的升降号）
-        final midi = _generateNoteForKey(keySignature, minMidi, maxMidi);
+        // 根据调号和黑键设置生成音符
+        final midi = config.includeBlackKeys
+            ? _generateNoteForKey(keySignature, minMidi, maxMidi)
+            : _generateWhiteKeyNote(minMidi, maxMidi);
         notes.add(midi);
       }
 
@@ -46,12 +44,13 @@ class QuestionGenerator {
         PracticeQuestion(
           id: 'jianpu_${DateTime.now().millisecondsSinceEpoch}_$i',
           type: PracticeType.noteRecognition,
-          difficulty: difficulty,
+          difficulty: config.difficulty,
           content: QuestionContent(
             type: 'jianpu',
             description: '看着简谱，在钢琴上弹出来',
             notes: notes,
             jianpuData: jianpu,
+            staffData: StaffData(clef: config.clef, notes: notes),
             keySignature: keySignature,
           ),
           correctAnswer: notes,
@@ -64,29 +63,31 @@ class QuestionGenerator {
   }
 
   /// 生成识谱练习题目（五线谱）
+  ///
+  /// [config] 练习配置对象
   List<PracticeQuestion> generateStaffRecognition({
-    required int difficulty,
-    required int count,
+    required NotePracticeConfig config,
   }) {
     final questions = <PracticeQuestion>[];
 
-    final (minMidi, maxMidi) = _getMidiRangeForDifficulty(difficulty);
+    // 从配置获取音域范围
+    final minMidi = config.getMinNote();
+    final maxMidi = config.getMaxNote();
 
-    // 根据难度选择调号
-    final keySignature = _getKeySignatureForDifficulty(difficulty);
+    // 从配置获取调号，如果未指定则根据难度选择
+    final keySignature =
+        config.keySignature ?? _getKeySignatureForDifficulty(config.difficulty);
 
-    for (int i = 0; i < count; i++) {
-      // 根据难度生成不同数量的音符
-      final noteCount = difficulty <= 2
-          ? 1
-          : difficulty == 3
-          ? 2
-          : 3;
+    for (int i = 0; i < config.questionCount; i++) {
+      // 从配置获取音符数量
+      final noteCount = config.getNoteCount();
       final notes = <int>[];
 
       for (int j = 0; j < noteCount; j++) {
-        // 根据调号生成符合该调的音符（避免出现不该有的升降号）
-        final midi = _generateNoteForKey(keySignature, minMidi, maxMidi);
+        // 根据调号和黑键设置生成音符
+        final midi = config.includeBlackKeys
+            ? _generateNoteForKey(keySignature, minMidi, maxMidi)
+            : _generateWhiteKeyNote(minMidi, maxMidi);
         notes.add(midi);
       }
 
@@ -97,11 +98,11 @@ class QuestionGenerator {
         PracticeQuestion(
           id: 'staff_${DateTime.now().millisecondsSinceEpoch}_$i',
           type: PracticeType.noteRecognition,
-          difficulty: difficulty,
+          difficulty: config.difficulty,
           content: QuestionContent(
             type: 'staff',
             description: '看着五线谱，在钢琴上弹出来',
-            staffData: StaffData(clef: 'treble', notes: notes),
+            staffData: StaffData(clef: config.clef, notes: notes),
             keySignature: keySignature,
           ),
           correctAnswer: notes,
@@ -885,5 +886,28 @@ class QuestionGenerator {
       'C#' => {1, 3, 5, 6, 8, 10, 0}, // C# D# E# F# G# A# B#
       _ => {0, 2, 4, 5, 7, 9, 11}, // 默认C调
     };
+  }
+
+  /// 生成白键音符（不包含黑键）
+  ///
+  /// 只生成C D E F G A B这7个音，避免升降号
+  int _generateWhiteKeyNote(int minMidi, int maxMidi) {
+    // 白键对应的MIDI % 12值：C=0, D=2, E=4, F=5, G=7, A=9, B=11
+    const whiteKeys = {0, 2, 4, 5, 7, 9, 11};
+
+    // 在音域范围内找到所有白键音符
+    final validMidiList = <int>[];
+    for (int midi = minMidi; midi <= maxMidi; midi++) {
+      if (whiteKeys.contains(midi % 12)) {
+        validMidiList.add(midi);
+      }
+    }
+
+    // 如果没有有效音符，返回minMidi
+    if (validMidiList.isEmpty) {
+      return minMidi;
+    }
+
+    return validMidiList[_random.nextInt(validMidiList.length)];
   }
 }

@@ -11,6 +11,7 @@ import '../../tools/sheet_music/painters/render_config.dart';
 import '../controllers/practice_controller.dart';
 import '../models/practice_model.dart';
 import '../widgets/practice_jianpu_widget.dart';
+import '../widgets/note_practice_settings_dialog.dart';
 
 /// 识谱练习页面
 /// 看着谱子，在钢琴上弹出来
@@ -82,9 +83,10 @@ class NotePracticePage extends GetView<PracticeController> {
 
   /// 难度选择界面
   Widget _buildDifficultySelector(BuildContext context, bool isDark) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -107,9 +109,133 @@ class NotePracticePage extends GetView<PracticeController> {
           ),
           const SizedBox(height: 24),
 
+          // 当前配置显示
+          _buildCurrentConfigCard(context, isDark),
+          const SizedBox(height: 16),
+
           // 难度选项
           ..._buildDifficultyOptions(context, isDark),
+
+          const SizedBox(height: 16),
+
+          // 高级设置按钮
+          _buildAdvancedSettingsButton(context, isDark),
         ],
+      ),
+    );
+  }
+
+  /// 当前配置卡片
+  Widget _buildCurrentConfigCard(BuildContext context, bool isDark) {
+    return Obx(() {
+      final config = controller.notePracticeConfig.value;
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.settings, size: 20, color: AppColors.primary),
+                const SizedBox(width: 8),
+                const Text(
+                  '当前配置',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildConfigChip(
+                  config.clef == 'treble' ? '高音谱' : '低音谱',
+                  Icons.music_note,
+                ),
+                _buildConfigChip(
+                  '${config.questionCount} 题',
+                  Icons.format_list_numbered,
+                ),
+                if (config.keySignature != null)
+                  _buildConfigChip(
+                    '${config.keySignature}调',
+                    Icons.key,
+                  ),
+                if (!config.includeBlackKeys)
+                  _buildConfigChip(
+                    '仅白键',
+                    Icons.piano,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildConfigChip(String label, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.primary),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 高级设置按钮
+  Widget _buildAdvancedSettingsButton(BuildContext context, bool isDark) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => _showAdvancedSettings(context),
+        icon: const Icon(Icons.tune),
+        label: const Text('高级设置'),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 显示高级设置对话框
+  void _showAdvancedSettings(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => NotePracticeSettingsDialog(
+        initialConfig: controller.notePracticeConfig.value,
+        onConfirm: (config) {
+          controller.startNotePractice(config: config);
+        },
       ),
     );
   }
@@ -454,6 +580,7 @@ class NotePracticePage extends GetView<PracticeController> {
     if (notes.isEmpty) return const SizedBox.shrink();
 
     final keySignature = question.content.keySignature ?? 'C';
+    final clef = question.content.staffData?.clef ?? 'treble';
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -482,7 +609,7 @@ class NotePracticePage extends GetView<PracticeController> {
           const SizedBox(height: 4),
           // 五线谱（固定高度）
           StaffWidget(
-            clef: 'treble',
+            clef: clef,
             notes: notes,
             width: 240,
             height: 95,
@@ -1014,11 +1141,11 @@ class NotePracticePage extends GetView<PracticeController> {
   }
 
   void _startPractice(int difficulty) {
-    controller.startPractice(
-      type: PracticeType.noteRecognition,
+    // 使用当前配置的副本，只更新难度
+    final config = controller.notePracticeConfig.value.copyWith(
       difficulty: difficulty,
-      questionCount: 10,
     );
+    controller.startNotePractice(config: config);
   }
 
   /// 计算两个 MIDI 音符之间的白键数量（包含起止）

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:printing/printing.dart';
 
+import '../../../../../core/services/file_download_service.dart';
 import '../../models/enums.dart';
 import '../../models/score.dart';
 import 'midi_exporter.dart';
@@ -471,6 +472,16 @@ class SheetExportService {
     await Clipboard.setData(ClipboardData(text: text));
   }
 
+  /// 下载文本文件
+  Future<String?> downloadTextFile(String content, String filename) async {
+    return FileDownloadService.downloadTextFile(content, filename);
+  }
+
+  /// 下载二进制文件
+  Future<String?> downloadBinaryFile(Uint8List data, String filename) async {
+    return FileDownloadService.downloadBinaryFile(data, filename);
+  }
+
   /// 显示导出选项对话框
   Future<void> showExportDialog(
     BuildContext context,
@@ -555,10 +566,36 @@ class SheetExportService {
                 '内容已复制到剪贴板',
                 snackPosition: SnackPosition.BOTTOM,
               );
-              Navigator.pop(context);
             },
             icon: const Icon(Icons.copy, size: 18),
             label: const Text('复制'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final path = await downloadTextFile(text, filename);
+              Navigator.pop(context);
+
+              if (path != null) {
+                Get.snackbar(
+                  '下载成功',
+                  '文件已保存到: $path',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 3),
+                );
+              } else {
+                Get.snackbar(
+                  '下载成功',
+                  '文件已保存',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                );
+              }
+            },
+            icon: const Icon(Icons.download, size: 18),
+            label: const Text('下载'),
           ),
         ],
       ),
@@ -590,6 +627,33 @@ class SheetExportService {
             onPressed: () => Navigator.pop(context),
             child: const Text('关闭'),
           ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final path = await downloadBinaryFile(data, filename);
+              Navigator.pop(context);
+
+              if (path != null) {
+                Get.snackbar(
+                  '下载成功',
+                  '文件已保存到: $path',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 3),
+                );
+              } else {
+                Get.snackbar(
+                  '下载成功',
+                  '文件已保存',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                );
+              }
+            },
+            icon: const Icon(Icons.download, size: 18),
+            label: const Text('下载'),
+          ),
           if (format == ExportFormat.pdfJianpu ||
               format == ExportFormat.pdfStaff)
             ElevatedButton.icon(
@@ -601,15 +665,6 @@ class SheetExportService {
               icon: const Icon(Icons.print, size: 18),
               label: const Text('打印预览'),
             ),
-          ElevatedButton.icon(
-            onPressed: () async {
-              Navigator.pop(context);
-              // 分享已生成的 PDF 数据
-              await Printing.sharePdf(bytes: data, filename: filename);
-            },
-            icon: const Icon(Icons.share, size: 18),
-            label: const Text('分享'),
-          ),
         ],
       ),
     );

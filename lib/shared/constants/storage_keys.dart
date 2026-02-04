@@ -130,4 +130,7 @@ abstract class StorageKeys {
   /// 练习默认题目数量
   static const String practiceDefaultQuestionCount =
       'practice_default_question_count';
+
+  /// 识谱练习完整配置
+  static const String notePracticeConfig = 'note_practice_config';
 }

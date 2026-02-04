@@ -283,5 +283,28 @@ class SettingsService extends GetxService {
   Future<void> resetPracticeSettings() async {
     await setPracticeDefaultDifficulty(1);
     await setPracticeDefaultQuestionCount(10);
+    await _storage.remove(StorageKeys.notePracticeConfig);
+  }
+
+  // ==================== 识谱练习配置 ====================
+
+  /// 获取识谱练习配置
+  Map<String, dynamic>? getNotePracticeConfig() {
+    return _storage.getCacheData<Map<dynamic, dynamic>>(
+      StorageKeys.notePracticeConfig,
+    )?.cast<String, dynamic>();
+  }
+
+  /// 保存识谱练习配置
+  Future<void> saveNotePracticeConfig(Map<String, dynamic> config) {
+    return _storage.saveCacheData(
+      StorageKeys.notePracticeConfig,
+      config,
+    );
+  }
+
+  /// 清除识谱练习配置
+  Future<bool> clearNotePracticeConfig() {
+    return _storage.remove(StorageKeys.notePracticeConfig);
   }
 }

@@ -63,9 +63,10 @@ class PianoPracticePage extends GetView<PracticeController> {
 
   /// 难度选择界面
   Widget _buildDifficultySelector(BuildContext context, bool isDark) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(

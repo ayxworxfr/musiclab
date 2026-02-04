@@ -771,8 +771,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           }
         },
         child: Container(
-          constraints: const BoxConstraints(minWidth: 50),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          constraints: const BoxConstraints(minWidth: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.primary
@@ -796,11 +796,8 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 高音点
-              if (!note.isRest && note.octaveOffset > 0)
-                _buildOctaveDots(note.octaveOffset, isSelected),
-
               // 音符主体
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -809,32 +806,34 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                   // 变音记号
                   if (!note.isRest && note.accidental != Accidental.none)
                     Padding(
-                      padding: const EdgeInsets.only(right: 2),
+                      padding: const EdgeInsets.only(right: 1),
                       child: Text(
                         note.accidental.displaySymbol,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: isSelected ? Colors.white : Colors.grey[700],
                         ),
                       ),
                     ),
 
-                  // 数字（休止符也使用 JianpuNoteText 保持样式一致）
+                  // 数字（包含八度点）
                   JianpuNoteText(
                     number: note.isRest ? '0' : note.degree.toString(),
-                    octaveOffset: 0, // 已经在上面显示了
-                    fontSize: 28,
+                    octaveOffset: note.isRest ? 0 : note.octaveOffset,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: isSelected ? Colors.white : Colors.black87,
+                    highDotColor: isSelected ? Colors.white : Colors.black87,
+                    lowDotColor: isSelected ? Colors.white : Colors.black87,
                   ),
 
                   // 附点
                   if (!note.isRest && note.isDotted)
                     Padding(
-                      padding: const EdgeInsets.only(left: 2, bottom: 12),
+                      padding: const EdgeInsets.only(left: 1, bottom: 10),
                       child: Container(
-                        width: 6,
-                        height: 6,
+                        width: 4,
+                        height: 4,
                         decoration: BoxDecoration(
                           color: isSelected ? Colors.white : Colors.black87,
                           shape: BoxShape.circle,
@@ -844,38 +843,56 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 ],
               ),
 
-              // 时值线
+              // 时值线（紧贴数字或最下面的低八度点）
               if (note.duration.underlineCount > 0)
-                Container(
-                  margin: const EdgeInsets.only(top: 2),
-                  height: note.duration.underlineCount * 3.0,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                      note.duration.underlineCount,
-                      (_) => Container(
-                        width: 20,
-                        height: 2,
-                        margin: const EdgeInsets.only(top: 1),
-                        color: isSelected ? Colors.white70 : Colors.black54,
+                Transform.translate(
+                  // JianpuNoteText 为八度点预留了固定空间
+                  // 需要向上偏移未使用的空间，让下划线紧贴实际内容底部
+                  offset: Offset(0, () {
+                    const fontSize = 24.0;
+                    const dotSize = fontSize * 0.18;
+                    const dotSpacing = fontSize * 0.15;
+                    const maxDots = 3;
+                    const dotAreaHeight = maxDots * (dotSize + dotSpacing / 2);
+
+                    if (note.octaveOffset >= 0) {
+                      // 没有低八度点，向上偏移整个预留空间
+                      return -dotAreaHeight;
+                    } else {
+                      // 有低八度点，只向上偏移未使用的空间
+                      final usedDots = -note.octaveOffset;
+                      final usedSpace = usedDots * (dotSize + dotSpacing / 2);
+                      return -(dotAreaHeight - usedSpace);
+                    }
+                  }()),
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 3),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(
+                        note.duration.underlineCount,
+                        (index) => Container(
+                          width: 20,
+                          height: 1.5,
+                          margin: EdgeInsets.only(top: index == 0 ? 0 : 1.5),
+                          color: isSelected ? Colors.white70 : Colors.black54,
+                        ),
                       ),
                     ),
                   ),
                 ),
 
-              // 低音点
-              if (!note.isRest && note.octaveOffset < 0)
-                _buildOctaveDots(-note.octaveOffset, isSelected),
-
               // 歌词
               if (note.lyric != null && note.lyric!.isNotEmpty) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 1),
                 Text(
                   note.lyric!,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 9,
                     color: isSelected ? Colors.white70 : Colors.grey[600],
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ],
@@ -887,14 +904,14 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
   /// 八度点
   Widget _buildOctaveDots(int count, bool isSelected) {
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(
         count,
         (_) => Container(
-          width: 4,
-          height: 4,
-          margin: const EdgeInsets.symmetric(horizontal: 1),
+          width: 2.5,
+          height: 2.5,
+          margin: const EdgeInsets.symmetric(vertical: 0.5),
           decoration: BoxDecoration(
             color: isSelected ? Colors.white : Colors.black87,
             shape: BoxShape.circle,
@@ -1191,7 +1208,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     label: '低',
                     isSelected: controller.selectedOctave.value < 0,
                     onTap: () {
-                      if (controller.selectedOctave.value > -2) {
+                      if (controller.selectedOctave.value > -3) {
                         controller.selectedOctave.value--;
                       }
                     },
@@ -1223,7 +1240,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     label: '高',
                     isSelected: controller.selectedOctave.value > 0,
                     onTap: () {
-                      if (controller.selectedOctave.value < 2) {
+                      if (controller.selectedOctave.value < 3) {
                         controller.selectedOctave.value++;
                       }
                     },
@@ -1452,7 +1469,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
             return Container(
               width: 56,
-              height: 64,
+              height: 72,
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppColors.success.withValues(alpha: 0.2)
@@ -1471,6 +1488,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // 音符数字
                   if (degree == 0)
                     Text(
                       '0',
@@ -1484,16 +1502,49 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                     JianpuNoteText(
                       number: number,
                       octaveOffset: octave,
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
-                  const SizedBox(height: 4),
-                  Text(
-                    name,
-                    style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+
+                  // 唱名文本（调整位置以对齐）
+                  Transform.translate(
+                    offset: Offset(0, degree == 0 ? () {
+                      // 休止符：向下偏移到和其他唱名相同的位置
+                      // JianpuNoteText 比普通 Text 多出的高度
+                      const fontSize = 20.0;
+                      const dotSize = fontSize * 0.18;
+                      const dotSpacing = fontSize * 0.15;
+                      const maxDots = 1;
+                      const dotAreaHeight = -maxDots * (dotSize + dotSpacing / 2);
+                      return dotAreaHeight; // 向下偏移
+                    }() : () {
+                      // 音符：向上偏移以紧贴数字底部
+                      const fontSize = 20.0;
+                      const dotSize = fontSize * 0.18;
+                      const dotSpacing = fontSize * 0.15;
+                      const maxDots = 3;
+                      const dotAreaHeight = maxDots * (dotSize + dotSpacing / 2);
+
+                      if (octave >= 0) {
+                        // 没有低八度点，向上偏移整个预留空间
+                        return -dotAreaHeight + 2;
+                      } else {
+                        // 有低八度点，只向上偏移未使用的空间
+                        final usedDots = -octave;
+                        final usedSpace = usedDots * (dotSize + dotSpacing / 2);
+                        return -(dotAreaHeight - usedSpace) + 2;
+                      }
+                    }()),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        name,
+                        style: TextStyle(fontSize: 9, color: Colors.grey[600]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -1510,7 +1561,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
       onTap: () => controller.deleteSelectedNote(),
       child: Container(
         width: 56,
-        height: 64,
+        height: 72,
         decoration: BoxDecoration(
           color: Colors.red.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
@@ -1524,11 +1575,11 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.close, size: 24, color: Colors.red),
-            SizedBox(height: 4),
+            SizedBox(height: 2),
             Text(
               '删除',
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 9,
                 color: Colors.red,
                 fontWeight: FontWeight.w500,
               ),

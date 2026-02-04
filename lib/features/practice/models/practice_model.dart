@@ -350,3 +350,213 @@ class PracticeStats {
     );
   }
 }
+
+/// 音符范围预设
+enum NoteRangePreset {
+  auto,
+  centralOctave,
+  twoOctaves,
+  lowRange,
+  bassRange,
+  fullKeyboard,
+  custom,
+}
+
+/// 识谱练习配置
+class NotePracticeConfig {
+  /// 基础难度：1-4
+  final int difficulty;
+
+  /// 题目总数：5-50
+  final int questionCount;
+
+  /// 谱号：treble（高音谱）、bass（低音谱）
+  final String clef;
+
+  /// 调号：C、G、D、F等，null表示根据难度随机
+  final String? keySignature;
+
+  /// 单题音符数：1-5，null表示根据难度
+  final int? noteCount;
+
+  /// 是否包含黑键
+  final bool includeBlackKeys;
+
+  /// 音符范围预设
+  final NoteRangePreset noteRangePreset;
+
+  /// 最低音 MIDI（自定义范围时使用）
+  final int? minNote;
+
+  /// 最高音 MIDI（自定义范围时使用）
+  final int? maxNote;
+
+  const NotePracticeConfig({
+    required this.difficulty,
+    required this.questionCount,
+    this.clef = 'treble',
+    this.keySignature,
+    this.noteCount,
+    this.includeBlackKeys = true,
+    this.noteRangePreset = NoteRangePreset.auto,
+    this.minNote,
+    this.maxNote,
+  });
+
+  /// 获取实际的最低音（根据预设或自定义）
+  int getMinNote() {
+    if (noteRangePreset == NoteRangePreset.custom && minNote != null) {
+      return minNote!;
+    }
+
+    return switch (noteRangePreset) {
+      NoteRangePreset.centralOctave => 60,
+      NoteRangePreset.twoOctaves => 60,
+      NoteRangePreset.lowRange => 36,
+      NoteRangePreset.bassRange => 28,
+      NoteRangePreset.fullKeyboard => 21,
+      NoteRangePreset.auto => _getAutoMinNote(),
+      NoteRangePreset.custom => minNote ?? _getAutoMinNote(),
+    };
+  }
+
+  /// 获取实际的最高音（根据预设或自定义）
+  int getMaxNote() {
+    if (noteRangePreset == NoteRangePreset.custom && maxNote != null) {
+      return maxNote!;
+    }
+
+    return switch (noteRangePreset) {
+      NoteRangePreset.centralOctave => 72,
+      NoteRangePreset.twoOctaves => 84,
+      NoteRangePreset.lowRange => 60,
+      NoteRangePreset.bassRange => 52,
+      NoteRangePreset.fullKeyboard => 108,
+      NoteRangePreset.auto => _getAutoMaxNote(),
+      NoteRangePreset.custom => maxNote ?? _getAutoMaxNote(),
+    };
+  }
+
+  /// 根据难度和谱号自动确定最低音
+  int _getAutoMinNote() {
+    if (clef == 'bass') {
+      return switch (difficulty) {
+        1 => 48,
+        2 => 48,
+        3 => 43,
+        4 => 36,
+        _ => 36,
+      };
+    } else {
+      return switch (difficulty) {
+        1 => 60,
+        2 => 60,
+        3 => 55,
+        4 => 48,
+        _ => 48,
+      };
+    }
+  }
+
+  /// 根据难度和谱号自动确定最高音
+  int _getAutoMaxNote() {
+    if (clef == 'bass') {
+      return switch (difficulty) {
+        1 => 55,
+        2 => 60,
+        3 => 65,
+        4 => 72,
+        _ => 72,
+      };
+    } else {
+      return switch (difficulty) {
+        1 => 67,
+        2 => 72,
+        3 => 77,
+        4 => 84,
+        _ => 84,
+      };
+    }
+  }
+
+  /// 获取实际的单题音符数
+  int getNoteCount() {
+    if (noteCount != null) {
+      return noteCount!;
+    }
+
+    return switch (difficulty) {
+      1 => 1,
+      2 => 1,
+      3 => 2,
+      4 => 3,
+      _ => 1,
+    };
+  }
+
+  factory NotePracticeConfig.fromJson(Map<String, dynamic> json) {
+    return NotePracticeConfig(
+      difficulty: json['difficulty'] as int? ?? 1,
+      questionCount: json['questionCount'] as int? ?? 10,
+      clef: json['clef'] as String? ?? 'treble',
+      keySignature: json['keySignature'] as String?,
+      noteCount: json['noteCount'] as int?,
+      includeBlackKeys: json['includeBlackKeys'] as bool? ?? true,
+      noteRangePreset: NoteRangePreset.values.firstWhere(
+        (e) => e.name == json['noteRangePreset'],
+        orElse: () => NoteRangePreset.auto,
+      ),
+      minNote: json['minNote'] as int?,
+      maxNote: json['maxNote'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'difficulty': difficulty,
+      'questionCount': questionCount,
+      'clef': clef,
+      'keySignature': keySignature,
+      'noteCount': noteCount,
+      'includeBlackKeys': includeBlackKeys,
+      'noteRangePreset': noteRangePreset.name,
+      'minNote': minNote,
+      'maxNote': maxNote,
+    };
+  }
+
+  NotePracticeConfig copyWith({
+    int? difficulty,
+    int? questionCount,
+    String? clef,
+    String? keySignature,
+    int? noteCount,
+    bool? includeBlackKeys,
+    NoteRangePreset? noteRangePreset,
+    int? minNote,
+    int? maxNote,
+  }) {
+    return NotePracticeConfig(
+      difficulty: difficulty ?? this.difficulty,
+      questionCount: questionCount ?? this.questionCount,
+      clef: clef ?? this.clef,
+      keySignature: keySignature ?? this.keySignature,
+      noteCount: noteCount ?? this.noteCount,
+      includeBlackKeys: includeBlackKeys ?? this.includeBlackKeys,
+      noteRangePreset: noteRangePreset ?? this.noteRangePreset,
+      minNote: minNote ?? this.minNote,
+      maxNote: maxNote ?? this.maxNote,
+    );
+  }
+
+  /// 创建默认配置
+  factory NotePracticeConfig.defaultConfig() {
+    return const NotePracticeConfig(
+      difficulty: 1,
+      questionCount: 10,
+      clef: 'treble',
+      includeBlackKeys: true,
+      noteRangePreset: NoteRangePreset.auto,
+    );
+  }
+}

@@ -183,39 +183,6 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
             ),
             const PopupMenuDivider(),
             const PopupMenuItem(
-              value: 'export_text',
-              child: ListTile(
-                leading: Icon(Icons.text_snippet),
-                title: Text('导出为简谱文本'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'export_json',
-              child: ListTile(
-                leading: Icon(Icons.code),
-                title: Text('导出为 JSON'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'export_pdf',
-              child: ListTile(
-                leading: Icon(Icons.picture_as_pdf),
-                title: Text('导出为 PDF'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'export_midi',
-              child: ListTile(
-                leading: Icon(Icons.music_note),
-                title: Text('导出为 MIDI'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            const PopupMenuDivider(),
-            const PopupMenuItem(
               value: 'settings',
               child: ListTile(
                 leading: Icon(Icons.settings),
@@ -357,19 +324,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
   void _handleMenuAction(String action) {
     switch (action) {
       case 'export':
-        _showExportDialog();
-        break;
-      case 'export_text':
-        _exportAsText();
-        break;
-      case 'export_json':
-        _exportAsJson();
-        break;
-      case 'export_pdf':
-        _exportAsPdf();
-        break;
-      case 'export_midi':
-        _exportAsMidi();
+        _exportScore();
         break;
       case 'settings':
         _showSettingsDialog();
@@ -383,57 +338,21 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     }
   }
 
-  /// 显示导出对话框
-  void _showExportDialog() {
+  /// 导出乐谱
+  Future<void> _exportScore() async {
     final sheet = _editorController.currentSheet.value;
     if (sheet == null) return;
 
-    _exportService.showExportDialog(context, sheet, title: '导出 ${sheet.title}');
-  }
-
-  /// 导出为 PDF
-  void _exportAsPdf() async {
-    final sheet = _editorController.currentSheet.value;
-    if (sheet == null) return;
-
-    final result = await _exportService.export(sheet, ExportFormat.pdfJianpu);
-    if (result.success && result.data != null) {
-      Get.snackbar(
-        '导出成功',
-        'PDF 文件已生成',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+    try {
+      await _exportService.showExportDialog(
+        context,
+        sheet,
+        title: '导出 ${sheet.title}',
       );
-    } else {
+    } catch (e) {
       Get.snackbar(
         '导出失败',
-        result.errorMessage ?? '未知错误',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
-  }
-
-  /// 导出为 MIDI
-  void _exportAsMidi() async {
-    final sheet = _editorController.currentSheet.value;
-    if (sheet == null) return;
-
-    final result = await _exportService.export(sheet, ExportFormat.midi);
-    if (result.success && result.data != null) {
-      Get.snackbar(
-        '导出成功',
-        'MIDI 文件已生成 (${result.data!.length} 字节)',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } else {
-      Get.snackbar(
-        '导出失败',
-        result.errorMessage ?? '未知错误',
+        e.toString(),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -902,14 +821,54 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
+  /// 清理空小节
+  /// 移除所有轨道末尾的空小节（没有任何音符的小节）
+  Score _cleanEmptyMeasures(Score score) {
+    final cleanedTracks = <Track>[];
+
+    for (final track in score.tracks) {
+      // 找到最后一个非空小节的索引
+      int lastNonEmptyIndex = -1;
+      for (int i = track.measures.length - 1; i >= 0; i--) {
+        final measure = track.measures[i];
+        // 检查这个小节是否有音符
+        bool hasNotes = false;
+        for (final beat in measure.beats) {
+          if (beat.notes.isNotEmpty) {
+            hasNotes = true;
+            break;
+          }
+        }
+        if (hasNotes) {
+          lastNonEmptyIndex = i;
+          break;
+        }
+      }
+
+      // 如果有非空小节，保留到最后一个非空小节
+      if (lastNonEmptyIndex >= 0) {
+        final cleanedMeasures = track.measures.sublist(0, lastNonEmptyIndex + 1);
+        cleanedTracks.add(track.copyWith(measures: cleanedMeasures));
+      } else {
+        // 如果所有小节都是空的，至少保留一个空小节
+        final cleanedMeasures = track.measures.isNotEmpty
+            ? [track.measures.first]
+            : <Measure>[];
+        cleanedTracks.add(track.copyWith(measures: cleanedMeasures));
+      }
+    }
+
+    return score.copyWith(tracks: cleanedTracks);
+  }
+
   /// 保存乐谱
   Future<void> _saveSheet() async {
     final sheet = _editorController.currentSheet.value;
     if (sheet == null) return;
 
     try {
-      // 直接使用 Score 格式
-      final score = sheet;
+      // 清理空小节后再保存
+      final score = _cleanEmptyMeasures(sheet);
 
       // 获取或注册 SheetMusicController
       SheetMusicController sheetMusicController;
@@ -951,107 +910,6 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
     }
   }
 
-  /// 导出为简谱文本
-  void _exportAsText() async {
-    final sheet = _editorController.currentSheet.value;
-    if (sheet == null) return;
-
-    final exportService = SheetExportService();
-    final result = await exportService.export(sheet, ExportFormat.jianpuText);
-
-    if (!result.success) {
-      Get.snackbar('导出失败', result.errorMessage ?? '未知错误');
-      return;
-    }
-
-    final text = result.text ?? '';
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('导出简谱文本'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: SelectableText(
-              text,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('关闭'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: text));
-              Get.snackbar(
-                '已复制',
-                '简谱文本已复制到剪贴板',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.copy, size: 18),
-            label: const Text('复制'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 导出为 JSON
-  Future<void> _exportAsJson() async {
-    final sheet = _editorController.currentSheet.value;
-    if (sheet == null) return;
-
-    final exportService = SheetExportService();
-    final result = await exportService.export(sheet, ExportFormat.json);
-
-    if (!result.success) {
-      Get.snackbar('导出失败', result.errorMessage ?? '未知错误');
-      return;
-    }
-
-    final json = result.text ?? '';
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('导出 JSON'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: SelectableText(
-              json,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('关闭'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: json));
-              Get.snackbar(
-                '已复制',
-                'JSON 已复制到剪贴板',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.copy, size: 18),
-            label: const Text('复制'),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// 新建乐谱
   void _createNewSheet() async {

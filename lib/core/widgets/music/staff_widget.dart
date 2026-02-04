@@ -269,40 +269,45 @@ class _StaffPainter extends CustomPainter {
     };
   }
 
-  /// 获取升降号的 Y 坐标（高音谱号）
+  /// 获取升降号的 Y 坐标
   ///
   /// 根据音符在五线谱上的位置计算 Y 坐标
   /// 升降号应该画在对应音符所在的线或间上
   double _getAccidentalY(String note, double startY, double lineSpacing) {
-    // 高音谱号五线谱的音符位置：
-    // 第1线（底线）= E4
-    // 第1间 = F4
-    // 第2线 = G4
-    // 第2间 = A4
-    // 第3线（中间线）= B4
-    // 第3间 = C5
-    // 第4线 = D5
-    // 第4间 = E5
-    // 第5线（顶线）= F5
-
-    // 升号顺序：F C G D A E B
-    // 降号顺序：B E A D G C F
-
     // 谱号位置补偿
     final clefOffset = -8 * lineSpacing;
 
-    // 计算符号在五线谱上的Y坐标（符号中心应对齐音符位置）
-    final positions = {
-      'F': startY + clefOffset + 4 * lineSpacing, // F5 在第5线上
-      'C': startY + clefOffset + 5.5 * lineSpacing, // C5 在第3间
-      'G': startY + clefOffset + 7 * lineSpacing, // G4 在第2线上
-      'D': startY + clefOffset + 5 * lineSpacing, // D5 在第4线上
-      'A': startY + clefOffset + 6.5 * lineSpacing, // A4 在第2间
-      'E': startY + clefOffset + 3.5 * lineSpacing, // E5 在第5线上方第1间
-      'B': startY + clefOffset + 6 * lineSpacing, // B4 在第3线上
-    };
-
-    return positions[note] ?? startY - 10;
+    if (clef == 'treble') {
+      // 高音谱号五线谱的音符位置：
+      // 第1线（底线）= E4
+      // 第3线（中间线）= B4
+      // 第5线（顶线）= F5
+      final positions = {
+        'F': startY + clefOffset + 4 * lineSpacing, // F5 在第5线上
+        'C': startY + clefOffset + 5.5 * lineSpacing, // C5 在第3间
+        'G': startY + clefOffset + 7 * lineSpacing, // G4 在第2线上
+        'D': startY + clefOffset + 5 * lineSpacing, // D5 在第4线上
+        'A': startY + clefOffset + 6.5 * lineSpacing, // A4 在第2间
+        'E': startY + clefOffset + 3.5 * lineSpacing, // E5 在第4间
+        'B': startY + clefOffset + 6 * lineSpacing, // B4 在第3线上
+      };
+      return positions[note] ?? startY - 10;
+    } else {
+      // 低音谱号五线谱的音符位置：
+      // 第1线（底线）= G2
+      // 第3线（中间线）= D3
+      // 第5线（顶线）= A3
+      final positions = {
+        'B': startY + clefOffset + 8 * lineSpacing, // B2 在第1线上
+        'E': startY + clefOffset + 6.5 * lineSpacing, // E3 在第2间
+        'A': startY + clefOffset + 5 * lineSpacing, // A3 在第5线上
+        'D': startY + clefOffset + 7 * lineSpacing, // D3 在第3线上
+        'G': startY + clefOffset + 8.5 * lineSpacing, // G2 在第1线下
+        'C': startY + clefOffset + 7.5 * lineSpacing, // C3 在第1间
+        'F': startY + clefOffset + 6 * lineSpacing, // F3 在第4线上
+      };
+      return positions[note] ?? startY - 10;
+    }
   }
 
   /// 绘制音符
@@ -320,9 +325,12 @@ class _StaffPainter extends CustomPainter {
     );
 
     // 计算音符 Y 坐标
-    // position 0 对应下加一线（中央 C）
-    // 高音谱号：下加一线在第五线下方一个间距
-    final baseY = startY + 4 * lineSpacing; // 第五线位置
+    // position 0 对应参考线（中央 C）
+    // 高音谱号：中央 C 在第五线下方 1 个间（下加一线）
+    // 低音谱号：中央 C 在第一线上方 1 个间（上加一线）
+    final baseY = isTrebleClef
+        ? startY + 4 * lineSpacing  // 高音谱：下加一线位置（第五线下方）
+        : startY + 4 * lineSpacing;      // 低音谱：上加一线位置（第一线上方）
     final y = baseY - position * (lineSpacing / 2);
 
     final isHighlighted = midi == highlightedNote;
@@ -356,29 +364,57 @@ class _StaffPainter extends CustomPainter {
       ..color = Colors.black
       ..strokeWidth = 1.2;
 
-    // 下加线
-    if (position <= -2) {
-      final numLines = (-position - 1) ~/ 2 + 1;
-      for (var i = 0; i < numLines; i++) {
-        final lineY = baseY + (i + 1) * lineSpacing;
-        canvas.drawLine(
-          Offset(x - noteHalfWidth * 1.3, lineY),
-          Offset(x + noteHalfWidth * 1.3, lineY),
-          linePaint,
-        );
+    if (isTrebleClef) {
+      // 高音谱：下加线（position <= -2，在第五线下方）
+      if (position <= -2) {
+        final numLines = (-position - 1) ~/ 2 + 1;
+        for (var i = 0; i < numLines; i++) {
+          final lineY = baseY + (i + 1) * lineSpacing;
+          canvas.drawLine(
+            Offset(x - noteHalfWidth * 1.3, lineY),
+            Offset(x + noteHalfWidth * 1.3, lineY),
+            linePaint,
+          );
+        }
       }
-    }
 
-    // 上加线
-    if (position >= 10) {
-      final numLines = (position - 9) ~/ 2 + 1;
-      for (var i = 0; i < numLines; i++) {
-        final lineY = startY - (i + 1) * lineSpacing;
-        canvas.drawLine(
-          Offset(x - noteHalfWidth * 1.3, lineY),
-          Offset(x + noteHalfWidth * 1.3, lineY),
-          linePaint,
-        );
+      // 高音谱：上加线（position >= 10，在第一线上方）
+      if (position >= 10) {
+        final numLines = (position - 9) ~/ 2 + 1;
+        for (var i = 0; i < numLines; i++) {
+          final lineY = startY - (i + 1) * lineSpacing;
+          canvas.drawLine(
+            Offset(x - noteHalfWidth * 1.3, lineY),
+            Offset(x + noteHalfWidth * 1.3, lineY),
+            linePaint,
+          );
+        }
+      }
+    } else {
+      // 低音谱：下加线（position <= -2，在第一线下方）
+      if (position <= -2) {
+        final numLines = (-position - 1) ~/ 2 + 1;
+        for (var i = 0; i < numLines; i++) {
+          final lineY = startY + (i + 1) * lineSpacing;
+          canvas.drawLine(
+            Offset(x - noteHalfWidth * 1.3, lineY),
+            Offset(x + noteHalfWidth * 1.3, lineY),
+            linePaint,
+          );
+        }
+      }
+
+      // 低音谱：上加线（position >= 10，在第五线上方）
+      if (position >= 10) {
+        final numLines = (position - 9) ~/ 2 + 1;
+        for (var i = 0; i < numLines; i++) {
+          final lineY = startY + 4 * lineSpacing - (i + 1) * lineSpacing;
+          canvas.drawLine(
+            Offset(x - noteHalfWidth * 1.3, lineY),
+            Offset(x + noteHalfWidth * 1.3, lineY),
+            linePaint,
+          );
+        }
       }
     }
 

@@ -657,10 +657,23 @@ class JianpuPainter extends CustomPainter {
         final linePaint = Paint()
           ..color = color
           ..strokeWidth = 1.5;
-        final baseLineY = y + fontSize * 0.55;
+
+        // 计算下划线位置：紧贴数字或最下面的低八度点
+        final dotSize = fontSize * 0.12;
+        final dotSpacing = dotSize + 2;
+        double baseLineY;
+        if (octaveOffset < 0) {
+          // 有低八度点，放在最下面的点下方
+          final lowestDotY = y + fontSize * 0.55 + (-octaveOffset - 1) * dotSpacing;
+          baseLineY = lowestDotY + dotSize + 2; // 点下方留2px间距
+        } else {
+          // 没有低八度点，放在数字下方
+          baseLineY = y + fontSize * 0.55;
+        }
+
         final lineHalfWidth = fontSize * 0.4;
         for (var i = 0; i < underlineCount; i++) {
-          final lineY = baseLineY + i * 5; // 增加间距从3到5像素
+          final lineY = baseLineY + i * 5;
           canvas.drawLine(
             Offset(x - lineHalfWidth, lineY),
             Offset(x + lineHalfWidth, lineY),

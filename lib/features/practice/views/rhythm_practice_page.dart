@@ -132,9 +132,10 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
 
   /// 开始界面
   Widget _buildStartView(BuildContext context, bool isDark) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -169,7 +170,7 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
           const SizedBox(height: 12),
           ..._buildDifficultyOptions(context, isDark),
 
-          const Spacer(),
+          const SizedBox(height: 32),
 
           // 开始按钮
           SizedBox(
@@ -190,7 +191,6 @@ class _RhythmPracticePageState extends State<RhythmPracticePage>
               ),
             ),
           ),
-          const SizedBox(height: 20),
         ],
       ),
     );
