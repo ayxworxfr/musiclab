@@ -1509,33 +1509,41 @@ class ProfessionalJianpuEditor extends StatelessWidget {
 
                   // 唱名文本（调整位置以对齐）
                   Transform.translate(
-                    offset: Offset(0, degree == 0 ? () {
-                      // 休止符：向下偏移到和其他唱名相同的位置
-                      // JianpuNoteText 比普通 Text 多出的高度
-                      const fontSize = 20.0;
-                      const dotSize = fontSize * 0.18;
-                      const dotSpacing = fontSize * 0.15;
-                      const maxDots = 1;
-                      const dotAreaHeight = -maxDots * (dotSize + dotSpacing / 2);
-                      return dotAreaHeight; // 向下偏移
-                    }() : () {
-                      // 音符：向上偏移以紧贴数字底部
-                      const fontSize = 20.0;
-                      const dotSize = fontSize * 0.18;
-                      const dotSpacing = fontSize * 0.15;
-                      const maxDots = 3;
-                      const dotAreaHeight = maxDots * (dotSize + dotSpacing / 2);
+                    offset: Offset(
+                      0,
+                      degree == 0
+                          ? () {
+                              // 休止符：向下偏移到和其他唱名相同的位置
+                              // JianpuNoteText 比普通 Text 多出的高度
+                              const fontSize = 20.0;
+                              const dotSize = fontSize * 0.18;
+                              const dotSpacing = fontSize * 0.15;
+                              const maxDots = 1;
+                              const dotAreaHeight =
+                                  -maxDots * (dotSize + dotSpacing / 2);
+                              return dotAreaHeight; // 向下偏移
+                            }()
+                          : () {
+                              // 音符：向上偏移以紧贴数字底部
+                              const fontSize = 20.0;
+                              const dotSize = fontSize * 0.18;
+                              const dotSpacing = fontSize * 0.15;
+                              const maxDots = 3;
+                              const dotAreaHeight =
+                                  maxDots * (dotSize + dotSpacing / 2);
 
-                      if (octave >= 0) {
-                        // 没有低八度点，向上偏移整个预留空间
-                        return -dotAreaHeight + 2;
-                      } else {
-                        // 有低八度点，只向上偏移未使用的空间
-                        final usedDots = -octave;
-                        final usedSpace = usedDots * (dotSize + dotSpacing / 2);
-                        return -(dotAreaHeight - usedSpace) + 2;
-                      }
-                    }()),
+                              if (octave >= 0) {
+                                // 没有低八度点，向上偏移整个预留空间
+                                return -dotAreaHeight + 2;
+                              } else {
+                                // 有低八度点，只向上偏移未使用的空间
+                                final usedDots = -octave;
+                                final usedSpace =
+                                    usedDots * (dotSize + dotSpacing / 2);
+                                return -(dotAreaHeight - usedSpace) + 2;
+                              }
+                            }(),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(

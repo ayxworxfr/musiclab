@@ -392,7 +392,8 @@ class ScoreDocument {
     // 如果目标轨道没有保存过位置，找到第一个音符或使用开头
     if (savedPosition == null) {
       final newTrackDoc = getTrack(trackIndex);
-      savedPosition = newTrackDoc.firstNoteInMeasure(0) ??
+      savedPosition =
+          newTrackDoc.firstNoteInMeasure(0) ??
           Position(
             trackIndex: trackIndex,
             measureIndex: 0,

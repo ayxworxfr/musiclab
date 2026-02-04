@@ -664,7 +664,8 @@ class JianpuPainter extends CustomPainter {
         double baseLineY;
         if (octaveOffset < 0) {
           // 有低八度点，放在最下面的点下方
-          final lowestDotY = y + fontSize * 0.55 + (-octaveOffset - 1) * dotSpacing;
+          final lowestDotY =
+              y + fontSize * 0.55 + (-octaveOffset - 1) * dotSpacing;
           baseLineY = lowestDotY + dotSize + 2; // 点下方留2px间距
         } else {
           // 没有低八度点，放在数字下方

@@ -246,7 +246,8 @@ class SheetPlayerController extends GetxController {
     // 使用 Stopwatch 获取精确的已播放时间
     final elapsedSeconds =
         (_playbackStopwatch?.elapsedMilliseconds ?? 0) / 1000.0;
-    final currentTime = _playbackStartOffset +
+    final currentTime =
+        _playbackStartOffset +
         elapsedSeconds * playbackState.value.playbackSpeed;
 
     // 检查是否到达结尾

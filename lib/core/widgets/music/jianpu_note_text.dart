@@ -168,7 +168,9 @@ class JianpuNoteText extends StatelessWidget {
           // 低音点（数字下方固定位置）
           if (octaveOffset < 0)
             Positioned(
-              bottom: dotAreaHeight - ((-octaveOffset) * (dotSize + dotSpacing / 2)),
+              bottom:
+                  dotAreaHeight -
+                  ((-octaveOffset) * (dotSize + dotSpacing / 2)),
               child: _buildDots(
                 -octaveOffset,
                 dotSize,

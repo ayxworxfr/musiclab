@@ -329,14 +329,11 @@ class TrackDocument {
     if (measureIndex >= track.measures.length) return false;
 
     final measure = track.measures[measureIndex];
-    final totalBeats = measure.beats.fold<double>(
-      0.0,
-      (sum, beat) {
-        // 只计算有音符的beat，忽略空beat
-        if (beat.notes.isEmpty) return sum;
-        return sum + beat.totalBeats;
-      },
-    );
+    final totalBeats = measure.beats.fold<double>(0.0, (sum, beat) {
+      // 只计算有音符的beat，忽略空beat
+      if (beat.notes.isEmpty) return sum;
+      return sum + beat.totalBeats;
+    });
 
     return totalBeats >= metadata.beatsPerMeasure;
   }
@@ -346,14 +343,11 @@ class TrackDocument {
     if (measureIndex >= track.measures.length) return 0.0;
 
     final measure = track.measures[measureIndex];
-    return measure.beats.fold<double>(
-      0.0,
-      (sum, beat) {
-        // 只计算有音符的beat，忽略空beat
-        if (beat.notes.isEmpty) return sum;
-        return sum + beat.totalBeats;
-      },
-    );
+    return measure.beats.fold<double>(0.0, (sum, beat) {
+      // 只计算有音符的beat，忽略空beat
+      if (beat.notes.isEmpty) return sum;
+      return sum + beat.totalBeats;
+    });
   }
 
   /// 获取指定beat当前的拍数

@@ -19,9 +19,11 @@ class PracticeController extends GetxController {
   /// 当前练习类型
   final currentType = PracticeType.noteRecognition.obs;
 
-  /// 当前识谱练习配置
-  final Rx<NotePracticeConfig> notePracticeConfig =
-      NotePracticeConfig.defaultConfig().obs;
+  /// 每个难度的识谱练习配置
+  final notePracticeConfigs = <int, NotePracticeConfig>{}.obs;
+
+  /// 当前使用的识谱练习配置（练习进行中）
+  NotePracticeConfig? _currentNotePracticeConfig;
 
   /// 当前难度（用于其他练习类型）
   final currentDifficulty = 1.obs;
@@ -83,30 +85,50 @@ class PracticeController extends GetxController {
 
   /// 加载练习设置
   void _loadSettings() {
-    // 加载识谱练习配置
-    final savedConfig = _settingsService.getNotePracticeConfig();
-    if (savedConfig != null) {
-      try {
-        notePracticeConfig.value = NotePracticeConfig.fromJson(savedConfig);
-      } catch (e) {
-        LoggerUtil.warning('加载识谱练习配置失败', e);
-        notePracticeConfig.value = NotePracticeConfig.defaultConfig();
+    // 加载每个难度的识谱练习配置
+    for (int difficulty = 1; difficulty <= 4; difficulty++) {
+      final savedConfig = _settingsService.getNotePracticeConfig(difficulty);
+      if (savedConfig != null) {
+        try {
+          notePracticeConfigs[difficulty] = NotePracticeConfig.fromJson(
+            savedConfig,
+          );
+        } catch (e) {
+          LoggerUtil.warning('加载难度 $difficulty 的识谱练习配置失败', e);
+          notePracticeConfigs[difficulty] = NotePracticeConfig.defaultConfig(
+            difficulty: difficulty,
+          );
+        }
+      } else {
+        // 如果没有保存的配置，使用默认配置
+        notePracticeConfigs[difficulty] = NotePracticeConfig.defaultConfig(
+          difficulty: difficulty,
+        );
       }
     }
 
     // 加载其他练习类型的设置
     currentDifficulty.value = _settingsService.getPracticeDefaultDifficulty();
-    defaultQuestionCount.value =
-        _settingsService.getPracticeDefaultQuestionCount();
+    defaultQuestionCount.value = _settingsService
+        .getPracticeDefaultQuestionCount();
+  }
+
+  /// 获取指定难度的配置
+  NotePracticeConfig getConfigForDifficulty(int difficulty) {
+    return notePracticeConfigs[difficulty] ??
+        NotePracticeConfig.defaultConfig(difficulty: difficulty);
   }
 
   /// 开始识谱练习（使用配置对象）
   void startNotePractice({required NotePracticeConfig config}) {
     currentType.value = PracticeType.noteRecognition;
-    notePracticeConfig.value = config;
 
-    // 保存配置到本地
-    _settingsService.saveNotePracticeConfig(config.toJson());
+    // 保存当前配置
+    _currentNotePracticeConfig = config;
+
+    // 保存配置到对应难度
+    notePracticeConfigs[config.difficulty] = config;
+    _settingsService.saveNotePracticeConfig(config.difficulty, config.toJson());
 
     // 生成题目
     questions.value = _questionGenerator.generateJianpuRecognition(
@@ -179,12 +201,13 @@ class PracticeController extends GetxController {
     int count,
   ) {
     return switch (type) {
-      PracticeType.noteRecognition => _questionGenerator.generateJianpuRecognition(
-        config: NotePracticeConfig(
-          difficulty: difficulty,
-          questionCount: count,
+      PracticeType.noteRecognition =>
+        _questionGenerator.generateJianpuRecognition(
+          config: NotePracticeConfig(
+            difficulty: difficulty,
+            questionCount: count,
+          ),
         ),
-      ),
       PracticeType.earTraining => _questionGenerator.generateEarTraining(
         difficulty: difficulty,
         count: count,
@@ -332,7 +355,7 @@ class PracticeController extends GetxController {
   /// 获取练习记录
   PracticeRecord getPracticeRecord() {
     final difficulty = currentType.value == PracticeType.noteRecognition
-        ? notePracticeConfig.value.difficulty
+        ? (_currentNotePracticeConfig?.difficulty ?? 1)
         : currentDifficulty.value;
 
     return PracticeRecord(
@@ -350,7 +373,9 @@ class PracticeController extends GetxController {
   /// 重新开始
   void restart() {
     if (currentType.value == PracticeType.noteRecognition) {
-      startNotePractice(config: notePracticeConfig.value);
+      if (_currentNotePracticeConfig != null) {
+        startNotePractice(config: _currentNotePracticeConfig!);
+      }
     } else {
       startPractice(
         type: currentType.value,

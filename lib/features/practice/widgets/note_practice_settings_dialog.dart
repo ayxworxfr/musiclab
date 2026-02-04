@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../controllers/practice_controller.dart';
 import '../models/practice_model.dart';
 
 /// 识谱练习高级设置对话框
@@ -47,12 +48,12 @@ class _NotePracticeSettingsDialogState
   ];
 
   final Map<NoteRangePreset, String> rangePresetNames = {
-    NoteRangePreset.auto: '根据难度自动',
-    NoteRangePreset.centralOctave: '中央八度 (C4-C5)',
-    NoteRangePreset.twoOctaves: '两个八度 (C4-C6)',
-    NoteRangePreset.lowRange: '低音区 (C2-C4)',
-    NoteRangePreset.bassRange: '贝斯区 (E1-E3)',
-    NoteRangePreset.fullKeyboard: '全键盘 (A0-C8)',
+    NoteRangePreset.auto: '自动',
+    NoteRangePreset.centralOctave: '中央八度',
+    NoteRangePreset.twoOctaves: '两个八度',
+    NoteRangePreset.lowRange: '低音区',
+    NoteRangePreset.bassRange: '贝斯区',
+    NoteRangePreset.fullKeyboard: '全键盘',
     NoteRangePreset.custom: '自定义',
   };
 
@@ -74,28 +75,40 @@ class _NotePracticeSettingsDialogState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
-        padding: const EdgeInsets.all(24),
+        constraints: BoxConstraints(
+          maxWidth: 500,
+          maxHeight: screenHeight * 0.85,
+        ),
+        width: screenWidth < 500 ? screenWidth - 32 : 500,
+        padding: const EdgeInsets.all(20),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.tune, color: colorScheme.primary),
                 const SizedBox(width: 12),
-                Text(
-                  '识谱练习 - 高级设置',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                Expanded(
+                  child: Text(
+                    '识谱练习 - 高级设置',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -132,19 +145,49 @@ class _NotePracticeSettingsDialogState
             const SizedBox(height: 20),
             Row(
               children: [
-                TextButton(
-                  onPressed: _resetToDefault,
-                  child: const Text('重置'),
+                Flexible(
+                  flex: 1,
+                  child: TextButton(
+                    onPressed: _resetToDefault,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      minimumSize: const Size(50, 40),
+                    ),
+                    child: const Text('重置'),
+                  ),
                 ),
-                const Spacer(),
-                OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('取消'),
+                const SizedBox(width: 8),
+                Flexible(
+                  flex: 1,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      minimumSize: const Size(50, 40),
+                    ),
+                    child: const Text('取消'),
+                  ),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: _confirm,
-                  child: const Text('保存并开始'),
+                const SizedBox(width: 8),
+                Flexible(
+                  flex: 1,
+                  child: ElevatedButton(
+                    onPressed: _confirm,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 12,
+                      ),
+                      minimumSize: const Size(50, 40),
+                    ),
+                    child: const Text('开始'),
+                  ),
                 ),
               ],
             ),
@@ -159,9 +202,9 @@ class _NotePracticeSettingsDialogState
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -185,16 +228,14 @@ class _NotePracticeSettingsDialogState
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(d['label'] as String),
-              Text(
-                d['desc'] as String,
-                style: const TextStyle(fontSize: 10),
-              ),
+              Text(d['desc'] as String, style: const TextStyle(fontSize: 10)),
             ],
           ),
           selected: isSelected,
+          visualDensity: VisualDensity.compact,
           onSelected: (selected) {
             if (selected) {
-              setState(() => difficulty = value);
+              _loadConfigForDifficulty(value);
             }
           },
         );
@@ -203,79 +244,56 @@ class _NotePracticeSettingsDialogState
   }
 
   Widget _buildClefSelector() {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: RadioListTile<String>(
-            title: const Text('高音谱'),
-            subtitle: const Text('适合高音区练习'),
-            value: 'treble',
-            groupValue: clef,
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => clef = value);
-              }
-            },
-          ),
+        RadioListTile<String>(
+          title: const Text('高音谱'),
+          subtitle: const Text('适合高音区练习'),
+          value: 'treble',
+          groupValue: clef,
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => clef = value);
+            }
+          },
         ),
-        Expanded(
-          child: RadioListTile<String>(
-            title: const Text('低音谱'),
-            subtitle: const Text('适合低音区练习'),
-            value: 'bass',
-            groupValue: clef,
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => clef = value);
-              }
-            },
-          ),
+        RadioListTile<String>(
+          title: const Text('低音谱'),
+          subtitle: const Text('适合低音区练习'),
+          value: 'bass',
+          groupValue: clef,
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => clef = value);
+            }
+          },
         ),
       ],
     );
   }
 
   Widget _buildKeySignatureSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        RadioListTile<String?>(
-          title: const Text('根据难度自动选择'),
-          value: null,
-          groupValue: keySignature,
-          onChanged: (value) {
-            setState(() => keySignature = value);
-          },
-        ),
-        RadioListTile<String>(
-          title: const Text('指定调号'),
-          value: keySignature ?? 'C',
-          groupValue: keySignature ?? '',
-          onChanged: (value) {
-            setState(() => keySignature = value);
-          },
-        ),
-        if (keySignature != null)
-          Padding(
-            padding: const EdgeInsets.only(left: 48),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: allKeySignatures.map((key) {
-                final isSelected = keySignature == key;
-                return ChoiceChip(
-                  label: Text(key),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() => keySignature = key);
-                    }
-                  },
-                );
-              }).toList(),
-            ),
-          ),
+    return DropdownButtonFormField<String?>(
+      value: keySignature,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: '调号',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      items: [
+        const DropdownMenuItem(value: null, child: Text('自动选择')),
+        ...allKeySignatures.map((key) {
+          return DropdownMenuItem(value: key, child: Text('$key 调'));
+        }),
       ],
+      onChanged: (value) {
+        setState(() => keySignature = value);
+      },
     );
   }
 
@@ -285,15 +303,14 @@ class _NotePracticeSettingsDialogState
       children: [
         DropdownButtonFormField<NoteRangePreset>(
           value: noteRangePreset,
+          isExpanded: true,
           decoration: const InputDecoration(
-            labelText: '音符范围预设',
+            labelText: '音符范围',
             border: OutlineInputBorder(),
+            isDense: true,
           ),
           items: rangePresetNames.entries.map((entry) {
-            return DropdownMenuItem(
-              value: entry.key,
-              child: Text(entry.value),
-            );
+            return DropdownMenuItem(value: entry.key, child: Text(entry.value));
           }).toList(),
           onChanged: (value) {
             if (value != null) {
@@ -352,6 +369,8 @@ class _NotePracticeSettingsDialogState
       title: const Text('包含黑键（升降号）'),
       subtitle: const Text('关闭后仅练习白键音符'),
       value: includeBlackKeys,
+      dense: true,
+      contentPadding: EdgeInsets.zero,
       onChanged: (value) {
         setState(() => includeBlackKeys = value);
       },
@@ -359,73 +378,71 @@ class _NotePracticeSettingsDialogState
   }
 
   Widget _buildNoteCountSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('单题音符数'),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: ChoiceChip(
-                label: const Text('自动'),
-                selected: noteCount == null,
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() => noteCount = null);
-                  }
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-            ...List.generate(5, (index) {
-              final value = index + 1;
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ChoiceChip(
-                    label: Text('$value'),
-                    selected: noteCount == value,
-                    onSelected: (selected) {
-                      if (selected) {
-                        setState(() => noteCount = value);
-                      }
-                    },
-                  ),
-                ),
-              );
-            }),
-          ],
-        ),
+    return DropdownButtonFormField<int?>(
+      value: noteCount,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: '单题音符数',
+        border: OutlineInputBorder(),
+        isDense: true,
+        helperText: '每道题目包含的音符数量',
+      ),
+      items: const [
+        DropdownMenuItem(value: null, child: Text('自动（根据难度）')),
+        DropdownMenuItem(value: 1, child: Text('1 个音符')),
+        DropdownMenuItem(value: 2, child: Text('2 个音符')),
+        DropdownMenuItem(value: 3, child: Text('3 个音符')),
+        DropdownMenuItem(value: 4, child: Text('4 个音符')),
+        DropdownMenuItem(value: 5, child: Text('5 个音符')),
       ],
+      onChanged: (value) {
+        setState(() => noteCount = value);
+      },
     );
   }
 
   Widget _buildQuestionCountSelector() {
-    final counts = [5, 10, 20, 30, 50];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('题目总数'),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: counts.map((count) {
-            final isSelected = questionCount == count;
-            return ChoiceChip(
-              label: Text('$count'),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() => questionCount = count);
-                }
-              },
-            );
-          }).toList(),
-        ),
+    return DropdownButtonFormField<int>(
+      value: questionCount,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: '题目总数',
+        border: OutlineInputBorder(),
+        isDense: true,
+        helperText: '本次练习的题目数量',
+      ),
+      items: const [
+        DropdownMenuItem(value: 5, child: Text('5 题')),
+        DropdownMenuItem(value: 10, child: Text('10 题')),
+        DropdownMenuItem(value: 15, child: Text('15 题')),
+        DropdownMenuItem(value: 20, child: Text('20 题')),
+        DropdownMenuItem(value: 30, child: Text('30 题')),
+        DropdownMenuItem(value: 50, child: Text('50 题')),
       ],
+      onChanged: (value) {
+        if (value != null) {
+          setState(() => questionCount = value);
+        }
+      },
     );
+  }
+
+  /// 加载指定难度的配置
+  void _loadConfigForDifficulty(int difficultyLevel) {
+    final controller = Get.find<PracticeController>();
+    final config = controller.getConfigForDifficulty(difficultyLevel);
+
+    setState(() {
+      difficulty = config.difficulty;
+      questionCount = config.questionCount;
+      clef = config.clef;
+      keySignature = config.keySignature;
+      noteCount = config.noteCount;
+      includeBlackKeys = config.includeBlackKeys;
+      noteRangePreset = config.noteRangePreset;
+      minNote = config.minNote;
+      maxNote = config.maxNote;
+    });
   }
 
   void _resetToDefault() {

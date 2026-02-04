@@ -128,15 +128,14 @@ class NotePracticePage extends GetView<PracticeController> {
   /// 当前配置卡片
   Widget _buildCurrentConfigCard(BuildContext context, bool isDark) {
     return Obx(() {
-      final config = controller.notePracticeConfig.value;
+      // 显示难度1的配置作为预览
+      final config = controller.getConfigForDifficulty(1);
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,10 +146,7 @@ class NotePracticePage extends GetView<PracticeController> {
                 const SizedBox(width: 8),
                 const Text(
                   '当前配置',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -168,15 +164,9 @@ class NotePracticePage extends GetView<PracticeController> {
                   Icons.format_list_numbered,
                 ),
                 if (config.keySignature != null)
-                  _buildConfigChip(
-                    '${config.keySignature}调',
-                    Icons.key,
-                  ),
+                  _buildConfigChip('${config.keySignature}调', Icons.key),
                 if (!config.includeBlackKeys)
-                  _buildConfigChip(
-                    '仅白键',
-                    Icons.piano,
-                  ),
+                  _buildConfigChip('仅白键', Icons.piano),
               ],
             ),
           ],
@@ -199,10 +189,7 @@ class NotePracticePage extends GetView<PracticeController> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.primary,
-            ),
+            style: const TextStyle(fontSize: 12, color: AppColors.primary),
           ),
         ],
       ),
@@ -227,12 +214,20 @@ class NotePracticePage extends GetView<PracticeController> {
     );
   }
 
-  /// 显示高级设置对话框
+  /// 显示高级设置对话框（全局）
   void _showAdvancedSettings(BuildContext context) {
+    _showAdvancedSettingsForDifficulty(context, 1);
+  }
+
+  /// 显示针对特定难度的高级设置对话框
+  void _showAdvancedSettingsForDifficulty(
+    BuildContext context,
+    int difficulty,
+  ) {
     showDialog(
       context: context,
       builder: (context) => NotePracticeSettingsDialog(
-        initialConfig: controller.notePracticeConfig.value,
+        initialConfig: controller.getConfigForDifficulty(difficulty),
         onConfirm: (config) {
           controller.startNotePractice(config: config);
         },
@@ -273,74 +268,96 @@ class NotePracticePage extends GetView<PracticeController> {
     ];
 
     return difficulties.map((d) {
+      final level = d['level'] as int;
       return Container(
         margin: const EdgeInsets.only(bottom: 12),
         child: Material(
           color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _startPractice(d['level'] as int),
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: (d['color'] as Color).withValues(alpha: 0.3),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: (d['color'] as Color).withValues(alpha: 0.3),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: (d['color'] as Color).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Center(
-                      child: Text(
-                        d['icon'] as String,
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                InkWell(
+                  onTap: () => _startPractice(level),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
                       children: [
-                        Text(
-                          d['title'] as String,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: (d['color'] as Color).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Center(
+                            child: Text(
+                              d['icon'] as String,
+                              style: const TextStyle(fontSize: 20),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          d['desc'] as String,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondary,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                d['title'] as String,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                d['desc'] as String,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        Icon(Icons.chevron_right, color: d['color'] as Color),
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right, color: d['color'] as Color),
-                ],
-              ),
+                ),
+                // 设置按钮
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    icon: const Icon(Icons.settings, size: 20),
+                    color: (d['color'] as Color),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () =>
+                        _showAdvancedSettingsForDifficulty(context, level),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -424,8 +441,10 @@ class NotePracticePage extends GetView<PracticeController> {
   /// 谱子和标签控制区域
   Widget _buildSheetControls(BuildContext context, bool isDark) {
     return Obx(() {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      return Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
         children: [
           // 谱子类型切换
           _buildSwitchButton(
@@ -434,14 +453,12 @@ class NotePracticePage extends GetView<PracticeController> {
             () => _sheetType.value = 'jianpu',
             isDark,
           ),
-          const SizedBox(width: 12),
           _buildSwitchButton(
             '五线谱',
             _sheetType.value == 'staff',
             () => _sheetType.value = 'staff',
             isDark,
           ),
-          const SizedBox(width: 20),
 
           // 钢琴标签模式按钮
           _buildLabelModeButton(context, isDark),
@@ -1141,10 +1158,8 @@ class NotePracticePage extends GetView<PracticeController> {
   }
 
   void _startPractice(int difficulty) {
-    // 使用当前配置的副本，只更新难度
-    final config = controller.notePracticeConfig.value.copyWith(
-      difficulty: difficulty,
-    );
+    // 获取该难度保存的配置
+    final config = controller.getConfigForDifficulty(difficulty);
     controller.startNotePractice(config: config);
   }
 

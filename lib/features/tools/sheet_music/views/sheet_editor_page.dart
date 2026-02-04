@@ -847,7 +847,10 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
 
       // 如果有非空小节，保留到最后一个非空小节
       if (lastNonEmptyIndex >= 0) {
-        final cleanedMeasures = track.measures.sublist(0, lastNonEmptyIndex + 1);
+        final cleanedMeasures = track.measures.sublist(
+          0,
+          lastNonEmptyIndex + 1,
+        );
         cleanedTracks.add(track.copyWith(measures: cleanedMeasures));
       } else {
         // 如果所有小节都是空的，至少保留一个空小节
@@ -909,7 +912,6 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
       );
     }
   }
-
 
   /// 新建乐谱
   void _createNewSheet() async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../features/tools/sheet_music/constants/smufl_glyphs.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/music_utils.dart';
 
@@ -116,28 +117,52 @@ class _StaffPainter extends CustomPainter {
 
   /// 绘制谱号
   void _drawClef(Canvas canvas, double startY, double lineSpacing) {
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-
     // 谱号位置补偿
-    final clefOffset = -2 * lineSpacing;
+    final clefOffset = 4 * lineSpacing;
     if (clef == 'treble') {
-      // 高音谱号（简化用 G 表示）
-      textPainter.text = const TextSpan(
-        text: '𝄞',
-        style: TextStyle(fontSize: 55, color: Colors.black),
+      // 高音谱号 - 应该围绕第2线（G4）绘制
+      final textPainter = TextPainter(
+        text: const TextSpan(
+          text: SMuFLGlyphs.gClef,
+          style: TextStyle(
+            fontFamily: SMuFLGlyphs.fontFamily,
+            fontSize: 40,
+            color: Colors.black,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
       );
-      textPainter
-        ..layout()
-        ..paint(canvas, Offset(5, startY + clefOffset - 15));
+      textPainter.layout();
+
+      // 第2线的位置
+      final line2Y = startY - lineSpacing;
+      // 使用谱号高度的中心对齐到第2线
+      final offsetY = line2Y + clefOffset - textPainter.height / 2;
+
+      textPainter.paint(canvas, Offset(5, offsetY));
     } else {
-      // 低音谱号（简化用 F 表示）
-      textPainter.text = const TextSpan(
-        text: '𝄢',
-        style: TextStyle(fontSize: 45, color: Colors.black),
+      // 低音谱号 - 应该围绕第4线（F3）绘制
+      final textPainter = TextPainter(
+        text: const TextSpan(
+          text: SMuFLGlyphs.fClef,
+          style: TextStyle(
+            fontFamily: SMuFLGlyphs.fontFamily,
+            fontSize: 40,
+            color: Colors.black,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
       );
-      textPainter
-        ..layout()
-        ..paint(canvas, Offset(8, startY + clefOffset - 5));
+      textPainter.layout();
+
+      // 第4线的位置
+      final line4Y = startY - 3 * lineSpacing;
+      // 使用谱号高度的中心对齐到第4线
+      final offsetY = line4Y + clefOffset - textPainter.height / 2;
+
+      textPainter.paint(canvas, Offset(8, offsetY));
     }
   }
 
@@ -166,7 +191,7 @@ class _StaffPainter extends CustomPainter {
       textPainter.text = TextSpan(
         text: accidental['symbol']!,
         style: const TextStyle(
-          fontFamily: 'Bravura',
+          fontFamily: SMuFLGlyphs.fontFamily,
           fontSize: 20,
           color: Colors.black,
         ),
@@ -186,8 +211,8 @@ class _StaffPainter extends CustomPainter {
   List<Map<String, String>> _getKeySignatureAccidentals(String key) {
     // 升号顺序：F C G D A E B
     // 降号顺序：B E A D G C F
-    const sharpSymbol = '\uE262'; // ♯ (SMuFL)
-    const flatSymbol = '\uE260'; // ♭ (SMuFL)
+    const sharpSymbol = SMuFLGlyphs.accidentalSharp;
+    const flatSymbol = SMuFLGlyphs.accidentalFlat;
 
     return switch (key) {
       'G' => [
@@ -325,12 +350,13 @@ class _StaffPainter extends CustomPainter {
     );
 
     // 计算音符 Y 坐标
-    // position 0 对应参考线（中央 C）
-    // 高音谱号：中央 C 在第五线下方 1 个间（下加一线）
-    // 低音谱号：中央 C 在第一线上方 1 个间（上加一线）
+    // 高音谱号：position 0 = E4（第1线），position -2 = C4（中央C，下加一线）
+    // 低音谱号：position 0 = G2（第1线），position 10 = C4（中央C，上加一线）
     final baseY = isTrebleClef
-        ? startY + 4 * lineSpacing  // 高音谱：下加一线位置（第五线下方）
-        : startY + 4 * lineSpacing;      // 低音谱：上加一线位置（第一线上方）
+        ? startY +
+              4 *
+                  lineSpacing // 高音谱：下加一线 = 第1线下方1间
+        : startY + 4 * lineSpacing; // 低音谱：上加一线 = 第5线上方1间
     final y = baseY - position * (lineSpacing / 2);
 
     final isHighlighted = midi == highlightedNote;
@@ -341,9 +367,9 @@ class _StaffPainter extends CustomPainter {
 
     // SMuFL 符头字符 (noteheadBlack)
     noteheadPainter.text = TextSpan(
-      text: '\uE0A4', // U+E0A4 - noteheadBlack
+      text: SMuFLGlyphs.noteheadBlack,
       style: TextStyle(
-        fontFamily: 'Bravura',
+        fontFamily: SMuFLGlyphs.fontFamily,
         fontSize: lineSpacing * 4, // 调整大小使符头占满一间
         color: noteColor,
         height: 1,
@@ -391,11 +417,14 @@ class _StaffPainter extends CustomPainter {
         }
       }
     } else {
-      // 低音谱：下加线（position <= -2，在第一线下方）
-      if (position <= -2) {
-        final numLines = (-position - 1) ~/ 2 + 1;
+      // 低音谱：下加线（position < 0，在第1线下方）
+      // position 0 = G2（第1线 = startY + 4*lineSpacing）
+      // position -2 = E2（下加一线 = startY + 5*lineSpacing）
+      // position -4 = C2（下加二线 = startY + 6*lineSpacing）
+      if (position < 0) {
+        final numLines = (-position + 1) ~/ 2;
         for (var i = 0; i < numLines; i++) {
-          final lineY = startY + (i + 1) * lineSpacing;
+          final lineY = startY + (4 + i + 1) * lineSpacing;
           canvas.drawLine(
             Offset(x - noteHalfWidth * 1.3, lineY),
             Offset(x + noteHalfWidth * 1.3, lineY),
@@ -404,11 +433,14 @@ class _StaffPainter extends CustomPainter {
         }
       }
 
-      // 低音谱：上加线（position >= 10，在第五线上方）
-      if (position >= 10) {
-        final numLines = (position - 9) ~/ 2 + 1;
+      // 低音谱：上加线（position > 8，在第5线上方）
+      // position 8 = A3（第5线 = startY）
+      // position 10 = C4（上加一线 = startY - lineSpacing）
+      // position 12 = E4（上加二线 = startY - 2*lineSpacing）
+      if (position > 8) {
+        final numLines = (position - 8 - 1) ~/ 2 + 1;
         for (var i = 0; i < numLines; i++) {
-          final lineY = startY + 4 * lineSpacing - (i + 1) * lineSpacing;
+          final lineY = startY - (i + 1) * lineSpacing;
           canvas.drawLine(
             Offset(x - noteHalfWidth * 1.3, lineY),
             Offset(x + noteHalfWidth * 1.3, lineY),

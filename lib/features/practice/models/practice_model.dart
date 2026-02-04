@@ -550,9 +550,9 @@ class NotePracticeConfig {
   }
 
   /// 创建默认配置
-  factory NotePracticeConfig.defaultConfig() {
-    return const NotePracticeConfig(
-      difficulty: 1,
+  factory NotePracticeConfig.defaultConfig({int difficulty = 1}) {
+    return NotePracticeConfig(
+      difficulty: difficulty,
       questionCount: 10,
       clef: 'treble',
       includeBlackKeys: true,

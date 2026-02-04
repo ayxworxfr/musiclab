@@ -283,28 +283,38 @@ class SettingsService extends GetxService {
   Future<void> resetPracticeSettings() async {
     await setPracticeDefaultDifficulty(1);
     await setPracticeDefaultQuestionCount(10);
-    await _storage.remove(StorageKeys.notePracticeConfig);
+    await clearAllNotePracticeConfigs();
   }
 
   // ==================== 识谱练习配置 ====================
 
-  /// 获取识谱练习配置
-  Map<String, dynamic>? getNotePracticeConfig() {
-    return _storage.getCacheData<Map<dynamic, dynamic>>(
-      StorageKeys.notePracticeConfig,
-    )?.cast<String, dynamic>();
+  /// 获取指定难度的识谱练习配置
+  Map<String, dynamic>? getNotePracticeConfig(int difficulty) {
+    final key = '${StorageKeys.notePracticeConfig}_$difficulty';
+    return _storage
+        .getCacheData<Map<dynamic, dynamic>>(key)
+        ?.cast<String, dynamic>();
   }
 
-  /// 保存识谱练习配置
-  Future<void> saveNotePracticeConfig(Map<String, dynamic> config) {
-    return _storage.saveCacheData(
-      StorageKeys.notePracticeConfig,
-      config,
-    );
+  /// 保存指定难度的识谱练习配置
+  Future<void> saveNotePracticeConfig(
+    int difficulty,
+    Map<String, dynamic> config,
+  ) {
+    final key = '${StorageKeys.notePracticeConfig}_$difficulty';
+    return _storage.saveCacheData(key, config);
   }
 
-  /// 清除识谱练习配置
-  Future<bool> clearNotePracticeConfig() {
-    return _storage.remove(StorageKeys.notePracticeConfig);
+  /// 清除指定难度的识谱练习配置
+  Future<bool> clearNotePracticeConfig(int difficulty) {
+    final key = '${StorageKeys.notePracticeConfig}_$difficulty';
+    return _storage.remove(key);
+  }
+
+  /// 清除所有难度的识谱练习配置
+  Future<void> clearAllNotePracticeConfigs() async {
+    for (int i = 1; i <= 4; i++) {
+      await clearNotePracticeConfig(i);
+    }
   }
 }
