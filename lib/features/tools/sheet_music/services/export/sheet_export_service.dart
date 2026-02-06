@@ -8,12 +8,13 @@ import 'package:printing/printing.dart';
 
 import '../../../../../core/services/file_download_service.dart';
 import '../../models/enums.dart';
+import '../../models/import_export_options.dart';
 import '../../models/score.dart';
 import 'midi_exporter.dart';
 import 'pdf_exporter.dart';
 
-export 'pdf_exporter.dart';
 export 'midi_exporter.dart';
+export 'pdf_exporter.dart';
 
 /// 导出格式枚举
 enum ExportFormat {
@@ -70,7 +71,12 @@ class ExportResult {
 /// 乐谱导出服务
 class SheetExportService {
   final _pdfExporter = PdfExporter();
-  final _midiExporter = MidiExporter();
+  MidiExporter _midiExporter = MidiExporter();
+
+  /// 更新MIDI导出选项
+  void updateMidiOptions(MidiExportOptions options) {
+    _midiExporter = MidiExporter(options: options);
+  }
 
   /// 导出乐谱
   Future<ExportResult> export(Score score, ExportFormat format) async {
@@ -208,13 +214,14 @@ class SheetExportService {
   /// 导出为 MusicXML
   String _exportToMusicXml(Score score) {
     final buffer = StringBuffer();
+    final divisions = score.metadata.ppq;
+
     buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
     buffer.writeln(
       '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">',
     );
     buffer.writeln('<score-partwise version="3.1">');
 
-    // 作品信息
     buffer.writeln('  <work>');
     buffer.writeln('    <work-title>${_escapeXml(score.title)}</work-title>');
     buffer.writeln('  </work>');
@@ -233,7 +240,6 @@ class SheetExportService {
       buffer.writeln('  </identification>');
     }
 
-    // 声部列表
     buffer.writeln('  <part-list>');
     for (var i = 0; i < score.tracks.length; i++) {
       final track = score.tracks[i];
@@ -243,7 +249,6 @@ class SheetExportService {
     }
     buffer.writeln('  </part-list>');
 
-    // 各声部内容
     for (var trackIndex = 0; trackIndex < score.tracks.length; trackIndex++) {
       final track = score.tracks[trackIndex];
       buffer.writeln('  <part id="P${trackIndex + 1}">');
@@ -256,12 +261,9 @@ class SheetExportService {
         final measure = track.measures[measureIndex];
         buffer.writeln('    <measure number="${measureIndex + 1}">');
 
-        // 第一小节添加属性
         if (measureIndex == 0) {
           buffer.writeln('      <attributes>');
-          buffer.writeln(
-            '        <divisions>4</divisions>',
-          ); // 4个divisions = 1拍
+          buffer.writeln('        <divisions>$divisions</divisions>');
           buffer.writeln('        <key>');
           buffer.writeln(
             '          <fifths>${_getKeyFifths(score.metadata.key)}</fifths>',
@@ -271,15 +273,18 @@ class SheetExportService {
           buffer.writeln(
             '          <beats>${score.metadata.beatsPerMeasure}</beats>',
           );
-          buffer.writeln('          <beat-type>4</beat-type>');
+          buffer.writeln(
+            '          <beat-type>${score.metadata.beatUnit}</beat-type>',
+          );
           buffer.writeln('        </time>');
           buffer.writeln('        <clef>');
-          buffer.writeln('          <sign>G</sign>');
-          buffer.writeln('          <line>2</line>');
+          final clefSign = track.clef == Clef.bass ? 'F' : 'G';
+          final clefLine = track.clef == Clef.bass ? '4' : '2';
+          buffer.writeln('          <sign>$clefSign</sign>');
+          buffer.writeln('          <line>$clefLine</line>');
           buffer.writeln('        </clef>');
           buffer.writeln('      </attributes>');
 
-          // 速度标记
           buffer.writeln('      <direction placement="above">');
           buffer.writeln('        <direction-type>');
           buffer.writeln('          <metronome>');
@@ -292,7 +297,25 @@ class SheetExportService {
           buffer.writeln('      </direction>');
         }
 
-        // 小节中的音符
+        if (measure.dynamics != null) {
+          buffer.writeln('      <direction placement="below">');
+          buffer.writeln('        <direction-type>');
+          buffer.writeln('          <dynamics>');
+          buffer.writeln('            <${measure.dynamics!.symbol}/>');
+          buffer.writeln('          </dynamics>');
+          buffer.writeln('        </direction-type>');
+          buffer.writeln('      </direction>');
+        }
+
+        if (measure.pedal != null) {
+          final pedalType = _getPedalType(measure.pedal!);
+          buffer.writeln('      <direction placement="below">');
+          buffer.writeln('        <direction-type>');
+          buffer.writeln('          <pedal type="$pedalType" line="yes"/>');
+          buffer.writeln('        </direction-type>');
+          buffer.writeln('      </direction>');
+        }
+
         for (
           var beatIndex = 0;
           beatIndex < score.metadata.beatsPerMeasure;
@@ -303,10 +326,9 @@ class SheetExportService {
               .toList();
 
           if (beatsAtIndex.isEmpty) {
-            // 休止符
             buffer.writeln('      <note>');
             buffer.writeln('        <rest/>');
-            buffer.writeln('        <duration>4</duration>');
+            buffer.writeln('        <duration>$divisions</duration>');
             buffer.writeln('        <type>quarter</type>');
             buffer.writeln('      </note>');
           } else {
@@ -314,11 +336,10 @@ class SheetExportService {
             if (notes.isEmpty) {
               buffer.writeln('      <note>');
               buffer.writeln('        <rest/>');
-              buffer.writeln('        <duration>4</duration>');
+              buffer.writeln('        <duration>$divisions</duration>');
               buffer.writeln('        <type>quarter</type>');
               buffer.writeln('      </note>');
             } else {
-              // 和弦处理
               for (var noteIndex = 0; noteIndex < notes.length; noteIndex++) {
                 final note = notes[noteIndex];
                 buffer.writeln('      <note>');
@@ -345,7 +366,7 @@ class SheetExportService {
                 }
 
                 buffer.writeln(
-                  '        <duration>${_getDuration(note.duration)}</duration>',
+                  '        <duration>${_getDurationXml(note.duration, divisions, note.dots)}</duration>',
                 );
                 buffer.writeln(
                   '        <type>${_getNoteType(note.duration)}</type>',
@@ -355,6 +376,53 @@ class SheetExportService {
                   for (var i = 0; i < note.dots; i++) {
                     buffer.writeln('        <dot/>');
                   }
+                }
+
+                final hasNotations =
+                    note.tieStart ||
+                    note.tieEnd ||
+                    note.articulation != Articulation.none ||
+                    note.ornament != Ornament.none;
+
+                if (hasNotations) {
+                  buffer.writeln('        <notations>');
+
+                  if (note.tieStart) {
+                    buffer.writeln('          <tied type="start"/>');
+                  }
+                  if (note.tieEnd) {
+                    buffer.writeln('          <tied type="stop"/>');
+                  }
+
+                  if (note.ornament != Ornament.none) {
+                    buffer.writeln('          <ornaments>');
+                    _writeOrnament(buffer, note.ornament);
+                    buffer.writeln('          </ornaments>');
+                  }
+
+                  if (note.articulation != Articulation.none) {
+                    buffer.writeln('          <articulations>');
+                    _writeArticulation(buffer, note.articulation);
+                    buffer.writeln('          </articulations>');
+                  }
+
+                  buffer.writeln('        </notations>');
+                }
+
+                if (note.preciseOffsetBeats != null ||
+                    note.preciseDurationBeats != null) {
+                  buffer.writeln('        <miscellaneous>');
+                  if (note.preciseOffsetBeats != null) {
+                    buffer.writeln(
+                      '          <miscellaneous-field name="preciseOffsetBeats">${note.preciseOffsetBeats}</miscellaneous-field>',
+                    );
+                  }
+                  if (note.preciseDurationBeats != null) {
+                    buffer.writeln(
+                      '          <miscellaneous-field name="preciseDurationBeats">${note.preciseDurationBeats}</miscellaneous-field>',
+                    );
+                  }
+                  buffer.writeln('        </miscellaneous>');
                 }
 
                 if (note.lyric != null && note.lyric!.isNotEmpty) {
@@ -379,6 +447,75 @@ class SheetExportService {
 
     buffer.writeln('</score-partwise>');
     return buffer.toString();
+  }
+
+  void _writeOrnament(StringBuffer buffer, Ornament ornament) {
+    switch (ornament) {
+      case Ornament.trill:
+        buffer.writeln('            <trill-mark/>');
+      case Ornament.mordent:
+        buffer.writeln('            <mordent/>');
+      case Ornament.invertedMordent:
+        buffer.writeln('            <inverted-mordent/>');
+      case Ornament.turn:
+        buffer.writeln('            <turn/>');
+      case Ornament.appoggiatura:
+      case Ornament.acciaccatura:
+      case Ornament.none:
+        break;
+    }
+  }
+
+  void _writeArticulation(StringBuffer buffer, Articulation articulation) {
+    switch (articulation) {
+      case Articulation.staccato:
+        buffer.writeln('            <staccato/>');
+      case Articulation.accent:
+        buffer.writeln('            <accent/>');
+      case Articulation.tenuto:
+        buffer.writeln('            <tenuto/>');
+      case Articulation.legato:
+      case Articulation.none:
+        break;
+    }
+  }
+
+  String _getPedalType(PedalMark pedal) {
+    switch (pedal) {
+      case PedalMark.start:
+        return 'start';
+      case PedalMark.end:
+        return 'stop';
+      case PedalMark.change:
+        return 'change';
+    }
+  }
+
+  int _getDurationXml(NoteDuration duration, int divisions, int dots) {
+    int baseDuration;
+    switch (duration) {
+      case NoteDuration.whole:
+        baseDuration = divisions * 4;
+      case NoteDuration.half:
+        baseDuration = divisions * 2;
+      case NoteDuration.quarter:
+        baseDuration = divisions;
+      case NoteDuration.eighth:
+        baseDuration = divisions ~/ 2;
+      case NoteDuration.sixteenth:
+        baseDuration = divisions ~/ 4;
+      case NoteDuration.thirtySecond:
+        baseDuration = divisions ~/ 8;
+    }
+
+    var totalDuration = baseDuration;
+    var dotValue = baseDuration ~/ 2;
+    for (var i = 0; i < dots; i++) {
+      totalDuration += dotValue;
+      dotValue ~/= 2;
+    }
+
+    return totalDuration;
   }
 
   // MusicXML 辅助方法
@@ -431,23 +568,6 @@ class SheetExportService {
 
   int _getPitchOctave(int pitch) {
     return (pitch ~/ 12) - 1;
-  }
-
-  int _getDuration(NoteDuration duration) {
-    switch (duration) {
-      case NoteDuration.whole:
-        return 16;
-      case NoteDuration.half:
-        return 8;
-      case NoteDuration.quarter:
-        return 4;
-      case NoteDuration.eighth:
-        return 2;
-      case NoteDuration.sixteenth:
-        return 1;
-      case NoteDuration.thirtySecond:
-        return 0; // 或者适当的值
-    }
   }
 
   String _getNoteType(NoteDuration duration) {

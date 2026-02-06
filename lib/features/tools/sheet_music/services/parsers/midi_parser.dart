@@ -1,29 +1,35 @@
 import 'dart:typed_data';
 
 import '../../models/enums.dart';
+import '../../models/import_export_options.dart';
 import '../../models/score.dart';
 import '../sheet_import_service.dart';
+import 'midi_import_analyzer.dart';
 
-/// MIDI 格式解析器
+/// MIDI 格式解析器 v2
 ///
-/// 支持：
-/// - Standard MIDI File Format 0/1
-/// - 多轨道解析
-/// - Note On/Off 事件
-/// - Tempo 变化
-/// - Time/Key Signature
-/// - Control Change (踏板)
-///
-/// 限制：
-/// - 当前版本使用简单量化算法
-/// - 不支持 Sysex 消息
+/// 改进：
+/// - 智能轨道识别和分组
+/// - 完整的Meta Event支持（Track Name等）
+/// - 可配置的导入选项
+/// - 更精确的量化算法
 class MidiParser implements SheetParser {
+  final MidiImportAnalyzer _analyzer = MidiImportAnalyzer();
+  final MidiImportOptions options;
+
+  MidiParser({this.options = const MidiImportOptions()});
+
   @override
   ImportFormat get format => ImportFormat.midi;
 
   @override
   bool validate(String content) {
     return false;
+  }
+
+  @override
+  ImportResult parse(String content) {
+    return const ImportResult.failure('MIDI 解析需要使用 parseBytes 方法');
   }
 
   /// 从字节数据解析 MIDI
@@ -51,12 +57,12 @@ class MidiParser implements SheetParser {
       }
 
       var offset = 14;
-      final tracks = <_MidiTrack>[];
+      final tracks = <_MidiTrackInternal>[];
 
       while (offset < bytes.length) {
         final trackResult = _parseTrack(bytes, offset, ppq, warnings);
         if (trackResult != null) {
-          tracks.add(trackResult['track'] as _MidiTrack);
+          tracks.add(trackResult['track'] as _MidiTrackInternal);
           offset = trackResult['offset'] as int;
         } else {
           break;
@@ -70,17 +76,11 @@ class MidiParser implements SheetParser {
       final score = _buildScore(tracks, ppq, warnings);
 
       return ImportResult.success(score, warnings: warnings);
-    } catch (e) {
-      return ImportResult.failure('MIDI 解析错误: $e');
+    } catch (e, stackTrace) {
+      return ImportResult.failure('MIDI 解析错误: $e\n$stackTrace');
     }
   }
 
-  @override
-  ImportResult parse(String content) {
-    return const ImportResult.failure('MIDI 解析需要使用 parseBytes 方法');
-  }
-
-  /// 检查 MThd 头
   bool _checkMThd(Uint8List bytes) {
     return bytes[0] == 0x4D &&
         bytes[1] == 0x54 &&
@@ -88,7 +88,6 @@ class MidiParser implements SheetParser {
         bytes[3] == 0x64;
   }
 
-  /// 解析 MIDI 文件头
   Map<String, int> _parseHeader(Uint8List bytes) {
     final format = (bytes[8] << 8) | bytes[9];
     final trackCount = (bytes[10] << 8) | bytes[11];
@@ -97,7 +96,6 @@ class MidiParser implements SheetParser {
     return {'format': format, 'trackCount': trackCount, 'ppq': ppq};
   }
 
-  /// 解析单个轨道
   Map<String, dynamic>? _parseTrack(
     Uint8List bytes,
     int offset,
@@ -122,9 +120,11 @@ class MidiParser implements SheetParser {
     var pos = offset + 8;
     final endPos = pos + length;
 
-    final events = <_MidiEvent>[];
+    final events = <_MidiEventInternal>[];
     var currentTime = 0;
     var runningStatus = 0;
+    String? trackName;
+    var trackChannel = 0;
 
     while (pos < endPos && pos < bytes.length) {
       final deltaResult = _readVarLength(bytes, pos);
@@ -153,11 +153,15 @@ class MidiParser implements SheetParser {
         final velocity = bytes[pos + 1];
         pos += 2;
 
+        trackChannel = channel;
+
         final isNoteOn = eventType == 0x90 && velocity > 0;
 
         events.add(
-          _MidiEvent(
-            type: isNoteOn ? _MidiEventType.noteOn : _MidiEventType.noteOff,
+          _MidiEventInternal(
+            type: isNoteOn
+                ? _MidiEventTypeInternal.noteOn
+                : _MidiEventTypeInternal.noteOff,
             time: currentTime,
             pitch: pitch,
             velocity: velocity,
@@ -172,8 +176,8 @@ class MidiParser implements SheetParser {
 
         if (controller == 64) {
           events.add(
-            _MidiEvent(
-              type: _MidiEventType.pedal,
+            _MidiEventInternal(
+              type: _MidiEventTypeInternal.pedal,
               time: currentTime,
               value: value,
               channel: channel,
@@ -188,15 +192,23 @@ class MidiParser implements SheetParser {
         final metaLength = lengthResult['value'] as int;
         pos = lengthResult['offset'] as int;
 
-        if (metaType == 0x51 && metaLength == 3) {
+        if (metaType == 0x03 &&
+            metaLength > 0 &&
+            pos + metaLength <= bytes.length) {
+          try {
+            trackName = String.fromCharCodes(
+              bytes.sublist(pos, pos + metaLength),
+            );
+          } catch (_) {}
+        } else if (metaType == 0x51 && metaLength == 3) {
           if (pos + 3 <= bytes.length) {
             final microsecondsPerQuarter =
                 (bytes[pos] << 16) | (bytes[pos + 1] << 8) | bytes[pos + 2];
             final bpm = (60000000 / microsecondsPerQuarter).round();
 
             events.add(
-              _MidiEvent(
-                type: _MidiEventType.tempo,
+              _MidiEventInternal(
+                type: _MidiEventTypeInternal.tempo,
                 time: currentTime,
                 value: bpm,
               ),
@@ -208,8 +220,8 @@ class MidiParser implements SheetParser {
             final denominator = 1 << bytes[pos + 1];
 
             events.add(
-              _MidiEvent(
-                type: _MidiEventType.timeSignature,
+              _MidiEventInternal(
+                type: _MidiEventTypeInternal.timeSignature,
                 time: currentTime,
                 value: numerator,
                 value2: denominator,
@@ -218,12 +230,12 @@ class MidiParser implements SheetParser {
           }
         } else if (metaType == 0x59 && metaLength == 2) {
           if (pos + 2 <= bytes.length) {
-            final sharpsFlats = bytes[pos];
+            final sharpsFlats = bytes[pos].toSigned(8);
             final major = bytes[pos + 1] == 0;
 
             events.add(
-              _MidiEvent(
-                type: _MidiEventType.keySignature,
+              _MidiEventInternal(
+                type: _MidiEventTypeInternal.keySignature,
                 time: currentTime,
                 value: sharpsFlats,
                 value2: major ? 1 : 0,
@@ -239,10 +251,16 @@ class MidiParser implements SheetParser {
       }
     }
 
-    return {'track': _MidiTrack(events: events), 'offset': endPos};
+    return {
+      'track': _MidiTrackInternal(
+        events: events,
+        name: trackName,
+        channel: trackChannel,
+      ),
+      'offset': endPos,
+    };
   }
 
-  /// 读取变长数值
   Map<String, int> _readVarLength(Uint8List bytes, int offset) {
     var value = 0;
     var pos = offset;
@@ -257,7 +275,6 @@ class MidiParser implements SheetParser {
     return {'value': value, 'offset': pos};
   }
 
-  /// 获取数据字节数
   int _getDataBytesCount(int eventType) {
     switch (eventType) {
       case 0xC0:
@@ -274,38 +291,38 @@ class MidiParser implements SheetParser {
     }
   }
 
-  /// 构建 Score
-  Score _buildScore(List<_MidiTrack> tracks, int ppq, List<String> warnings) {
+  Score _buildScore(
+    List<_MidiTrackInternal> tracks,
+    int ppq,
+    List<String> warnings,
+  ) {
     var tempo = 120;
     var beatsPerMeasure = 4;
     var beatUnit = 4;
     var key = MusicKey.C;
 
-    // 收集所有元数据事件并按时间排序
-    final tempoEvents = <_MidiEvent>[];
-    final timeSignatureEvents = <_MidiEvent>[];
-    final keySignatureEvents = <_MidiEvent>[];
+    final tempoEvents = <_MidiEventInternal>[];
+    final timeSignatureEvents = <_MidiEventInternal>[];
+    final keySignatureEvents = <_MidiEventInternal>[];
 
     for (final track in tracks) {
       for (final event in track.events) {
-        if (event.type == _MidiEventType.tempo) {
+        if (event.type == _MidiEventTypeInternal.tempo) {
           tempoEvents.add(event);
-        } else if (event.type == _MidiEventType.timeSignature) {
+        } else if (event.type == _MidiEventTypeInternal.timeSignature) {
           timeSignatureEvents.add(event);
-        } else if (event.type == _MidiEventType.keySignature) {
+        } else if (event.type == _MidiEventTypeInternal.keySignature) {
           keySignatureEvents.add(event);
         }
       }
     }
 
-    // 找到第一个（时间最早的）tempo 事件
     if (tempoEvents.isNotEmpty) {
       tempoEvents.sort((a, b) => a.time.compareTo(b.time));
       tempo = tempoEvents.first.value ?? 120;
-      warnings.add('检测到速度: ${tempo} BPM');
+      warnings.add('检测到速度: $tempo BPM');
     }
 
-    // 找到第一个拍号事件
     if (timeSignatureEvents.isNotEmpty) {
       timeSignatureEvents.sort((a, b) => a.time.compareTo(b.time));
       beatsPerMeasure = timeSignatureEvents.first.value ?? 4;
@@ -313,7 +330,6 @@ class MidiParser implements SheetParser {
       warnings.add('检测到拍号: $beatsPerMeasure/$beatUnit');
     }
 
-    // 找到第一个调号事件
     if (keySignatureEvents.isNotEmpty) {
       keySignatureEvents.sort((a, b) => a.time.compareTo(b.time));
       key = _midiKeyToMusicKey(
@@ -323,53 +339,37 @@ class MidiParser implements SheetParser {
       warnings.add('检测到调号: ${key.displayName}');
     }
 
-    final scoreTracks = <Track>[];
-    var trackIndex = 0;
+    final midiTrackDataList = tracks
+        .map(
+          (t) => MidiTrackData(
+            events: t.events
+                .map(
+                  (e) => MidiEvent(
+                    type: _mapEventType(e.type),
+                    time: e.time,
+                    pitch: e.pitch,
+                    velocity: e.velocity,
+                    value: e.value,
+                    value2: e.value2,
+                    channel: e.channel,
+                    text: e.text,
+                  ),
+                )
+                .toList(),
+            name: t.name,
+            channel: t.channel,
+          ),
+        )
+        .toList();
 
-    for (final midiTrack in tracks) {
-      final noteEvents = midiTrack.events
-          .where(
-            (e) =>
-                e.type == _MidiEventType.noteOn ||
-                e.type == _MidiEventType.noteOff,
-          )
-          .toList();
-
-      if (noteEvents.isEmpty) continue;
-
-      trackIndex++;
-
-      final measures = _quantizeToMeasures(
-        noteEvents,
-        ppq,
-        beatsPerMeasure,
-        beatUnit,
-        warnings,
-      );
-
-      if (measures.isEmpty) continue;
-
-      final avgPitch =
-          noteEvents
-              .where((e) => e.type == _MidiEventType.noteOn)
-              .map((e) => e.pitch!)
-              .reduce((a, b) => a + b) /
-          noteEvents.where((e) => e.type == _MidiEventType.noteOn).length;
-
-      final clef = avgPitch >= 60 ? Clef.treble : Clef.bass;
-      final hand = avgPitch >= 60 ? Hand.right : Hand.left;
-
-      scoreTracks.add(
-        Track(
-          id: 'track_$trackIndex',
-          name: hand == Hand.right ? '右手' : '左手',
-          clef: clef,
-          hand: hand,
-          measures: measures,
-          instrument: Instrument.piano,
-        ),
-      );
-    }
+    final groupingResult = _analyzer.smartGroupTracks(
+      midiTrackDataList,
+      ppq,
+      beatsPerMeasure,
+      beatUnit,
+      options,
+      warnings,
+    );
 
     return Score(
       id: 'midi_imported_${DateTime.now().millisecondsSinceEpoch}',
@@ -381,226 +381,32 @@ class MidiParser implements SheetParser {
         tempo: tempo,
         difficulty: 1,
         category: ScoreCategory.classical,
-        ppq: ppq, // 保存原始PPQ
+        ppq: ppq,
       ),
-      tracks: scoreTracks,
+      tracks: groupingResult.tracks,
       isBuiltIn: false,
     );
   }
 
-  /// 量化到小节
-  List<Measure> _quantizeToMeasures(
-    List<_MidiEvent> noteEvents,
-    int ppq,
-    int beatsPerMeasure,
-    int beatUnit,
-    List<String> warnings,
-  ) {
-    final activeNotes = <int, _MidiEvent>{};
-    final notes = <_NoteWithTiming>[];
-
-    for (final event in noteEvents) {
-      if (event.type == _MidiEventType.noteOn) {
-        activeNotes[event.pitch!] = event;
-      } else if (event.type == _MidiEventType.noteOff) {
-        final startEvent = activeNotes.remove(event.pitch!);
-        if (startEvent != null) {
-          final duration = event.time - startEvent.time;
-          notes.add(
-            _NoteWithTiming(
-              pitch: event.pitch!,
-              startTime: startEvent.time,
-              duration: duration,
-              velocity: startEvent.velocity!,
-            ),
-          );
-        }
-      }
+  MidiEventType _mapEventType(_MidiEventTypeInternal type) {
+    switch (type) {
+      case _MidiEventTypeInternal.noteOn:
+        return MidiEventType.noteOn;
+      case _MidiEventTypeInternal.noteOff:
+        return MidiEventType.noteOff;
+      case _MidiEventTypeInternal.tempo:
+        return MidiEventType.tempo;
+      case _MidiEventTypeInternal.timeSignature:
+        return MidiEventType.timeSignature;
+      case _MidiEventTypeInternal.keySignature:
+        return MidiEventType.keySignature;
+      case _MidiEventTypeInternal.pedal:
+        return MidiEventType.pedal;
+      case _MidiEventTypeInternal.trackName:
+        return MidiEventType.trackName;
     }
-
-    if (notes.isEmpty) return [];
-
-    notes.sort((a, b) => a.startTime.compareTo(b.startTime));
-
-    final ticksPerMeasure = ppq * beatsPerMeasure;
-    final measures = <Measure>[];
-
-    // 计算总时长（以最后一个音符的结束时间为准）
-    final lastNote = notes.last;
-    final totalTicks = lastNote.startTime + lastNote.duration;
-    final totalMeasures = (totalTicks / ticksPerMeasure).ceil();
-
-    warnings.add(
-      '音符总数: ${notes.length}, 总tick: $totalTicks, 小节数: $totalMeasures',
-    );
-
-    // 创建所有小节（包括空小节），确保number连续
-    var totalNotesAssigned = 0;
-    for (var measureIndex = 0; measureIndex < totalMeasures; measureIndex++) {
-      final currentMeasureStart = measureIndex * ticksPerMeasure;
-      final measureEnd = currentMeasureStart + ticksPerMeasure;
-
-      // 找到在这个小节内开始的音符
-      // 注意：使用 < 而不是 <= 是正确的，因为 measureEnd 是下一小节的起点
-      // 但最后一个小节要特殊处理，包含所有剩余音符
-      final measureNotes = notes.where((n) {
-        if (measureIndex == totalMeasures - 1) {
-          // 最后一个小节：包含所有 >= currentMeasureStart 的音符
-          return n.startTime >= currentMeasureStart;
-        } else {
-          // 其他小节：[currentMeasureStart, measureEnd)
-          return n.startTime >= currentMeasureStart && n.startTime < measureEnd;
-        }
-      }).toList();
-
-      totalNotesAssigned += measureNotes.length;
-
-      final beats = _quantizeToBeats(
-        measureNotes,
-        currentMeasureStart,
-        ppq,
-        beatsPerMeasure,
-      );
-
-      // 始终创建小节，即使是空的（保证measure.number连续）
-      measures.add(Measure(number: measureIndex + 1, beats: beats));
-    }
-
-    warnings.add('实际分配音符数: $totalNotesAssigned / ${notes.length}');
-
-    return measures;
   }
 
-  /// 量化到拍 - 保留精确timing信息
-  List<Beat> _quantizeToBeats(
-    List<_NoteWithTiming> notes,
-    int measureStart,
-    int ppq,
-    int beatsPerMeasure,
-  ) {
-    // 将notes按照精确的startTime分组到最接近的拍
-    // 同时保存每个note在该拍内的精确偏移和精确时长
-    final beatMap = <int, List<_NoteWithTiming>>{};
-
-    for (final note in notes) {
-      final relativeTime = note.startTime - measureStart;
-      final exactBeatPosition = relativeTime / ppq; // 精确的拍位置（浮点数）
-
-      // 使用 floor() 确保音符被分配到正确的拍
-      // 例如：2.5拍 → floor=2 → 第2拍（正确）
-      //      3.9拍 → floor=3 → 第3拍（正确）
-      var beatIndex = exactBeatPosition.floor();
-
-      // 处理边界情况：如果超出范围，归到最后一拍
-      if (beatIndex >= beatsPerMeasure) {
-        beatIndex = beatsPerMeasure - 1;
-      } else if (beatIndex < 0) {
-        beatIndex = 0;
-      }
-
-      beatMap.putIfAbsent(beatIndex, () => []).add(note);
-    }
-
-    final beats = <Beat>[];
-    for (var beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
-      final beatNotes = beatMap[beatIndex];
-      if (beatNotes == null || beatNotes.isEmpty) continue;
-
-      // 计算该拍的精确起始位置（以该拍开始处的平均位置）
-      final beatStartTick = measureStart + beatIndex * ppq;
-
-      // 按startTime排序，保持音符的先后顺序
-      beatNotes.sort((a, b) => a.startTime.compareTo(b.startTime));
-
-      final scoreNotes = <Note>[];
-      for (final note in beatNotes) {
-        // 计算在该拍内的精确偏移（以拍为单位，0.0-1.0+）
-        final preciseOffset = (note.startTime - beatStartTick) / ppq;
-
-        // 计算精确时长（以拍为单位）
-        final preciseDuration = note.duration / ppq;
-
-        // 估算最接近的NoteDuration（用于显示）
-        final displayDuration = _ticksToNoteDuration(note.duration, ppq);
-
-        final scoreNote = Note(
-          pitch: note.pitch,
-          duration: displayDuration.duration,
-          dots: displayDuration.dots,
-          preciseOffsetBeats: preciseOffset,
-          preciseDurationBeats: preciseDuration,
-        );
-
-        scoreNotes.add(scoreNote);
-      }
-
-      // 计算该拍的精确起始位置（相对于小节开始）
-      final firstNoteOffset = (beatNotes.first.startTime - measureStart) / ppq;
-
-      beats.add(
-        Beat(
-          index: beatIndex,
-          notes: scoreNotes,
-          preciseStartBeats: firstNoteOffset,
-        ),
-      );
-    }
-
-    return beats;
-  }
-
-  /// Ticks 转时值 - 返回最接近的音符时值和附点数
-  _NoteDurationWithDots _ticksToNoteDuration(int ticks, int ppq) {
-    final beats = ticks / ppq;
-
-    // 常见节奏型映射表（按精确度从高到低排序）
-    final rhythmPatterns = [
-      // 附点音符
-      _RhythmPattern(6.0, NoteDuration.whole, 1), // 附点全音符 (6拍)
-      _RhythmPattern(4.0, NoteDuration.whole, 0), // 全音符 (4拍)
-      _RhythmPattern(3.0, NoteDuration.half, 1), // 附点二分音符 (3拍)
-      _RhythmPattern(2.0, NoteDuration.half, 0), // 二分音符 (2拍)
-      _RhythmPattern(1.5, NoteDuration.quarter, 1), // 附点四分音符 (1.5拍)
-      _RhythmPattern(1.0, NoteDuration.quarter, 0), // 四分音符 (1拍)
-      _RhythmPattern(0.75, NoteDuration.eighth, 1), // 附点八分音符 (0.75拍)
-      _RhythmPattern(0.5, NoteDuration.eighth, 0), // 八分音符 (0.5拍)
-      _RhythmPattern(0.375, NoteDuration.sixteenth, 1), // 附点十六分音符
-      _RhythmPattern(0.25, NoteDuration.sixteenth, 0), // 十六分音符 (0.25拍)
-      _RhythmPattern(0.125, NoteDuration.thirtySecond, 0), // 三十二分音符
-    ];
-
-    // 找到误差最小的节奏型
-    _RhythmPattern? closestPattern;
-    var minError = double.infinity;
-
-    for (final pattern in rhythmPatterns) {
-      final error = (pattern.beats - beats).abs();
-      if (error < minError) {
-        minError = error;
-        closestPattern = pattern;
-      }
-    }
-
-    return _NoteDurationWithDots(
-      duration: closestPattern?.duration ?? NoteDuration.quarter,
-      dots: closestPattern?.dots ?? 0,
-    );
-  }
-
-  /// 旧版方法，保留用于兼容性
-  @Deprecated('Use _ticksToNoteDuration instead')
-  NoteDuration _ticksToDuration(int ticks, int ppq) {
-    final beats = ticks / ppq;
-
-    if (beats >= 3.5) return NoteDuration.whole;
-    if (beats >= 1.75) return NoteDuration.half;
-    if (beats >= 0.875) return NoteDuration.quarter;
-    if (beats >= 0.4375) return NoteDuration.eighth;
-    if (beats >= 0.21875) return NoteDuration.sixteenth;
-    return NoteDuration.thirtySecond;
-  }
-
-  /// MIDI 调号转 MusicKey
   MusicKey _midiKeyToMusicKey(int sharpsFlats, bool isMajor) {
     if (isMajor) {
       const majorKeys = {
@@ -628,27 +434,27 @@ class MidiParser implements SheetParser {
   }
 }
 
-/// MIDI 事件类型
-enum _MidiEventType {
+enum _MidiEventTypeInternal {
   noteOn,
   noteOff,
   tempo,
   timeSignature,
   keySignature,
   pedal,
+  trackName,
 }
 
-/// MIDI 事件
-class _MidiEvent {
-  final _MidiEventType type;
+class _MidiEventInternal {
+  final _MidiEventTypeInternal type;
   final int time;
   final int? pitch;
   final int? velocity;
   final int? value;
   final int? value2;
   final int? channel;
+  final String? text;
 
-  _MidiEvent({
+  _MidiEventInternal({
     required this.type,
     required this.time,
     this.pitch,
@@ -656,44 +462,14 @@ class _MidiEvent {
     this.value,
     this.value2,
     this.channel,
+    this.text,
   });
 }
 
-/// MIDI 轨道
-class _MidiTrack {
-  final List<_MidiEvent> events;
+class _MidiTrackInternal {
+  final List<_MidiEventInternal> events;
+  final String? name;
+  final int channel;
 
-  _MidiTrack({required this.events});
-}
-
-/// 带时间信息的音符
-class _NoteWithTiming {
-  final int pitch;
-  final int startTime;
-  final int duration;
-  final int velocity;
-
-  _NoteWithTiming({
-    required this.pitch,
-    required this.startTime,
-    required this.duration,
-    required this.velocity,
-  });
-}
-
-/// 音符时值和附点数
-class _NoteDurationWithDots {
-  final NoteDuration duration;
-  final int dots;
-
-  _NoteDurationWithDots({required this.duration, required this.dots});
-}
-
-/// 节奏型模式
-class _RhythmPattern {
-  final double beats;
-  final NoteDuration duration;
-  final int dots;
-
-  _RhythmPattern(this.beats, this.duration, this.dots);
+  _MidiTrackInternal({required this.events, this.name, this.channel = 0});
 }

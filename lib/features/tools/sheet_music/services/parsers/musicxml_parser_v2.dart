@@ -371,24 +371,15 @@ class MusicXmlParserV2 implements SheetParser {
   }
 
   /// 识别左右手
+  /// 主要基于谱号判断：高音谱号(treble)=右手，低音谱号(bass)=左手
   Hand? _identifyHand(List<Measure> measures, Clef clef) {
     if (measures.isEmpty) return null;
 
-    final allPitches = measures
-        .expand((m) => m.beats)
-        .expand((b) => b.notes)
-        .where((n) => !n.isRest)
-        .map((n) => n.pitch)
-        .toList();
-
-    if (allPitches.isEmpty) return null;
-
-    final avgPitch = allPitches.reduce((a, b) => a + b) / allPitches.length;
-
+    // 直接根据谱号判断
     if (clef == Clef.treble) {
-      return avgPitch >= 60 ? Hand.right : Hand.left;
+      return Hand.right;
     } else if (clef == Clef.bass) {
-      return avgPitch < 60 ? Hand.left : Hand.right;
+      return Hand.left;
     }
 
     return null;

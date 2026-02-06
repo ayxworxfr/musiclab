@@ -1,33 +1,33 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
-import '../../models/score.dart';
 import '../../models/enums.dart';
+import '../../models/import_export_options.dart';
+import '../../models/score.dart';
 
 /// MIDI 导出器
 ///
-/// MIDI 文件格式说明:
-/// - Header Chunk: MThd + length + format + tracks + division
-/// - Track Chunk: MTrk + length + events
+/// 改进：
+/// - 动态velocity（基于dynamics）
+/// - 踏板信息写入（Control Change 64）
+/// - 轨道名称写入（Meta Event 0x03）
+/// - 精确timing保留
 ///
 /// 参考: https://www.music.mcgill.ca/~ich/classes/mumt306/StandardMIDIfileformat.html
 class MidiExporter {
+  final MidiExportOptions options;
+
+  MidiExporter({this.options = const MidiExportOptions()});
+
   /// 导出乐谱为 MIDI 文件
   Uint8List export(Score score) {
     final buffer = BytesBuilder();
-
-    // 使用score中保存的ppq
     final ppq = score.metadata.ppq;
+    final trackCount = score.tracks.length + 1;
 
-    // 计算轨道数量
-    final trackCount = score.tracks.length + 1; // +1 for tempo track
-
-    // 写入 Header Chunk
     _writeHeader(buffer, trackCount, ppq);
-
-    // 写入 Tempo Track (Track 0)
     _writeTempoTrack(buffer, score.metadata, ppq);
 
-    // 写入每个轨道
     for (var i = 0; i < score.tracks.length; i++) {
       _writeTrack(buffer, score.tracks[i], score.metadata, i, ppq);
     }
@@ -35,79 +35,65 @@ class MidiExporter {
     return buffer.toBytes();
   }
 
-  /// 写入 MIDI Header
   void _writeHeader(BytesBuilder buffer, int trackCount, int ppq) {
-    // "MThd"
     buffer.add([0x4D, 0x54, 0x68, 0x64]);
-    // Header length: 6 bytes
     buffer.add([0x00, 0x00, 0x00, 0x06]);
-    // Format: 1 (multiple tracks, synchronous)
     buffer.add([0x00, 0x01]);
-    // Number of tracks
     buffer.add(_int16ToBytes(trackCount));
-    // Division: ticks per quarter note (使用传入的ppq)
     buffer.add(_int16ToBytes(ppq));
   }
 
-  /// 写入 Tempo Track
   void _writeTempoTrack(BytesBuilder buffer, ScoreMetadata metadata, int ppq) {
     final trackBuffer = BytesBuilder();
 
-    // Tempo event: microseconds per quarter note
     final microsecondsPerBeat = (60000000 / metadata.tempo).round();
 
-    // Delta time: 0
     trackBuffer.add([0x00]);
-    // Meta event: Tempo
     trackBuffer.add([0xFF, 0x51, 0x03]);
     trackBuffer.add(_int24ToBytes(microsecondsPerBeat));
 
-    // Time signature
-    trackBuffer.add([0x00]); // Delta time
-    trackBuffer.add([0xFF, 0x58, 0x04]); // Time signature meta event
+    trackBuffer.add([0x00]);
+    trackBuffer.add([0xFF, 0x58, 0x04]);
     trackBuffer.add([
       metadata.beatsPerMeasure,
       _log2(metadata.beatUnit),
-      24, // MIDI clocks per metronome click
-      8, // 32nd notes per quarter note
+      24,
+      8,
     ]);
 
-    // Key signature (simplified - always C major)
-    trackBuffer.add([0x00]); // Delta time
-    trackBuffer.add([0xFF, 0x59, 0x02]); // Key signature meta event
-    trackBuffer.add([0x00, 0x00]); // C major
+    final keyFifths = _musicKeyToFifths(metadata.key);
+    final keyMode = metadata.key.isMinor ? 1 : 0;
+    trackBuffer.add([0x00]);
+    trackBuffer.add([0xFF, 0x59, 0x02]);
+    trackBuffer.add([keyFifths, keyMode]);
 
-    // End of track
     trackBuffer.add([0x00, 0xFF, 0x2F, 0x00]);
 
-    // Write track chunk
     _writeTrackChunk(buffer, trackBuffer.toBytes());
   }
 
-  /// 写入音乐轨道
   void _writeTrack(
     BytesBuilder buffer,
     Track track,
     ScoreMetadata metadata,
     int trackIndex,
-    int ppq, // 使用传入的ppq
+    int ppq,
   ) {
     final trackBuffer = BytesBuilder();
-    final ticksPerBeat = ppq; // 使用传入的ppq而非硬编码480
+    final ticksPerBeat = ppq;
     final ticksPerMeasure = ticksPerBeat * metadata.beatsPerMeasure;
 
-    // Track name
-    final trackName = track.name;
-    final nameBytes = trackName.codeUnits;
-    trackBuffer.add([0x00]); // Delta time
-    trackBuffer.add([0xFF, 0x03, nameBytes.length]);
-    trackBuffer.add(nameBytes);
+    if (options.includeTrackName) {
+      final trackName = track.name;
+      final nameBytes = utf8.encode(trackName);
+      trackBuffer.add([0x00]);
+      trackBuffer.add([0xFF, 0x03, nameBytes.length]);
+      trackBuffer.add(nameBytes);
+    }
 
-    // Program change (Piano = 0)
-    trackBuffer.add([0x00]); // Delta time
-    trackBuffer.add([0xC0 | trackIndex, 0x00]); // Channel trackIndex, Program 0
+    trackBuffer.add([0x00]);
+    trackBuffer.add([0xC0 | trackIndex, 0x00]);
 
-    // 收集所有音符事件
     final events = <_MidiEvent>[];
 
     for (
@@ -116,14 +102,15 @@ class MidiExporter {
       measureIndex++
     ) {
       final measure = track.measures[measureIndex];
-
-      // 使用 measure.number - 1 计算真实的tick位置，确保与parser一致
-      // measure.number从1开始，所以减1得到从0开始的索引
       final measureStartTick = (measure.number - 1) * ticksPerMeasure;
 
+      if (options.includePedal && measure.pedal != null) {
+        _addPedalEvents(events, measure.pedal!, measureStartTick, trackIndex);
+      }
+
+      final measureDynamics = measure.dynamics;
+
       for (final beat in measure.beats) {
-        // 计算拍的起始tick
-        // 优先使用精确起始位置，否则使用beat.index
         final beatStartTick =
             measureStartTick +
             ((beat.preciseStartBeats ?? beat.index.toDouble()) * ticksPerBeat)
@@ -133,16 +120,12 @@ class MidiExporter {
           final note = beat.notes[noteIndex];
           if (note.isRest) continue;
 
-          // 计算音符开始时间
-          // 优先使用精确偏移量，否则根据noteIndex估算
           int noteOnTick;
           if (note.preciseOffsetBeats != null) {
-            // 使用精确偏移量（以拍为单位）
             noteOnTick =
                 beatStartTick +
                 (note.preciseOffsetBeats! * ticksPerBeat).round();
           } else {
-            // 回退到原有逻辑：短时值音符按顺序播放
             noteOnTick = beatStartTick;
             if (beat.notes.length > 1 && note.duration.beamCount > 0) {
               final subBeatDuration = ticksPerBeat ~/ beat.notes.length;
@@ -150,13 +133,10 @@ class MidiExporter {
             }
           }
 
-          // 计算音符时长
           int noteDuration;
           if (note.preciseDurationBeats != null) {
-            // 使用精确时长（以拍为单位）
             noteDuration = (note.preciseDurationBeats! * ticksPerBeat).round();
           } else {
-            // 使用duration字段计算
             noteDuration = _getDurationTicks(
               note.duration,
               ticksPerBeat,
@@ -166,18 +146,20 @@ class MidiExporter {
 
           final noteOffTick = noteOnTick + noteDuration;
 
-          // Note On
+          final velocity = options.dynamicVelocity
+              ? _dynamicsToVelocity(note.dynamics ?? measureDynamics)
+              : 80;
+
           events.add(
             _MidiEvent(
               tick: noteOnTick,
               type: _MidiEventType.noteOn,
               channel: trackIndex,
               data1: note.pitch,
-              data2: 80, // velocity
+              data2: velocity,
             ),
           );
 
-          // Note Off
           events.add(
             _MidiEvent(
               tick: noteOffTick,
@@ -191,71 +173,137 @@ class MidiExporter {
       }
     }
 
-    // 按时间排序事件
     events.sort((a, b) => a.tick.compareTo(b.tick));
 
-    // 写入事件
     var currentTick = 0;
     for (final event in events) {
       final deltaTick = event.tick - currentTick;
       currentTick = event.tick;
 
-      // Delta time (variable length)
       trackBuffer.add(_intToVariableLength(deltaTick));
 
-      // Event
       switch (event.type) {
         case _MidiEventType.noteOn:
           trackBuffer.add([0x90 | event.channel, event.data1, event.data2]);
-          break;
         case _MidiEventType.noteOff:
           trackBuffer.add([0x80 | event.channel, event.data1, event.data2]);
-          break;
+        case _MidiEventType.controlChange:
+          trackBuffer.add([0xB0 | event.channel, event.data1, event.data2]);
       }
     }
 
-    // End of track
     trackBuffer.add([0x00, 0xFF, 0x2F, 0x00]);
 
-    // Write track chunk
     _writeTrackChunk(buffer, trackBuffer.toBytes());
   }
 
-  /// 写入 Track Chunk
+  void _addPedalEvents(
+    List<_MidiEvent> events,
+    PedalMark pedal,
+    int measureStartTick,
+    int trackIndex,
+  ) {
+    switch (pedal) {
+      case PedalMark.start:
+        events.add(
+          _MidiEvent(
+            tick: measureStartTick,
+            type: _MidiEventType.controlChange,
+            channel: trackIndex,
+            data1: 64,
+            data2: 127,
+          ),
+        );
+      case PedalMark.end:
+        events.add(
+          _MidiEvent(
+            tick: measureStartTick,
+            type: _MidiEventType.controlChange,
+            channel: trackIndex,
+            data1: 64,
+            data2: 0,
+          ),
+        );
+      case PedalMark.change:
+        events.add(
+          _MidiEvent(
+            tick: measureStartTick,
+            type: _MidiEventType.controlChange,
+            channel: trackIndex,
+            data1: 64,
+            data2: 0,
+          ),
+        );
+        events.add(
+          _MidiEvent(
+            tick: measureStartTick + 1,
+            type: _MidiEventType.controlChange,
+            channel: trackIndex,
+            data1: 64,
+            data2: 127,
+          ),
+        );
+    }
+  }
+
+  int _dynamicsToVelocity(Dynamics? dynamics) {
+    const velocityMap = {
+      Dynamics.ppp: 20,
+      Dynamics.pp: 35,
+      Dynamics.p: 50,
+      Dynamics.mp: 64,
+      Dynamics.mf: 80,
+      Dynamics.f: 96,
+      Dynamics.ff: 112,
+      Dynamics.fff: 127,
+    };
+    return velocityMap[dynamics] ?? 80;
+  }
+
+  int _musicKeyToFifths(MusicKey key) {
+    const keyMap = {
+      MusicKey.C: 0,
+      MusicKey.G: 1,
+      MusicKey.D: 2,
+      MusicKey.A: 3,
+      MusicKey.E: 4,
+      MusicKey.B: 5,
+      MusicKey.Fs: 6,
+      MusicKey.F: -1,
+      MusicKey.Bb: -2,
+      MusicKey.Eb: -3,
+      MusicKey.Ab: -4,
+      MusicKey.Db: -5,
+      MusicKey.Am: 0,
+      MusicKey.Em: 1,
+      MusicKey.Dm: -1,
+    };
+    return keyMap[key] ?? 0;
+  }
+
   void _writeTrackChunk(BytesBuilder buffer, Uint8List trackData) {
-    // "MTrk"
     buffer.add([0x4D, 0x54, 0x72, 0x6B]);
-    // Track length
     buffer.add(_int32ToBytes(trackData.length));
-    // Track data
     buffer.add(trackData);
   }
 
-  /// 计算音符时值对应的 ticks
   int _getDurationTicks(NoteDuration duration, int ticksPerBeat, int dots) {
     int baseTicks;
     switch (duration) {
       case NoteDuration.whole:
         baseTicks = ticksPerBeat * 4;
-        break;
       case NoteDuration.half:
         baseTicks = ticksPerBeat * 2;
-        break;
       case NoteDuration.quarter:
         baseTicks = ticksPerBeat;
-        break;
       case NoteDuration.eighth:
         baseTicks = ticksPerBeat ~/ 2;
-        break;
       case NoteDuration.sixteenth:
         baseTicks = ticksPerBeat ~/ 4;
-        break;
       case NoteDuration.thirtySecond:
         baseTicks = ticksPerBeat ~/ 8;
-        break;
     }
 
-    // 附点处理
     var totalTicks = baseTicks;
     var dotValue = baseTicks ~/ 2;
     for (var i = 0; i < dots; i++) {
@@ -266,17 +314,14 @@ class MidiExporter {
     return totalTicks;
   }
 
-  /// 整数转 16 位字节数组 (Big Endian)
   List<int> _int16ToBytes(int value) {
     return [(value >> 8) & 0xFF, value & 0xFF];
   }
 
-  /// 整数转 24 位字节数组 (Big Endian)
   List<int> _int24ToBytes(int value) {
     return [(value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF];
   }
 
-  /// 整数转 32 位字节数组 (Big Endian)
   List<int> _int32ToBytes(int value) {
     return [
       (value >> 24) & 0xFF,
@@ -286,7 +331,6 @@ class MidiExporter {
     ];
   }
 
-  /// 整数转可变长度格式
   List<int> _intToVariableLength(int value) {
     if (value < 0) value = 0;
 
@@ -302,7 +346,6 @@ class MidiExporter {
     return bytes;
   }
 
-  /// 计算 log2
   int _log2(int value) {
     var result = 0;
     while ((1 << result) < value) {
@@ -312,10 +355,8 @@ class MidiExporter {
   }
 }
 
-/// MIDI 事件类型
-enum _MidiEventType { noteOn, noteOff }
+enum _MidiEventType { noteOn, noteOff, controlChange }
 
-/// MIDI 事件
 class _MidiEvent {
   final int tick;
   final _MidiEventType type;

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../models/import_export_options.dart';
 import '../models/score.dart';
 import 'parsers/jianpu_text_parser.dart';
 import 'parsers/json_sheet_parser.dart';
@@ -86,33 +87,58 @@ class SheetImportService {
   /// 解析器注册表
   final Map<ImportFormat, SheetParser> _parsers = {};
 
-  SheetImportService() {
-    // 注册所有解析器
+  /// MIDI 导入选项
+  MidiImportOptions midiOptions;
+
+  SheetImportService({this.midiOptions = const MidiImportOptions()}) {
     _registerParser(JianpuTextParser());
     _registerParser(JsonScoreParser());
     _registerParser(MusicXmlParserV2());
-    _registerParser(MidiParser());
+    _registerParser(MidiParser(options: midiOptions));
+  }
+
+  /// 更新 MIDI 导入选项
+  void updateMidiOptions(MidiImportOptions options) {
+    midiOptions = options;
+    _registerParser(MidiParser(options: options));
   }
 
   /// 导入 MIDI 字节数据
-  ImportResult importMidiBytes(Uint8List bytes, {String? fileName}) {
-    final parser = _parsers[ImportFormat.midi];
-    if (parser is MidiParser) {
-      final result = parser.parseBytes(bytes);
-      // 如果解析成功且有文件名，优先使用文件名（去除后缀）作为标题
-      if (result.success && result.score != null && fileName != null) {
+  ImportResult importMidiBytes(
+    Uint8List bytes, {
+    String? fileName,
+    MidiImportOptions? options,
+  }) {
+    final effectiveOptions = options ?? midiOptions;
+    print(
+      '🎹 MIDI导入开始: mode=${effectiveOptions.mode.label}, skipEmpty=${effectiveOptions.skipEmptyTracks}',
+    );
+
+    final parser = MidiParser(options: effectiveOptions);
+    final result = parser.parseBytes(bytes);
+
+    if (result.success && result.score != null) {
+      print('🎹 MIDI导入结果: ${result.score!.tracks.length}个轨道');
+      for (var i = 0; i < result.score!.tracks.length; i++) {
+        final track = result.score!.tracks[i];
+        print(
+          '  Track $i: ${track.name}, ${track.clef.name}, hand=${track.hand?.name}',
+        );
+      }
+
+      if (fileName != null) {
         final title = _extractTitle(fileName);
         if (title.isNotEmpty) {
-          // 始终使用文件名作为标题，除非文件名无效
           return ImportResult.success(
             result.score!.copyWith(title: title),
             warnings: result.warnings,
           );
         }
       }
-      return result;
+    } else {
+      print('❌ MIDI导入失败: ${result.errorMessage}');
     }
-    return const ImportResult.failure('MIDI 解析器未注册');
+    return result;
   }
 
   void _registerParser(SheetParser parser) {

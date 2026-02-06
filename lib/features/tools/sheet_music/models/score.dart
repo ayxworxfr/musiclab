@@ -297,22 +297,25 @@ class Beat {
   bool get isChord => notes.length > 1;
 
   /// 获取该拍总时值（考虑三连音）
-  /// 对于多个音符，累加它们的时值（顺序播放）
+  /// 对于和弦（多个音符），取最长音符的时值
   double get totalBeats {
     if (notes.isEmpty) return 1.0;
 
-    // 累加所有音符的时值
-    double total = 0.0;
+    // 和弦：取最长音符的时值（而非累加）
+    double maxBeats = 0.0;
     for (final note in notes) {
-      total += note.actualBeats;
+      final noteBeats = note.actualBeats;
+      if (noteBeats > maxBeats) {
+        maxBeats = noteBeats;
+      }
     }
 
     // 如果有三连音标记，应用时间倍数
     if (tuplet != null) {
-      total *= tuplet!.timeMultiplier;
+      maxBeats *= tuplet!.timeMultiplier;
     }
 
-    return total;
+    return maxBeats;
   }
 
   factory Beat.fromJson(Map<String, dynamic> json) {

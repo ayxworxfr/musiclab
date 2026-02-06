@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file_saver/file_saver.dart';
@@ -13,7 +14,8 @@ class FileDownloadService {
     String filename,
   ) async {
     try {
-      final bytes = Uint8List.fromList(content.codeUnits);
+      // 使用UTF-8编码而不是codeUnits（UTF-16）
+      final bytes = Uint8List.fromList(utf8.encode(content));
       final path = await FileSaver.instance.saveFile(
         name: filename,
         bytes: bytes,

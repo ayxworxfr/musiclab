@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/file_utils.dart';
 
 import '../models/score.dart';
+import '../models/import_export_options.dart';
 import '../controllers/sheet_music_controller.dart';
 import '../services/sheet_import_service.dart';
 import '../utils/score_converter.dart';
@@ -35,6 +37,11 @@ class _SheetImportPageState extends State<SheetImportPage>
   // 文件数据
   Uint8List? _midiBytes;
   String? _currentFileName;
+
+  // MIDI 导入选项
+  MidiImportMode _midiImportMode = MidiImportMode.preserveOriginal;
+  bool _skipEmptyTracks = false;
+  bool _skipPercussion = true;
 
   @override
   void initState() {
@@ -202,6 +209,15 @@ class _SheetImportPageState extends State<SheetImportPage>
 
           const SizedBox(height: 24),
 
+          // MIDI 导入选项（仅当选择了MIDI文件时显示）
+          if (_currentFileName != null &&
+              _detectFormatFromFileName(_currentFileName!) == ImportFormat.midi)
+            _buildMidiOptions(),
+
+          if (_currentFileName != null &&
+              _detectFormatFromFileName(_currentFileName!) == ImportFormat.midi)
+            const SizedBox(height: 24),
+
           // 支持的格式说明
           Container(
             padding: const EdgeInsets.all(16),
@@ -233,6 +249,98 @@ class _SheetImportPageState extends State<SheetImportPage>
         ],
       ),
     );
+  }
+
+  /// MIDI 导入选项设置
+  Widget _buildMidiOptions() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.settings, size: 20, color: Colors.blue),
+              SizedBox(width: 8),
+              Text(
+                'MIDI 导入设置',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 导入模式
+          const Text('导入模式', style: TextStyle(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          ...MidiImportMode.values.map((mode) {
+            return RadioListTile<MidiImportMode>(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(mode.label),
+              subtitle: Text(
+                _getMidiModeDescription(mode),
+                style: const TextStyle(fontSize: 12),
+              ),
+              value: mode,
+              groupValue: _midiImportMode,
+              onChanged: (value) {
+                setState(() {
+                  _midiImportMode = value!;
+                });
+              },
+            );
+          }),
+
+          const SizedBox(height: 8),
+
+          // 其他选项
+          CheckboxListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            title: const Text('跳过空轨道'),
+            subtitle: const Text('忽略没有音符的轨道', style: TextStyle(fontSize: 12)),
+            value: _skipEmptyTracks,
+            onChanged: (value) {
+              setState(() {
+                _skipEmptyTracks = value ?? false;
+              });
+            },
+          ),
+          CheckboxListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            title: const Text('跳过打击乐轨道'),
+            subtitle: const Text(
+              '忽略 Channel 10 的打击乐',
+              style: TextStyle(fontSize: 12),
+            ),
+            value: _skipPercussion,
+            onChanged: (value) {
+              setState(() {
+                _skipPercussion = value ?? true;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMidiModeDescription(MidiImportMode mode) {
+    switch (mode) {
+      case MidiImportMode.smart:
+        return '自动判断是否为钢琴谱并合并左右手';
+      case MidiImportMode.preserveOriginal:
+        return '保留所有原始轨道结构';
+      case MidiImportMode.forcePiano:
+        return '强制合并为钢琴左右手';
+    }
   }
 
   Widget _buildFormatItem(
@@ -500,9 +608,16 @@ class _SheetImportPageState extends State<SheetImportPage>
           if (format == null) {
             result = const ImportResult.failure('无法识别文件格式');
           } else if (format == ImportFormat.midi && _midiBytes != null) {
+            // 使用用户选择的MIDI导入选项
+            final midiOptions = MidiImportOptions(
+              mode: _midiImportMode,
+              skipEmptyTracks: _skipEmptyTracks,
+              skipPercussion: _skipPercussion,
+            );
             result = _importService.importMidiBytes(
               _midiBytes!,
               fileName: _currentFileName,
+              options: midiOptions,
             );
           } else {
             String content = '';
@@ -604,9 +719,9 @@ class _SheetImportPageState extends State<SheetImportPage>
             _midiBytes = Uint8List.fromList(bytesResult.bytes!);
           });
         } else {
-          // 如果是文本格式（JSON或MusicXML），转换为字符串
+          // 如果是文本格式（JSON或MusicXML），使用UTF-8解码
           try {
-            final content = String.fromCharCodes(bytesResult.bytes!);
+            final content = utf8.decode(bytesResult.bytes!);
             setState(() {
               // 根据格式保存到对应的控制器
               switch (format) {
