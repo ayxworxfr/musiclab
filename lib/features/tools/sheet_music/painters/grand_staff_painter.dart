@@ -759,10 +759,16 @@ class GrandStaffPainter extends CustomPainter {
     final totalDuration = overrideTotalDuration ?? score.totalDuration;
     if (totalDuration <= 0) return;
 
-    final measureIndex = layout.getMeasureIndexAtTime(
-      currentTime,
-      totalDuration,
-      score.measureCount,
+    // 使用与简谱相同的精确计算方式（基于拍号和tempo）
+    final tempo = score.metadata.tempo;
+    final beatsPerMeasure = score.metadata.beatsPerMeasure;
+    final secondsPerBeat = 60.0 / tempo;
+    final secondsPerMeasure = beatsPerMeasure * secondsPerBeat;
+
+    // 计算当前小节索引
+    final measureIndex = (currentTime / secondsPerMeasure).floor().clamp(
+      0,
+      score.measureCount - 1,
     );
 
     final measureLayout = layout.measureLayouts[measureIndex];
@@ -773,9 +779,9 @@ class GrandStaffPainter extends CustomPainter {
     final line = layout.lines.firstWhereOrNull((l) => l.lineIndex == lineIndex);
     if (line == null) return;
 
-    final progress =
-        (currentTime % (totalDuration / score.measureCount)) /
-        (totalDuration / score.measureCount);
+    // 计算小节内的时间和进度
+    final timeInMeasure = currentTime % secondsPerMeasure;
+    final progress = timeInMeasure / secondsPerMeasure;
 
     final x = measureLayout.x + progress * measureLayout.width;
 

@@ -53,7 +53,7 @@ class ProfessionalJianpuEditor extends StatelessWidget {
           // 顶部工具栏（预览模式下隐藏）
           if (!isPreviewMode) _buildTopToolbar(context, score, isDark),
 
-          // 轨道选择器（如果是多轨道，预览模式也显示）
+          // 轨道选择器（如果是多轨道，始终显示）
           if (score.tracks.length > 1) _buildTrackSelector(context, score),
 
           // 乐谱编辑区域
@@ -326,16 +326,17 @@ class ProfessionalJianpuEditor extends StatelessWidget {
                 return Obx(() {
                   final isSelected =
                       controller.selectedTrackIndex.value == originalIndex;
-                  return GestureDetector(
+                  return InkWell(
                     onTap: () => controller.selectTrack(originalIndex),
+                    borderRadius: BorderRadius.circular(20),
                     child: Container(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 4,
-                        vertical: 10,
+                        vertical: 8,
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+                        horizontal: 20,
+                        vertical: 12,
                       ),
                       decoration: BoxDecoration(
                         color: isSelected

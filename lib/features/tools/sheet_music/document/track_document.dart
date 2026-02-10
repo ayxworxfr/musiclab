@@ -339,6 +339,7 @@ class TrackDocument {
   }
 
   /// 获取小节当前的拍数（只计算有音符的beat）
+  /// 注意：使用累加逻辑计算每个beat内所有音符的时值总和
   double getMeasureBeats(int measureIndex) {
     if (measureIndex >= track.measures.length) return 0.0;
 
@@ -346,11 +347,17 @@ class TrackDocument {
     return measure.beats.fold<double>(0.0, (sum, beat) {
       // 只计算有音符的beat，忽略空beat
       if (beat.notes.isEmpty) return sum;
-      return sum + beat.totalBeats;
+
+      // 累加当前beat内所有音符的实际时值（顺序输入模式）
+      double beatTotal = 0.0;
+      for (final note in beat.notes) {
+        beatTotal += note.actualBeats;
+      }
+      return sum + beatTotal;
     });
   }
 
-  /// 获取指定beat当前的拍数
+  /// 获取指定beat当前的拍数（使用beat.totalBeats，取最大值）
   double getBeatBeats(int measureIndex, int beatIndex) {
     if (measureIndex >= track.measures.length) return 0.0;
 
@@ -362,6 +369,26 @@ class TrackDocument {
 
     if (beat == null || beat.notes.isEmpty) return 0.0;
     return beat.totalBeats;
+  }
+
+  /// 获取指定beat内所有音符的累加时值（顺序输入模式）
+  double getBeatBeatsAccumulated(int measureIndex, int beatIndex) {
+    if (measureIndex >= track.measures.length) return 0.0;
+
+    final measure = track.measures[measureIndex];
+    final beat = measure.beats.cast<Beat?>().firstWhere(
+      (b) => b?.index == beatIndex,
+      orElse: () => null,
+    );
+
+    if (beat == null || beat.notes.isEmpty) return 0.0;
+
+    // 累加所有音符的时值
+    double total = 0.0;
+    for (final note in beat.notes) {
+      total += note.actualBeats;
+    }
+    return total;
   }
 
   /// 获取下一个可用的beat索引

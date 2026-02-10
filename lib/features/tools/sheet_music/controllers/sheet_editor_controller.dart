@@ -123,8 +123,53 @@ class SheetEditorController extends GetxController {
 
   /// 加载乐谱
   void loadScore(Score score) {
-    _document = ScoreDocument(score);
-    currentScore.value = score;
+    // 如果是钢琴乐谱且只有一个轨道，自动添加另一个轨道（左手或右手）
+    Score loadedScore = score;
+    if (score.tracks.length == 1 &&
+        score.tracks.first.instrument == Instrument.piano) {
+      final existingTrack = score.tracks.first;
+      final tracks = <Track>[];
+
+      // 确保右手在前，左手在后
+      if (existingTrack.hand == Hand.left) {
+        // 已有左手，在前面添加右手
+        tracks.add(
+          Track(
+            id: 'right_hand',
+            name: '右手',
+            clef: Clef.treble,
+            hand: Hand.right,
+            measures: List.generate(
+              existingTrack.measures.length,
+              (i) => Measure(number: i + 1, beats: []),
+            ),
+            instrument: Instrument.piano,
+          ),
+        );
+        tracks.add(existingTrack);
+      } else {
+        // 已有右手或未指定，在后面添加左手
+        tracks.add(existingTrack);
+        tracks.add(
+          Track(
+            id: 'left_hand',
+            name: '左手',
+            clef: Clef.bass,
+            hand: Hand.left,
+            measures: List.generate(
+              existingTrack.measures.length,
+              (i) => Measure(number: i + 1, beats: []),
+            ),
+            instrument: Instrument.piano,
+          ),
+        );
+      }
+
+      loadedScore = score.copyWith(tracks: tracks);
+    }
+
+    _document = ScoreDocument(loadedScore);
+    currentScore.value = loadedScore;
     _syncUIState();
     hasUnsavedChanges.value = false;
     _updateUndoRedoState();

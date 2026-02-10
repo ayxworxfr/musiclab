@@ -117,33 +117,41 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
       return true;
     }
 
-    final result = await showDialog<bool>(
+    final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('未保存的更改'),
         content: const Text('您有未保存的更改，确定要离开吗？'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(context, 'cancel'),
             child: const Text('取消'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(context, 'discard'),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('不保存'),
           ),
           ElevatedButton(
-            onPressed: () {
-              _saveSheet();
-              Navigator.pop(context, true);
-            },
+            onPressed: () => Navigator.pop(context, 'save'),
             child: const Text('保存并离开'),
           ),
         ],
       ),
     );
 
-    return result ?? false;
+    if (result == 'save') {
+      // 保存并返回更新的乐谱
+      final savedScore = await _saveSheet();
+      if (savedScore != null) {
+        Get.back(result: savedScore);
+      }
+      return false; // 阻止默认返回行为，因为我们已经手动返回了
+    } else if (result == 'discard') {
+      return true; // 不保存，直接返回
+    }
+
+    return false; // 取消，留在当前页面
   }
 
   /// AppBar
@@ -865,9 +873,9 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
   }
 
   /// 保存乐谱
-  Future<void> _saveSheet() async {
+  Future<Score?> _saveSheet() async {
     final sheet = _editorController.currentSheet.value;
-    if (sheet == null) return;
+    if (sheet == null) return null;
 
     try {
       // 清理空小节后再保存
@@ -893,6 +901,9 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
+
+        // 返回保存后的乐谱
+        return score;
       } else {
         Get.snackbar(
           '保存失败',
@@ -901,6 +912,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
+        return null;
       }
     } catch (e) {
       Get.snackbar(
@@ -910,6 +922,7 @@ class _SheetEditorPageState extends State<SheetEditorPage> {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      return null;
     }
   }
 

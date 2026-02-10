@@ -317,6 +317,13 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
                     ),
                   ),
                   actions: [
+                    // 编辑按钮（仅非内置乐谱可编辑）
+                    if (!_currentScore!.isBuiltIn)
+                      IconButton(
+                        icon: const Icon(Icons.edit_note),
+                        tooltip: '编辑乐谱',
+                        onPressed: _navigateToEditor,
+                      ),
                     IconButton(
                       icon: Icon(
                         _currentScore!.isFavorite
@@ -359,6 +366,31 @@ class _SheetDetailPageState extends State<SheetDetailPage> {
         ),
       ),
     );
+  }
+
+  /// 导航到编辑器页面
+  void _navigateToEditor() async {
+    if (_currentScore == null || _currentScore!.isBuiltIn) return;
+
+    // 跳转到编辑器页面，传递当前乐谱
+    final result = await Get.toNamed(
+      '/tools/sheet-editor',
+      arguments: _currentScore,
+    );
+
+    // 编辑完成返回后，重新加载乐谱（如果有更新）
+    if (result != null && result is Score) {
+      setState(() {
+        _currentScore = result;
+      });
+
+      Get.snackbar(
+        '成功',
+        '乐谱已更新',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    }
   }
 
   /// 显示重命名对话框
